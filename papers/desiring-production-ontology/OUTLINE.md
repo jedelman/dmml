@@ -1,6 +1,12 @@
 # Paper 1: DMML as a Desiring-Production Ontology
 
-**Status: outline only. No prose drafted. Not for citation yet.**
+**Status: outline (kept for the section-by-section rationale below). A
+full draft-2 now exists at `DRAFT.md`, hand-written and reviewed once
+via `stealth/ox-alpha` — read that file for the paper's actual current
+argument, including a real revision to Section 4's Simondon claim that
+this outline's own optimistic framing ("do the harder work of closing
+that gap") turned out not to be fully achievable. Not for citation yet
+either way — pincites still pending.**
 
 ## Thesis
 
