@@ -1,0 +1,102 @@
+# Paper 2: DMML as a World Model for Text, and How It Differs from Video World Models
+
+**Status: outline only. No prose drafted. Not for citation yet. Every
+named ML system/paper below is a placeholder for real citation research
+— none of it should be cited, quoted, or claimed to behave a particular
+way until independently verified. This paper sits closer to the ML/
+cognitive-science "world models" literature than paper 1 does, and that
+literature moves fast — don't trust recalled specifics over a real,
+current check.**
+
+## Thesis
+
+"World model" in the ML literature (learned latent dynamics a policy
+or generator rolls forward, increasingly demonstrated on video) and
+"world model" as DMML uses the term (an explicit, symbolic, declarative
+graph of what's true plus rules for how truths change) are doing
+structurally different jobs that happen to share a name. The paper's
+job is to state that difference precisely — where they're actually
+comparable, where the comparison breaks down, and what DMML's
+particular tradeoffs buy or cost relative to a learned latent model.
+
+## Section structure (working)
+
+1. **What "world model" means in the ML literature, stated carefully.**
+   The lineage from early latent-dynamics-for-control work through to
+   recent video-generation systems explicitly framed as world models.
+   **Citation work needed, not yet done**: the actual foundational
+   paper(s) usually credited with the "World Models" framing (a
+   specific, well-known 2018-era paper is the obvious anchor —
+   VERIFY exact title/authors/venue before citing, don't rely on
+   recalled specifics), plus at least one recent video-world-model
+   system (VERIFY name, organization, what it's actually claimed to do
+   and NOT claimed to do, from a primary source — a blog post or paper
+   abstract, not secondhand summary).
+
+2. **The actual structural difference: learned latent continuous
+   dynamics vs. an explicit symbolic commit graph.** A video world
+   model predicts a plausible next frame (or latent state) from a
+   learned, opaque function; DMML's world state is an explicit,
+   inspectable graph of triples, and its dynamics are declared rules
+   (`may_fire`, guards, effects) a human or another agent can read and
+   reason about without probing the model. Frame this as a real
+   tradeoff, not a one-sided win: DMML can't generate a photorealistic
+   frame; a video world model can't (without a lot of extra
+   infrastructure) tell you *why* a transition happened or guarantee it
+   respects a declared rule.
+
+3. **Verifiability and provenance.** DMML's commits are content-
+   addressed and chain back to genesis by hash (`respondsTo`/`via`,
+   issue #53's referential-integrity check) — every state transition
+   has an auditable cause. A learned world model's rollout has no
+   equivalent: two runs from "the same" prompt/seed can diverge, and
+   there's no artifact naming *why*. This is a real, checkable
+   difference in what each kind of model can promise a downstream
+   consumer, not just a style preference.
+
+4. **Discreteness and the open/closed vocabulary.** DMML's world is a
+   discrete, symbolic structure with an explicit closed/open predicate
+   vocabulary (self-declaration before use) — a genuinely different
+   representational commitment than a continuous latent space, with
+   real consequences for compositionality (a new predicate composes
+   with existing ones by construction) versus a latent model's own
+   generalization behavior (VERIFY: what, if anything, the video-
+   world-model literature itself says about compositional
+   generalization — don't assert a comparison without a real source).
+
+5. **What DMML is worse at, honestly.** No perceptual grounding, no
+   photorealism, nothing resembling the video world models' actual
+   headline capability (generating visually coherent, temporally
+   consistent video). A DMML world is legible to a symbolic reasoner
+   and illegible as an image. State this plainly rather than let the
+   paper read as one-sided advocacy.
+
+6. **Where the two could compose, not compete.** A real, speculative
+   but honestly-labeled closing section: a text/symbolic world model
+   like DMML providing the *structure* (what exists, what's true, what
+   rules govern change) that a video world model could render *as*
+   video, rather than the two being alternatives for the same job. Flag
+   explicitly as speculative, not a result.
+
+## Venue direction (not decided)
+
+Likely ML/cognitive-science adjacent (a world-models workshop or a
+venue that takes symbolic-vs-learned representation debates seriously),
+not philosophy of technology — this paper's contribution is a
+structural comparison, not a conceptual/political reading the way
+paper 1 is.
+
+## Before drafting begins
+
+- A real, current literature survey of the "world models" ML
+  literature — foundational framing, at least one recent video-world-
+  model system, and whatever the field itself says about symbolic vs.
+  learned world representations. Every specific claim (what a system
+  does, doesn't do, what a paper argues) needs a primary-source check,
+  not recall — this is exactly the "hallucination tells" pattern this
+  project's own fact-checking discipline already names: named system +
+  claim + implicit citation, all in one sentence, is the highest-risk
+  shape.
+- Decide whether DMML's own real, run examples (drift detection,
+  petitions, the referential-integrity fix) should anchor section 3's
+  provenance argument with actual data, not just structural assertion.
