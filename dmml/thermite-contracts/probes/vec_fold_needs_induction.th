@@ -1,0 +1,49 @@
+// The one attempted workaround for the two Map probes above: Vec::push's
+// generated postcondition DOES include a frame guarantee
+// (thermite-lower/src/lower.rs:5135, `forall|j| j < old_len ==>
+// final[j] == old[j]`) that Map::insert's postcondition lacks. Combined
+// with a hand-rolled recursive `spec fn` (same pattern as `spec_sum` in
+// README.md's own example -- Thermite's real, intended escape hatch for
+// custom predicates, not an abuse of the language), this SHOULD be able
+// to reach what Map couldn't.
+//
+// Result: `spec_contains` itself certifies cleanly (L3, 9 obligations) --
+// the custom recursive predicate is well-formed and internally
+// consistent. But `apply_assert`'s frame-property `ens` STILL fails.
+// Verus's automatic routing doesn't chain push's flat forall fact through
+// a recursive predicate's definition on its own; doing so needs an actual
+// inductive proof (an explicit `assert(...) by { ... }` induction step),
+// which is real Verus proof-engineering, not something expressible at
+// the ordinary req/ens/fx Thermite-author surface. Conclusion: frame/fold
+// properties over a growable log are reachable in *principle* via Vec +
+// custom spec fns, unlike Map (which has no route at all), but doing so
+// for real needs someone writing actual induction lemmas by hand -- a
+// materially bigger lift than anything else attempted this session.
+
+spec fn spec_contains(v: Vec<u64>, i: u64, k: u64) -> bool
+  dec i
+{
+  if i == 0 {
+    false
+  } else {
+    if v.get(i - 1) == k {
+      true
+    } else {
+      spec_contains(v, i - 1, k)
+    }
+  }
+}
+
+fn apply_assert(log: Vec<u64>, new_fact: u64, other_fact: u64) -> Vec<u64>
+  req log.len() < 1_000_000
+      && !spec_contains(log, log.len(), new_fact)
+      && new_fact != other_fact
+  ens spec_contains(result, result.len(), new_fact)
+  ens spec_contains(result, result.len(), other_fact) == spec_contains(log, log.len(), other_fact)
+  ens result.len() == log.len() + 1
+  fx  alloc
+{
+  let mut result = log;
+  result.push(new_fact);
+  result
+}

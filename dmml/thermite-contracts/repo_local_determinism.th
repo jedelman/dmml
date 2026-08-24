@@ -1,0 +1,31 @@
+// Repo-local determinism (SPEC.SCRATCH.md SS5, SS15's second named
+// candidate; the general principle behind the real respondsTo bug found
+// and fixed earlier this session -- SPEC.md SS18, issue #69).
+//
+// SPEC-DRIVEN: contract written and checked via `forge goal` before any
+// implementation existed.
+//
+// Claim under test: a commit's resolution outcome is a pure function of
+// its OWN repository's log alone -- never of any other repository's
+// state. Modeled minimally, deliberately decoupled from any particular
+// log-scan implementation (that's a separate, already-tractable concern):
+// `commit_in_own_log` stands in for "whatever the own-repo lookup
+// concludes"; `foreign_repo_accepted` stands in for exactly the shape of
+// state the real respondsTo bug illegally depended on (another party's
+// acceptance of a cross-repo Bridge half).
+//
+// The `ens` pins the result to `commit_in_own_log` ALONE -- it never
+// mentions `foreign_repo_accepted` at all. That absence is the whole
+// point: any implementation whose result actually varies with
+// `foreign_repo_accepted` (for some own-log state) cannot satisfy this
+// `ens`, so Forge rejects it regardless of how the branching got there --
+// a human writing it, or (see the sibling dispatch experiment) an LLM
+// coder given this exact contract and asked to fill the hole.
+
+fn resolves(commit_in_own_log: bool, foreign_repo_accepted: bool) -> bool
+  req true
+  ens result == commit_in_own_log
+  fx  pure
+{
+  commit_in_own_log
+}

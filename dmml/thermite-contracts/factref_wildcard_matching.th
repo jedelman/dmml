@@ -1,0 +1,36 @@
+// FactRef object-wildcard matching (SPEC.md SS7 / the FactRef doc
+// comment in engine/src/graph.rs SS222-227): "object disambiguates when
+// commit's produces asserted more than one triple for (subject,
+// predicate); omitted means every triple commit asserted for that pair
+// -- wildcard semantics." SPEC-DRIVEN: contract written and checked via
+// `forge goal` before any implementation existed.
+//
+// Claim under test: a FactRef with no `object` matches ANY candidate
+// triple for the same (subject, predicate) -- true wildcard, not "matches
+// nothing" and not "matches only a default/empty value". A FactRef WITH
+// an object matches only a candidate whose object is equal.
+//
+// Modeled as: `has_object` (whether the FactRef specified an object) and
+// `object_equal` (whether, IF specified, it equals the candidate
+// triple's object -- meaningless when `has_object` is false, per the
+// `req` below, so no implementation can dodge the wildcard case by
+// smuggling `object_equal`'s value in when it shouldn't matter).
+//
+// This is a real, easy-to-get-backwards boolean: the natural but WRONG
+// implementation swaps the wildcard direction (requires object_equal
+// unconditionally, or requires !has_object AND object_equal) -- both are
+// real, plausible bugs a fresh implementation could introduce, and both
+// are exactly what SPEC.md's "omitted means every triple" sentence rules
+// out. If `!has_object`, `object_equal` carries no information (nothing
+// was given to compare), so the `req` below deliberately leaves it
+// unconstrained rather than pinning it to a specific value -- the `ens`
+// alone must hold for every value `object_equal` could take when
+// `has_object` is false, which is exactly the wildcard property.
+
+fn factref_matches(has_object: bool, object_equal: bool) -> bool
+  req true
+  ens result == (!has_object || object_equal)
+  fx  pure
+{
+  !has_object || object_equal
+}

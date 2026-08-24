@@ -1,0 +1,30 @@
+// Fact-level retraction fails OPEN on the carrying commit (SPEC.md SS7:
+// "a reference naming a commit that doesn't exist, or a triple that
+// commit never asserted, has no effect -- fails closed on the specific
+// bad reference, fails open on the carrying commit. The rest of that
+// commit's contribution is unaffected"). SPEC-DRIVEN: written and checked
+// via `forge goal` before any implementation existed.
+//
+// The other half of the deliberate pair with
+// cross_repo_consume_fails_closed.th: same SS7 passage, opposite posture,
+// for a different severity of problem. A dangling fact-level reference is
+// "an ordinary dangling reference" (SS7), NOT a structural violation --
+// so unlike the cross-repo case, it must NEVER take down the whole
+// carrying commit, no matter what.
+//
+// `factref_dangles` stands in for whether this one retraction's
+// reference doesn't resolve to a real triple. `rest_of_commit_valid`
+// stands in for whatever every other check on this commit concludes. The
+// `ens` requires the result to equal `rest_of_commit_valid` UNCONDITIONALLY
+// -- it must not depend on `factref_dangles` at all. An implementation
+// that invalidates the whole commit when the dangling case is hit (the
+// natural but WRONG mirror of the cross-repo contract's posture) cannot
+// satisfy this.
+
+fn commit_valid(factref_dangles: bool, rest_of_commit_valid: bool) -> bool
+  req true
+  ens result == rest_of_commit_valid
+  fx  pure
+{
+  rest_of_commit_valid
+}

@@ -1,0 +1,10 @@
+machine edge/12 {
+  state locked
+  state unlocked
+  transition unlock {
+    from: locked
+    to: unlocked
+    guard: holds(player, key/7)
+    effect: retract locked, assert unlocked
+  }
+}

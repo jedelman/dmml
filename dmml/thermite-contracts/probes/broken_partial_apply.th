@@ -1,0 +1,28 @@
+// Proof the real contract (../retract_assert_atomicity.th) has teeth:
+// same signature and req/ens/fx, deliberately broken body that performs
+// only the retract-half and skips the assert-half -- the exact partial-
+// application bug the contract exists to catch. Expected:
+// `forge check --mutation-floor 0` on this file FAILS with
+// "[FAIL] postcondition not satisfied" on both `ens result.1...` clauses.
+
+fn apply_combined_commit(
+  retracted: Map<u64, bool>,
+  asserted: Map<u64, bool>,
+  retract_key: u64,
+  assert_key: u64
+) -> (Map<u64, bool>, Map<u64, bool>)
+  req !retracted.contains_key(retract_key) && retracted.len() < 1_000_000
+      && !asserted.contains_key(assert_key) && asserted.len() < 1_000_000
+      && retract_key != assert_key
+  ens result.0.contains_key(retract_key)
+  ens result.1.contains_key(assert_key)
+  ens result.0.len() == retracted.len() + 1
+  ens result.1.len() == asserted.len() + 1
+  fx  alloc
+{
+  let mut retracted2 = retracted;
+  let asserted2 = asserted;
+  retracted2.insert(retract_key, true);
+  // BUG: the assert-half never happens -- a partial application.
+  (retracted2, asserted2)
+}

@@ -1,0 +1,25 @@
+// What Kimi (moonshotai/kimi-k2.5) wrote for the SAME resolution logic
+// when given only a natural-language task description (mirroring the
+// real historical respondsTo bug's framing) and NO Thermite contract --
+// see dev-journal for the exact prompt and full transcript. Kimi's
+// actual output was `match (commit_in_own_log, foreign_repo_accepted) {
+// (true, true) => true, _ => false }`; Thermite doesn't parse tuple-
+// pattern match, so this is the semantically identical `&&` form --
+// preserves the exact bug (gates resolution on foreign_repo_accepted),
+// which is the only thing this probe is checking.
+//
+// Reproduces the real historical bug's shape almost exactly: gates
+// resolution on foreign_repo_accepted, an illegal repo-local-determinism
+// violation (SPEC.md SS18, issue #69). Checked here against the SAME
+// contract ../repo_local_determinism.th already certifies against (which
+// Kimi, given the contract directly instead, satisfied correctly -- see
+// the other dispatch in the same session).
+// Expected: `forge check` FAILS with "postcondition not satisfied".
+
+fn resolves(commit_in_own_log: bool, foreign_repo_accepted: bool) -> bool
+  req true
+  ens result == commit_in_own_log
+  fx  pure
+{
+  commit_in_own_log && foreign_repo_accepted
+}

@@ -1,0 +1,25 @@
+// How deep map_insert_no_frame_property.th's gap goes: not just an
+// auxiliary frame property, but the ORDINARY resolver-fold pattern --
+// apply commit 1, then commit 2, to the SAME log -- fails to even
+// discharge the second insert's own precondition (`!contains_key
+// (fact_b)`), because after the first insert there is no exposed fact
+// that fact_b (untouched by that insert) is still absent. This is
+// exactly the operation SPEC.md SS5 describes for resolution ("unioning
+// the asserted content of relevant, valid commits"), and it's not
+// provable through Map's current surface for even the simplest 2-commit
+// case. Expected: `forge check` FAILS with two errors -- a postcondition
+// AND a precondition failure.
+
+fn apply_two_asserts(asserted: Map<u64, bool>, fact_a: u64, fact_b: u64) -> Map<u64, bool>
+  req !asserted.contains_key(fact_a) && !asserted.contains_key(fact_b)
+      && fact_a != fact_b && asserted.len() < 999_998
+  ens result.contains_key(fact_a)
+  ens result.contains_key(fact_b)
+  ens result.len() == asserted.len() + 2
+  fx  alloc
+{
+  let mut result = asserted;
+  result.insert(fact_a, true);
+  result.insert(fact_b, true);
+  result
+}
