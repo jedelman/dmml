@@ -98,6 +98,53 @@ multiplicity-haecceity.md`) before the rewrite that replaces Section
 directly, rather than verdict-by-verdict against a fixed criterion
 list.
 
+## Attempt 4, adversarial review round: haecceity alone proves too much (fixed, not abandoned)
+
+A `stealth/ox-alpha` adversarial review of the multiplicity/haecceity version
+above (real review, not a hypothetical stress test) found the section's
+actual climax — "a petition's resolution demonstrably is... a haecceity" —
+was a satisfaction-verdict wearing tracing vocabulary: strip the predicates
+(singular, unrepeatable, positioned in a citation network, irreversible) and
+every one holds of any git commit, any HTTP request, any database
+transaction. The section had already made exactly this "proves too much"
+move against the web/RDF/citation-network comparison in its rhizome half,
+and committed the identical error one paragraph later without noticing.
+Verdict: DO NOT SHIP as drafted. Three smaller findings came with it: the
+"every edge is non-figurative" claim overclaimed what the referential-
+integrity check actually guarantees (grounding, not semantic fidelity — a
+commit can cite something real and still misrepresent it, and nothing
+catches that); the Simondon-to-D&G handoff read as a target substitution
+executed mid-argument rather than a thesis announced up front, with an
+unattributed quote and un-named scholarship; and the anti-checklist
+methodology was violated by its own final paragraph's "demonstrably is...
+without further argument needed" verdict language, plus a minor Simondon
+publication-date ambiguity and an overstrong claim about git being
+unable to reference across repository boundaries at all (submodules do,
+by copy).
+
+Fixed, not abandoned, unlike attempt 3 — the review's own suggested repair
+worked: rebuild around what actually distinguishes DMML structurally rather
+than around bare eventhood. The *mergeable*-default-vs-*arbitrated*-narrow-
+exception split (already in the paper's rhizome material as a blockchain
+contrast) is read as deterritorialization-as-default against a declared,
+local act of territorialization — a structural distinction most event-
+recording systems don't make available at all, unlike singular/irreversible/
+positioned-in-a-graph, which every one of them shares. Cross-DID quotation
+across a sovereign identity boundary is read as connection across a molar
+boundary that isn't erased by the connection — again a specific grammar
+fact, not a generic one. Haecceity is now used only once specified by these
+two structural facts, with explicit defeasibility conditions stated (if
+arbitrated were the default, or cross-DID quotation collapsed repositories
+into one record, the argument would fail on its own terms) — answering the
+"unfalsifiable escape hatch" objection the same review raised. The
+"non-figurative edges" claim was narrowed to grounding, with semantic
+infidelity conceded explicitly and the mergeable default reframed as what
+keeps a misreading from being silently laundered into canonical status
+rather than as a repair of the fidelity gap. Simondon's dates were
+corrected (main thesis 1964, complementary part posthumous 1989); the git
+submodule overclaim was fixed; the D&G-radicalization thesis now opens the
+section as the substantive claim rather than arriving as a fallback.
+
 ## Standing methodological note for future sessions
 
 Three rounds of "propose a move → verify citations → adversarial
