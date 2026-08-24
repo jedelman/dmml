@@ -1,0 +1,26 @@
+[package]
+name = "dmml-runtime"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "dmml_runtime"
+path = "src/lib.rs"
+
+[dependencies]
+oxigraph = { version = "0.5.9", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+dmml = { path = "../dmml" }
+
+# Native (cli/, tests, examples) never needs oxigraph's `js` feature -- it
+# pulls in getrandom/wasm_js and js-sys for nothing a non-wasm target uses.
+# A browser/Worker build does: without it, getrandom 0.3 (pulled in
+# transitively via rand/rand_core, used inside oxrdf/spareval) has no
+# backend selected on wasm32-unknown-unknown at all and fails to compile.
+# Carried over from written-world's `engine/Cargo.toml` verbatim, where
+# this was already confirmed sufficient with no extra RUSTFLAGS needed.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+oxigraph = { version = "0.5.9", default-features = false, features = ["js"] }

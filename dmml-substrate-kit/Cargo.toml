@@ -1,0 +1,12 @@
+[package]
+name = "dmml-substrate-kit"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+dmml = { path = "../dmml" }
+serde = { version = "1", features = ["derive"] }
+serde_ipld_dagcbor = "0.7"
+cid = "0.11"
+multihash = "0.19"
+sha2 = "0.10"

@@ -1,0 +1,16 @@
+pub mod character;
+pub mod command;
+pub mod commune;
+pub mod dag;
+pub mod demiurge;
+pub mod direction;
+pub mod game;
+pub mod graph;
+pub mod machine;
+pub mod percept;
+pub mod render;
+pub mod rng;
+pub mod substrate;
+pub mod vocab;
+
+pub use game::Game;
