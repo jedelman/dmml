@@ -28,10 +28,15 @@ evocative.
    through examples (breast-machine, mouth-machine) and the general
    thesis that desire produces the real rather than lacking something.
    State the concept at that level of precision, not as a slogan.
-   **Citation work needed**: exact chapter/section references in
-   *Anti-Oedipus* for the breast-machine/mouth-machine passages and the
-   "desire produces the real" thesis — verify against a real edition,
-   don't cite from memory of the earlier essay's own gloss.
+   **Citation status (verified 2026-08-24, see `../CITATION-
+   VERIFICATION-2026-08-24.md` claim 1)**: the examples-not-definition
+   structure and the production-not-lack thesis both hold up against
+   real secondary scholarship and a freely available full-text mirror
+   of the Hurley/Seem/Lane translation — book opens with "the breast is
+   a machine that produces milk, and the mouth is a machine coupled to
+   it." Still needed before drafting: exact page/section pincites from
+   the standard Minnesota Press edition — this pass corroborated the
+   claim's content, not a citable pincite.
 
 3. **Why `consumes`/`produces` is the real implementation, not an
    analogy.** A `Commit` never edits — it records that consumption
@@ -50,9 +55,20 @@ evocative.
    and downgraded "formally, not by analogy" to "structurally, not by
    full derivation." This paper should either do the harder work of
    closing that gap or state precisely why it can't be closed.
-   **Citation work needed**: Simondon's transindividual as laid out in
-   *L'individuation psychique et collective* — verify the specific
-   passages the earlier essay's claims rest on.
+   **Citation status (verified 2026-08-24, see `../CITATION-
+   VERIFICATION-2026-08-24.md` claim 2)**: *L'individuation psychique et
+   collective* (1989) is a real, correctly titled Simondon work, and the
+   "replaces intersubjectivity"/"individuated through the relation"
+   framing holds up against the Notre Dame Philosophical Reviews review
+   of Muriel Combes' *Gilbert Simondon and the Philosophy of the
+   Transindividual* (MIT Press). **One real correction to carry into
+   drafting**: don't claim the transindividual lives *specifically* or
+   *only* in the 1989 book, as distinct from *L'individuation à la
+   lumière des notions de forme et d'information* — scholarship treats
+   Simondon's doctoral thesis as one continuous argument across both
+   parts, with the 1989 text doing the ethical/political extension of
+   groundwork partly laid in the other. Write "developed at length in,"
+   not "laid out in."
 
 5. **The anti-Oedipal polemic, not flattened away.** The earlier essay
    admits (per its own review) that it flattened desiring-machines into
