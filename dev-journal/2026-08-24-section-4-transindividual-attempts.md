@@ -303,6 +303,28 @@ extractive verification mechanism would need the extractive content
 explicitly stripped and flagged, and wasn't judged worth the overclaiming
 risk this round. Recorded here rather than silently dropped.
 
+## Round five: plateau-by-plateau ox-alpha review against real primary-text findings (2026-08-25)
+
+Per Jason's request, ox-alpha was fed the real, page-cited quotes gathered
+from six plateaus (not asked to fact-check the quotes, but to check the
+papers' use of them) alongside the current Section 4 and Section 7 text.
+Found and fixed: a factual misstatement calling absolute deterritorialization
+"rarer" when the primary text says the opposite (strata are the residue,
+not absolute deterritorialization the exception, p. 56) -- same error class
+as every prior round's fatal find; an overclaim treating four individual
+pantheon.rs commits as four full strata, rescaled correctly using the
+primary text's own epistrata/parastrata vocabulary for sub-stratal units;
+a missing citation (asignifying rupture, which already named the paper's
+own best rhizome-subsection argument in the primary text's own words); and
+an unacknowledged exposure -- both papers use "capture" pervasively without
+ever noting ATP has a separate, later, unambiguously extractive sense of
+the word (Apparatus of Capture, rent/profit/tax), which silence could read
+as either not knowing about that plateau or evading it. All fixed. Two
+cheap, cost-free additions also taken (a second plateau's own anti-
+triumphalist hedge; a refrain's inherent openness to redrawing, framed as
+fitting DMML's real extensibility rather than complicating the claim).
+Full review: `ADVERSARIAL-REVIEW-2026-08-25-plateau-by-plateau.md`.
+
 ## Standing methodological note for future sessions
 
 Three rounds of "propose a move → verify citations → adversarial
