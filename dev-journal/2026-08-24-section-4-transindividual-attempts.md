@@ -204,6 +204,43 @@ rather than oversold: nothing in this round claims DMML exhibits *absolute*
 deterritorialization in D&G's stronger sense — only the more modest, verified,
 relative kind, checkable and shown.
 
+## Attempt 5, adversarial review round: double articulation overgeneralized, fixed with a stated triad (2026-08-25)
+
+A fresh `stealth/ox-alpha` adversarial review of the strata/deterritorialization
+version (attempt 5 above) found it strongest yet — the mergeable/arbitrated
+and referential-integrity fixes held, the primary-text work was judged real —
+but found one recurrence of the exact haecceity-era failure in a new
+subsection: "Nyx's commit is a real, literal act of double articulation, not
+a metaphor reaching for one" is an unblocked overgeneralization, since a SQL
+`JOIN`, a git merge, or a SPARQL `CONSTRUCT` query satisfies the identical
+bare description (read several records, write one back), and the text didn't
+notice. The review also flagged that "auto-recombinant" as stated required
+nothing beyond ordinary relative deterritorialization plus an append-only
+store — true of Datomic, event-sourcing, and SPARQL-over-RDF generally — and
+that a stray "a submodule copies; it does not live-reference" was a factual
+error (a submodule pins a SHA reference, not a copy), a category of mistake
+this paper cannot afford a fourth time.
+
+Fixed, not abandoned: double articulation demoted from literal identity claim
+to explicit structural analogy, with the SQL/git-merge/SPARQL-CONSTRUCT
+concession stated in the text itself (mirroring the rhizome subsection's own
+earlier concession to the web/RDF comparison). The actual differentiator
+named is a triad — grounded citation (Section 1), cross-sovereign
+connectivity (no shared authority required), and a default of
+non-convergence — argued to be what distinguishes DMML's case, not double
+articulation alone; the same triad is used to answer the Datomic/event-
+sourcing comparison directly rather than leaving it unaddressed. The git
+submodule sentence was corrected (pins a reference, doesn't copy, still needs
+a separate resolve step). The Simondon opening paragraph was trimmed per the
+review's "throat-clearing with a bibliography" finding. A logically inverted
+closing inference ("needed no bespoke primitive, which is itself evidence the
+reading is right") was corrected — cheapness of fit is not evidence of
+correctness, only of non-special-casing, and the text now says so. `pantheon.rs`
+was extended from two rival prior facts to three (adding a third deity, Eos)
+so the "or, in principle, arbitrarily many" recombination claim isn't resting
+on the smallest case that could look coincidental — a real code change, not
+just a hedge in prose, matching this project's "try it first" discipline.
+
 ## Standing methodological note for future sessions
 
 Three rounds of "propose a move → verify citations → adversarial
