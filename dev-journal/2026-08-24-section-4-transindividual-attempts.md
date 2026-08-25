@@ -374,6 +374,55 @@ grammar has no extraction/entitlement primitive) is already covered, more
 precisely, by Options 3 and 4 together once those were adopted. Adding it
 separately would be redundant.
 
+## Round seven: "On Several Regimes of Signs" — a real adversarial challenge, resolved by `declare` (2026-08-25)
+
+A fresh primary-text research pass (full OCR read, page-cited) of "587
+B.C.–A.D. 70: On Several Regimes of Signs," dispatched per Jason's steer
+("bears on all our linguistics discussions"), found genuine supporting
+material (the signifying regime's endless sign-to-sign deferral as a
+precise, checkable contrast to DMML's referential-integrity check; the
+mandatory "mixed semiotics" hedge, textually required twice over) but also
+two real adversarial complications neither paper had addressed:
+
+1. **Axiomatics vs. diagram**: the plateau names axiomatic operations
+   ("subordinates lines to a punctual system") as the explicit *opposite*
+   of genuine diagrammatic/deterritorializing creation. A closed, self-
+   declared predicate vocabulary looks, described flatly, exactly like the
+   former — directly threatening paper 2's Section 7 framing of the
+   vocabulary as stratum/territory.
+2. **Is "grounded reference" just signifiance?** The signifying regime
+   D&G critique is *also* fully internally consistent — its problem is
+   that the chain never exits into anything outside itself. Since a DMML
+   world has no sensor and everything inside it is a triple, this raised
+   a real question whether the referential-integrity check achieves
+   anything beyond exactly that kind of closed sign-to-sign consistency,
+   which would mean "verified production, not figurative claim" (Section
+   2, and the rhizome subsection's "connections can't lie") overclaims
+   the very distinction it rests on.
+
+Jason resolved both, sharper than the research pass itself had framed it:
+DMML *does* have extra-symbolic contact, via `declare` — where a commit's
+content comes from and where it goes. A new predicate isn't derived from
+the existing vocabulary, it's introduced by an author's real decision; a
+`commit`'s content comes from whatever real process (a player's action, an
+AI's judgment) prompted it and returns to a game an actual player goes on
+to experience. The chain's *content* is symbolic throughout; its *causal
+embedding* is not. Crucially, per Jason's own caveat, this does not require
+DMML to formalize a canonical "sensor" primitive converting external input
+into triples — a valid, useful design if built, but not necessary for the
+philosophical point, since authorship-as-an-act is already the contact.
+This single move resolves both complications: it breaks the signifying
+regime's circularity (§2) and reframes the closed vocabulary as closed-
+only-until-the-next-`declare`, a real instance of the plateau's own
+required "mixed semiotics" honesty rather than a clean axiomatic closure
+(§1). Added as a new subsection, "Grounded reference, not signifiance," in
+paper 1's Section 4, with a cross-reference from paper 2's Section 7. An
+ox-alpha dispatch to independently propose responses to the same two
+complications was sent in parallel but hit repeated transient upstream
+errors and did not return in time to inform this fix — the resolution
+above is Jason's own, applied directly rather than held for a review round
+that didn't land.
+
 ## Standing methodological note for future sessions
 
 Three rounds of "propose a move → verify citations → adversarial
