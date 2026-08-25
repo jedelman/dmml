@@ -19,26 +19,54 @@ your final report rather than silently skipping it.
 ## earlier one)
 
 ### 2026-08-25: cut meta-commentary and hedge-asides
-- **No meta-commentary labeling.** Don't describe a claim's own rhetorical
-  status inline — "load-bearing," "the strongest evidence here," "worth
-  stating plainly," "deserves to be said directly," "it's worth noting that."
-  If a claim needs weight, the argument itself should carry it; a label
-  announcing the weight is a tell, not a support. Cut the label, keep the
-  claim.
-- **Reduce "rather than" / "not X, Y" asides.** These constructions are
-  fine at normal density but this project's papers overuse them — dozens
-  of instances per document, several per paragraph in places. When editing
-  a paragraph, count instances; if a paragraph has more than one, look for
-  which can be cut by just stating the positive claim, letting the
-  contrast stay implicit, or restructuring as two separate sentences
-  instead of one contrastive one. Not a hard ban — some contrasts are the
-  actual content (e.g., "relative, not absolute" is a real technical
-  distinction the paper needs) — but default to cutting the reflexive
-  ones that add rhythm without adding information.
-- **Same treatment for other self-narrating hedges**: "to be clear,"
-  "it should be said," "worth noting," "importantly," "crucially" used as
-  a sentence-opener rather than because something is genuinely a pivot.
-  Cut the announcement, keep the content that follows it.
+
+A first pass against this rule (hand-applied) went well. A second pass
+dispatched to a fast model (Gemini) produced 17 suggestions, 3 of which
+had to be rejected or modified by the reviewer — the model cut real
+content it couldn't distinguish from tics, because both look like
+"a qualifying clause after a claim." A Deepseek critique of the dispatch
+prompt (2026-08-25) diagnosed why and is folded in below: the rule was a
+surface-pattern description ("cut 'rather than'/'not X, Y' constructions")
+when the actual distinction is functional, not syntactic. Four categories
+of qualifying clause exist, and only one of them is a tic:
+
+- **(a) Technical/conceptual contrasts** — the contrast IS the content:
+  "relative, not absolute deterritorialization," "checkable, not
+  falsifiable in a stronger sense." Never cut.
+- **(b) Epistemic-honesty flags** — phrases scoping a claim's evidentiary
+  status or provenance: "this paper's own synthesis, not inherited
+  lineage," "has not built it, has not verified any existing system does
+  this," "we do not claim to have proven this." These prevent overclaiming;
+  cutting them misrepresents the claim's strength. Never cut.
+- **(c) Disambiguations** — phrases preventing a specific, plausible
+  misreading, often because a prior draft or citation was actually
+  misread once: "not Ha and Schmidhuber's coinage" (a reader could assume
+  it is, given the 2018 paper's fame), "not a substitute for the stratum
+  reading." If a "not X" clause corrects a misreading a reader could
+  plausibly reach, it's load-bearing. Never cut.
+- **(d) Genuine tics** — reflexive "rather than"/"not X, Y" constructions
+  and self-narrating labels ("load-bearing," "worth stating plainly," "it's
+  worth noting that," "to be clear," "importantly" as a sentence-opener)
+  where the positive claim alone would suffice and cutting changes nothing
+  about what's being claimed. These are the actual target.
+
+**The test**: if cutting the qualifying clause leaves the sentence making
+the *same claim with the same force*, it's (d) — cut it. If cutting it
+would overstate, understate, or misstate the claim's scope, provenance, or
+evidentiary status, it's (a)/(b)/(c) — leave it.
+
+**Bias toward under-cutting, not over-cutting.** The cost of wrongly
+cutting a real scoping claim is misrepresenting the paper; the cost of
+leaving a genuine tic in is minor redundancy. When uncertain, leave it and
+report it as borderline — don't resolve the uncertainty silently in the
+edit itself.
+
+**A pass is not starting from scratch just because an earlier pass
+happened.** An earlier pass's remaining instances are not automatically
+"subtle tics the last pass missed" — some are deliberate keeps (real
+content the last pass specifically decided not to touch). Don't assume
+everything still present after a prior pass is fair game; check function,
+not just survival.
 
 ## Workflow
 
@@ -53,8 +81,15 @@ your final report rather than silently skipping it.
    nothing and confirms you haven't accidentally broken a file's encoding
    or left a stray markdown artifact) — actually: for prose-only edits,
    skip the build, it's not relevant; just re-read the diff.
-4. Report back: what was cut, how many instances of each rule fired, and
-   any instances you deliberately left alone because cutting them would
-   have changed the claim — name those explicitly so a human can decide.
+4. For each proposed cut, classify it against the (a)/(b)/(c)/(d) taxonomy
+   above before cutting, and state your confidence (HIGH/MEDIUM/LOW). If
+   dispatching this task to another model rather than doing it yourself,
+   require the same per-suggestion category + confidence in its output —
+   this makes categorization errors visible to the reviewer instead of
+   hidden behind plausible-sounding one-line reasons.
+5. Report back: what was cut, how many instances of each rule fired, and
+   a "borderline instances left alone" section — anything you considered
+   cutting but didn't, with a one-line reason, so a human can double-check
+   your judgment rather than only your actions.
 5. Do not commit or push. Leave the working tree dirty for the calling
    session to review, commit, and push itself.
