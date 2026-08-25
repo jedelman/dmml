@@ -1,12 +1,13 @@
 # Paper 2: DMML as a World Model for Text, and How It Differs from Video World Models
 
-**Status: outline only. No prose drafted. Not for citation yet. Every
-named ML system/paper below is a placeholder for real citation research
-— none of it should be cited, quoted, or claimed to behave a particular
-way until independently verified. This paper sits closer to the ML/
-cognitive-science "world models" literature than paper 1 does, and that
-literature moves fast — don't trust recalled specifics over a real,
-current check.**
+**Status: a full draft now exists at `DRAFT.md`, hand-written and
+grounded in the citation verification already recorded below (Ha &
+Schmidhuber, Genie 3, PoE-World and the object-oriented world-modeling
+line). Several claims remain explicitly marked pending pincites and a
+second citation pass (world-model term lineage before 2018, anything
+newer than Genie 3, reproducibility literature) — read `DRAFT.md` for
+the paper's actual current argument and exactly what's still open, not
+this outline. Not for citation yet either way.**
 
 ## Thesis
 
