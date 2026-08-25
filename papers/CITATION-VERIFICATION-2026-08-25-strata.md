@@ -75,7 +75,41 @@ Simondon's individuation converging on a real, locatable individual. The
 paper should present this as its own synthesis argued from the primary text,
 not attribute it to existing scholarship it can't currently cite directly.
 
-## 5. Existing literature applying strata/deterritorialization to software/version-control/content-addressing — 🚫 No hits found
+## 5. Strata are relative, not singular — every stratum serves as substratum for another (2026-08-25 follow-on)
+
+**Grade: ⚠️ substantive claim real and verified; "superstratum" is not D&G's term, corrected**
+
+D&G's actual claim (Massumi translation, full-text-verified): "A surface of
+stratification is a more compact plane of consistency lying between two
+layers." The layers "come at least in pairs, one serving as substratum for
+the other" (p. 40). Stated plainly: "Each stratum serves as the substratum
+for another stratum" (p. 73), with "no fixed order" to that relation — "one
+stratum can serve directly as a substratum for another... there is no
+lesser, no higher or lower, organization; the substratum is an integral
+part of the stratum" (p. 64). There is a second axis of relativity too: a
+single stratum internally decomposes into **epistrata** and **parastrata**
+— "these must themselves be thought of as strata" (pp. 50–52), "strata in
+their own right."
+
+**Correction**: "superstratum" does not appear anywhere in the Massumi
+translation (full-text search). D&G's own vocabulary for the relation a
+stratum stands in to what's layered on it is just "another stratum," not
+a coined counterpart term — any paper wanting a paired term should either
+use plain "the stratum above it" or flag a coinage explicitly as its own
+gloss, not D&G's.
+
+**Plane of consistency is not relativized this way**: "the strata are
+spin-offs, thickenings on a plane of consistency that is everywhere,
+always primary and always immanent" (pp. 69–70) — the plane is the fixed,
+non-relative ground the strata-to-strata relativity plays out against,
+never itself cast as anyone's substratum.
+
+**Implication for both papers**: neither paper should present DMML, or
+DMML's representational form, as "a stratum" simpliciter — the correct
+claim is that DMML instantiates a nested stack of strata, each serving as
+substratum for another, with no single one of them "the" stratum.
+
+## 6. Existing literature applying strata/deterritorialization to software/version-control/content-addressing — 🚫 No hits found
 
 Consistent with, and extending, the earlier rhizome-vs-git/blockchain
 finding: nothing surfaced connecting strata, deterritorialization/

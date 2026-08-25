@@ -241,6 +241,34 @@ so the "or, in principle, arbitrarily many" recombination claim isn't resting
 on the smallest case that could look coincidental — a real code change, not
 just a hedge in prose, matching this project's "try it first" discipline.
 
+## Correction: strata are relative, never singular (2026-08-25)
+
+Jason's direct catch: both papers had drifted into treating DMML (or its
+representational form) as "a stratum," full stop — exactly the kind of
+flattening ATP's own text explicitly warns against. Verified directly
+against the Massumi translation: "Each stratum serves as the substratum for
+another stratum" (p. 73), with "no fixed order" to that relation (p. 64) —
+strata come in a nested, relative stack, never as one freestanding layer.
+A single stratum also decomposes internally into **epistrata** and
+**parastrata** (pp. 50–52), "strata in their own right." One real
+terminological correction surfaced by checking rather than assuming: the
+author's own working term "superstratum" does not appear anywhere in the
+Massumi translation (confirmed by full-text search) — D&G's own word for
+the relation is just "another stratum," not a coined counterpart.
+
+Fixed in both papers: paper 1's Section 4 now states the relativity
+principle up front, with real page citations, and explicitly maps
+`pantheon.rs`'s own chain onto it — Helios/Selene/Eos's commits each serve
+as substratum for Nyx's synthesis, which itself serves as substratum for
+the council's declaration, a real, checkable substratum chain rather than
+a metaphorical "layer." Paper 2's Section 7 (and its abstract line) were
+retitled and reworded from "symbolic representation is itself a stratum"
+to "is a further stratum, not the only one" — DMML's representational form
+serves as substratum for the commit content built on top of it, and a
+continuous latent representation starts a different stack, not a
+less-coded single layer. Full findings in
+`CITATION-VERIFICATION-2026-08-25-strata.md`'s new §5.
+
 ## Standing methodological note for future sessions
 
 Three rounds of "propose a move → verify citations → adversarial
