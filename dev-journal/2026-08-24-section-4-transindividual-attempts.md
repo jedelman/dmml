@@ -269,6 +269,40 @@ continuous latent representation starts a different stack, not a
 less-coded single layer. Full findings in
 `CITATION-VERIFICATION-2026-08-25-strata.md`'s new §5.
 
+## Deep-reading four further ATP plateaus (2026-08-25)
+
+Per Jason's request to have primary-text engagement go deeper than the two
+plateaus already used, a research pass did a full read (real OCR text of
+the Massumi translation, page-cited) of "1440: The Smooth and the
+Striated," "7000 B.C.: Apparatus of Capture," "November 28, 1947: How Do
+You Make Yourself a Body without Organs?", and "1837: Of the Refrain," plus
+an independent second confirmation of the substratum-not-superstratum
+correction. Full findings: `CITATION-VERIFICATION-2026-08-25-atp-
+plateaus.md`. Three of the four were integrated:
+
+- **Smooth/striated**: added to the rhizome subsection as a positive
+  spatial description (Riemannian patchwork, no top/bottom) complementing
+  rhizome/tree's negative one (not arborescent).
+- **BwO plateau**: added real, direct D&G-native support for the paper's
+  existing relative/absolute deterritorialization hedge — "staying
+  stratified... is not the worst that can happen; the worst that can
+  happen is if you throw the strata into demented or suicidal collapse"
+  (p. 161) — the restraint is D&G's own recommended caution, not modesty
+  standing in for a bolder claim.
+- **Of the Refrain**: added to paper 2's Section 7 as a more precise fit
+  than "stratum" for a world's specifically self-declared predicate
+  vocabulary — territory-marked-by-refrain (repeated declaration) rather
+  than captured substance.
+
+One plateau's material was researched but deliberately NOT integrated:
+**Apparatus of Capture**'s "capture" vocabulary is a strong structural fit
+for DMML's referential-integrity check (comparison-point language between
+already-existing series) but D&G's capture is unambiguously extractive and
+hierarchy-producing (rent, profit, tax) — using "capture" for a non-
+extractive verification mechanism would need the extractive content
+explicitly stripped and flagged, and wasn't judged worth the overclaiming
+risk this round. Recorded here rather than silently dropped.
+
 ## Standing methodological note for future sessions
 
 Three rounds of "propose a move → verify citations → adversarial
