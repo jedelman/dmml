@@ -72,4 +72,4 @@ DMML is not offered as a psychoanalytic theory, a claim about human desire, or e
 
 ---
 
-*This paper responds to and revises "The Petition as Actualization," published under this project's own atproto identity. A stable, non-atproto archival copy should be produced before this paper is submitted anywhere, since a live network identity is not a durable citation target.*
+*This paper responds to and revises "The Petition as Actualization," published under this project's own atproto identity. A stable, non-atproto archival copy should be produced before this paper is submitted anywhere, since a live network identity is not a durable citation target. This paper's companion, "DMML as a World Model for Text, and How It Differs from Video World Models," extends Section 4's double-articulation reading one level up — from the commit graph's own content to DMML's discrete, symbolic representational commitment itself — in its own Section 7.*
