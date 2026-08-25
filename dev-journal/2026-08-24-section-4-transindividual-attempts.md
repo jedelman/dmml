@@ -325,6 +325,55 @@ triumphalist hedge; a refrain's inherent openness to redrawing, framed as
 fitting DMML's real extensibility rather than complicating the claim).
 Full review: `ADVERSARIAL-REVIEW-2026-08-25-plateau-by-plateau.md`.
 
+## Round six: ox proposes, Dev Lead reviews — Apparatus of Capture reconsidered (2026-08-25)
+
+New dispatch pattern per Jason's direction: instead of Dev Lead drafting and
+ox-alpha reviewing, ox-alpha read the real Apparatus of Capture quotes and
+proposed four concrete draft passages; Dev Lead evaluated each on its own
+merits rather than applying them wholesale. Jason's own steer going in --
+"AOC is useful for our argument and may modify it" -- was taken seriously:
+the question was not whether to add a disclaimer, but whether real content
+should change.
+
+**Accepted, in modified form:**
+- **Option 3** (upgrade the one-sentence disclosure into an analytic
+  distinction): the stratic/apparatus senses of "capture" are now
+  distinguished by a real criterion from the primary text itself --
+  extraction is constitutive of the apparatus sense's own definition
+  (p. 446–447) and absent from the stratic one, using the surplus-value-
+  of-code-vs-flow passage (p. 451) to show both extractive poles share the
+  feature the stratic sense lacks. This turns a disclaimer into something
+  the rest of the section can actually lean on.
+- **Option 4** (extend the falsifiability paragraph): a real, checkable
+  failure condition, named with the apparatus's own vocabulary -- if a
+  future substrate started gating commit admission on conformance to a
+  canonical layer, the council's move would become the state's overcode in
+  earnest. Explicitly flagged as counterfactual against what written-
+  world's actual admission gate checks (genuineness, not conformance),
+  matching the section's existing falsifiability paragraph's own register.
+
+**Rejected: Option 1** (developing `canonicalOrigin` as "the structure of
+capture with the extraction stripped"), despite ox's own preference for it.
+Dev Lead's reasoning: D&G's own definition (p. 446–447) makes extraction
+*constitutive* of capture, not incidental to it -- stripping it, per the
+text's own terms, doesn't leave a thinner version of capture, it leaves
+something that isn't capture at all. What actually remains after stripping
+("an equivalence mechanism inserted between previously noncomparable
+series, producing a new aggregate-level fact") is already fully covered by
+the section's own double-articulation material -- adding "capture"
+vocabulary on top would be exactly the failure mode round four's review
+found and fixed once already (a D&G term relabeling something the paper
+already argues, without adding distinguishing content), just recurring
+under a new name. Ox's own risk-list for this option effectively conceded
+the point ("the phrase is a pun wearing a citation... the paper should be
+willing to lose it").
+
+**Rejected: Option 2** (a standalone "no taxation" contrastive paragraph):
+ox itself ranked this "most expendable," correctly -- its content (DMML's
+grammar has no extraction/entitlement primitive) is already covered, more
+precisely, by Options 3 and 4 together once those were adopted. Adding it
+separately would be redundant.
+
 ## Standing methodological note for future sessions
 
 Three rounds of "propose a move → verify citations → adversarial
