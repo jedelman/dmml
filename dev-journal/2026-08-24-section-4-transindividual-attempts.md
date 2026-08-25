@@ -145,6 +145,65 @@ corrected (main thesis 1964, complementary part posthumous 1989); the git
 submodule overclaim was fixed; the D&G-radicalization thesis now opens the
 section as the substantive claim rather than arriving as a fallback.
 
+## Attempt 5: strata/deterritorialization replaces Simondon-individuation as the primary register; a real pantheon simulation grounds it (2026-08-25)
+
+Jason's direct feedback on the fixed multiplicity/haecceity version: still leaning
+too heavily on Simondon and individuation, when the actual target is D&G's own
+apparatus — differentiation and deterritorialization/reterritorialization on,
+against, and off the plane of consistency through strata — and DMML should be
+read as producing a novel *auto-recombinant* form of the rhizome. Also asked for
+concrete simulations (e.g. a pantheon) rather than prose claims alone.
+
+A fresh citation-verification pass read the actual Massumi-translation text of
+"10,000 B.C.: The Geology of Morals" and the "Rhizome" introduction directly
+(not secondary paraphrase), confirming: strata as double articulation
+(content/expression is Hjelmslev's vocabulary, not D&G's own coinage);
+deterritorialization/reterritorialization as a coupled pair, with an
+absolute/relative distinction turning on *nature*, not speed; the plane of
+consistency paired against "strata/Ecumenon" specifically in this chapter, not
+"plane of organization" (that belongs to a different plateau — a real
+correction to an assumption in the initial draft of this reframe). Full report:
+`papers/CITATION-VERIFICATION-2026-08-25-strata.md`.
+
+Building the concrete simulation surfaced a real, previously-uncaught error:
+attempt 4's rebuild (above) claimed DMML's grammar has a declared `mergeable`/
+`arbitrated` consume-kind distinction. That distinction is real but is a
+*substrate-layer design stub* for a not-yet-built iroh backend
+(`dmml-runtime/src/substrate.rs`'s own doc comment says so explicitly) — it has
+never existed as a grammar primitive, and no adversarial review round had
+caught this because none had been asked to check that specific claim against
+the actual crate. `dmml/examples/pantheon.rs` was written specifically to
+avoid relying on unbuilt primitives: three independently-authored commits
+(Helios, Selene asserting rival, uncoordinated claims about the same fact),
+one recombining commit (Nyx, consuming both via real `FactRef`s and producing
+a genuine synthesis neither input contained), and one stratifying commit (a
+council declaring a `canonicalOrigin` on top of, not instead of, the
+underlying multiplicity). Four checks run and assert on real interpreter
+output: (1) the *current* materialized view is honest last-write-wins, not
+coexistence — stated plainly rather than papered over; (2) the log itself
+preserves both original claims, independently re-materializable and citable
+forever; (3) Nyx's multi-fact `consumes` really does fold two divergent prior
+facts into a new production; (4) the council's declaration is a separate,
+additive predicate that doesn't touch the underlying `origin` facts. Building
+this also surfaced a second real error: Section 1's "referential integrity"
+framing overstated what the portable `dmml` crate itself guarantees — a
+dangling `FactRef` is a documented, formally-certified no-op
+(`fact_retraction_fails_open`), not a rejected commit; the actual admission-
+time check the paper had in mind is written-world's atproto-specific,
+substrate-layer gate (issue #53), a different layer entirely. Both errors
+fixed in the same pass, not just the one the user's feedback pointed at.
+
+Section 4 rebuilt around the verified strata/deterritorialization apparatus,
+Simondon demoted to a brief opening/closing gesture (real, but the wrong
+primary vocabulary), and the "auto-recombinant rhizome" claim given a precise,
+checkable referent: a commit's `consumes`/`produces` pair is literally D&G's
+own double articulation, applied recursively to the graph's own accumulated
+multiplicity as an ordinary act of the grammar, demonstrated by Nyx's commit
+rather than asserted about DMML in the abstract. An honest limit was kept
+rather than oversold: nothing in this round claims DMML exhibits *absolute*
+deterritorialization in D&G's stronger sense — only the more modest, verified,
+relative kind, checkable and shown.
+
 ## Standing methodological note for future sessions
 
 Three rounds of "propose a move → verify citations → adversarial
