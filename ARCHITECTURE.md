@@ -22,20 +22,32 @@ ontology" actually depends on.
   where a `Commit` actually lands and where written-world's own #53
   fix (checking a `consumes` reference's `cid` against every `foreignCid`
   fact ever recorded for that `uri` — existence, not currency) lives.
-  It also owns `substrate::Substrate`, the trait boundary a concrete
-  backend has to satisfy — currently a named stub, not a finished
-  design (see "Open design work" below).
+  It also owns `substrate::{Substrate, CasSubstrate, AppendSubstrate}`
+  — real trait signatures now, built (not just designed) 2026-08-26:
+  `Substrate` carries identity/sovereignty-root/reads (including
+  `resolve_fact`, the trait-level equivalent of `getResolved`);
+  `CasSubstrate` and `AppendSubstrate` each carry exactly the write
+  contract its own backend can honor, deliberately not unified into one
+  shape (see `substrate.rs`'s own module doc comment for the full
+  reasoning). No concrete backend implements either yet — see
+  `dmml-substrate-kit` below for the one that does, in-memory only.
 
 - **`dmml-substrate-kit`** — genuinely shared, substrate-*specific*
   tooling that more than one concrete adapter would otherwise
-  duplicate: today, `atproto_cid` (the extracted `CIDv1(dag-cbor,
-  sha2-256)` strategy, byte-compatible with a real atproto PDS for
-  predicates, not yet fully for subjects/objects — see that module's
-  own doc comment for the precise, still-open gap). An `iroh_cid`
-  module (wrapping iroh-blobs' raw BLAKE3 as a CIDv1 under the
-  registered BLAKE3 multicodec) and an in-memory mock `Substrate` for
-  testing `dmml-runtime` with zero network dependencies are named next
-  steps, not yet built.
+  duplicate: `atproto_cid` (the extracted `CIDv1(dag-cbor, sha2-256)`
+  strategy, byte-compatible with a real atproto PDS for predicates, not
+  yet fully for subjects/objects — see that module's own doc comment
+  for the precise, still-open gap), and now `mock::MockAppendSubstrate`
+  — a real, tested, zero-network `AppendSubstrate` implementation
+  (`dmml-substrate-kit/src/mock.rs`), proving the trait split is
+  actually implementable, not just plausible on paper. Its tests
+  exercise the load-bearing claims directly: a bare `produces` never
+  retracts anything; two commits consuming the identical base is the
+  real, detectable conflict signature (`resolve_fact` reports both);
+  writes are genuinely author-partitioned. An `iroh_cid` module
+  (wrapping iroh-blobs' raw BLAKE3 as a CIDv1 under the registered
+  BLAKE3 multicodec) and a `CasSubstrate` mock (standing in for
+  atproto) remain named next steps, not yet built.
 
 ## What's deliberately NOT in this repo
 
@@ -336,13 +348,21 @@ else already uses.
 
 ## Open design work (named, not designed here)
 
-- **`Substrate`'s real method signatures**, now split honestly rather
-  than unified: the atproto side keeps its real, already-proven
-  compare-and-swap (`swapCommit`, written-world's `server/src/atproto/
-  commit_write.rs`); the iroh side needs **no CAS at all** (writes are
-  author-partitioned, per above) but does need the concurrent-base
-  conflict check above to run as an application-level step before a
-  checkpoint commit goes out to atproto.
+- ~~`Substrate`'s real method signatures~~ **Built, 2026-08-26**
+  (`dmml-runtime/src/substrate.rs`, `dmml-substrate-kit/src/mock.rs`).
+  Split honestly rather than unified: `CasSubstrate` for atproto's real,
+  already-proven compare-and-swap; `AppendSubstrate` for iroh's
+  author-partitioned writes, which need no CAS at all but push the
+  concurrent-base conflict check onto the caller as a required
+  pre-write step — proven implementable, not just designed, by
+  `MockAppendSubstrate`'s own tests (a bare `produces` never retracts;
+  two commits consuming the same base is the real, detectable conflict
+  signature; writes are genuinely author-partitioned). What's still
+  open: a concrete `CasSubstrate` implementation (real, against a live
+  PDS — the mock built here only covers the `AppendSubstrate` shape),
+  and wiring an application's actual checkpoint loop (build a commit →
+  check `resolve_fact` → append or dispute → eventually check-and-write
+  to a `CasSubstrate`) on top of these traits.
 - **The conflict check needs no new primitive — see "The conflict check
   reuses `getResolved`, not a new query" below.** What remains open is
   narrower than a query design: whether `getResolved`'s Jetstream-driven

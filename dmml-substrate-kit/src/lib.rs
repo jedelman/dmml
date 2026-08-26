@@ -15,3 +15,4 @@
 //! built here.
 
 pub mod atproto_cid;
+pub mod mock;

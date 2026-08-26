@@ -5,8 +5,13 @@ edition.workspace = true
 
 [dependencies]
 dmml = { path = "../dmml" }
+dmml-runtime = { path = "../dmml-runtime" }
 serde = { version = "1", features = ["derive"] }
 serde_ipld_dagcbor = "0.7"
 cid = "0.11"
 multihash = "0.19"
 sha2 = "0.10"
+oxigraph = { version = "0.5.9", default-features = false }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt", "macros"] }

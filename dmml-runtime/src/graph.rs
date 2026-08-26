@@ -321,7 +321,11 @@ pub struct Commit {
 /// line-prefix stripping or dot-repair happens here. Empty/whitespace-only
 /// text parses to an empty vec, matching the lexicon's "empty produces = a
 /// pure retraction" case.
-fn parse_nquads(text: &str) -> Result<Vec<Quad>, GraphError> {
+/// Public so a `Substrate` implementation (`dmml-substrate-kit`'s mock,
+/// or a real adapter) can parse a stored `Commit.produces` string the
+/// same way `apply_commit` does, instead of duplicating this logic --
+/// needed to implement `Substrate::assertions`.
+pub fn parse_nquads(text: &str) -> Result<Vec<Quad>, GraphError> {
     if text.trim().is_empty() {
         return Ok(Vec::new());
     }
