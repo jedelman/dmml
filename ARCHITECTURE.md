@@ -57,31 +57,104 @@ Concrete atproto or iroh network wiring. Two real, verified reasons:
    `server/src/atproto/` for the atproto path; a hypothetical iroh-first
    app owning its own adapter) is the same discipline, one level up.
 
+## Live deployment shape: atproto cold, iroh hot (decided 2026-08-26)
+
+The client/substrate split is decided, not open: **browser and the
+Cloudflare Worker are atproto-only; CLI and Android are the only
+clients that ever touch iroh.** This resolves the platform wall above
+by construction rather than by workaround — iroh never needs to compile
+to `wasm32` at all, because nothing that runs in a browser or a Worker
+ever links it. The Worker's current live production deploy (written-
+world's `written-world`/`written-world-dev`) doesn't change shape.
+
+CLI and Android are **steering devices, not an authority** — they hold
+no canonical state of their own. Each also reads atproto directly (not
+just iroh), so a hot-path client is continuously rebasing against the
+real cold record; the only time it accumulates meaningful divergence
+from atproto is genuine extended offline work, not ordinary operation.
+This, not a sync-layer limitation, is what makes checkpoints small and
+frequent the right default rather than rare and batched.
+
+**The sync layer needs no new design.** iroh-docs keys entries by
+`(namespace, author, key)`, so CLI and Android writing concurrently
+never collide at the storage/sync layer at all — each writer has its
+own partition, and iroh's own range-based set-reconciliation protocol
+merges those partitions across peers with no compare-and-swap required
+anywhere in that path. The earlier framing of this as an unsolved
+distributed-systems problem was importing the wrong model (one
+CAS-guarded mutable head, atproto's shape) onto a grammar that never
+needed one — DMML has no primitive for editing a fact in place at all
+(`README.md`; Section 1 of `papers/desiring-production-ontology/
+DRAFT.md`), so "concurrent writers" was never actually a storage
+problem here.
+
+**The only genuinely destructive operation in the grammar is a
+commit's own `consumes`.** A bare `produces` — no `consumes` — never
+overwrites or contests anything; it only ever adds a new, independently
+citable data point, exactly what `pantheon.rs`'s Helios/Selene/Eos
+already demonstrate (three uncoordinated `origin` assertions for the
+same node coexist with zero conflict, Checks 1-2). Retraction only
+happens when a commit's `consumes` cites a specific prior `(subject,
+predicate)` and gets accepted — that citation is what does the
+retracting (`fact_retraction_fails_open`'s own counterpart case: when
+the citation genuinely resolves, the key really is retracted). So the
+one and only shape a real merge conflict can take is: **two commits,
+each unaware of the other, each `consumes`-citing the identical prior
+`(uri, cid, subject, predicate)` as their base, each about to retract
+it.** Nothing else in the grammar needs a conflict check — this is not
+a simplifying assumption, it follows from `consumes` being the
+grammar's only destructive primitive.
+
+**Detection needs no new field.** A `FactRef` already carries `{commit:
+StrongRef, subject, predicate, object}` — the exact prior commit a new
+fact was built on top of, i.e. already a three-way-merge base pointer.
+Two commits from different authors citing the *same* base for the same
+key is the entire, checkable signature of true concurrency; nothing
+resembling a vector clock needs inventing.
+
+**Resolution is `disputes`, not arbitration.** A detected concurrent-
+base conflict is not blocked and does not need a winner picked by
+policy — it's surfaced as a `disputes` commit, the same pattern already
+proven this session (`benjamin_rival_reading.rs`'s dispute of a rival
+claim; `autoregressive_critique.rs`'s cycles 4 and 6, which
+spontaneously recombined on a *prior dispute* rather than a first-order
+claim, unprompted). Both retracting commits stay real and independently
+citable; `current_value` still resolves to *something* via its existing
+last-write-wins-by-log-order rule, same as it already does for
+`pantheon.rs`'s un-consumed rival asserts — the dispute is what makes
+the disagreement visible and citable, not what blocks progress. This
+replaces the harder question the project was previously carrying (a
+per-consume-kind `mergeable`/`arbitrated` policy, and an `isCanonicalLeaf()`
+primitive to pick a winner) with something smaller: fork *detection* is
+still real work, but fork *resolution*-by-picking-a-winner turns out not
+to be needed at all — disputing is a safe, uniform default for every
+predicate. A future per-predicate auto-merge rule (e.g. a counter that
+sums instead of disputing) remains a possible optimization on top of
+this, not a v1 requirement.
+
 ## Open design work (named, not designed here)
 
-- **`Substrate`'s real method signatures.** The write-with-admission-
-  gate contract, informed by two independently-verified real findings:
-  atproto's `swapCommit` gives a genuine compare-and-swap (written-
-  world's `server/src/atproto/commit_write.rs`, verified live against a
-  real PDS); iroh-docs gives none (`spikes/iroh-chain-integrity/
-  gated_chain_append.rs`) — the gate has to be application code there,
-  and real multi-writer fork resolution needs a per-consume-kind
-  `mergeable`/`arbitrated` policy, not one uniform rule
-  (`dev-journal/2026-08-24-multi-tenant-network-dmml-iroh-substrate.md`).
-- **`isCanonicalLeaf()`** — the real primitive `mergeable`/`arbitrated`
-  resolution needs, replacing raw existence-checking once concurrent
-  forks stop being rare (they currently aren't, in written-world,
-  because petition resolution is serialized through one Durable
-  Object). iroh-docs gives real, free, nondestructive multi-writer
-  storage (entries are keyed by `(namespace, author, key)`, so
-  different authors never collide) but does **not** give leaf-selection
-  for free — `Query::single_latest_per_key()` is a naive raw-timestamp
-  read projection, not a semantically-aware fork resolution, and using
-  it as `isCanonicalLeaf()` would be a regression
-  (`dev-journal/2026-08-24-iroh-docs-per-author-conflict-model.md`).
+- **`Substrate`'s real method signatures**, now split honestly rather
+  than unified: the atproto side keeps its real, already-proven
+  compare-and-swap (`swapCommit`, written-world's `server/src/atproto/
+  commit_write.rs`); the iroh side needs **no CAS at all** (writes are
+  author-partitioned, per above) but does need the concurrent-base
+  conflict check above to run as an application-level step before a
+  checkpoint commit goes out to atproto.
+- **The conflict check's actual implementation.** Detecting "did
+  someone else's commit already retract the `(subject, predicate)` key
+  my pending commit consumes, since I last saw it" requires the
+  checkpointing client to query atproto's retraction history for that
+  key at checkpoint time — not yet built, and the exact query shape
+  (a single `(uri, cid, subject, predicate)` existence check, per
+  written-world's #53 precedent, or something broader) is real,
+  scoped, comparatively small design work now.
 - **Cross-substrate identity.** A sovereignty root has to be
   represented across an atproto DID and an iroh `NamespaceSecret`
-  without either shape leaking into the trait.
+  without either shape leaking into the trait — still open, and now
+  more concrete: a CLI/Android checkpoint commit needs to be written
+  under the same DID its own atproto reads already use, so the binding
+  has to be real, not just colocated on one device.
 - **Cross-DID references stay quotation, not verification** — a
   foreign-node reference materializes as a first-person, timestamped
   `Percept` (the same primitive written-world's sense-machines already
@@ -94,12 +167,13 @@ Concrete atproto or iroh network wiring. Two real, verified reasons:
 
 Not yet real (the trait itself isn't finished — see above), but the
 shape it needs to satisfy, from the two adapters already
-independently proven out:
+independently proven out and the live-deployment shape above:
 
 - A write path that either provides a real compare-and-swap (atproto's
-  `swapCommit`) or, if the underlying store doesn't (iroh-docs doesn't),
-  implements the admission gate as application code and declares a
-  fork-resolution policy (`mergeable` or `arbitrated`) per consume-kind.
+  `swapCommit`) or, if the underlying store doesn't need one because
+  writes are already author-partitioned (iroh-docs), runs the
+  concurrent-base conflict check as an application-level step before
+  any commit that would retract a shared key leaves the local node.
 - A CID/identity representation `dmml-runtime`'s `apply_commit` can
   treat as an opaque, comparable string — whatever the underlying hash
   scheme actually is, wrapped to a common shape (a `dmml-substrate-kit`
