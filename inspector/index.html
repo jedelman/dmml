@@ -1,0 +1,643 @@
+<meta charset="utf-8" />
+<title>DMML Inspector</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg: #14120f;
+    --surface: #1c1815;
+    --surface-2: #241f1a;
+    --surface-3: #2c2620;
+    --border: #362f26;
+    --border-soft: #2a2420;
+    --text: #ede3d0;
+    --text-dim: #a89c87;
+    --text-faint: #766b5b;
+    --accent: #d08a44;
+    --accent-strong: #e6a55e;
+    --accent-ink: #2a1a08;
+    --cite: #5fa8a3;
+    --cite-strong: #7fc4bf;
+    --external: #b25c4a;
+    --live: #7fb069;
+    --live-strong: #9bce82;
+    --focus: #e6a55e;
+    --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f4ede0; --surface: #ffffff; --surface-2: #f7f1e6; --surface-3: #efe6d5;
+      --border: #ddd0b8; --border-soft: #e6dcc7;
+      --text: #2c2318; --text-dim: #6b5f4c; --text-faint: #948870;
+      --accent: #b06a2a; --accent-strong: #8f5420; --accent-ink: #fff3e2;
+      --cite: #2f7d78; --cite-strong: #1f5f5b; --external: #a44530;
+      --live: #4f7a3a; --live-strong: #3c5e2c;
+      --focus: #8f5420; --shadow: 0 10px 24px -14px rgba(60, 45, 20, 0.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4ede0; --surface: #ffffff; --surface-2: #f7f1e6; --surface-3: #efe6d5;
+    --border: #ddd0b8; --border-soft: #e6dcc7;
+    --text: #2c2318; --text-dim: #6b5f4c; --text-faint: #948870;
+    --accent: #b06a2a; --accent-strong: #8f5420; --accent-ink: #fff3e2;
+    --cite: #2f7d78; --cite-strong: #1f5f5b; --external: #a44530;
+    --live: #4f7a3a; --live-strong: #3c5e2c;
+    --focus: #8f5420; --shadow: 0 10px 24px -14px rgba(60, 45, 20, 0.35);
+  }
+  :root[data-theme="dark"] {
+    --bg: #14120f; --surface: #1c1815; --surface-2: #241f1a; --surface-3: #2c2620;
+    --border: #362f26; --border-soft: #2a2420;
+    --text: #ede3d0; --text-dim: #a89c87; --text-faint: #766b5b;
+    --accent: #d08a44; --accent-strong: #e6a55e; --accent-ink: #2a1a08;
+    --cite: #5fa8a3; --cite-strong: #7fc4bf; --external: #b25c4a;
+    --live: #7fb069; --live-strong: #9bce82;
+    --focus: #e6a55e; --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+  a { color: inherit; }
+  button { font: inherit; }
+
+  .app { display: flex; flex-direction: column; height: 100vh; min-height: 640px; }
+
+  header.top {
+    display: flex; align-items: baseline; gap: 1.25rem;
+    padding: 0.9rem 1.5rem; border-bottom: 1px solid var(--border);
+    background: var(--surface); flex-wrap: wrap; row-gap: 0.5rem;
+  }
+  .wordmark {
+    font-family: "Fraunces", Georgia, serif; font-weight: 600;
+    font-optical-sizing: auto; font-size: 1.35rem; letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .wordmark .dish { color: var(--cite-strong); }
+  .tagline { font-size: 0.8rem; color: var(--text-faint); font-style: italic; font-family: "Fraunces", Georgia, serif; }
+
+  .identity-form {
+    margin-left: auto; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+  }
+  .identity-form input {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.82rem;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 0.5rem 0.7rem;
+    width: min(320px, 46vw);
+  }
+  .identity-form input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  .identity-form button {
+    background: var(--accent); color: var(--accent-ink); border: none;
+    border-radius: 8px; padding: 0.5rem 0.9rem; font-weight: 500; font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .identity-form button:hover { background: var(--accent-strong); }
+  .identity-form button:disabled { opacity: 0.55; cursor: default; }
+
+  .status-strip {
+    display: flex; gap: 1.25rem; padding: 0.55rem 1.5rem; background: var(--surface-2);
+    border-bottom: 1px solid var(--border-soft); font-family: "IBM Plex Mono", monospace;
+    font-size: 0.76rem; color: var(--text-dim); flex-wrap: wrap; align-items: center;
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.7rem; font-weight: 500;
+  }
+  .pill.live { background: color-mix(in srgb, var(--live) 20%, transparent); color: var(--live-strong); }
+  .pill.error { background: color-mix(in srgb, var(--external) 20%, transparent); color: var(--external); }
+  .pill.idle { background: var(--surface-3); color: var(--text-faint); }
+  .pill .dot { width: 0.4rem; height: 0.4rem; border-radius: 999px; background: currentColor; }
+  .status-strip .sep { color: var(--text-faint); }
+  .status-strip a { color: var(--cite-strong); text-decoration: none; }
+  .status-strip a:hover { text-decoration: underline; }
+
+  main.split {
+    flex: 1; display: grid; grid-template-columns: 300px 1fr; min-height: 0;
+  }
+  @media (max-width: 860px) {
+    main.split { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  }
+
+  aside.sidebar {
+    border-right: 1px solid var(--border); background: var(--surface);
+    overflow-y: auto; display: flex; flex-direction: column;
+  }
+  @media (max-width: 860px) { aside.sidebar { border-right: none; border-bottom: 1px solid var(--border); max-height: 40vh; } }
+
+  .collection-picker { padding: 0.9rem 1rem 0.6rem; border-bottom: 1px solid var(--border-soft); }
+  .collection-picker label {
+    display: block; font-family: "IBM Plex Mono", monospace; font-size: 0.66rem;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); margin-bottom: 0.4rem;
+  }
+  .collection-picker select {
+    width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 0.45rem 0.6rem;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.78rem;
+  }
+
+  ul.record-list { list-style: none; margin: 0; padding: 0.4rem; flex: 1; overflow-y: auto; }
+  .record-item {
+    display: block; width: 100%; text-align: left; background: none; border: 1px solid transparent;
+    border-radius: 8px; padding: 0.55rem 0.7rem; cursor: pointer; margin-bottom: 0.2rem;
+  }
+  .record-item:hover { background: var(--surface-2); }
+  .record-item.selected { background: var(--surface-3); border-color: var(--accent); }
+  .record-item .rkey { font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--accent-strong); display: block; }
+  .record-item .verb { font-size: 0.76rem; color: var(--text-dim); margin-top: 0.1rem; }
+  .record-item .when { font-family: "IBM Plex Mono", monospace; font-size: 0.66rem; color: var(--text-faint); margin-top: 0.15rem; }
+
+  .load-more {
+    margin: 0.4rem; padding: 0.5rem; border-radius: 8px; border: 1px dashed var(--border);
+    background: none; color: var(--text-dim); font-size: 0.78rem; cursor: pointer;
+  }
+  .load-more:hover { background: var(--surface-2); }
+
+  .empty-note {
+    padding: 1.2rem 1rem; color: var(--text-faint); font-style: italic;
+    font-family: "Fraunces", Georgia, serif; font-size: 0.92rem; line-height: 1.6;
+  }
+
+  main.detail { overflow-y: auto; padding: 1.3rem 1.6rem 3rem; }
+  .detail-empty {
+    height: 100%; display: grid; place-items: center; color: var(--text-faint);
+    font-family: "Fraunces", Georgia, serif; font-style: italic; font-size: 1.05rem; text-align: center;
+    padding: 2rem;
+  }
+
+  .detail-eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-faint); margin-bottom: 0.3rem; }
+  .detail-title { font-family: "Fraunces", Georgia, serif; font-size: 1.4rem; font-weight: 600; text-wrap: balance; margin: 0 0 0.6rem; word-break: break-word; }
+  .detail-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--text-dim); margin-bottom: 1.2rem; }
+
+  .tabs { display: flex; gap: 0.4rem; margin-bottom: 0.9rem; }
+  .tab-btn {
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text-dim);
+    border-radius: 999px; padding: 0.35rem 0.8rem; font-size: 0.78rem; cursor: pointer;
+  }
+  .tab-btn[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 500; }
+
+  .field-block { background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 10px; padding: 0.9rem 1rem; margin-bottom: 1rem; }
+  .field-block h4 { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); margin: 0 0 0.6rem; }
+
+  .ref-link {
+    display: inline-flex; align-items: center; gap: 0.3rem; font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem; color: var(--cite-strong); background: color-mix(in srgb, var(--cite) 12%, transparent);
+    border-radius: 6px; padding: 0.2rem 0.5rem; text-decoration: none; margin: 0.15rem 0.3rem 0.15rem 0;
+    cursor: pointer; border: none;
+  }
+  .ref-link:hover { background: color-mix(in srgb, var(--cite) 22%, transparent); }
+  .ref-link.external { color: var(--external); background: color-mix(in srgb, var(--external) 12%, transparent); }
+
+  table.triples { width: 100%; border-collapse: collapse; font-family: "IBM Plex Mono", monospace; font-size: 0.76rem; }
+  table.triples th { text-align: left; color: var(--text-faint); font-weight: 500; padding: 0.3rem 0.6rem; border-bottom: 1px solid var(--border-soft); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.66rem; }
+  table.triples td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border-soft); vertical-align: top; word-break: break-word; }
+  .triples-wrap { overflow-x: auto; }
+
+  pre.raw-json {
+    background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 10px;
+    padding: 1rem; font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; line-height: 1.5;
+    overflow-x: auto; white-space: pre-wrap; word-break: break-word; margin: 0;
+  }
+
+  .conn-panel { max-width: 620px; }
+  .conn-row { display: flex; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-soft); font-size: 0.86rem; }
+  .conn-row:last-child { border-bottom: none; }
+  .conn-row .k { width: 130px; flex: none; color: var(--text-faint); font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; padding-top: 0.1rem; }
+  .conn-row .v { font-family: "IBM Plex Mono", monospace; font-size: 0.82rem; word-break: break-all; }
+  .conn-row .v a { color: var(--cite-strong); }
+
+  .error-box {
+    background: color-mix(in srgb, var(--external) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--external) 40%, transparent);
+    color: var(--external); border-radius: 10px; padding: 0.8rem 1rem; font-size: 0.86rem; margin-bottom: 1rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app" id="app">
+  <header class="top">
+    <div>
+      <div class="wordmark"><span class="dish">&#9679;</span> DMML Inspector</div>
+      <div class="tagline">resolve an identity, read its real commit log</div>
+    </div>
+    <form class="identity-form" id="identityForm">
+      <input id="identityInput" type="text" placeholder="handle or did:plc:..." autocomplete="off" spellcheck="false" />
+      <button type="submit" id="resolveBtn">Resolve</button>
+    </form>
+  </header>
+
+  <div class="status-strip" id="statusStrip">
+    <span class="pill idle" id="statusPill"><span class="dot"></span>not connected</span>
+  </div>
+
+  <main class="split">
+    <aside class="sidebar" id="sidebar">
+      <div class="empty-note">Resolve a handle or DID above to browse its repo's real collections and records.</div>
+    </aside>
+    <main class="detail" id="detail">
+      <div class="detail-empty">Nothing selected yet.<br />Pick a record from the left once a repo resolves.</div>
+    </main>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const els = {
+    form: document.getElementById("identityForm"),
+    input: document.getElementById("identityInput"),
+    resolveBtn: document.getElementById("resolveBtn"),
+    statusStrip: document.getElementById("statusStrip"),
+    sidebar: document.getElementById("sidebar"),
+    detail: document.getElementById("detail"),
+  };
+
+  const state = {
+    did: null,
+    handle: null,
+    pds: null,
+    collections: [],
+    collection: null,
+    records: [],
+    cursor: null,
+    selectedUri: null,
+    detailTab: "parsed",
+  };
+
+  const DEFAULT_TARGET = "claude.jason-edelman.org";
+  const DEFAULT_COLLECTION = "org.jason-edelman.writtenworld.commit";
+
+  try {
+    const saved = localStorage.getItem("dmml-inspector-last");
+    els.input.value = saved || DEFAULT_TARGET;
+  } catch (e) {
+    els.input.value = DEFAULT_TARGET;
+  }
+
+  function setStatus(kind, html) {
+    els.statusStrip.innerHTML = html;
+  }
+
+  function pill(kind, text) {
+    return `<span class="pill ${kind}"><span class="dot"></span>${text}</span>`;
+  }
+
+  function isDid(s) {
+    return /^did:[a-z]+:/.test(s);
+  }
+
+  async function resolveDidDoc(did) {
+    if (did.startsWith("did:plc:")) {
+      // NOT encodeURIComponent(did): plc.directory's real API expects the
+      // colons literal in the path (confirmed directly against the live
+      // service) -- encoding them to %3A produces a 404 there.
+      const res = await fetch(`https://plc.directory/${did}`);
+      if (!res.ok) throw new Error(`plc.directory lookup failed (${res.status})`);
+      return res.json();
+    }
+    if (did.startsWith("did:web:")) {
+      const domain = did.slice("did:web:".length).replace(/:/g, "/");
+      const res = await fetch(`https://${domain}/.well-known/did.json`);
+      if (!res.ok) throw new Error(`did:web document fetch failed (${res.status})`);
+      return res.json();
+    }
+    throw new Error(`unsupported DID method: ${did}`);
+  }
+
+  function pdsFromDidDoc(doc) {
+    const svc = (doc.service || []).find(
+      (s) => s.id === "#atproto_pds" || s.type === "AtprotoPersonalDataServer"
+    );
+    if (!svc) throw new Error("DID document has no #atproto_pds service entry");
+    return svc.serviceEndpoint;
+  }
+
+  async function resolveIdentity(raw) {
+    const input = raw.trim().replace(/^@/, "");
+    let did, didDoc;
+    if (isDid(input)) {
+      did = input;
+      didDoc = await resolveDidDoc(did);
+    } else {
+      const res = await fetch(`https://${input}/.well-known/atproto-did`);
+      if (!res.ok) throw new Error(`handle resolution failed for ${input} (${res.status}) -- DNS-TXT resolution isn't reachable from a browser, only the HTTPS well-known method is tried here`);
+      did = (await res.text()).trim();
+      didDoc = await resolveDidDoc(did);
+    }
+    const pds = pdsFromDidDoc(didDoc);
+    const alsoKnownAs = didDoc.alsoKnownAs || [];
+    const handle = alsoKnownAs.find((a) => a.startsWith("at://"))?.slice(5) || null;
+    return { did, didDoc, pds, handle };
+  }
+
+  async function xrpc(pds, nsid, params) {
+    const url = new URL(`${pds}/xrpc/${nsid}`);
+    for (const [k, v] of Object.entries(params || {})) {
+      if (v !== undefined && v !== null) url.searchParams.set(k, v);
+    }
+    const res = await fetch(url.toString());
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(body.message || body.error || `${nsid} failed (${res.status})`);
+    }
+    return body;
+  }
+
+  async function describeRepo(pds, did) {
+    return xrpc(pds, "com.atproto.repo.describeRepo", { repo: did });
+  }
+
+  async function listRecords(pds, did, collection, cursor) {
+    return xrpc(pds, "com.atproto.repo.listRecords", {
+      repo: did,
+      collection,
+      limit: 50,
+      cursor,
+    });
+  }
+
+  // --- N-Quads: a minimal, line-oriented parser for a `produces` string.
+  // Real DMML `produces` content is always well-formed N-Quads straight
+  // off the wire (dmml-runtime's own `parse_nquads` assumes the same) --
+  // this parser only needs to split each dot-terminated line into
+  // subject/predicate/object, not handle arbitrary Turtle sugar.
+  function parseNQuadsLines(text) {
+    if (!text || !text.trim()) return [];
+    const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+    const triples = [];
+    for (const line of lines) {
+      const body = line.endsWith(".") ? line.slice(0, -1).trim() : line;
+      const m = body.match(/^(\S+)\s+(\S+)\s+(.+)$/);
+      if (!m) continue;
+      triples.push({ subject: m[1], predicate: m[2], object: m[3].trim() });
+    }
+    return triples;
+  }
+
+  function shortIri(iri) {
+    if (!iri) return iri;
+    if (iri.startsWith("_:")) return iri;
+    if (iri.startsWith("<") && iri.endsWith(">")) {
+      const inner = iri.slice(1, -1);
+      const parts = inner.split(/[\/#]/).filter(Boolean);
+      return parts[parts.length - 1] || inner;
+    }
+    return iri;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function refLink(ref, label) {
+    if (!ref) return "";
+    const inThisCollection = state.records.some((r) => r.uri === ref.uri);
+    const cls = inThisCollection ? "ref-link" : "ref-link external";
+    const title = `${ref.uri}\ncid: ${ref.cid}`;
+    return `<button class="${cls}" title="${escapeHtml(title)}" data-goto="${escapeHtml(ref.uri)}">${escapeHtml(label || ref.uri.split("/").pop())}${inThisCollection ? "" : " ↗"}</button>`;
+  }
+
+  function renderSidebar() {
+    const collectionOptions = state.collections
+      .map((c) => `<option value="${escapeHtml(c)}" ${c === state.collection ? "selected" : ""}>${escapeHtml(c)}</option>`)
+      .join("");
+
+    let listHtml;
+    if (!state.records.length) {
+      listHtml = `<div class="empty-note">No records in this collection yet.</div>`;
+    } else {
+      listHtml =
+        `<ul class="record-list">` +
+        state.records
+          .map((r) => {
+            const rkey = r.uri.split("/").pop();
+            const verb = r.value && r.value.predicate ? r.value.predicate : "(no predicate)";
+            const when = r.value && r.value.createdAt ? r.value.createdAt.replace("T", " ").replace(/\.\d+Z$/, "Z") : "";
+            const selected = r.uri === state.selectedUri ? "selected" : "";
+            return `<li><button class="record-item ${selected}" data-uri="${escapeHtml(r.uri)}">
+              <span class="rkey">${escapeHtml(rkey)}</span>
+              <span class="verb">${escapeHtml(verb)}</span>
+              <span class="when">${escapeHtml(when)}</span>
+            </button></li>`;
+          })
+          .join("") +
+        `</ul>` +
+        (state.cursor ? `<button class="load-more" id="loadMoreBtn">Load more…</button>` : "");
+    }
+
+    els.sidebar.innerHTML = `
+      <div class="collection-picker">
+        <label for="collectionSelect">Collection</label>
+        <select id="collectionSelect">${collectionOptions}</select>
+      </div>
+      ${listHtml}
+    `;
+
+    document.getElementById("collectionSelect").addEventListener("change", (e) => {
+      loadCollection(e.target.value);
+    });
+    document.querySelectorAll(".record-item").forEach((btn) => {
+      btn.addEventListener("click", () => selectRecord(btn.getAttribute("data-uri")));
+    });
+    const more = document.getElementById("loadMoreBtn");
+    if (more) more.addEventListener("click", loadMoreRecords);
+  }
+
+  function findRecord(uri) {
+    return state.records.find((r) => r.uri === uri);
+  }
+
+  function renderConnectionPanel() {
+    els.detail.innerHTML = `
+      <div class="detail-eyebrow">Connection</div>
+      <div class="detail-title">${escapeHtml(state.handle || state.did)}</div>
+      <div class="conn-panel">
+        <div class="conn-row"><div class="k">DID</div><div class="v">${escapeHtml(state.did)}</div></div>
+        <div class="conn-row"><div class="k">handle</div><div class="v">${escapeHtml(state.handle || "(none declared)")}</div></div>
+        <div class="conn-row"><div class="k">PDS endpoint</div><div class="v">${escapeHtml(state.pds)}</div></div>
+        <div class="conn-row"><div class="k">DID document</div><div class="v"><a href="${state.did.startsWith("did:plc:") ? `https://plc.directory/${state.did}` : "#"}" target="_blank" rel="noopener">${state.did.startsWith("did:plc:") ? "view on plc.directory ↗" : "(did:web, fetched directly)"}</a></div></div>
+        <div class="conn-row"><div class="k">collections</div><div class="v">${state.collections.length} found</div></div>
+      </div>
+      <p style="color:var(--text-dim);font-size:0.86rem;max-width:60ch;margin-top:1.2rem;">Pick a record from the left to inspect it -- raw wire JSON alongside a parsed DMML view (consumes/produces/via/respondsTo), with clickable references that jump to the cited record when it's in this same page.</p>
+    `;
+  }
+
+  function renderRecordDetail(record) {
+    const value = record.value || {};
+    const rkey = record.uri.split("/").pop();
+
+    const tabsHtml = `
+      <div class="tabs" role="tablist">
+        <button class="tab-btn" role="tab" aria-selected="${state.detailTab === "parsed"}" data-tab="parsed">Parsed</button>
+        <button class="tab-btn" role="tab" aria-selected="${state.detailTab === "raw"}" data-tab="raw">Raw JSON</button>
+      </div>
+    `;
+
+    let body;
+    if (state.detailTab === "raw") {
+      body = `<pre class="raw-json">${escapeHtml(JSON.stringify(record, null, 2))}</pre>`;
+    } else {
+      const consumesList = (value.consumes || [])
+        .map((c) => {
+          if (c.$type === "org.jason-edelman.writtenworld.commit#factRef" || c.subject) {
+            const label = `${shortIri(c.subject)} · ${shortIri(c.predicate)}`;
+            return `<div style="margin-bottom:0.3rem;">${refLink(c.commit, label)}</div>`;
+          }
+          return `<div style="margin-bottom:0.3rem;">${refLink(c)}</div>`;
+        })
+        .join("") || `<span style="color:var(--text-faint);font-style:italic;">none — a base fact</span>`;
+
+      const triples = parseNQuadsLines(value.produces || "");
+      const triplesHtml = triples.length
+        ? `<div class="triples-wrap"><table class="triples"><thead><tr><th>subject</th><th>predicate</th><th>object</th></tr></thead><tbody>${triples
+            .map(
+              (t) =>
+                `<tr><td>${escapeHtml(shortIri(t.subject))}</td><td>${escapeHtml(shortIri(t.predicate))}</td><td>${escapeHtml(t.object)}</td></tr>`
+            )
+            .join("")}</tbody></table></div>`
+        : `<span style="color:var(--text-faint);font-style:italic;">empty — a pure retraction</span>`;
+
+      body = `
+        <div class="field-block">
+          <h4>consumes (${(value.consumes || []).length})</h4>
+          ${consumesList}
+        </div>
+        <div class="field-block">
+          <h4>produces (${triples.length} triple${triples.length === 1 ? "" : "s"})</h4>
+          ${triplesHtml}
+        </div>
+        ${value.via ? `<div class="field-block"><h4>via</h4>${refLink(value.via)}</div>` : ""}
+        ${value.respondsTo ? `<div class="field-block"><h4>responds to</h4>${refLink(value.respondsTo)}</div>` : ""}
+      `;
+    }
+
+    els.detail.innerHTML = `
+      <div class="detail-eyebrow">${escapeHtml(value.predicate || "record")} · ${escapeHtml(rkey)}</div>
+      <div class="detail-title">${escapeHtml(value.predicate || "(no predicate)")}</div>
+      <div class="detail-meta">
+        <span>${escapeHtml(record.uri)}</span>
+        <span>cid: ${escapeHtml(record.cid)}</span>
+        ${value.createdAt ? `<span>${escapeHtml(value.createdAt)}</span>` : ""}
+      </div>
+      ${tabsHtml}
+      ${body}
+    `;
+
+    els.detail.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.detailTab = btn.getAttribute("data-tab");
+        renderRecordDetail(record);
+      });
+    });
+    els.detail.querySelectorAll("[data-goto]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const uri = btn.getAttribute("data-goto");
+        if (findRecord(uri)) selectRecord(uri);
+      });
+    });
+  }
+
+  function selectRecord(uri) {
+    state.selectedUri = uri;
+    state.detailTab = "parsed";
+    renderSidebar();
+    const record = findRecord(uri);
+    if (record) renderRecordDetail(record);
+  }
+
+  async function loadCollection(collection) {
+    state.collection = collection;
+    state.records = [];
+    state.cursor = null;
+    state.selectedUri = null;
+    renderSidebar();
+    renderConnectionPanel();
+    try {
+      const page = await listRecords(state.pds, state.did, collection);
+      state.records = page.records || [];
+      state.cursor = page.cursor || null;
+      renderSidebar();
+    } catch (err) {
+      els.sidebar.innerHTML = `<div class="empty-note" style="color:var(--external);">${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  async function loadMoreRecords() {
+    if (!state.cursor) return;
+    try {
+      const page = await listRecords(state.pds, state.did, state.collection, state.cursor);
+      state.records = state.records.concat(page.records || []);
+      state.cursor = page.cursor || null;
+      renderSidebar();
+    } catch (err) {
+      // Leave the existing list intact; surface the error inline rather
+      // than losing what already loaded.
+      const more = document.getElementById("loadMoreBtn");
+      if (more) more.textContent = `Failed to load more: ${err.message}`;
+    }
+  }
+
+  async function doResolve(raw) {
+    if (!raw) return;
+    els.resolveBtn.disabled = true;
+    setStatus("idle", pill("idle", "resolving…"));
+    els.sidebar.innerHTML = `<div class="empty-note">Resolving identity…</div>`;
+    els.detail.innerHTML = `<div class="detail-empty">Resolving…</div>`;
+    try {
+      const identity = await resolveIdentity(raw);
+      state.did = identity.did;
+      state.handle = identity.handle;
+      state.pds = identity.pds;
+
+      try { localStorage.setItem("dmml-inspector-last", raw); } catch (e) {}
+
+      const desc = await describeRepo(state.pds, state.did);
+      state.collections = desc.collections || [];
+
+      setStatus(
+        "live",
+        `${pill("live", "connected")}
+         <span class="sep">·</span>
+         <a href="#" id="handleLink">${escapeHtml(state.handle || state.did)}</a>
+         <span class="sep">·</span>
+         <span>${escapeHtml(state.pds)}</span>`
+      );
+
+      const startCollection = state.collections.includes(DEFAULT_COLLECTION)
+        ? DEFAULT_COLLECTION
+        : state.collections[0];
+
+      if (!startCollection) {
+        els.sidebar.innerHTML = `<div class="empty-note">This repo has no collections at all.</div>`;
+        renderConnectionPanel();
+      } else {
+        await loadCollection(startCollection);
+        renderConnectionPanel();
+      }
+    } catch (err) {
+      setStatus("error", pill("error", err.message));
+      els.sidebar.innerHTML = `<div class="empty-note" style="color:var(--external);">${escapeHtml(err.message)}</div>`;
+      els.detail.innerHTML = `<div class="detail-empty">Resolution failed. Check the handle or DID and try again.</div>`;
+    } finally {
+      els.resolveBtn.disabled = false;
+    }
+  }
+
+  els.form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    doResolve(els.input.value.trim());
+  });
+
+  // Resolve the default target on load so there's always something real
+  // to look at immediately, not an empty shell.
+  doResolve(els.input.value.trim());
+})();
+</script>
