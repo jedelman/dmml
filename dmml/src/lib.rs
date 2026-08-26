@@ -13,6 +13,7 @@ pub mod ast;
 pub mod error;
 pub mod from_json;
 pub mod genesis;
+pub mod graphview;
 pub mod identity;
 pub mod interpret;
 mod lexer;

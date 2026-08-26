@@ -1022,4 +1022,14 @@ commit argues {{
          counter-argument, an application to a different medium or era) and they inherit this \
          essay's own verified dependency graph rather than starting from nothing. ==="
     );
+
+    let graph = dmml::graphview::export_graph(&log);
+    let json = serde_json::to_string_pretty(&graph).expect("graph export should serialize");
+    let out_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("examples")
+        .join("output")
+        .join("benjamin_full_essay.graph.json");
+    std::fs::create_dir_all(out_path.parent().unwrap()).expect("create output dir");
+    std::fs::write(&out_path, &json).expect("write graph export");
+    println!("\nGraph exported to {} ({} nodes, {} edges) -- open in the dmml browser (browser/index.html) to inspect.", out_path.display(), graph.nodes.len(), graph.edges.len());
 }

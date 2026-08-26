@@ -275,4 +275,14 @@ fn main() {
          declared canonicity is a separate, additive stratum, not an erasure \
          (Check 4). ==="
     );
+
+    let graph = dmml::graphview::export_graph(&full_log);
+    let json = serde_json::to_string_pretty(&graph).expect("graph export should serialize");
+    let out_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("examples")
+        .join("output")
+        .join("pantheon.graph.json");
+    std::fs::create_dir_all(out_path.parent().unwrap()).expect("create output dir");
+    std::fs::write(&out_path, &json).expect("write graph export");
+    println!("\nGraph exported to {} ({} nodes, {} edges) -- open in the dmml browser (browser/index.html) to inspect.", out_path.display(), graph.nodes.len(), graph.edges.len());
 }

@@ -24,8 +24,9 @@
 
 use dmml::ast::TopLevelItem;
 use dmml::interpret::{IdentifiedCommit, Materialized};
-use dmml::validate::validate_declarations;
 use dmml::lower;
+use dmml::validate::validate_declarations;
+use std::path::Path;
 
 fn commit_of(doc: &dmml::Document) -> &dmml::ast::CommitStmt {
     doc.items
@@ -386,7 +387,7 @@ fn main() {
     // log -- checked in isolation instead. Cycles 1, 4, 5, 6 are never
     // downstream-cited by anything else here, so the full combined log
     // is the honest check for them.
-    let full_log = Materialized::from_identified_commits(&[
+    let all_commits = [
         fail_open.clone(),
         sampling_concern.clone(),
         auto_recombinant.clone(),
@@ -398,7 +399,8 @@ fn main() {
         cycle4.clone(),
         cycle5.clone(),
         cycle6.clone(),
-    ]);
+    ];
+    let full_log = Materialized::from_identified_commits(&all_commits);
     for subject in ["paper/critique_cycle1", "paper/critique_cycle4", "paper/critique_cycle5", "paper/critique_cycle6"] {
         full_log
             .current_value(subject, "claim")
@@ -414,4 +416,19 @@ fn main() {
     println!(
         "\n=== done: six autoregressive dispatch rounds against the same fixed paper text (plus, from round 4 on, all prior critiques) produced six structurally distinct critiques (Check 1-3), all independently real (Check 4) -- GENERATION, not convergence, through six rounds. Two of the six (4 and 6) were spontaneously second-order -- consuming a prior critique rather than the base paper -- without being asked to; the dispatch prompt never suggested that move. No plateau reached in this run: round 6 still produced a genuinely new angle, though it explicitly flagged one section (2) as having little independent purchase left, a soft signal worth watching in any further rounds rather than a plateau itself. ==="
     );
+
+    // Export the same graph for the dmml browser (see AUTHORING.md's
+    // sibling tool under `browser/`): plain nodes/edges/generation JSON,
+    // computed generically by dmml::graphview from consumes/produces
+    // alone -- no Benjamin- or paper-specific knowledge in the exporter,
+    // it would produce the same shape for any other example file's log.
+    let graph = dmml::graphview::export_graph(&all_commits);
+    let json = serde_json::to_string_pretty(&graph).expect("graph export should serialize");
+    let out_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("examples")
+        .join("output")
+        .join("autoregressive_critique.graph.json");
+    std::fs::create_dir_all(out_path.parent().unwrap()).expect("create output dir");
+    std::fs::write(&out_path, &json).expect("write graph export");
+    println!("\nGraph exported to {} ({} nodes, {} edges) -- open in the dmml browser (browser/index.html) to inspect.", out_path.display(), graph.nodes.len(), graph.edges.len());
 }

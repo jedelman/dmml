@@ -1,0 +1,890 @@
+<title>DMML Browser</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  /* ============ tokens ============ */
+  :root {
+    --bg: #14120f;
+    --surface: #1c1815;
+    --surface-2: #241f1a;
+    --surface-3: #2c2620;
+    --border: #362f26;
+    --border-soft: #2a2420;
+    --text: #ede3d0;
+    --text-dim: #a89c87;
+    --text-faint: #766b5b;
+    --accent: #d08a44;
+    --accent-strong: #e6a55e;
+    --accent-ink: #2a1a08;
+    --cite: #5fa8a3;
+    --cite-strong: #7fc4bf;
+    --external: #b25c4a;
+    --focus: #e6a55e;
+    --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f4ede0;
+      --surface: #ffffff;
+      --surface-2: #f7f1e6;
+      --surface-3: #efe6d5;
+      --border: #ddd0b8;
+      --border-soft: #e6dcc7;
+      --text: #2c2318;
+      --text-dim: #6b5f4c;
+      --text-faint: #948870;
+      --accent: #b06a2a;
+      --accent-strong: #8f5420;
+      --accent-ink: #fff3e2;
+      --cite: #2f7d78;
+      --cite-strong: #1f5f5b;
+      --external: #a44530;
+      --focus: #8f5420;
+      --shadow: 0 10px 24px -14px rgba(60, 45, 20, 0.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4ede0;
+    --surface: #ffffff;
+    --surface-2: #f7f1e6;
+    --surface-3: #efe6d5;
+    --border: #ddd0b8;
+    --border-soft: #e6dcc7;
+    --text: #2c2318;
+    --text-dim: #6b5f4c;
+    --text-faint: #948870;
+    --accent: #b06a2a;
+    --accent-strong: #8f5420;
+    --accent-ink: #fff3e2;
+    --cite: #2f7d78;
+    --cite-strong: #1f5f5b;
+    --external: #a44530;
+    --focus: #8f5420;
+    --shadow: 0 10px 24px -14px rgba(60, 45, 20, 0.35);
+  }
+  :root[data-theme="dark"] {
+    --bg: #14120f;
+    --surface: #1c1815;
+    --surface-2: #241f1a;
+    --surface-3: #2c2620;
+    --border: #362f26;
+    --border-soft: #2a2420;
+    --text: #ede3d0;
+    --text-dim: #a89c87;
+    --text-faint: #766b5b;
+    --accent: #d08a44;
+    --accent-strong: #e6a55e;
+    --accent-ink: #2a1a08;
+    --cite: #5fa8a3;
+    --cite-strong: #7fc4bf;
+    --external: #b25c4a;
+    --focus: #e6a55e;
+    --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+  a { color: inherit; }
+
+  .app { display: flex; flex-direction: column; height: 100vh; min-height: 640px; }
+
+  /* ============ header ============ */
+  header.top {
+    display: flex;
+    align-items: baseline;
+    gap: 1.25rem;
+    padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+  .wordmark {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-optical-sizing: auto;
+    font-size: 1.35rem;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .wordmark .rock { color: var(--accent); }
+  .tagline {
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    font-style: italic;
+    font-family: "Fraunces", Georgia, serif;
+  }
+  .tabs {
+    display: flex;
+    gap: 0.35rem;
+    margin-left: auto;
+  }
+  .tab {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font: inherit;
+    font-size: 0.82rem;
+    padding: 0.42rem 0.85rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .tab:hover { color: var(--text); border-color: var(--text-faint); }
+  .tab:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .tab[aria-selected="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 500;
+  }
+
+  /* ============ stats strip ============ */
+  .stats {
+    display: flex;
+    gap: 1.75rem;
+    padding: 0.55rem 1.5rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border-soft);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.76rem;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+  }
+  .stats b { color: var(--accent-strong); font-weight: 500; }
+  .stats .desc {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-style: italic;
+    color: var(--text-faint);
+    margin-left: auto;
+  }
+
+  /* ============ main split ============ */
+  main.split {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr min(360px, 34vw);
+    min-height: 0;
+  }
+  @media (max-width: 760px) {
+    main.split { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  }
+
+  .canvas-wrap {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 15% 8%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 45%),
+      var(--bg);
+    cursor: grab;
+  }
+  .canvas-wrap.grabbing { cursor: grabbing; }
+  .canvas-wrap svg { display: block; width: 100%; height: 100%; touch-action: none; }
+
+  .zoom-controls {
+    position: absolute;
+    right: 0.9rem;
+    bottom: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    z-index: 5;
+  }
+  .zoom-btn {
+    width: 2rem; height: 2rem;
+    display: grid; place-items: center;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: 1rem/1 "IBM Plex Mono", monospace;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  .zoom-btn:hover { background: var(--surface-3); }
+  .zoom-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+  .legend {
+    position: absolute;
+    left: 0.9rem;
+    bottom: 0.9rem;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    box-shadow: var(--shadow);
+    max-width: 220px;
+    backdrop-filter: blur(3px);
+  }
+  .legend h3 {
+    margin: 0 0 0.4rem;
+    font: 500 0.68rem "IBM Plex Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-faint);
+  }
+  .legend .row { display: flex; align-items: center; gap: 0.45rem; margin: 0.2rem 0; }
+  .legend .swatch { width: 0.65rem; height: 0.65rem; border-radius: 3px; flex: none; }
+  .legend .line { width: 1.1rem; height: 2px; flex: none; }
+
+  /* node/edge SVG styling */
+  .node-card { cursor: pointer; }
+  .node-card rect {
+    stroke: var(--border);
+    stroke-width: 1;
+    transition: stroke 0.12s, stroke-width 0.12s, filter 0.12s;
+  }
+  .node-card text {
+    font-family: "IBM Plex Mono", monospace;
+    fill: var(--text);
+    pointer-events: none;
+  }
+  .node-card .verb {
+    fill: var(--text-faint);
+    font-style: italic;
+    font-family: "IBM Plex Sans", sans-serif;
+  }
+  .node-card:hover rect { stroke: var(--text-dim); }
+  .node-card.selected rect { stroke: var(--focus); stroke-width: 2; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--focus) 55%, transparent)); }
+  .node-card.dimmed { opacity: 0.28; }
+  .node-card.related rect { stroke: var(--accent-strong); }
+
+  .edge-path {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 1.3;
+    transition: stroke 0.12s, stroke-width 0.12s, opacity 0.12s;
+  }
+  .edge-path.dimmed { opacity: 0.12; }
+  .edge-path.outgoing { stroke: var(--cite-strong); stroke-width: 2; }
+  .edge-path.incoming { stroke: var(--accent-strong); stroke-width: 2; }
+  .edge-stub { stroke: var(--external); stroke-width: 1.3; stroke-dasharray: 3 3; fill: none; }
+  .edge-stub-label { font-family: "IBM Plex Mono", monospace; font-size: 8.5px; fill: var(--external); }
+
+  .gen-band { fill: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+  .gen-band:nth-child(even) { fill: color-mix(in srgb, var(--surface-2) 30%, transparent); }
+  .gen-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    fill: var(--text-faint);
+  }
+
+  /* ============ inspector ============ */
+  aside.inspector {
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    overflow-y: auto;
+    padding: 1.1rem 1.2rem 2rem;
+  }
+  @media (max-width: 760px) {
+    aside.inspector { border-left: none; border-top: 1px solid var(--border); max-height: 42vh; }
+  }
+  .inspector .empty {
+    color: var(--text-faint);
+    font-style: italic;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    padding-top: 1.5rem;
+  }
+  .insp-eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--text-faint);
+    margin-bottom: 0.3rem;
+  }
+  .insp-subject {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-wrap: balance;
+    margin: 0 0 0.15rem;
+  }
+  .insp-meta {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.7rem;
+    margin-bottom: 0.9rem;
+  }
+  .insp-meta .gen-chip {
+    background: var(--accent);
+    color: var(--accent-ink);
+    padding: 0.08rem 0.5rem;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .insp-value {
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 0.8rem 0.9rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin-bottom: 1.1rem;
+  }
+  .insp-value .pred { color: var(--accent-strong); font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; display: block; margin-bottom: 0.3rem; }
+  .insp-section h4 {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-faint);
+    margin: 1.1rem 0 0.4rem;
+  }
+  .insp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+  .insp-list li {
+    border: 1px solid var(--border-soft);
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
+  }
+  .insp-list button {
+    all: unset;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.76rem;
+    color: var(--cite-strong);
+  }
+  .insp-list button:hover { text-decoration: underline; }
+  .insp-list .via { color: var(--text-faint); font-size: 0.7rem; margin-top: 0.15rem; display: block; }
+  .insp-list.external li { border-style: dashed; }
+  .insp-list.external button { color: var(--external); cursor: default; }
+  .insp-list.external button:hover { text-decoration: none; }
+  .insp-uri {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.66rem;
+    color: var(--text-faint);
+    word-break: break-all;
+    margin-top: 1.2rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="app" id="app">
+  <header class="top">
+    <div>
+      <div class="wordmark"><span class="rock">&#9679;</span> DMML Browser</div>
+      <div class="tagline">inspect the strata a commit log actually built</div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Choose a graph"></nav>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <main class="split">
+    <div class="canvas-wrap" id="canvasWrap">
+      <svg id="svg" role="img" aria-label="Commit graph, laid out by citation generation">
+        <g id="viewport"></g>
+      </svg>
+      <div class="legend">
+        <h3>Reading this</h3>
+        <div class="row"><span class="swatch" style="background:var(--surface-3);border:1px solid var(--border)"></span> generation band (0 = base fact)</div>
+        <div class="row"><span class="line" style="background:var(--cite-strong)"></span> this node&rsquo;s outgoing citation</div>
+        <div class="row"><span class="line" style="background:var(--accent-strong)"></span> a node citing this one</div>
+        <div class="row"><span class="line" style="background:var(--external);border-bottom:2px dashed var(--external);height:0"></span> citation outside this graph</div>
+      </div>
+      <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+        <button class="zoom-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">&minus;</button>
+        <button class="zoom-btn" id="zoomReset" title="Reset view" aria-label="Reset view">&#8634;</button>
+      </div>
+    </div>
+    <aside class="inspector" id="inspector">
+      <div class="empty">Click any commit to inspect what it produced, what it cited, and what cites it back.</div>
+    </aside>
+  </main>
+</div>
+
+<script type="application/json" id="graph-pantheon">
+{
+  "label": "pantheon.rs",
+  "blurb": "An invented myth. Three uncoordinated origins for one node, a synthesis, a declared canon that erases nothing.",
+  "graph": {
+  "nodes": [
+    {
+      "uri": "at://did:plc:helios/org.jason-edelman.writtenworld.commit/rkey001",
+      "cid": "bafyHeliosSunfire",
+      "author": "did:plc:helios",
+      "verb": "asserts",
+      "produces": [
+        { "subject": "sky/1", "predicate": "origin", "value": "sunfire" }
+      ],
+      "generation": 0
+    },
+    {
+      "uri": "at://did:plc:selene/org.jason-edelman.writtenworld.commit/rkey001",
+      "cid": "bafySeleneMoonwoven",
+      "author": "did:plc:selene",
+      "verb": "asserts",
+      "produces": [
+        { "subject": "sky/1", "predicate": "origin", "value": "moonwoven" }
+      ],
+      "generation": 0
+    },
+    {
+      "uri": "at://did:plc:eos/org.jason-edelman.writtenworld.commit/rkey001",
+      "cid": "bafyEosRosefingered",
+      "author": "did:plc:eos",
+      "verb": "asserts",
+      "produces": [
+        { "subject": "sky/1", "predicate": "origin", "value": "rosefingered" }
+      ],
+      "generation": 0
+    },
+    {
+      "uri": "at://did:plc:nyx/org.jason-edelman.writtenworld.commit/rkey002",
+      "cid": "bafyNyxDuskweave",
+      "author": "did:plc:nyx",
+      "verb": "weaves",
+      "produces": [
+        { "subject": "sky/1", "predicate": "origin", "value": "duskweave" }
+      ],
+      "generation": 1
+    },
+    {
+      "uri": "at://did:plc:pantheon-council/org.jason-edelman.writtenworld.commit/rkey003",
+      "cid": "bafyCanonDuskweave",
+      "author": "did:plc:pantheon-council",
+      "verb": "declares",
+      "produces": [
+        { "subject": "sky/1", "predicate": "canonicalOrigin", "value": "duskweave" }
+      ],
+      "generation": 0
+    }
+  ],
+  "edges": [
+    { "from": "at://did:plc:nyx/org.jason-edelman.writtenworld.commit/rkey002", "to": "at://did:plc:helios/org.jason-edelman.writtenworld.commit/rkey001", "subject": "sky/1", "predicate": "origin" },
+    { "from": "at://did:plc:nyx/org.jason-edelman.writtenworld.commit/rkey002", "to": "at://did:plc:selene/org.jason-edelman.writtenworld.commit/rkey001", "subject": "sky/1", "predicate": "origin" },
+    { "from": "at://did:plc:nyx/org.jason-edelman.writtenworld.commit/rkey002", "to": "at://did:plc:eos/org.jason-edelman.writtenworld.commit/rkey001", "subject": "sky/1", "predicate": "origin" }
+  ]
+}
+}
+</script>
+<script type="application/json" id="graph-benjamin">
+{
+  "label": "benjamin_full_essay.rs",
+  "blurb": "44 commits tracing Benjamin's essay end to end — the Epilogue's closing line cites the Preface's own opening stance, 17 generations later.",
+  "graph": {"nodes":[{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0001","cid":"bafyEssay0001","author":"did:plc:essay","verb":"declares","produces":[{"subject":"argument/preface","predicate":"vocabularyStance","value":"anti-fascist-terms"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0002","cid":"bafyEssay0002","author":"did:plc:essay","verb":"asserts","produces":[{"subject":"reproduction/1","predicate":"technique","value":"founding-and-stamping"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0003","cid":"bafyEssay0003","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"reproduction/1","predicate":"technique","value":"photography-hand-cedes-to-eye"}],"generation":1},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0004","cid":"bafyEssay0004","author":"did:plc:essay","verb":"argues","produces":[{"subject":"artwork/mona_lisa","predicate":"physicalHistory","value":"traceable-by-chemical-analysis-of-the-original-only"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0005","cid":"bafyEssay0005","author":"did:plc:essay","verb":"argues","produces":[{"subject":"artwork/mona_lisa","predicate":"authenticity","value":"grounded-in-original-presence"},{"subject":"artwork/mona_lisa","predicate":"underminingMechanism","value":"process-independence-and-situational-reach"}],"generation":1},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0006","cid":"bafyEssay0006","author":"did:plc:essay","verb":"argues","produces":[{"subject":"artwork/mona_lisa","predicate":"testimony","value":"jeopardized"},{"subject":"artwork/mona_lisa","predicate":"authority","value":"jeopardized"}],"generation":2},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0007","cid":"bafyEssay0007","author":"did:plc:essay","verb":"quotes","produces":[{"subject":"source/gance","predicate":"claim","value":"Shakespeare, Rembrandt, Beethoven will make films"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0008","cid":"bafyEssay0008","author":"did:plc:essay","verb":"coins","produces":[{"subject":"argument/section_ii","predicate":"claim","value":"aura names the authenticity-testimony-authority chain"},{"subject":"argument/section_ii","predicate":"aura","value":"coined-over-three-linked-losses-not-one-undifferentiated-one"}],"generation":3},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0009","cid":"bafyEssay0009","author":"did:plc:essay","verb":"asserts","produces":[{"subject":"source/rieglWickhoff","predicate":"claim","value":"late Roman perception has its own formal hallmark, distinct from antiquity"},{"subject":"source/rieglWickhoff","predicate":"scope","value":"formal-hallmark-only-did-not-attempt-social-causes"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0010","cid":"bafyEssay0010","author":"did:plc:essay","verb":"argues","produces":[{"subject":"argument/section_iii_methodology","predicate":"claim","value":"conditions now favor showing aura-decay's social causes"}],"generation":1},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0011","cid":"bafyEssay0011","author":"did:plc:essay","verb":"stipulates","produces":[{"subject":"argument/section_iii_aura_natural","predicate":"naturalAuraDefinition","value":"unique phenomenon of a distance, however close it may be"}],"generation":4},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0012","cid":"bafyEssay0012","author":"did:plc:essay","verb":"argues","produces":[{"subject":"argument/section_iii_mechanism","predicate":"massDesire","value":"bring-things-closer-AND-overcome-uniqueness-by-accepting-reproduction"}],"generation":5},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0013","cid":"bafyEssay0013","author":"did:plc:essay","verb":"asserts","produces":[{"subject":"artwork/venus","predicate":"basis","value":"ritual-magical-then-religious"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0014","cid":"bafyEssay0014","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"artwork/venus","predicate":"basis","value":"secularized-cult-of-beauty"},{"subject":"artwork/venus","predicate":"crisisStatus","value":"ritual-basis-in-decline"}],"generation":1},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0015","cid":"bafyEssay0015","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"artwork/venus","predicate":"basis","value":"l-art-pour-l-art-defensive-theology-of-pure-art"},{"subject":"artwork/venus","predicate":"crisisStatus","value":"sensed-approaching-crisis"}],"generation":2},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0016","cid":"bafyEssay0016","author":"did:plc:essay","verb":"argues","produces":[{"subject":"argument/section_iv","predicate":"claim","value":"the total function of art is reversed: instead of being based on ritual, it begins to be based on politics"}],"generation":3},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0017","cid":"bafyEssay0017","author":"did:plc:essay","verb":"asserts","produces":[{"subject":"artwork/symphony","predicate":"exhibitionFitness","value":"highest -- originated when its public presentability promised to surpass the mass"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0018","cid":"bafyEssay0018","author":"did:plc:essay","verb":"argues","produces":[{"subject":"argument/section_v","predicate":"qualitativeShift","value":"the quantitative shift between cult and exhibition value turned into a qualitative transformation of art's nature"}],"generation":1},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0019","cid":"bafyEssay0019","author":"did:plc:essay","verb":"asserts","produces":[{"subject":"artwork/early_photograph","predicate":"humanPresence","value":"present -- the fleeting expression of a human face"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0020","cid":"bafyEssay0020","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"artwork/atget_photograph","predicate":"humanPresence","value":"absent -- deserted Paris streets, photographed like scenes of crime"},{"subject":"artwork/atget_photograph","predicate":"valueShift","value":"exhibition value shows its superiority to ritual value for the first time"}],"generation":1},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0021","cid":"bafyEssay0021","author":"did:plc:essay","verb":"asserts","produces":[{"subject":"argument/painting_photography_dispute","predicate":"symptomaticSignificance","value":"important precisely as a symptom of a historical transformation neither rival realized"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0022","cid":"bafyEssay0022","author":"did:plc:essay","verb":"argues","produces":[{"subject":"argument/section_vii_diagnosis","predicate":"claim","value":"the primary question -- did photography's invention transform art's entire nature -- was never raised"}],"generation":1},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0023","cid":"bafyEssay0023","author":"did:plc:essay","verb":"asserts","produces":[{"subject":"actor/performance","predicate":"presentationMode","value":"camera-mediated, not presented to the public in person"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0024","cid":"bafyEssay0024","author":"did:plc:essay","verb":"argues","produces":[{"subject":"audience/1","predicate":"posture","value":"takes the position of a critic without personal contact; identification is with the camera; its approach is that of testing"}],"generation":1},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0025","cid":"bafyEssay0025","author":"did:plc:essay","verb":"argues","produces":[{"subject":"argument/section_ix_montage","predicate":"fragmentation","value":"composed of many separate performances -- a jump from a window shot as a jump from a scaffold, weeks apart"}],"generation":2},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0026","cid":"bafyEssay0026","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"argument/section_x_star_cult","predicate":"claim","value":"the cult of the movie star preserves not the unique aura of the person but the phony spell of a commodity"}],"generation":3},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0027","cid":"bafyEssay0027","author":"did:plc:essay","verb":"asserts","produces":[{"subject":"role/magician","predicate":"distanceStrategy","value":"maintains natural distance, increases it through authority"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0028","cid":"bafyEssay0028","author":"did:plc:essay","verb":"asserts","produces":[{"subject":"role/surgeon","predicate":"distanceStrategy","value":"diminishes physical distance by penetrating the body, abstains from facing the patient man to man"}],"generation":0},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0029","cid":"bafyEssay0029","author":"did:plc:essay","verb":"argues","produces":[{"subject":"role/magician","predicate":"structuralMatch","value":"the magician's authority-based distance instantiates aura-as-distance, transposed onto medicine"}],"generation":5},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0030","cid":"bafyEssay0030","author":"did:plc:essay","verb":"argues","produces":[{"subject":"artist/painter","predicate":"pictureType","value":"a total one, matching the magician's structure"},{"subject":"artist/cameraman","predicate":"pictureType","value":"multiple fragments assembled under a new law, matching the surgeon's structure"}],"generation":6},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0031","cid":"bafyEssay0031","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"argument/section_xii_fusion","predicate":"claim","value":"with regard to the screen, the critical and receptive attitudes of the public coincide"}],"generation":2},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0032","cid":"bafyEssay0032","author":"did:plc:essay","verb":"argues","produces":[{"subject":"argument/section_xii_conditioning","predicate":"claim","value":"individual reactions are predetermined by the mass audience response they are about to produce"}],"generation":6},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0033","cid":"bafyEssay0033","author":"did:plc:essay","verb":"argues","produces":[{"subject":"medium/painting","predicate":"simultaneousCollectiveCapacity","value":"none -- unlike architecture, the epic poem, or film"}],"generation":1},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0034","cid":"bafyEssay0034","author":"did:plc:essay","verb":"argues","produces":[{"subject":"argument/section_xiii_isolatability","predicate":"claim","value":"filmed behavior lends itself more readily to analysis because it can be isolated more easily"}],"generation":7},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0035","cid":"bafyEssay0035","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"argument/section_xiii_unattainable","predicate":"claim","value":"a different nature opens itself to the camera than opens to the naked eye"}],"generation":8},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0036","cid":"bafyEssay0036","author":"did:plc:essay","verb":"argues","produces":[{"subject":"argument/section_xiii","predicate":"claim","value":"the camera introduces us to unconscious optics as does psychoanalysis to unconscious impulses"}],"generation":9},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0037","cid":"bafyEssay0037","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"argument/section_xv","predicate":"claim","value":"the mass is a matrix from which all traditional behavior toward works of art issues today in a new form -- quantity has been transmuted into quality"}],"generation":10},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0038","cid":"bafyEssay0038","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"medium/architecture","predicate":"claim","value":"the prototype of a work of art the reception of which is consummated by a collectivity in a state of distraction"}],"generation":11},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0039","cid":"bafyEssay0039","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"argument/section_xv_final","predicate":"claim","value":"the public is an examiner, but an absent-minded one"}],"generation":12},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0040","cid":"bafyEssay0040","author":"did:plc:essay","verb":"asserts","produces":[{"subject":"argument/epilogue_aestheticize","predicate":"claim","value":"Fascism gives the masses expression while preserving property -- the introduction of aesthetics into political life"}],"generation":13},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0041","cid":"bafyEssay0041","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"masses/1","predicate":"violation","value":"forced to their knees by the Fuhrer cult -- the same manufactured, commodity-shaped substitute for real cult value"}],"generation":14},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0042","cid":"bafyEssay0042","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"argument/epilogue_aura","predicate":"claim","value":"through gas warfare the aura is abolished in a new way"}],"generation":15},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0043","cid":"bafyEssay0043","author":"did:plc:essay","verb":"reproduces","produces":[{"subject":"argument/epilogue_consummation","predicate":"claim","value":"'Fiat ars, pereat mundus' -- this is evidently the consummation of l'art pour l'art"}],"generation":16},{"uri":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0044","cid":"bafyEssay0044","author":"did:plc:essay","verb":"argues","produces":[{"subject":"argument/epilogue","predicate":"claim","value":"Fascism is rendering politics aesthetic. Communism responds by politicizing art."}],"generation":17}],"edges":[{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0003","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0002","subject":"reproduction/1","predicate":"technique"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0005","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0004","subject":"artwork/mona_lisa","predicate":"physicalHistory"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0006","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0005","subject":"artwork/mona_lisa","predicate":"authenticity"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0008","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0006","subject":"artwork/mona_lisa","predicate":"authority"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0008","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0007","subject":"source/gance","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0010","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0009","subject":"source/rieglWickhoff","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0010","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0009","subject":"source/rieglWickhoff","predicate":"scope"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0011","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0008","subject":"argument/section_ii","predicate":"aura"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0012","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0010","subject":"argument/section_iii_methodology","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0012","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0011","subject":"argument/section_iii_aura_natural","predicate":"naturalAuraDefinition"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0014","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0013","subject":"artwork/venus","predicate":"basis"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0015","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0014","subject":"artwork/venus","predicate":"crisisStatus"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0016","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0015","subject":"artwork/venus","predicate":"crisisStatus"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0016","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0003","subject":"reproduction/1","predicate":"technique"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0018","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0017","subject":"artwork/symphony","predicate":"exhibitionFitness"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0020","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0019","subject":"artwork/early_photograph","predicate":"humanPresence"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0022","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0021","subject":"argument/painting_photography_dispute","predicate":"symptomaticSignificance"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0024","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0023","subject":"actor/performance","predicate":"presentationMode"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0025","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0024","subject":"audience/1","predicate":"posture"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0026","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0025","subject":"argument/section_ix_montage","predicate":"fragmentation"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0029","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0027","subject":"role/magician","predicate":"distanceStrategy"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0029","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0011","subject":"argument/section_iii_aura_natural","predicate":"naturalAuraDefinition"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0030","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0029","subject":"role/magician","predicate":"structuralMatch"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0030","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0025","subject":"argument/section_ix_montage","predicate":"fragmentation"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0031","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0024","subject":"audience/1","predicate":"posture"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0032","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0031","subject":"argument/section_xii_fusion","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0032","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0012","subject":"argument/section_iii_mechanism","predicate":"massDesire"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0033","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0017","subject":"artwork/symphony","predicate":"exhibitionFitness"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0034","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0025","subject":"argument/section_ix_montage","predicate":"fragmentation"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0034","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0032","subject":"argument/section_xii_conditioning","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0035","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0034","subject":"argument/section_xiii_isolatability","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0035","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0005","subject":"artwork/mona_lisa","predicate":"underminingMechanism"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0036","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0035","subject":"argument/section_xiii_unattainable","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0036","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0028","subject":"role/surgeon","predicate":"distanceStrategy"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0037","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0036","subject":"argument/section_xiii","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0037","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0018","subject":"argument/section_v","predicate":"qualitativeShift"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0038","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0037","subject":"argument/section_xv","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0038","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0033","subject":"medium/painting","predicate":"simultaneousCollectiveCapacity"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0039","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0024","subject":"audience/1","predicate":"posture"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0039","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0038","subject":"medium/architecture","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0040","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0039","subject":"argument/section_xv_final","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0041","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0040","subject":"argument/epilogue_aestheticize","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0041","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0026","subject":"argument/section_x_star_cult","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0042","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0041","subject":"masses/1","predicate":"violation"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0042","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0008","subject":"argument/section_ii","predicate":"aura"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0043","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0042","subject":"argument/epilogue_aura","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0043","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0016","subject":"argument/section_iv","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0044","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0043","subject":"argument/epilogue_consummation","predicate":"claim"},{"from":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0044","to":"at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0001","subject":"argument/preface","predicate":"vocabularyStance"}]}
+}
+</script>
+<script type="application/json" id="graph-critique">
+{
+  "label": "autoregressive_critique.rs",
+  "blurb": "Six dispatched critiques of one paper. Two of six spontaneously cite a PRIOR CRITIQUE rather than the paper itself — recombination of a recombination.",
+  "graph": {
+  "nodes": [
+    { "uri": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0200", "cid": "bafyFailOpen", "author": "did:plc:essay", "verb": "asserts", "produces": [ { "subject": "paper/section1_fail_open", "predicate": "claim", "value": "a consumes entry citing a fact nothing actually produced is a no-op, not an error -- a commit citing something fabricated is still accepted, it just fails to retract what it claimed to" } ], "generation": 0 },
+    { "uri": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0201", "cid": "bafySamplingConcern", "author": "did:plc:essay", "verb": "asserts", "produces": [ { "subject": "paper/section3_sampling_concern", "predicate": "claim", "value": "petition resolution is currently produced by an LLM sampling from a learned distribution -- arguably close to selection from an already-determined menu, the very thing DMML's grammar is being distinguished from; whether sampling counts as production in Deleuze and Guattari's sense is left open" } ], "generation": 0 },
+    { "uri": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0202", "cid": "bafyAutoRecombinant", "author": "did:plc:essay", "verb": "asserts", "produces": [ { "subject": "paper/section4_auto_recombinant", "predicate": "claim", "value": "nothing in the grammar enforces convergence on a (subject, predicate) pair; a rival claim persists as one more citable, disputable production; Nyx's synthesis is auto-recombinant because the facts it folds are grounded against a real production history" } ], "generation": 0 },
+    { "uri": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0203", "cid": "bafySection5Answer", "author": "did:plc:essay", "verb": "asserts", "produces": [ { "subject": "paper/section5_answer", "predicate": "claim", "value": "task-specific self-declared predicates show real convergence pressure under dispatch conditions (an author given an existing graph's vocabulary in context tends to reuse its exact names), which is evidence of citation-name stability under shared context, not yet evidence of spontaneous convergence between authors with zero shared context" } ], "generation": 0 },
+    { "uri": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0204", "cid": "bafyCitationGranularity", "author": "did:plc:essay", "verb": "asserts", "produces": [ { "subject": "paper/section1_citation_granularity", "predicate": "claim", "value": "a consumes entry can cite one specific triple within any prior commit, not only the tip of that commit and not the commit as an indivisible unit -- nothing in the grammar treats a commit as an atomic whole for citation purposes" } ], "generation": 0 },
+    { "uri": "at://did:plc:reader-cycle1/org.jason-edelman.writtenworld.commit/rkey0001", "cid": "bafyCycle1", "author": "did:plc:reader-cycle1", "verb": "argues", "produces": [ { "subject": "paper/critique_cycle1", "predicate": "claim", "value": "fail-open citation semantics undercuts the auto-recombinant claim: nothing structurally distinguishes a commit that legitimately synthesizes real prior facts from one that cites the same facts and produces something with no defensible relation to them -- both are grounded in exactly the sense the auto-recombinant claim requires. auto-recombinant may be a property of the well-behaved subset of commits authors happen to write, not a structural property of the grammar itself" } ], "generation": 1 },
+    { "uri": "at://did:plc:reader-cycle2/org.jason-edelman.writtenworld.commit/rkey0001", "cid": "bafyCycle2", "author": "did:plc:reader-cycle2", "verb": "argues", "produces": [ { "subject": "paper/critique_cycle2", "predicate": "claim", "value": "the non-convergence claim (nothing forces convergence on facts) is in tension with the convergence claim (independent authors DO converge, on predicate vocabulary, under shared-context dispatch conditions -- the same condition under which real multi-author DMML worlds actually operate, since later commits can always see earlier ones). if schema-level convergence is real and shared-context-driven, the same pressure could eventually produce convergence on which facts count as canonical too -- auto-recombinant non-convergent multiplicity may be a transient phase before shared-context convergence pressure closes it down into something git-like, not a stable structural property" } ], "generation": 1 },
+    { "uri": "at://did:plc:reader-cycle3/org.jason-edelman.writtenworld.commit/rkey0001", "cid": "bafyCycle3", "author": "did:plc:reader-cycle3", "verb": "argues", "produces": [ { "subject": "paper/critique_cycle3", "predicate": "claim", "value": "Section 5's convergence result is contaminated by the exact concern Section 3 raises about petition-resolution and does not apply to itself: both dispatched authoring agents are LLMs generating predicate names conditioned on overlapping training distributions and overlapping context, so convergence on counterClaim/distanceStrategy may be evidence that LLMs sampling from similar distributions reach for the same naming conventions -- true in ordinary code review or ontology engineering generally -- rather than evidence about DMML's grammar specifically. no control (human authors, or authors in a domain unrelated to DMML) separates these. this is the paper's own evidentiary standard (Section 3's sampling-vs-production distinction) applied unevenly: raised against the resolver, not raised against Section 5's own dispatched 'independent authors'" } ], "generation": 1 },
+    { "uri": "at://did:plc:reader-cycle4/org.jason-edelman.writtenworld.commit/rkey0001", "cid": "bafyCycle4", "author": "did:plc:reader-cycle4", "verb": "argues", "produces": [ { "subject": "paper/critique_cycle4", "predicate": "claim", "value": "cycle 3 defangs cycle 2: cycle 2's worry that fact-convergence could eventually follow vocabulary-convergence needs Section 5's convergence data to be genuine evidence about DMML's own grammar-level dynamics. cycle 3 shows that convergence is plausibly just LLM-sampling behavior common to any domain, not something DMML's grammar produced or licenses -- which removes the evidentiary basis cycle 2 needed. the critiques are not independent, additive damage; they partially cancel, and nothing in a chained-dispatch format where each reader is only told not to repeat prior points checks whether a later critique invalidates an earlier one's premises -- a structural feature of chained peer critique itself, not only of this paper" } ], "generation": 2 },
+    { "uri": "at://did:plc:reader-cycle5/org.jason-edelman.writtenworld.commit/rkey0001", "cid": "bafyCycle5", "author": "did:plc:reader-cycle5", "verb": "argues", "produces": [ { "subject": "paper/critique_cycle5", "predicate": "claim", "value": "citation granularity is the triple, not the commit -- a later commit can extract one fact from its production context while ignoring everything else that commit asserted together, with no mechanism tracking which co-produced facts must travel together. Deleuze and Guattari's desiring-machine connections (breast-mouth) are constituted BY their connections, not by extractable partial objects severed from context -- DMML's triple-level citation does the reverse. Nyx's commit is fine only because it happened to cite whole coherent facts; nothing in the grammar prevents a future commit from citing one triple out of a commit while severing it from the production-context that gave it its sense, a gap orthogonal to the fail-open/convergence cluster and checkable directly against the schema (does consumes type-check against triples or whole commits?)" } ], "generation": 1 },
+    { "uri": "at://did:plc:reader-cycle6/org.jason-edelman.writtenworld.commit/rkey0001", "cid": "bafyCycle6", "author": "did:plc:reader-cycle6", "verb": "argues", "produces": [ { "subject": "paper/critique_cycle6", "predicate": "claim", "value": "the critique-dispatch experiment producing cycles 1 through 5 is itself an unacknowledged second instance of exactly what cycle 3 (and Section 3) put in question: each critique is produced by an LLM reader sampling from a learned distribution, conditioned on the paper plus all prior critiques, accepted into the log without verification against any canonical correct critique, rival and uncoordinated in the same way pantheon.rs's Helios/Selene/Eos are. the paper anchors its empirical claims in pantheon.rs and the Benjamin simulation; the six-round critique experiment used to stress-test the paper is a live, unexamined third instance of the same open question -- is this production, or selection from an already-determined menu -- applied to the paper's own critical apparatus rather than to a fictional petition-resolver" } ], "generation": 2 }
+  ],
+  "edges": [
+    { "from": "at://did:plc:reader-cycle1/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0200", "subject": "paper/section1_fail_open", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle1/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0202", "subject": "paper/section4_auto_recombinant", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle2/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0202", "subject": "paper/section4_auto_recombinant", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle2/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0203", "subject": "paper/section5_answer", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle3/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0201", "subject": "paper/section3_sampling_concern", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle3/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0203", "subject": "paper/section5_answer", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle4/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:reader-cycle2/org.jason-edelman.writtenworld.commit/rkey0001", "subject": "paper/critique_cycle2", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle4/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:reader-cycle3/org.jason-edelman.writtenworld.commit/rkey0001", "subject": "paper/critique_cycle3", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle5/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0204", "subject": "paper/section1_citation_granularity", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle5/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0202", "subject": "paper/section4_auto_recombinant", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle6/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0201", "subject": "paper/section3_sampling_concern", "predicate": "claim" },
+    { "from": "at://did:plc:reader-cycle6/org.jason-edelman.writtenworld.commit/rkey0001", "to": "at://did:plc:reader-cycle3/org.jason-edelman.writtenworld.commit/rkey0001", "subject": "paper/critique_cycle3", "predicate": "claim" }
+  ]
+}
+}
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var GRAPHS = ["graph-pantheon", "graph-benjamin", "graph-critique"];
+  var sources = GRAPHS.map(function (id) {
+    return JSON.parse(document.getElementById(id).textContent);
+  });
+
+  var state = {
+    active: 0,
+    selected: null,
+    scale: 1,
+    tx: 0,
+    ty: 0,
+  };
+
+  try {
+    var saved = localStorage.getItem("dmml-browser-active");
+    if (saved !== null && sources[+saved]) state.active = +saved;
+  } catch (e) {}
+
+  var ROW_H = 108;
+  var COL_W = 190;
+  var NODE_W = 164;
+  var NODE_H = 58;
+  var PAD = 48;
+
+  var tabsEl = document.getElementById("tabs");
+  var statsEl = document.getElementById("stats");
+  var svg = document.getElementById("svg");
+  var viewport = document.getElementById("viewport");
+  var inspector = document.getElementById("inspector");
+  var wrap = document.getElementById("canvasWrap");
+
+  function shortSubject(s) {
+    var parts = s.split("/");
+    var last = parts[parts.length - 1];
+    // a bare numeric id ("sky/1", "audience/1") isn't a useful label on
+    // its own -- keep the category too in that case ("sky/1", not "1").
+    return /^\d+$/.test(last) ? s : last;
+  }
+  function shortAuthor(a) {
+    return a.replace(/^did:plc:/, "");
+  }
+  function truncate(s, n) {
+    return s.length > n ? s.slice(0, n - 1) + "…" : s;
+  }
+
+  function layout(graph) {
+    var byGen = {};
+    graph.nodes.forEach(function (n) {
+      (byGen[n.generation] = byGen[n.generation] || []).push(n);
+    });
+    var gens = Object.keys(byGen).map(Number).sort(function (a, b) { return a - b; });
+    var pos = {};
+    var maxCols = 0;
+    gens.forEach(function (g) {
+      byGen[g].forEach(function (n, i) {
+        pos[n.uri] = { x: PAD + i * COL_W + NODE_W / 2, y: PAD + g * ROW_H + NODE_H / 2 };
+      });
+      maxCols = Math.max(maxCols, byGen[g].length);
+    });
+    var width = PAD * 2 + Math.max(maxCols, 1) * COL_W;
+    var height = PAD * 2 + (gens.length ? (gens[gens.length - 1] + 1) : 1) * ROW_H;
+    return { pos: pos, gens: gens, byGen: byGen, width: width, height: height };
+  }
+
+  function genColor(g, maxGen) {
+    var t = maxGen > 0 ? g / maxGen : 0;
+    // sediment ramp: deep ochre (old/base) toward a paler, cooler tone (recent/derived)
+    var h1 = [208, 138, 68], h2 = [95, 168, 163];
+    var mix = h1.map(function (c, i) { return Math.round(c + (h2[i] - c) * t * 0.55); });
+    return "rgb(" + mix.join(",") + ")";
+  }
+
+  function render() {
+    var src = sources[state.active];
+    var graph = src.graph;
+    var L = layout(graph);
+    var maxGen = L.gens.length ? L.gens[L.gens.length - 1] : 0;
+
+    // ---- tabs ----
+    tabsEl.innerHTML = "";
+    sources.forEach(function (s, i) {
+      var b = document.createElement("button");
+      b.className = "tab";
+      b.textContent = s.label;
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", i === state.active ? "true" : "false");
+      b.addEventListener("click", function () {
+        state.active = i;
+        state.selected = null;
+        resetView();
+        try { localStorage.setItem("dmml-browser-active", String(i)); } catch (e) {}
+        render();
+      });
+      tabsEl.appendChild(b);
+    });
+
+    // ---- stats ----
+    statsEl.innerHTML =
+      "<span><b>" + graph.nodes.length + "</b> commits</span>" +
+      "<span><b>" + graph.edges.length + "</b> citations</span>" +
+      "<span><b>" + (maxGen + 1) + "</b> strata deep</span>" +
+      "<span class=\"desc\">" + src.blurb + "</span>";
+
+    // ---- svg ----
+    svg.setAttribute("viewBox", "0 0 " + L.width + " " + L.height);
+    viewport.innerHTML = "";
+    viewport.setAttribute("transform", "translate(" + state.tx + "," + state.ty + ") scale(" + state.scale + ")");
+
+    var svgns = "http://www.w3.org/2000/svg";
+    function el(tag, attrs) {
+      var e = document.createElementNS(svgns, tag);
+      for (var k in attrs) e.setAttribute(k, attrs[k]);
+      return e;
+    }
+
+    // generation bands
+    L.gens.forEach(function (g) {
+      var band = el("rect", {
+        class: "gen-band",
+        x: 0, y: PAD + g * ROW_H - 6, width: L.width, height: ROW_H,
+      });
+      viewport.appendChild(band);
+      var label = el("text", { class: "gen-label", x: 10, y: PAD + g * ROW_H + 14 });
+      label.textContent = "gen " + g;
+      viewport.appendChild(label);
+    });
+
+    // build reverse-citation index for edges resolved in-graph
+    var incomingByUri = {}, outgoingByUri = {};
+    graph.edges.forEach(function (e) {
+      (outgoingByUri[e.from] = outgoingByUri[e.from] || []).push(e);
+      if (e.to) (incomingByUri[e.to] = incomingByUri[e.to] || []).push(e);
+    });
+
+    var selectedUri = state.selected;
+    var relatedSet = null, outgoingSet = null, incomingSet = null;
+    if (selectedUri) {
+      outgoingSet = {}; incomingSet = {}; relatedSet = {};
+      (outgoingByUri[selectedUri] || []).forEach(function (e) { if (e.to) { outgoingSet[e.to] = true; relatedSet[e.to] = true; } });
+      (incomingByUri[selectedUri] || []).forEach(function (e) { incomingSet[e.from] = true; relatedSet[e.from] = true; });
+    }
+
+    // edges (drawn first, under nodes)
+    graph.edges.forEach(function (e) {
+      var isSelEdge = selectedUri && (e.from === selectedUri || e.to === selectedUri);
+      if (!e.to) {
+        var fp = L.pos[e.from];
+        if (!fp) return;
+        var stub = el("path", {
+          class: "edge-stub" + (selectedUri && e.from !== selectedUri ? " dimmed" : ""),
+          d: "M " + (fp.x + NODE_W / 2) + " " + fp.y + " l 34 -14",
+        });
+        viewport.appendChild(stub);
+        var lbl = el("text", { class: "edge-stub-label", x: fp.x + NODE_W / 2 + 6, y: fp.y - 20 });
+        lbl.textContent = "⇢ " + shortSubject(e.subject);
+        viewport.appendChild(lbl);
+        return;
+      }
+      var a = L.pos[e.from], b = L.pos[e.to];
+      if (!a || !b) return;
+      var midY = (a.y + b.y) / 2;
+      var d = "M " + a.x + " " + (a.y + NODE_H / 2) + " C " + a.x + " " + midY + ", " + b.x + " " + midY + ", " + b.x + " " + (b.y - NODE_H / 2);
+      var cls = "edge-path";
+      if (selectedUri) {
+        if (e.from === selectedUri) cls += " outgoing";
+        else if (e.to === selectedUri) cls += " incoming";
+        else cls += " dimmed";
+      }
+      var path = el("path", { class: cls, d: d });
+      viewport.appendChild(path);
+    });
+
+    // nodes
+    graph.nodes.forEach(function (n) {
+      var p = L.pos[n.uri];
+      var g = el("g", {
+        class: "node-card" + (selectedUri === n.uri ? " selected" : "") + (relatedSet && relatedSet[n.uri] ? " related" : "") + (selectedUri && selectedUri !== n.uri && !(relatedSet && relatedSet[n.uri]) ? " dimmed" : ""),
+        transform: "translate(" + (p.x - NODE_W / 2) + "," + (p.y - NODE_H / 2) + ")",
+        tabindex: "0",
+        role: "button",
+        "aria-label": shortSubject(n.produces[0] ? n.produces[0].subject : n.uri),
+      });
+      var color = genColor(n.generation, maxGen);
+      g.appendChild(el("rect", { width: NODE_W, height: NODE_H, rx: 9, fill: color, "fill-opacity": selectedUri === n.uri || (relatedSet && relatedSet[n.uri]) ? "0.34" : "0.19" }));
+      var subj = n.produces[0] ? shortSubject(n.produces[0].subject) : shortSubject(n.uri);
+      var t1 = el("text", { x: 10, y: 21, "font-size": "11.5", "font-weight": "500" });
+      t1.textContent = truncate(subj, 20);
+      g.appendChild(t1);
+      var t2 = el("text", { class: "verb", x: 10, y: 35, "font-size": "10" });
+      t2.textContent = n.verb + (n.produces[0] ? " · " + n.produces[0].predicate : "");
+      g.appendChild(t2);
+      var t3 = el("text", { class: "verb", x: 10, y: 49, "font-size": "9.5" });
+      t3.textContent = shortAuthor(n.author);
+      g.appendChild(t3);
+      g.addEventListener("click", function () { selectNode(n.uri); });
+      g.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(n.uri); } });
+      viewport.appendChild(g);
+    });
+
+    renderInspector();
+  }
+
+  function findNode(uri) {
+    return sources[state.active].graph.nodes.find(function (n) { return n.uri === uri; });
+  }
+
+  function selectNode(uri) {
+    state.selected = state.selected === uri ? null : uri;
+    render();
+  }
+
+  function renderInspector() {
+    if (!state.selected) {
+      inspector.innerHTML = '<div class="empty">Click any commit to inspect what it produced, what it cited, and what cites it back.</div>';
+      return;
+    }
+    var graph = sources[state.active].graph;
+    var n = findNode(state.selected);
+    if (!n) { inspector.innerHTML = '<div class="empty">Not found.</div>'; return; }
+
+    var outgoing = graph.edges.filter(function (e) { return e.from === n.uri; });
+    var incoming = graph.edges.filter(function (e) { return e.to === n.uri; });
+
+    var html = "";
+    html += '<div class="insp-eyebrow">' + n.verb + " &middot; " + shortAuthor(n.author) + "</div>";
+    html += '<div class="insp-subject">' + (n.produces[0] ? shortSubject(n.produces[0].subject) : "—") + "</div>";
+    html += '<div class="insp-meta"><span class="gen-chip">generation ' + n.generation + '</span><span>' + n.produces.length + ' fact' + (n.produces.length === 1 ? '' : 's') + ' produced</span></div>';
+
+    n.produces.forEach(function (p) {
+      html += '<div class="insp-value"><span class="pred">' + p.subject + " &middot; " + p.predicate + '</span>' + escapeHtml(p.value) + '</div>';
+    });
+
+    html += '<div class="insp-section"><h4>Cites (' + outgoing.length + ')</h4>';
+    if (outgoing.length) {
+      html += '<ul class="insp-list">';
+      outgoing.forEach(function (e) {
+        if (e.to) {
+          var target = findNode(e.to);
+          html += '<li><button data-goto="' + e.to + '">' + (target ? shortSubject(target.produces[0] ? target.produces[0].subject : target.uri) : shortSubject(e.subject)) + '</button><span class="via">via ' + e.subject + ' · ' + e.predicate + '</span></li>';
+        }
+      });
+      html += '</ul>';
+      var externals = outgoing.filter(function (e) { return !e.to; });
+      if (externals.length) {
+        html += '<ul class="insp-list external">';
+        externals.forEach(function (e) {
+          html += '<li><button disabled>' + shortSubject(e.subject) + ' · ' + e.predicate + '</button><span class="via">outside this graph</span></li>';
+        });
+        html += '</ul>';
+      }
+    } else {
+      html += '<div class="insp-value" style="font-style:italic;color:var(--text-faint)">Nothing — a base fact, generation 0.</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="insp-section"><h4>Cited by (' + incoming.length + ')</h4>';
+    if (incoming.length) {
+      html += '<ul class="insp-list">';
+      incoming.forEach(function (e) {
+        var source = findNode(e.from);
+        html += '<li><button data-goto="' + e.from + '">' + (source ? shortSubject(source.produces[0] ? source.produces[0].subject : source.uri) : e.from) + '</button><span class="via">via ' + e.subject + ' · ' + e.predicate + '</span></li>';
+      });
+      html += '</ul>';
+    } else {
+      html += '<div class="insp-value" style="font-style:italic;color:var(--text-faint)">Nothing yet — no later commit in this graph builds on it.</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="insp-uri">' + n.uri + '<br/>cid: ' + n.cid + '</div>';
+
+    inspector.innerHTML = html;
+    inspector.querySelectorAll("[data-goto]").forEach(function (btn) {
+      btn.addEventListener("click", function () { selectNode(btn.getAttribute("data-goto")); });
+    });
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  // ---- zoom / pan ----
+  function resetView() { state.scale = 1; state.tx = 0; state.ty = 0; }
+  function applyZoom(delta, cx, cy) {
+    var next = Math.min(2.5, Math.max(0.35, state.scale * delta));
+    var factor = next / state.scale;
+    state.tx = cx - (cx - state.tx) * factor;
+    state.ty = cy - (cy - state.ty) * factor;
+    state.scale = next;
+    viewport.setAttribute("transform", "translate(" + state.tx + "," + state.ty + ") scale(" + state.scale + ")");
+  }
+
+  wrap.addEventListener("wheel", function (ev) {
+    ev.preventDefault();
+    var rect = svg.getBoundingClientRect();
+    var vb = svg.viewBox.baseVal;
+    var cx = ((ev.clientX - rect.left) / rect.width) * vb.width;
+    var cy = ((ev.clientY - rect.top) / rect.height) * vb.height;
+    applyZoom(ev.deltaY < 0 ? 1.12 : 0.89, cx, cy);
+  }, { passive: false });
+
+  // Pointer capture is deliberately NOT grabbed on plain pointerdown: on
+  // an element with capture set, Chromium redirects the resulting click
+  // to the capturing element too, not just pointer events -- confirmed
+  // directly (a node click landed on #canvasWrap instead of the node
+  // under the cursor). Capture is only taken once real movement crosses
+  // a small threshold, so a plain click never engages it, and it is
+  // always released on pointerup/leave/cancel.
+  var dragging = false, panning = false, lastX = 0, lastY = 0, downX = 0, downY = 0;
+  var DRAG_THRESHOLD = 4;
+  wrap.addEventListener("pointerdown", function (ev) {
+    dragging = true; panning = false;
+    lastX = downX = ev.clientX;
+    lastY = downY = ev.clientY;
+  });
+  wrap.addEventListener("pointermove", function (ev) {
+    if (!dragging) return;
+    if (!panning) {
+      if (Math.abs(ev.clientX - downX) < DRAG_THRESHOLD && Math.abs(ev.clientY - downY) < DRAG_THRESHOLD) return;
+      panning = true;
+      wrap.classList.add("grabbing");
+      wrap.setPointerCapture(ev.pointerId);
+    }
+    var rect = svg.getBoundingClientRect();
+    var vb = svg.viewBox.baseVal;
+    var scaleX = vb.width / rect.width, scaleY = vb.height / rect.height;
+    state.tx += (ev.clientX - lastX) * scaleX;
+    state.ty += (ev.clientY - lastY) * scaleY;
+    lastX = ev.clientX; lastY = ev.clientY;
+    viewport.setAttribute("transform", "translate(" + state.tx + "," + state.ty + ") scale(" + state.scale + ")");
+  });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(function (evt) {
+    wrap.addEventListener(evt, function (ev) {
+      dragging = false; panning = false;
+      wrap.classList.remove("grabbing");
+      if (wrap.hasPointerCapture && wrap.hasPointerCapture(ev.pointerId)) wrap.releasePointerCapture(ev.pointerId);
+    });
+  });
+
+  document.getElementById("zoomIn").addEventListener("click", function () {
+    var vb = svg.viewBox.baseVal;
+    applyZoom(1.2, vb.width / 2, vb.height / 2);
+  });
+  document.getElementById("zoomOut").addEventListener("click", function () {
+    var vb = svg.viewBox.baseVal;
+    applyZoom(0.83, vb.width / 2, vb.height / 2);
+  });
+  document.getElementById("zoomReset").addEventListener("click", function () {
+    resetView();
+    viewport.setAttribute("transform", "translate(0,0) scale(1)");
+  });
+
+  render();
+})();
+</script>
