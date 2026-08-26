@@ -142,20 +142,40 @@ PDS providers — while the DID itself is the stable anchor. Conflating
 currently lives" would have meant solving both at once. They don't need
 to be solved together, and one of them is already solved.
 
-**Endpoint resolution is already real, live, and reusable as-is.**
-written-world's `server/src/atproto/identity.rs` doesn't cache a PDS
-host anywhere — `WwDidResolver = CommonDidResolver<WorkersHttpClient>`
-resolves a DID's current `serviceEndpoint` fresh, via `atrium-identity`
-(not hand-rolled), confirmed generic over its own HTTP transport
-(`CommonDidResolver<T: HttpClient>`). The only Workers-specific part is
-`WorkersHttpClient` — a thin transport shim, not resolution logic. A
-native CLI/Android client needs the exact same `atrium-identity`
-dependency and its own native `HttpClient` impl (`reqwest` or
-equivalent) plugged into the identical `CommonDidResolver<T>` — reusing
-the same audited resolution logic the Worker already runs in
-production, not reimplementing DID/endpoint rotation a second time.
-This was previously named as an open question; it isn't one anymore,
-it's a known, scoped implementation task (write one transport shim).
+**Endpoint resolution is already real and live on the Worker side, via
+`atrium-identity`.** written-world's `server/src/atproto/identity.rs`
+doesn't cache a PDS host anywhere — `WwDidResolver =
+CommonDidResolver<WorkersHttpClient>` resolves a DID's current
+`serviceEndpoint` fresh, confirmed generic over its own HTTP transport
+(`CommonDidResolver<T: HttpClient>`), with `WorkersHttpClient` as the
+only Workers-specific part.
+
+**CLI/Android don't need a transport shim for that generic, though —
+they need a different, already-native crate family.** `atrium-identity`
+is built to be transport-generic specifically *because* it has to run
+inside the Workers wasm32 sandbox; CLI and Android have no such
+constraint and are better served by
+[`atproto-identity`](https://crates.io/crates/atproto-identity) (Nick
+Gerakines, MIT, actively maintained — 27 published versions as of
+`atproto-oauth`, most recent April 2026) instead. Confirmed directly
+from its own README: `resolve_subject` takes a bare `reqwest::Client`
+as an argument, not a generic transport trait — it's written assuming a
+native runtime, not abstracted to also fit inside a wasm32 Worker the
+way `atrium-identity` had to be. That's exactly the shape CLI/Android
+want: no shim to write at all, just depend on a crate already built for
+where they actually run. This supersedes the "write a native
+`HttpClient` shim for `atrium-identity`" recommendation from earlier in
+this same design pass — checking the real crate changed the answer, not
+just confirmed it.
+
+This does mean two independent AT Protocol client implementations exist
+across the whole system after this (`atrium-*` in the Worker,
+`atproto-identity`/`atproto-oauth` in CLI/Android) — a real, named
+cost (two dependencies to track, two possible sources of spec-drift)
+traded for each one fitting its actual runtime without fighting
+platform constraints or hand-writing a shim. Worth stating plainly
+rather than treating "just use one library everywhere" as free — it
+isn't, here.
 
 **The DID↔iroh binding itself is a new record, not a new mechanism.**
 Since endpoint rotation is already handled by resolving fresh at use
@@ -187,31 +207,37 @@ way everything else here is.
 
 **Android's auth path is decided: OAuth.** Not the app-password
 alternative — a revocable, no-embedded-secret flow is the right shape
-for a distributed consumer app, and the reuse story is the same shape
-as DID resolution above: `WwOAuthClient = atrium_oauth::OAuthClient<
-WwStateStore, WwSessionStore, WwDidResolver, WwHandleResolver,
-WorkersHttpClient>` is generic over all five of those type parameters,
-so the actual OAuth protocol machinery (PAR, PKCE, DPoP, token
-exchange) is the same audited `atrium-oauth` code already proven live
-in the Worker, not a reimplementation — Android needs its own
-`HttpClient` (shared with the DID-resolution shim above) and its own
-`StateStore`/`SessionStore`, backed by Android's own secure storage
-(Keystore-backed), not the Worker's KV-backed one.
+for a distributed consumer app.
 
-**One real difference, found by checking the actual config, not
-assumed reusable as-is**: this deploy's `atproto_client_metadata`
-configures a **confidential client** —
-`token_endpoint_auth_method: PrivateKeyJwt`, authenticated to the PDS's
-token endpoint with a server-held private signing key (`app_jwk`).
-That specific configuration cannot be copied into Android — a "private"
-key embedded in a distributed, decompilable APK isn't private, and
-shipping it would defeat the whole point of `private_key_jwt` client
-authentication. Android needs atproto's **public-client** OAuth path
-instead (PKCE only, no client assertion) — the same `atrium_oauth::
-OAuthClient` machinery, a different `AtprotoClientMetadata`/`AuthMethod`
-configuration. Whether `atrium-oauth` 0.1.7 exposes that public-client
-mode directly is unverified here — a real first check for whoever
-scopes this, not assumed.
+**The Worker's `atrium-oauth`-based flow was the wrong reuse target
+here too, for the same reason as `atrium-identity` above.**
+`WwOAuthClient = atrium_oauth::OAuthClient<WwStateStore, WwSessionStore,
+WwDidResolver, WwHandleResolver, WorkersHttpClient>` is real, audited,
+and proven live — but it's built around this deploy's own **confidential
+client** configuration (`token_endpoint_auth_method: PrivateKeyJwt`,
+authenticated with a server-held signing key, `app_jwk`). That
+configuration cannot be copied into Android at all — a "private" key
+embedded in a distributed, decompilable APK isn't private, and shipping
+it would defeat the entire point of `private_key_jwt` client
+authentication. Android needs atproto's **public-client** path instead
+(PKCE only, no client assertion).
+
+Rather than fight `atrium-oauth`'s `OAuthClient` into a shape it may or
+may not directly support (unverified, and not the crate's own apparent
+design center), the same native-first
+[`atproto-oauth`](https://crates.io/crates/atproto-oauth) crate family
+that replaces `atrium-identity` above fits this directly: it exposes
+PKCE (`pkce::generate()`, RFC 7636), DPoP (`dpop::auth_dpop`/
+`request_dpop`, RFC 9449, with automatic nonce-retry handling — the
+same fiddly requirement `atrium-oauth`'s own `DpopClient` handles
+internally, confirmed both crates take it seriously rather than
+hand-waving it), OAuth discovery (`resources::discover_protected_resource`/
+`discover_authorization_server`, RFC 8414), and JWT mint/verify as
+separate, composable primitives rather than one opinionated client
+struct — a public-client flow is just "use PKCE, skip the JWT-assertion
+step," not a mode fighting against the crate's own design the way it
+would be retrofitting `atrium-oauth`'s `OAuthClient`. Same author, same
+crate family, actively maintained (MIT, 0.14.5 as of this check).
 
 A second, genuinely new piece of infrastructure this needs: Android's
 OAuth redirect can't reuse `{public_url}/oauth/callback` (that's the
@@ -231,8 +257,11 @@ an app-password session (`com.atproto.server.createSession`) is simpler
 but a different trust and revocation model, and a loopback-HTTP-server
 pattern (open a local port, launch the system browser, catch the
 redirect there — the same shape `gh auth login` and similar CLIs
-already use) is a third real option this doc doesn't pick between.
-Worth its own decision, not assumed here.
+already use) is a third real option this doc doesn't pick between. If
+CLI ends up choosing OAuth in either form, `atproto-identity`/
+`atproto-oauth` (above) serve it the same way they serve Android — one
+native crate family for both native clients, not a second bespoke
+implementation. Worth its own decision, not assumed here.
 
 ## Open design work (named, not designed here)
 
@@ -254,10 +283,11 @@ Worth its own decision, not assumed here.
 - **Cross-substrate identity binding.** Resolved in shape, not yet
   built — see "Cross-substrate identity: DID stable, endpoint rotates,
   binding is a record" above. Android's auth path is decided (OAuth,
-  public-client mode — see that section for the confidential-vs-public
-  correction and the App Link redirect it needs). What remains open is
-  purely implementation on the Android side (the native `HttpClient`/
-  store shims, the public-client `AtprotoClientMetadata`, the App Link),
+  public-client mode, via `atproto-identity`/`atproto-oauth` rather than
+  retrofitting the Worker's `atrium-oauth`-based confidential client —
+  see that section for the reasoning). What remains open is purely
+  implementation: wiring `atproto-oauth`'s PKCE/DPoP/discovery
+  primitives into an actual public-client flow, the App Link redirect,
   the binding fact's own lexicon/record shape, and CLI's own,
   still-undecided auth mechanism (app-password, a loopback-server OAuth
   flow, or something else — see that section) — separate from the
