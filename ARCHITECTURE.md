@@ -185,13 +185,54 @@ whole grammar already uses. No bespoke revocation or rotation primitive
 needed; the binding fact is ordinary DMML content, checkable the same
 way everything else here is.
 
-**Genuinely still open, and distinct from the above**: what CLI and
-Android actually authenticate to the PDS with to write this binding
-record and their own checkpoint commits — the existing OAuth
-authorization-code flow (`oauth_wire.rs`), built for a browser redirect
-and not obviously the right shape for a CLI, or an app-password session
-(`com.atproto.server.createSession`), simpler but a different trust and
-revocation model. Worth its own decision, not assumed here.
+**Android's auth path is decided: OAuth.** Not the app-password
+alternative — a revocable, no-embedded-secret flow is the right shape
+for a distributed consumer app, and the reuse story is the same shape
+as DID resolution above: `WwOAuthClient = atrium_oauth::OAuthClient<
+WwStateStore, WwSessionStore, WwDidResolver, WwHandleResolver,
+WorkersHttpClient>` is generic over all five of those type parameters,
+so the actual OAuth protocol machinery (PAR, PKCE, DPoP, token
+exchange) is the same audited `atrium-oauth` code already proven live
+in the Worker, not a reimplementation — Android needs its own
+`HttpClient` (shared with the DID-resolution shim above) and its own
+`StateStore`/`SessionStore`, backed by Android's own secure storage
+(Keystore-backed), not the Worker's KV-backed one.
+
+**One real difference, found by checking the actual config, not
+assumed reusable as-is**: this deploy's `atproto_client_metadata`
+configures a **confidential client** —
+`token_endpoint_auth_method: PrivateKeyJwt`, authenticated to the PDS's
+token endpoint with a server-held private signing key (`app_jwk`).
+That specific configuration cannot be copied into Android — a "private"
+key embedded in a distributed, decompilable APK isn't private, and
+shipping it would defeat the whole point of `private_key_jwt` client
+authentication. Android needs atproto's **public-client** OAuth path
+instead (PKCE only, no client assertion) — the same `atrium_oauth::
+OAuthClient` machinery, a different `AtprotoClientMetadata`/`AuthMethod`
+configuration. Whether `atrium-oauth` 0.1.7 exposes that public-client
+mode directly is unverified here — a real first check for whoever
+scopes this, not assumed.
+
+A second, genuinely new piece of infrastructure this needs: Android's
+OAuth redirect can't reuse `{public_url}/oauth/callback` (that's the
+Worker's own server-side callback handler) — it needs a verified HTTPS
+App Link that the OS routes back into the app after the system browser
+completes authorization (RFC 8252's native-app pattern), which means
+hosting a `.well-known/assetlinks.json` for Digital Asset Links
+verification. The `client_id` itself can still point at the existing
+`{public_url}/client-metadata.json` — that document is static discovery
+metadata, not part of the live flow, and doesn't need to change shape
+for a public client beyond its `token_endpoint_auth_method` field.
+
+**CLI's auth path is still genuinely open** — the OAuth flow above
+(even in its public-client form) assumes a system browser and a
+routable redirect, neither obviously available to every CLI context;
+an app-password session (`com.atproto.server.createSession`) is simpler
+but a different trust and revocation model, and a loopback-HTTP-server
+pattern (open a local port, launch the system browser, catch the
+redirect there — the same shape `gh auth login` and similar CLIs
+already use) is a third real option this doc doesn't pick between.
+Worth its own decision, not assumed here.
 
 ## Open design work (named, not designed here)
 
@@ -212,11 +253,14 @@ revocation model. Worth its own decision, not assumed here.
   scoped, comparatively small design work now.
 - **Cross-substrate identity binding.** Resolved in shape, not yet
   built — see "Cross-substrate identity: DID stable, endpoint rotates,
-  binding is a record" below. What remains open is purely
-  implementation: the native `HttpClient` transport shim, the actual
-  lexicon/record shape for the binding fact, and the CLI/Android
-  auth mechanism used to write it (app-password session vs. the
-  existing OAuth flow) — a related but separate decision from the
+  binding is a record" above. Android's auth path is decided (OAuth,
+  public-client mode — see that section for the confidential-vs-public
+  correction and the App Link redirect it needs). What remains open is
+  purely implementation on the Android side (the native `HttpClient`/
+  store shims, the public-client `AtprotoClientMetadata`, the App Link),
+  the binding fact's own lexicon/record shape, and CLI's own,
+  still-undecided auth mechanism (app-password, a loopback-server OAuth
+  flow, or something else — see that section) — separate from the
   binding's own shape.
 - **Cross-DID references stay quotation, not verification** — a
   foreign-node reference materializes as a first-person, timestamped
