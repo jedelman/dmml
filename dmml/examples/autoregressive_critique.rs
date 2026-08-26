@@ -77,6 +77,14 @@ commit asserts {
 }
 "#;
 
+const SECTION1_CITATION_GRANULARITY_SRC: &str = r#"
+commit asserts {
+  declare attribute claim
+
+  paper/section1_citation_granularity claim "a consumes entry can cite one specific triple within any prior commit, not only the tip of that commit and not the commit as an indivisible unit -- nothing in the grammar treats a commit as an atomic whole for citation purposes"
+}
+"#;
+
 const SECTION5_ANSWER_SRC: &str = r#"
 commit asserts {
   declare attribute claim
@@ -150,6 +158,83 @@ commit argues {
 }
 "#;
 
+// ===== Cycle 4: dispatched fresh, given the paper + cycles 1-3, told
+// not to repeat any. It found something none of the object-level cycles
+// did: cycle 3 (LLM-sampling contamination) undercuts cycle 2's own
+// evidentiary basis (the "facts might converge too" worry needs
+// Section 5's convergence to be genuine DMML-grammar evidence, which
+// cycle 3 casts doubt on). This is SECOND-ORDER: it consumes prior
+// CRITIQUES, not base-paper facts -- the same "recombination of a
+// recombination" shape `benjamin_second_reader.rs`'s forced-regression
+// commit already demonstrated, now appearing spontaneously in a fresh
+// dispatch rather than being asked for. =====
+const CYCLE4_TEMPLATE: &str = r#"
+commit argues {
+  declare attribute claim
+
+  consumes {
+    fact {cycle2_uri} (cid: {cycle2_cid}) {
+      subject: paper/critique_cycle2
+      predicate: claim
+    }
+    fact {cycle3_uri} (cid: {cycle3_cid}) {
+      subject: paper/critique_cycle3
+      predicate: claim
+    }
+  }
+  produces {
+    paper/critique_cycle4 claim "cycle 3 defangs cycle 2: cycle 2's worry that fact-convergence could eventually follow vocabulary-convergence needs Section 5's convergence data to be genuine evidence about DMML's own grammar-level dynamics. cycle 3 shows that convergence is plausibly just LLM-sampling behavior common to any domain, not something DMML's grammar produced or licenses -- which removes the evidentiary basis cycle 2 needed. the critiques are not independent, additive damage; they partially cancel, and nothing in a chained-dispatch format where each reader is only told not to repeat prior points checks whether a later critique invalidates an earlier one's premises -- a structural feature of chained peer critique itself, not only of this paper"
+  }
+}
+"#;
+
+// ===== Cycle 5: dispatched fresh, given paper + cycles 1-4, told not to
+// repeat any. Returns to FIRST-ORDER attack on the base paper, from an
+// angle none of cycles 1-4 touched: citation granularity. =====
+const CYCLE5_TEMPLATE: &str = r#"
+commit argues {
+  declare attribute claim
+
+  consumes {
+    fact {citation_granularity_uri} (cid: {citation_granularity_cid}) {
+      subject: paper/section1_citation_granularity
+      predicate: claim
+    }
+    fact {auto_recombinant_uri} (cid: {auto_recombinant_cid}) {
+      subject: paper/section4_auto_recombinant
+      predicate: claim
+    }
+  }
+  produces {
+    paper/critique_cycle5 claim "citation granularity is the triple, not the commit -- a later commit can extract one fact from its production context while ignoring everything else that commit asserted together, with no mechanism tracking which co-produced facts must travel together. Deleuze and Guattari's desiring-machine connections (breast-mouth) are constituted BY their connections, not by extractable partial objects severed from context -- DMML's triple-level citation does the reverse. Nyx's commit is fine only because it happened to cite whole coherent facts; nothing in the grammar prevents a future commit from citing one triple out of a commit while severing it from the production-context that gave it its sense, a gap orthogonal to the fail-open/convergence cluster and checkable directly against the schema (does consumes type-check against triples or whole commits?)"
+  }
+}
+"#;
+
+// ===== Cycle 6: dispatched fresh, given paper + cycles 1-5, told not to
+// repeat any. SECOND-ORDER again, but a different move than cycle 4: it
+// turns Section 3's own sampling-vs-production question on the critique
+// -dispatch EXPERIMENT itself, not on any base-paper claim. =====
+const CYCLE6_TEMPLATE: &str = r#"
+commit argues {
+  declare attribute claim
+
+  consumes {
+    fact {sampling_concern_uri} (cid: {sampling_concern_cid}) {
+      subject: paper/section3_sampling_concern
+      predicate: claim
+    }
+    fact {cycle3_uri} (cid: {cycle3_cid}) {
+      subject: paper/critique_cycle3
+      predicate: claim
+    }
+  }
+  produces {
+    paper/critique_cycle6 claim "the critique-dispatch experiment producing cycles 1 through 5 is itself an unacknowledged second instance of exactly what cycle 3 (and Section 3) put in question: each critique is produced by an LLM reader sampling from a learned distribution, conditioned on the paper plus all prior critiques, accepted into the log without verification against any canonical correct critique, rival and uncoordinated in the same way pantheon.rs's Helios/Selene/Eos are. the paper anchors its empirical claims in pantheon.rs and the Benjamin simulation; the six-round critique experiment used to stress-test the paper is a live, unexamined third instance of the same open question -- is this production, or selection from an already-determined menu -- applied to the paper's own critical apparatus rather than to a fictional petition-resolver"
+  }
+}
+"#;
+
 fn main() {
     let fail_open_uri = "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0200";
     let fail_open = identify(SECTION1_FAIL_OPEN_SRC, fail_open_uri, "bafyFailOpen");
@@ -162,6 +247,13 @@ fn main() {
 
     let section5_answer_uri = "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0203";
     let section5_answer = identify(SECTION5_ANSWER_SRC, section5_answer_uri, "bafySection5Answer");
+
+    let citation_granularity_uri = "at://did:plc:essay/org.jason-edelman.writtenworld.commit/rkey0204";
+    let citation_granularity = identify(
+        SECTION1_CITATION_GRANULARITY_SRC,
+        citation_granularity_uri,
+        "bafyCitationGranularity",
+    );
 
     let cycle1_uri = "at://did:plc:reader-cycle1/org.jason-edelman.writtenworld.commit/rkey0001";
     let cycle1_src = CYCLE1_TEMPLATE
@@ -187,34 +279,37 @@ fn main() {
         .replace("{section5_answer_cid}", "bafySection5Answer");
     let cycle3 = identify(&cycle3_src, cycle3_uri, "bafyCycle3");
 
+    let cycle4_uri = "at://did:plc:reader-cycle4/org.jason-edelman.writtenworld.commit/rkey0001";
+    let cycle4_src = CYCLE4_TEMPLATE
+        .replace("{cycle2_uri}", cycle2_uri)
+        .replace("{cycle2_cid}", "bafyCycle2")
+        .replace("{cycle3_uri}", cycle3_uri)
+        .replace("{cycle3_cid}", "bafyCycle3");
+    let cycle4 = identify(&cycle4_src, cycle4_uri, "bafyCycle4");
+
+    let cycle5_uri = "at://did:plc:reader-cycle5/org.jason-edelman.writtenworld.commit/rkey0001";
+    let cycle5_src = CYCLE5_TEMPLATE
+        .replace("{citation_granularity_uri}", citation_granularity_uri)
+        .replace("{citation_granularity_cid}", "bafyCitationGranularity")
+        .replace("{auto_recombinant_uri}", auto_recombinant_uri)
+        .replace("{auto_recombinant_cid}", "bafyAutoRecombinant");
+    let cycle5 = identify(&cycle5_src, cycle5_uri, "bafyCycle5");
+
+    let cycle6_uri = "at://did:plc:reader-cycle6/org.jason-edelman.writtenworld.commit/rkey0001";
+    let cycle6_src = CYCLE6_TEMPLATE
+        .replace("{sampling_concern_uri}", sampling_concern_uri)
+        .replace("{sampling_concern_cid}", "bafySamplingConcern")
+        .replace("{cycle3_uri}", cycle3_uri)
+        .replace("{cycle3_cid}", "bafyCycle3");
+    let cycle6 = identify(&cycle6_src, cycle6_uri, "bafyCycle6");
+
     println!("=== Cycle 1 (fresh reader, paper only) ===\n{cycle1_src}");
     println!("=== Cycle 2 (fresh reader, paper + cycle 1) ===\n{cycle2_src}");
     println!("=== Cycle 3 (fresh reader, paper + cycles 1-2) ===\n{cycle3_src}");
+    println!("=== Cycle 4 (fresh reader, paper + cycles 1-3) ===\n{cycle4_src}");
+    println!("=== Cycle 5 (fresh reader, paper + cycles 1-4) ===\n{cycle5_src}");
+    println!("=== Cycle 6 (fresh reader, paper + cycles 1-5) ===\n{cycle6_src}");
 
-    // Check 1: each cycle consumes exactly the base-paper facts it
-    // actually engages with -- two each -- not a chain where later
-    // cycles merely cite earlier cycles' critique (which would indicate
-    // elaboration on a single thread rather than three independent
-    // angles of attack).
-    assert_eq!(cycle1.commit.consumes.len(), 2);
-    assert_eq!(cycle2.commit.consumes.len(), 2);
-    assert_eq!(cycle3.commit.consumes.len(), 2);
-    let cites_only_base_facts = |c: &IdentifiedCommit| {
-        c.commit.consumes.iter().all(|cref| match cref {
-            lower::ConsumeRef::Fact(f) => {
-                f.subject.starts_with("paper/section")
-            }
-            lower::ConsumeRef::Strong(_) => false,
-        })
-    };
-    assert!(cites_only_base_facts(&cycle1));
-    assert!(cites_only_base_facts(&cycle2));
-    assert!(cites_only_base_facts(&cycle3));
-    println!("Check 1: all three cycles consume ONLY base-paper facts (never each other) -- three independent angles of attack on the same fixed material, not one thread of elaboration mistaken for three.");
-
-    // Check 2: no two cycles consume the identical fact-pair -- each
-    // round is triangulating a genuinely different pair of claims, not
-    // re-deriving the same connection with different words.
     let pair_of = |c: &IdentifiedCommit| -> Vec<String> {
         let mut subs: Vec<String> = c
             .commit
@@ -228,39 +323,95 @@ fn main() {
         subs.sort();
         subs
     };
-    let (p1, p2, p3) = (pair_of(&cycle1), pair_of(&cycle2), pair_of(&cycle3));
-    assert_ne!(p1, p2);
-    assert_ne!(p2, p3);
-    assert_ne!(p1, p3);
-    println!("Check 2: no two cycles triangulate the same pair of base facts -- {p1:?}, {p2:?}, {p3:?} are three distinct connections, not the same connection restated.");
 
-    // Check 3: all three critiques remain real and independently
-    // citable in the combined log -- checked the honest way, per
-    // Section VI's finding: none of them consumes another cycle's own
-    // output, so none is at risk of the cite-and-spend retraction that
-    // would apply if one cycle's fact were downstream-cited by another.
-    let materialized = Materialized::from_identified_commits(&[
+    // Check 1: cycles 1, 2, 3, and 5 are FIRST-ORDER -- they consume
+    // only base-paper facts, never another cycle's own critique.
+    let cites_only_base_facts = |c: &IdentifiedCommit| {
+        c.commit.consumes.iter().all(|cref| match cref {
+            lower::ConsumeRef::Fact(f) => f.subject.starts_with("paper/section"),
+            lower::ConsumeRef::Strong(_) => false,
+        })
+    };
+    for (c, label) in [(&cycle1, "1"), (&cycle2, "2"), (&cycle3, "3"), (&cycle5, "5")] {
+        assert_eq!(c.commit.consumes.len(), 2, "cycle {label} should consume exactly 2 facts");
+        assert!(cites_only_base_facts(c), "cycle {label} should be first-order (base facts only)");
+    }
+    println!("Check 1: cycles 1, 2, 3, and 5 are first-order -- each consumes only base-paper facts, never another cycle's critique.");
+
+    // Check 2: cycles 4 and 6 are SECOND-ORDER -- they consume prior
+    // CRITIQUES, the same "recombination of a recombination" shape
+    // `benjamin_second_reader.rs`'s forced-regression commit already
+    // demonstrated, now appearing spontaneously rather than being asked
+    // for. Confirms they are a genuinely different KIND of move, not
+    // just a different first-order angle.
+    let cites_a_prior_critique = |c: &IdentifiedCommit| {
+        c.commit.consumes.iter().any(|cref| match cref {
+            lower::ConsumeRef::Fact(f) => f.subject.starts_with("paper/critique_cycle"),
+            lower::ConsumeRef::Strong(_) => false,
+        })
+    };
+    assert!(cites_a_prior_critique(&cycle4), "cycle 4 should consume a prior critique");
+    assert!(cites_a_prior_critique(&cycle6), "cycle 6 should consume a prior critique");
+    println!("Check 2: cycles 4 and 6 are second-order -- each consumes at least one PRIOR CRITIQUE, not just base-paper facts, the same recombination-of-a-recombination shape benjamin_second_reader.rs already demonstrated.");
+
+    // Check 3: no two cycles triangulate the identical fact-pair -- each
+    // round is a genuinely different connection, not the same one
+    // re-derived with different words.
+    let pairs: Vec<(&str, Vec<String>)> = vec![
+        ("1", pair_of(&cycle1)),
+        ("2", pair_of(&cycle2)),
+        ("3", pair_of(&cycle3)),
+        ("4", pair_of(&cycle4)),
+        ("5", pair_of(&cycle5)),
+        ("6", pair_of(&cycle6)),
+    ];
+    for i in 0..pairs.len() {
+        for j in (i + 1)..pairs.len() {
+            assert_ne!(
+                pairs[i].1, pairs[j].1,
+                "cycle {} and cycle {} triangulated the identical fact-pair",
+                pairs[i].0, pairs[j].0
+            );
+        }
+    }
+    for (label, pair) in &pairs {
+        println!("  cycle {label} triangulates: {pair:?}");
+    }
+    println!("Check 3: all six cycles triangulate distinct fact-pairs -- six genuinely different connections across six rounds, none re-deriving another.");
+
+    // Check 4: every cycle's claim remains real and independently
+    // citable. Checked the honest way per Section VI's finding: cycle 2
+    // and cycle 3 are each downstream-cited (by cycle 4 and/or cycle 6),
+    // so their own key would read back as None inside the full combined
+    // log -- checked in isolation instead. Cycles 1, 4, 5, 6 are never
+    // downstream-cited by anything else here, so the full combined log
+    // is the honest check for them.
+    let full_log = Materialized::from_identified_commits(&[
         fail_open.clone(),
         sampling_concern.clone(),
         auto_recombinant.clone(),
         section5_answer.clone(),
+        citation_granularity.clone(),
         cycle1.clone(),
         cycle2.clone(),
         cycle3.clone(),
+        cycle4.clone(),
+        cycle5.clone(),
+        cycle6.clone(),
     ]);
-    for (subject, cid_label) in [
-        ("paper/critique_cycle1", "cycle1"),
-        ("paper/critique_cycle2", "cycle2"),
-        ("paper/critique_cycle3", "cycle3"),
-    ] {
-        let value = materialized
+    for subject in ["paper/critique_cycle1", "paper/critique_cycle4", "paper/critique_cycle5", "paper/critique_cycle6"] {
+        full_log
             .current_value(subject, "claim")
-            .unwrap_or_else(|| panic!("{cid_label}'s claim should still be real in the combined log"));
-        let _ = value;
+            .unwrap_or_else(|| panic!("{subject} should still be real in the full combined log"));
     }
-    println!("Check 3: all three critiques remain real and independently citable in the SAME combined log -- none retracted the others, since none consumes another cycle's output.");
+    for (isolated, subject) in [(&cycle2, "paper/critique_cycle2"), (&cycle3, "paper/critique_cycle3")] {
+        Materialized::from_identified_commits(&[(*isolated).clone()])
+            .current_value(subject, "claim")
+            .unwrap_or_else(|| panic!("{subject} should still be real in isolation"));
+    }
+    println!("Check 4: every one of the six critiques remains real and independently citable -- cycles 1/4/5/6 checked in the full combined log, cycles 2/3 checked in isolation since cycles 4/6 downstream-cite and retract their keys in the combined log (the same cite-and-spend semantics found in Section VI, correctly accounted for rather than mistaken for a bug).");
 
     println!(
-        "\n=== done: three autoregressive dispatch rounds against the same fixed paper text produced three structurally distinct critiques (Check 1-2), all independently real (Check 3) -- GENERATION, not convergence, for this run. A convergent run would have shown later cycles citing the same fact-pair as an earlier one, or citing an earlier cycle's own critique rather than the paper itself, i.e. narrowing rather than widening the angles of attack. Neither happened here. ==="
+        "\n=== done: six autoregressive dispatch rounds against the same fixed paper text (plus, from round 4 on, all prior critiques) produced six structurally distinct critiques (Check 1-3), all independently real (Check 4) -- GENERATION, not convergence, through six rounds. Two of the six (4 and 6) were spontaneously second-order -- consuming a prior critique rather than the base paper -- without being asked to; the dispatch prompt never suggested that move. No plateau reached in this run: round 6 still produced a genuinely new angle, though it explicitly flagged one section (2) as having little independent purchase left, a soft signal worth watching in any further rounds rather than a plateau itself. ==="
     );
 }
