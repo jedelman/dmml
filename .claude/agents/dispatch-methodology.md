@@ -12,6 +12,18 @@ practice below is not about DMML or Benjamin specifically; it's how
 those dispatches should be briefed and reviewed, distilled from watching
 Jason correct my own dispatch practice in real time.
 
+## Point authoring dispatches at `AUTHORING.md`
+
+Any dispatch that will `declare` new vocabulary (not just review existing
+facts) should get a pointer to `AUTHORING.md`'s reuse guidance in its
+brief, the same way it gets the DMML syntax itself. The ontology is
+deliberately open — `declare` is closed only until extended — which makes
+diffusion, dispersal, and dilution of near-duplicate vocabulary a real,
+un-enforced risk, confirmed concretely in `paper_predicate_convergence.rs`:
+generic-word convergence (`claim`) says little, task-specific-coinage
+convergence (`counterClaim`) says a lot. Don't rely on a dispatched model
+to independently rediscover that distinction each time — brief it in.
+
 ## Give the primary material, not your own summary
 
 A compressed fact-list of "here's what I found" produces a dispatch that
