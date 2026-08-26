@@ -250,18 +250,34 @@ verification. The `client_id` itself can still point at the existing
 metadata, not part of the live flow, and doesn't need to change shape
 for a public client beyond its `token_endpoint_auth_method` field.
 
-**CLI's auth path is still genuinely open** — the OAuth flow above
-(even in its public-client form) assumes a system browser and a
-routable redirect, neither obviously available to every CLI context;
-an app-password session (`com.atproto.server.createSession`) is simpler
-but a different trust and revocation model, and a loopback-HTTP-server
-pattern (open a local port, launch the system browser, catch the
-redirect there — the same shape `gh auth login` and similar CLIs
-already use) is a third real option this doc doesn't pick between. If
-CLI ends up choosing OAuth in either form, `atproto-identity`/
-`atproto-oauth` (above) serve it the same way they serve Android — one
-native crate family for both native clients, not a second bespoke
-implementation. Worth its own decision, not assumed here.
+**CLI's auth path is decided too — and it's two paths, not one, because
+the same CLI binary has two genuinely different callers.** A human
+running CLI locally has a system browser available; an agent driving
+CLI inside a sandbox or container (this project's own Claude Code
+sessions included — this very session has no interactive browser to
+pop a redirect through) does not. Those aren't the same auth problem in
+different clothes; they need different mechanisms, chosen at runtime
+(is a browser actually available here), not at build time:
+
+- **Local, human-interactive CLI → OAuth**, same crate and same
+  public-client path as Android: `atproto-identity`/`atproto-oauth`,
+  with a loopback-HTTP-server redirect (open a local port, launch the
+  system browser, catch the callback there — the same shape `gh auth
+  login` and similar CLIs already use) standing in for Android's App
+  Link. One native crate family serving both native clients'
+  interactive flow, not two bespoke implementations.
+- **Sandboxed/container/agent-driven CLI → an app-password session**
+  (`com.atproto.server.createSession`) — there's no browser to redirect
+  through in that context, so OAuth's authorization-code flow isn't
+  degraded there, it's unavailable, regardless of which crate implements
+  it. A different trust and revocation model (a long-lived shared
+  credential, not a revocable token) accepted specifically because it's
+  the only one that actually works headless.
+
+Both paths land CLI in the same place either way: an authenticated
+session it uses to write the DID↔iroh binding record and its own
+checkpoint commits through the same `swapCommit`-gated path everything
+else already uses.
 
 ## Open design work (named, not designed here)
 
@@ -284,14 +300,16 @@ implementation. Worth its own decision, not assumed here.
   built — see "Cross-substrate identity: DID stable, endpoint rotates,
   binding is a record" above. Android's auth path is decided (OAuth,
   public-client mode, via `atproto-identity`/`atproto-oauth` rather than
-  retrofitting the Worker's `atrium-oauth`-based confidential client —
-  see that section for the reasoning). What remains open is purely
-  implementation: wiring `atproto-oauth`'s PKCE/DPoP/discovery
-  primitives into an actual public-client flow, the App Link redirect,
-  the binding fact's own lexicon/record shape, and CLI's own,
-  still-undecided auth mechanism (app-password, a loopback-server OAuth
-  flow, or something else — see that section) — separate from the
-  binding's own shape.
+  retrofitting the Worker's `atrium-oauth`-based confidential client),
+  and CLI's is decided too, as two runtime-selected paths sharing the
+  same crate for its interactive half (OAuth, loopback redirect, for a
+  human at a terminal; app-password for a sandboxed/agent-driven
+  invocation with no browser — see that section for why these are
+  genuinely different problems, not one decision). What remains open is
+  purely implementation: wiring `atproto-oauth`'s PKCE/DPoP/discovery
+  primitives into the actual public-client and loopback-redirect flows,
+  the App Link, the app-password path's own credential storage, and the
+  binding fact's own lexicon/record shape.
 - **Cross-DID references stay quotation, not verification** — a
   foreign-node reference materializes as a first-person, timestamped
   `Percept` (the same primitive written-world's sense-machines already
