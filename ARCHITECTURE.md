@@ -145,6 +145,28 @@ narrower re-check immediately before the write is real, scoped, and
 much smaller than the "design a whole new query" question this
 replaces.
 
+**Resolved: the staleness window is a non-issue outside gaming, and
+gaming has its own fix that doesn't touch this design.** Most DMML
+applications (this project's own paper-authoring and critique work
+among them) have no tight interactive loop where a few seconds of
+`getResolved` lag could matter — a checkpoint that resolves a moment
+late just disputes a moment late, which was already the accepted
+outcome above regardless of cause. The one class of application where
+staleness could actually bite is real-time gaming (two players racing
+to the same item, a race the player experiences directly and
+immediately) — and that doesn't need a stronger *infrastructure*
+guarantee either. It's a content-level fix, the same move Section 3 of
+`papers/desiring-production-ontology/DRAFT.md` already makes for
+lack/desire: DMML's grammar has no opinion about tight-consistency
+needs any more than it has one about lack, so a game author who needs
+one authors it as ordinary, self-declared content — a TTL-shaped
+predicate on the specific facts that actually need tight bounds (an
+item pickup, a turn lock), not a change to the conflict check, the
+`Substrate` trait, or `getResolved` itself. Nothing here is designed
+yet — this is a closed non-issue for the general case and a named,
+content-level direction for the one case that isn't, not new
+infrastructure work either way.
+
 **Resolution is `disputes`, not arbitration.** A detected concurrent-
 base conflict is not blocked and does not need a winner picked by
 policy — it's surfaced as a `disputes` commit, the same pattern already
