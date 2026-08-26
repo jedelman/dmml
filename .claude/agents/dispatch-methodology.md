@@ -6,11 +6,19 @@ description: Standing practice for briefing and reviewing any dispatched model o
 # Dispatch methodology
 
 This project dispatches other models and agents constantly — Coder/
-Reviewer (Kimi/Deepseek) for engine code, ox-alpha for adversarial
-philosophical review, fresh sub-agents for independent readings. The
-practice below is not about DMML or Benjamin specifically; it's how
+Reviewer (Kimi/Deepseek) for engine code, an adversarial-review model
+for philosophical critique, fresh sub-agents for independent readings.
+The practice below is not about DMML or Benjamin specifically; it's how
 those dispatches should be briefed and reviewed, distilled from watching
 Jason correct my own dispatch practice in real time.
+
+**The adversarial-review model referenced below as `ox-alpha` was
+OpenRouter's stealth listing for that role at the time these examples
+were built; it's since been unveiled as `z-ai/glm-5.3` (confirmed by
+Jason, 2026-08-26 — see written-world's `CLAUDE.md` for the full
+history and current dispatch specifics). Examples below keep the
+`ox-alpha` name since they're recording what actually happened at
+dispatch time; use `z-ai/glm-5.3` for any new dispatch in this role.
 
 ## Point authoring dispatches at `AUTHORING.md`
 
