@@ -132,6 +132,67 @@ predicate. A future per-predicate auto-merge rule (e.g. a counter that
 sums instead of disputing) remains a possible optimization on top of
 this, not a v1 requirement.
 
+## Cross-substrate identity: DID stable, endpoint rotates, binding is a record
+
+Two different rotation problems were sitting under one label
+("identity binding") until Jason separated them: a DID's *service
+endpoint* (which PDS currently hosts it) rotates — a user can migrate
+PDS providers — while the DID itself is the stable anchor. Conflating
+"bind an iroh author key to a DID" with "know where that DID's PDS
+currently lives" would have meant solving both at once. They don't need
+to be solved together, and one of them is already solved.
+
+**Endpoint resolution is already real, live, and reusable as-is.**
+written-world's `server/src/atproto/identity.rs` doesn't cache a PDS
+host anywhere — `WwDidResolver = CommonDidResolver<WorkersHttpClient>`
+resolves a DID's current `serviceEndpoint` fresh, via `atrium-identity`
+(not hand-rolled), confirmed generic over its own HTTP transport
+(`CommonDidResolver<T: HttpClient>`). The only Workers-specific part is
+`WorkersHttpClient` — a thin transport shim, not resolution logic. A
+native CLI/Android client needs the exact same `atrium-identity`
+dependency and its own native `HttpClient` impl (`reqwest` or
+equivalent) plugged into the identical `CommonDidResolver<T>` — reusing
+the same audited resolution logic the Worker already runs in
+production, not reimplementing DID/endpoint rotation a second time.
+This was previously named as an open question; it isn't one anymore,
+it's a known, scoped implementation task (write one transport shim).
+
+**The DID↔iroh binding itself is a new record, not a new mechanism.**
+Since endpoint rotation is already handled by resolving fresh at use
+time, the binding fact doesn't need to mention an endpoint at all — it
+only needs to say "this iroh author key belongs to this DID," published
+as an ordinary record in the player's own PDS repo, written through the
+same `swapCommit`-gated path every other commit already uses
+(`commit_write.rs`). Because it's a record *in that DID's own repo*,
+proof of authorship is the same proof atproto already relies on
+everywhere (only the DID's controller can write to that DID's repo) —
+no new signature scheme, no new trust root. And because repo migration
+is already atproto's job, the binding record moves with the DID under a
+PDS migration for free, the same as every other record in that repo.
+
+The binding is between the DID and an iroh **Author** key specifically
+(`AuthorId`/`AuthorSecret` in iroh-docs' own vocabulary), not the
+**Namespace** — the namespace is the shared world/document identity;
+the author is the per-writer key `(namespace, author, key)` entries are
+actually keyed by, and it's the author key a specific device's writes
+need to be attributable to.
+
+**Rotation is not a new mechanism either.** A lost device, a new
+device, or a routine key rotation is just another commit: `consumes`
+the old binding fact, `produces` the new one — the exact same
+consume-old/produce-new discipline every other fact change in this
+whole grammar already uses. No bespoke revocation or rotation primitive
+needed; the binding fact is ordinary DMML content, checkable the same
+way everything else here is.
+
+**Genuinely still open, and distinct from the above**: what CLI and
+Android actually authenticate to the PDS with to write this binding
+record and their own checkpoint commits — the existing OAuth
+authorization-code flow (`oauth_wire.rs`), built for a browser redirect
+and not obviously the right shape for a CLI, or an app-password session
+(`com.atproto.server.createSession`), simpler but a different trust and
+revocation model. Worth its own decision, not assumed here.
+
 ## Open design work (named, not designed here)
 
 - **`Substrate`'s real method signatures**, now split honestly rather
@@ -149,12 +210,14 @@ this, not a v1 requirement.
   (a single `(uri, cid, subject, predicate)` existence check, per
   written-world's #53 precedent, or something broader) is real,
   scoped, comparatively small design work now.
-- **Cross-substrate identity.** A sovereignty root has to be
-  represented across an atproto DID and an iroh `NamespaceSecret`
-  without either shape leaking into the trait — still open, and now
-  more concrete: a CLI/Android checkpoint commit needs to be written
-  under the same DID its own atproto reads already use, so the binding
-  has to be real, not just colocated on one device.
+- **Cross-substrate identity binding.** Resolved in shape, not yet
+  built — see "Cross-substrate identity: DID stable, endpoint rotates,
+  binding is a record" below. What remains open is purely
+  implementation: the native `HttpClient` transport shim, the actual
+  lexicon/record shape for the binding fact, and the CLI/Android
+  auth mechanism used to write it (app-password session vs. the
+  existing OAuth flow) — a related but separate decision from the
+  binding's own shape.
 - **Cross-DID references stay quotation, not verification** — a
   foreign-node reference materializes as a first-person, timestamped
   `Percept` (the same primitive written-world's sense-machines already
