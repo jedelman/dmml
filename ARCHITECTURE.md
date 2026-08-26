@@ -112,6 +112,39 @@ Two commits from different authors citing the *same* base for the same
 key is the entire, checkable signature of true concurrency; nothing
 resembling a vector clock needs inventing.
 
+**The conflict check reuses `getResolved`, not a new query.** Checked
+against `dmml-runtime`'s two existing candidates before designing
+anything new, and neither is a match on its own: `WorldGraph::
+consume_state`/`is_retracted` (`graph.rs`) look like the obvious reuse
+target, but their own doc comment rules them out directly — they answer
+whole-node currency for a `ConsumeRef::Strong` reference only; a
+`FactRef` entry is *deliberately* not fed into that bookkeeping, because
+this in-memory graph "has no notion of which specific commit produced
+which triple," and says outright that answering *that* question is
+`appview`'s job, not this one's. `appview` turns out to already do
+exactly that job, live: `org.jason-edelman.writtenworld.getResolved`
+(`appview/src/main.rs`) is a real, deployed, non-wasm32 service that
+indexes every commit to the collection across every repo via Jetstream
+(Bluesky's own, real, deployed relay — not a spike), and its
+`Resolver::resolve` walk already computes, per `FactRef`, exactly
+whether the cited `(commit, subject, predicate[, object])` is still
+current or has been excluded as "retracted or structurally invalid."
+This is the general repo-traversal/query primitive the conflict check
+needs — not a new one to build, an existing live service to call.
+
+One real caveat, not glossed over: `getResolved`'s index is a
+Jetstream-driven read model, current as of whatever it's last consumed,
+not a synchronous check against the PDS at the instant of write the way
+`swapCommit`'s CAS is. There's a real staleness/TOCTOU window between
+resolving "is this key still current" and the checkpoint commit
+actually landing. Whether that window is acceptable here (a checkpoint
+that turns out to have raced past a retraction just becomes one more
+`disputes`-flagged case, not silent data loss, since nothing about this
+design depends on the conflict check being infallible) or needs a
+narrower re-check immediately before the write is real, scoped, and
+much smaller than the "design a whole new query" question this
+replaces.
+
 **Resolution is `disputes`, not arbitration.** A detected concurrent-
 base conflict is not blocked and does not need a winner picked by
 policy — it's surfaced as a `disputes` commit, the same pattern already
@@ -288,14 +321,12 @@ else already uses.
   author-partitioned, per above) but does need the concurrent-base
   conflict check above to run as an application-level step before a
   checkpoint commit goes out to atproto.
-- **The conflict check's actual implementation.** Detecting "did
-  someone else's commit already retract the `(subject, predicate)` key
-  my pending commit consumes, since I last saw it" requires the
-  checkpointing client to query atproto's retraction history for that
-  key at checkpoint time — not yet built, and the exact query shape
-  (a single `(uri, cid, subject, predicate)` existence check, per
-  written-world's #53 precedent, or something broader) is real,
-  scoped, comparatively small design work now.
+- **The conflict check needs no new primitive — see "The conflict check
+  reuses `getResolved`, not a new query" below.** What remains open is
+  narrower than a query design: whether `getResolved`'s Jetstream-driven
+  read-model staleness window is acceptable for this use, or whether the
+  checkpointing client needs to re-check immediately before the write
+  rather than trusting an earlier resolve.
 - **Cross-substrate identity binding.** Resolved in shape, not yet
   built — see "Cross-substrate identity: DID stable, endpoint rotates,
   binding is a record" above. Android's auth path is decided (OAuth,
