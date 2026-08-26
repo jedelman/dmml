@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>DMML</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #14120f;
+    --surface: #1c1815;
+    --surface-2: #241f1a;
+    --border: #362f26;
+    --text: #ede3d0;
+    --text-dim: #a89c87;
+    --text-faint: #766b5b;
+    --accent: #d08a44;
+    --accent-strong: #e6a55e;
+    --accent-ink: #2a1a08;
+    --cite: #5fa8a3;
+    --focus: #e6a55e;
+    --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f4ede0; --surface: #ffffff; --surface-2: #f7f1e6;
+      --border: #ddd0b8; --text: #2c2318; --text-dim: #6b5f4c;
+      --text-faint: #948870; --accent: #b06a2a; --accent-strong: #8f5420;
+      --accent-ink: #fff3e2; --cite: #2f7d78; --focus: #8f5420;
+      --shadow: 0 10px 24px -14px rgba(60, 45, 20, 0.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4ede0; --surface: #ffffff; --surface-2: #f7f1e6;
+    --border: #ddd0b8; --text: #2c2318; --text-dim: #6b5f4c;
+    --text-faint: #948870; --accent: #b06a2a; --accent-strong: #8f5420;
+    --accent-ink: #fff3e2; --cite: #2f7d78; --focus: #8f5420;
+    --shadow: 0 10px 24px -14px rgba(60, 45, 20, 0.35);
+  }
+  :root[data-theme="dark"] {
+    --bg: #14120f; --surface: #1c1815; --surface-2: #241f1a;
+    --border: #362f26; --text: #ede3d0; --text-dim: #a89c87;
+    --text-faint: #766b5b; --accent: #d08a44; --accent-strong: #e6a55e;
+    --accent-ink: #2a1a08; --cite: #5fa8a3; --focus: #e6a55e;
+    --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    justify-content: center;
+  }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+  a { color: inherit; }
+  main {
+    width: 100%;
+    max-width: 640px;
+    padding: clamp(2rem, 6vw, 5rem) 1.5rem 4rem;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 0 0 0.75rem;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2.2rem, 6vw, 3rem);
+    line-height: 1.05;
+    margin: 0 0 1rem;
+    text-wrap: balance;
+  }
+  p.lede {
+    color: var(--text-dim);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    max-width: 60ch;
+    margin: 0 0 2.5rem;
+  }
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .card {
+    display: block;
+    text-decoration: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.4rem;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover, .card:focus-visible {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .card:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .card h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    font-size: 1.25rem;
+    margin: 0 0 0.4rem;
+    color: var(--accent-strong);
+  }
+  .card p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+  .card .kind {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cite);
+    margin-bottom: 0.55rem;
+  }
+  footer {
+    margin-top: 3rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--text-faint);
+  }
+  footer a { color: var(--cite); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Desiring-Machine Markup Language</p>
+  <h1>DMML tools</h1>
+  <p class="lede">
+    A portable, substrate-agnostic ontology for desiring-production —
+    commits, consumes/produces, and citation-level fact references. These
+    two tools inspect DMML content, static and live.
+  </p>
+  <div class="cards">
+    <a class="card" href="browser/">
+      <span class="kind">Static · embedded examples</span>
+      <h2>Browser</h2>
+      <p>Pan/zoom visualizer for DMML commit graphs — pantheon, the full
+      Benjamin essay, and the autoregressive critique experiment.</p>
+    </a>
+    <a class="card" href="inspector/">
+      <span class="kind">Live · atproto network</span>
+      <h2>Inspector</h2>
+      <p>A pdsls-style tool that resolves a real handle or DID, lists its
+      collections, and reads its actual commit records straight off the
+      network.</p>
+    </a>
+  </div>
+  <footer>
+    <a href="https://github.com/jedelman/dmml">github.com/jedelman/dmml</a>
+  </footer>
+</main>
+</body>
+</html>
