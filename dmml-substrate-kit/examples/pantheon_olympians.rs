@@ -23,9 +23,25 @@
 //!    tool, it reliably emits a real, schema-valid `submit_dmml_turn`
 //!    call. That's the actual discipline mechanism this file uses --
 //!    real, verified working, not the one first asked for.
+//!
+//! Updated per Jason's follow-up: dispatch now goes through
+//! `async-openai` (pointed at OpenRouter's own OpenAI-compatible
+//! `/v1` base -- confirmed this crate's typed `reasoning_effort` field
+//! round-trips correctly against GLM-5.3 via a live test call, same
+//! effect as the raw `{"reasoning":{"effort":...}}` object form used
+//! before) instead of hand-rolled `reqwest` JSON, and five rounds
+//! instead of two.
 
 use std::collections::HashMap;
 
+use async_openai::config::OpenAIConfig;
+use async_openai::types::chat::{
+    ChatCompletionMessageToolCalls, ChatCompletionRequestSystemMessageArgs,
+    ChatCompletionRequestUserMessageArgs, ChatCompletionTool, ChatCompletionToolChoiceOption,
+    ChatCompletionTools, CreateChatCompletionRequestArgs, FunctionObject, ReasoningEffort,
+    ToolChoiceOptions,
+};
+use async_openai::Client;
 use dmml_runtime::graph::{Commit, ConsumeRef, FactRef, StrongRef};
 use dmml_runtime::substrate::AppendSubstrate;
 use dmml_substrate_kit::iroh_substrate::IrohAppendSubstrate;
@@ -91,7 +107,7 @@ is quietly excluding.",
     },
 ];
 
-const ROUNDS: usize = 2;
+const ROUNDS: usize = 5;
 const MODEL: &str = "z-ai/glm-5.3";
 
 #[derive(Debug, Clone)]
@@ -145,13 +161,12 @@ fn transcript_so_far(log: &[TurnRecord]) -> String {
         .join("\n")
 }
 
-fn dmml_turn_tool() -> serde_json::Value {
-    serde_json::json!({
-        "type": "function",
-        "function": {
-            "name": "submit_dmml_turn",
-            "description": "Submit exactly one DMML conversational turn.",
-            "parameters": {
+fn dmml_turn_tool() -> ChatCompletionTools {
+    ChatCompletionTools::Function(ChatCompletionTool {
+        function: FunctionObject {
+            name: "submit_dmml_turn".to_string(),
+            description: Some("Submit exactly one DMML conversational turn.".to_string()),
+            parameters: Some(serde_json::json!({
                 "type": "object",
                 "properties": {
                     "verb": {"type": "string", "enum": ["argues", "questions", "extends", "disputes", "connects"]},
@@ -173,18 +188,17 @@ fn dmml_turn_tool() -> serde_json::Value {
                     }
                 },
                 "required": ["verb", "subject", "predicate", "object", "consumes"]
-            }
-        }
+            })),
+            strict: None,
+        },
     })
 }
 
 async fn dispatch(
-    client: &reqwest::Client,
+    client: &Client<OpenAIConfig>,
     olympian: &Olympian,
     log: &[TurnRecord],
 ) -> anyhow::Result<DmmlTurnArgs> {
-    let api_key = std::env::var("OPENROUTER_API_KEY")
-        .map_err(|_| anyhow::anyhow!("OPENROUTER_API_KEY not set"))?;
     let user_msg = format!(
         "Four Olympians (Athena, Artemis, Apollo, Dionysus) are analyzing Walter Benjamin's \
 \"The Work of Art in the Age of Mechanical Reproduction\" together, in a real, growing, checkable \
@@ -199,30 +213,44 @@ submit_dmml_turn with your answer. `consumes` must copy at least one real (cid, 
 from the log above exactly -- never invent one.",
         transcript_so_far(log)
     );
-    let body = serde_json::json!({
-        "model": MODEL,
-        "reasoning": {"effort": "low"},
-        "max_tokens": 1500,
-        "messages": [
-            {"role": "system", "content": olympian.persona},
-            {"role": "user", "content": user_msg},
-        ],
-        "tools": [dmml_turn_tool()],
-        "tool_choice": "auto",
-    });
-    let resp: serde_json::Value = client
-        .post("https://openrouter.ai/api/v1/chat/completions")
-        .bearer_auth(api_key)
-        .json(&body)
-        .send()
-        .await?
-        .json()
-        .await?;
-    let call = resp["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"]
-        .as_str()
-        .ok_or_else(|| anyhow::anyhow!("no tool call in response: {resp}"))?;
-    serde_json::from_str(call)
-        .map_err(|e| anyhow::anyhow!("failed to parse tool arguments ({e}): {call}"))
+
+    let request = CreateChatCompletionRequestArgs::default()
+        .model(MODEL)
+        .reasoning_effort(ReasoningEffort::Low)
+        .max_completion_tokens(1500u32)
+        .messages(vec![
+            ChatCompletionRequestSystemMessageArgs::default()
+                .content(olympian.persona)
+                .build()?
+                .into(),
+            ChatCompletionRequestUserMessageArgs::default()
+                .content(user_msg)
+                .build()?
+                .into(),
+        ])
+        .tools(vec![dmml_turn_tool()])
+        .tool_choice(ChatCompletionToolChoiceOption::Mode(ToolChoiceOptions::Auto))
+        .build()?;
+
+    let response = client.chat().create(request).await?;
+    let message = &response
+        .choices
+        .first()
+        .ok_or_else(|| anyhow::anyhow!("no choices in response"))?
+        .message;
+    let tool_calls = message
+        .tool_calls
+        .as_ref()
+        .ok_or_else(|| anyhow::anyhow!("no tool_calls in response message: {message:?}"))?;
+    let ChatCompletionMessageToolCalls::Function(call) = tool_calls
+        .first()
+        .ok_or_else(|| anyhow::anyhow!("empty tool_calls array"))?
+    else {
+        anyhow::bail!("first tool call was not a function call");
+    };
+    let args = &call.function.arguments;
+    serde_json::from_str(args)
+        .map_err(|e| anyhow::anyhow!("failed to parse tool arguments ({e}): {args}"))
 }
 
 fn nquad(subject_slug: &str, predicate: &str, object: &str) -> String {
@@ -316,7 +344,13 @@ async fn main() -> anyhow::Result<()> {
         log.push(rec);
     }
 
-    let client = reqwest::Client::new();
+    let api_key = std::env::var("OPENROUTER_API_KEY")
+        .map_err(|_| anyhow::anyhow!("OPENROUTER_API_KEY not set"))?;
+    let client = Client::with_config(
+        OpenAIConfig::new()
+            .with_api_base("https://openrouter.ai/api/v1")
+            .with_api_key(api_key),
+    );
 
     for round in 1..=ROUNDS {
         println!("\n-- round {round} --");

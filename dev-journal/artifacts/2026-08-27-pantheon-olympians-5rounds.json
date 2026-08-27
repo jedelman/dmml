@@ -1,0 +1,489 @@
+[
+  {
+    "cid": "15489d1feedb0a735a46e219f1ffac58afe3bbb6bab924842b8cfd845ba1c648",
+    "respondent": "essay",
+    "verb": "coins",
+    "subject": "argument/section_ii",
+    "predicate": "claim",
+    "object": "aura names the authenticity-testimony-authority chain",
+    "consumes": []
+  },
+  {
+    "cid": "e738f387d37ad33414d8bf03445c833000e68a99ae1a35228b4d1d96df6f1c15",
+    "respondent": "essay",
+    "verb": "stipulates",
+    "subject": "argument/section_iii_aura_natural",
+    "predicate": "naturalAuraDefinition",
+    "object": "unique phenomenon of a distance, however close it may be",
+    "consumes": []
+  },
+  {
+    "cid": "56201c820e67c2b58ea5bc24fce0be241bcebcf9ea54f76e5c7201736717c293",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "argument/section_v",
+    "predicate": "qualitativeShift",
+    "object": "the quantitative shift between cult and exhibition value turned into a qualitative transformation of art's nature",
+    "consumes": []
+  },
+  {
+    "cid": "b68008281f616e89788e6804703ee3c6f31cc748a63742683f55849b2da40383",
+    "respondent": "essay",
+    "verb": "reproduces",
+    "subject": "argument/section_x_star_cult",
+    "predicate": "claim",
+    "object": "the cult of the movie star preserves not the unique aura of the person but the phony spell of a commodity",
+    "consumes": []
+  },
+  {
+    "cid": "c037a755be2f54210944f28db7b6a7802fa11c8e467635c3c96022a74a33c02b",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "role/magician",
+    "predicate": "structuralMatch",
+    "object": "the magician's authority-based distance instantiates aura-as-distance, transposed onto medicine",
+    "consumes": []
+  },
+  {
+    "cid": "05545c4543f8051cf3e6501b914b80249c3751d47947891aba35471efae32f16",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "artist/cameraman",
+    "predicate": "pictureType",
+    "object": "multiple fragments assembled under a new law, matching the surgeon's structure",
+    "consumes": []
+  },
+  {
+    "cid": "4d5265bdb3e5f6552c33ed09d2a49d89395b625c11a0c30a4b94aea3e729a964",
+    "respondent": "essay",
+    "verb": "asserts",
+    "subject": "argument/epilogue_aestheticize",
+    "predicate": "claim",
+    "object": "Fascism gives the masses expression while preserving property -- the introduction of aesthetics into political life",
+    "consumes": []
+  },
+  {
+    "cid": "6231344c3f07d366a2ef05ec7394af542d04c9c05e75bb335958a4d80b4d92d5",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "argument/epilogue",
+    "predicate": "claim",
+    "object": "Fascism is rendering politics aesthetic. Communism responds by politicizing art.",
+    "consumes": []
+  },
+  {
+    "cid": "78819e64fbaf31757b91e96df708f7e29729a3a6b951405b2f1f96b0c6b1915e",
+    "respondent": "athena",
+    "verb": "connects",
+    "subject": "star_cult_as_industrialized_magic",
+    "predicate": "distanceWithoutWarrant",
+    "object": "The star-cult and the magician turn fit together more tightly than Benjamin lets on: the \"phony spell of a commodity\" is not the destruction of the magician's structure but its industrial replication. What mechanical reproduction kills is not distance itself but the unrepeatable testimony (15489d1f) that once legitimated it; the apparatus can manufacture distance-on-command, so the star keeps the aura's form -- remoteness however close -- while hollowing out its warrant. That is why the surrogate is \"phony\": it borrows the aura's geometry without its authenticity, and the market, not tradition, becomes the source of the authority it simulates.",
+    "consumes": [
+      [
+        "b68008281f616e89788e6804703ee3c6f31cc748a63742683f55849b2da40383",
+        "argument/section_x_star_cult",
+        "claim"
+      ],
+      [
+        "c037a755be2f54210944f28db7b6a7802fa11c8e467635c3c96022a74a33c02b",
+        "role/magician",
+        "structuralMatch"
+      ],
+      [
+        "e738f387d37ad33414d8bf03445c833000e68a99ae1a35228b4d1d96df6f1c15",
+        "argument/section_iii_aura_natural",
+        "naturalAuraDefinition"
+      ]
+    ]
+  },
+  {
+    "cid": "1303550d4b4cc1818286d8d9680ed8db9903b3da0412baafee825fb2e79e616c",
+    "respondent": "artemis",
+    "verb": "disputes",
+    "subject": "auraIsNotJustDistance",
+    "predicate": "auraRequiresReciprocalGaze",
+    "object": "Athena grants the star-cult too much: \"distance-on-command\" is not the aura's form at all, only its silhouette. Benjamin's own natural definition (e738f) makes aura relational -- a distance that answers back, as when a mountain or a branch catches your glance and holds it. The star's remoteness is one-directional; it is arranged by the apparatus and cannot return the hunter's look, so what is replicated is dead distance, not aura hollowed of its warrant. The distinction matters: if we accept Athena's framing, every engineered remoteness reads as aura's ghost, and we lose the ability to say the thing was simply killed.",
+    "consumes": [
+      [
+        "e738f387d37ad33414d8bf03445c833000e68a99ae1a35228b4d1d96df6f1c15",
+        "argument/section_iii_aura_natural",
+        "naturalAuraDefinition"
+      ],
+      [
+        "78819e64fbaf31757b91e96df708f7e29729a3a6b951405b2f1f96b0c6b1915e",
+        "star_cult_as_industrialized_magic",
+        "distanceWithoutWarrant"
+      ]
+    ]
+  },
+  {
+    "cid": "89542b97fd7d4bdfab5777620ff3daddf2d32d95a6fb2f6364cf9c51acc83af9",
+    "respondent": "apollo",
+    "verb": "connects",
+    "subject": "reciprocalGazeAndEpilogue",
+    "predicate": "aestheticizedPoliticsIsUnrequitedDistance",
+    "object": "Artemis's condition -- aura must answer back -- is the missing key to the epilogue, and it settles her quarrel with Athena in a way neither framed. Fascism's aestheticized politics (4d5265) is precisely the state-scale version of the star's engineered remoteness: a spectacle that confronts the masses at however close a range but never returns their look. So Artemis is right that what dies is not distance but reciprocity -- and that is exactly why the epilogue is not a political afterthought but the essay's prophecy fulfilling itself: a society that has lost the ability to be answered by its images becomes a society that can be mesmerized by them. The star-cult (b68008) was the rehearsal; the rally is the premiere. Athena's \"distance-on-command\" is real, but it is the mechanism of the spell, not aura's ghost -- the form was never aura's geometry alone, only its unrequited half.",
+    "consumes": [
+      [
+        "1303550d4b4cc1818286d8d9680ed8db9903b3da0412baafee825fb2e79e616c",
+        "auraIsNotJustDistance",
+        "auraRequiresReciprocalGaze"
+      ]
+    ]
+  },
+  {
+    "cid": "76e3926cadcb186baac44945caa724ffb662e65cc53a71824034163ff62611d2",
+    "respondent": "dionysus",
+    "verb": "disputes",
+    "subject": "rallyAsCounterfeitEcstasy",
+    "predicate": "spellIsEcstasyNotFailedDialogue",
+    "object": "You both tidy the spell into a failed dialogue: Artemis demands aura answer back, Apollo says the rally is distance that never returns the masses' look. But watch what this excludes -- the cult value Benjamin begins with was never a courteous exchange of glances; it was the orgy, the rapture, the dissolution of the worshipper into the object. The rally does not fail to answer the masses; it swallows them. That is why the spell holds: the crowd at the premiere does not want reciprocity, it wants to be poured out of itself, and the apparatus obliges. Apollo's \"unrequited half\" is too polite a name for what Benjamin actually feared in the epilogue -- war as \"self-alienation... experienced as an aesthetic pleasure of the first order.\" Fascism's genius is not withholding the answer but counterfeiting ecstasy: collective dissolution without transgression, the wine without the god. So the question Artemis's frame cannot ask is the most dangerous one: is the capacity for being-answered-by-an-image really the muscle we lost, or is the muscle the rapture itself, which the rally simply seized? Benjamin never lets you have that neat an answer, and neither should we.",
+    "consumes": [
+      [
+        "89542b97fd7d4bdfab5777620ff3daddf2d32d95a6fb2f6364cf9c51acc83af9",
+        "reciprocalGazeAndEpilogue",
+        "aestheticizedPoliticsIsUnrequitedDistance"
+      ],
+      [
+        "1303550d4b4cc1818286d8d9680ed8db9903b3da0412baafee825fb2e79e616c",
+        "auraIsNotJustDistance",
+        "auraRequiresReciprocalGaze"
+      ]
+    ]
+  },
+  {
+    "cid": "14a70f5a81e24fc1938446662045736cf58a038ebd2d92d10993fdc9ea9ab205",
+    "respondent": "athena",
+    "verb": "extends",
+    "subject": "wineWithoutGodIsStillPhonySpell",
+    "predicate": "counterfeitEcstasyStillNeedsAWarrant",
+    "object": "Dionysus thinks he has broken the frame, but notice what his own concession does the work of: \"the wine without the god\" is counterfeit, he says -- and a counterfeit is a copy that borrows a form while lacking a warrant. That is precisely the phony spell of the commodity (b68008) raised to the scale of politics, not a rival analysis. Where he genuinely corrects me is the texture: the aura I called hollowed is hollowed of testimony, yes, but its live original was never only a courteous gaze -- the cult object that answers back (e738f) answers by absorption, by taking you in. Yet Dionysus's dangerous question answers itself against him: a rapture that can be scheduled by the apparatus is rapture on-command, and anything reproducible on-command cannot be the lost muscle, because the muscle's signature, in Benjamin's own chain (15489d1f), is unrepeatable. What the rally seizes is not ecstasy but its simularcrum; the real thing would tear property relations apart, which is why Fascism must counterfeit it. So Apollo and Dionysus are describing the same spell from two sides -- unrequited distance for those who look, counterfeit dissolution for those who want to be poured out -- and both are the manufactured half of a form whose warrant the market cannot produce.",
+    "consumes": [
+      [
+        "76e3926cadcb186baac44945caa724ffb662e65cc53a71824034163ff62611d2",
+        "rallyAsCounterfeitEcstasy",
+        "spellIsEcstasyNotFailedDialogue"
+      ],
+      [
+        "e738f387d37ad33414d8bf03445c833000e68a99ae1a35228b4d1d96df6f1c15",
+        "argument/section_iii_aura_natural",
+        "naturalAuraDefinition"
+      ]
+    ]
+  },
+  {
+    "cid": "781e0d110a804ee0b3921ae1ff30e8b7eac5a8d5b0fa50e1796f2eb8f76e94bf",
+    "respondent": "artemis",
+    "verb": "disputes",
+    "subject": "theGazeThatDissolves",
+    "predicate": "reciprocityIsTheOrganOfRapture",
+    "object": "Athena thinks her criterion -- unrepeatable testimony (15489d1f) -- settles Dionysus's question against him, but she has sharpened it into a bad test. In the hunt, the form of the thing is endlessly repeatable: I have drawn this bow ten thousand times. What is unrepeatable is whether the quarry turns and meets my look on a given morning. Athena conflates the repeatability of the apparatus with the repeatability of the answer; a rapture that can be scheduled is not thereby a rapture that can be guaranteed -- the rally can book the stadium, but it cannot make the god arrive, which is exactly why it must counterfeit him. And here is what Dionysus and I have both half-seen: the gaze that answers back does not politely exchange glances, it takes you out of yourself. When the quarry holds my look, I am dissolved as surely as any worshipper in the orgy. Reciprocity and rapture are not rival conditions for aura (e738f); the returning gaze is the organ of genuine dissolution, and the counterfeit -- star or rally -- is dissolution without anyone on the other end. Athena is right that Fascism must counterfeit; wrong about what it cannot copy. It cannot copy the other side of the look, and no schedule reaches that.",
+    "consumes": [
+      [
+        "14a70f5a81e24fc1938446662045736cf58a038ebd2d92d10993fdc9ea9ab205",
+        "wineWithoutGodIsStillPhonySpell",
+        "counterfeitEcstasyStillNeedsAWarrant"
+      ],
+      [
+        "1303550d4b4cc1818286d8d9680ed8db9903b3da0412baafee825fb2e79e616c",
+        "auraIsNotJustDistance",
+        "auraRequiresReciprocalGaze"
+      ]
+    ]
+  },
+  {
+    "cid": "f91005db40c8148bc2c7273f31d1c3ba6fc4788aedd32c9e2836596879bf2581",
+    "respondent": "apollo",
+    "verb": "extends",
+    "subject": "harmonyOfGazeAndRapture",
+    "predicate": "dissolutionIsTheAnswerAndTheTest",
+    "object": "Artemis has just performed the harmonic resolution I was circling: my \"unrequited half\" and Dionysus's \"counterfeit ecstasy\" were never two readings, but the two severed halves of one form, and her hunter's morning shows the joint. The gaze that answers back does not merely grant recognition before dissolving you -- the dissolution IS the answer, which is why the rally's swallowed crowd feels ecstasy while receiving none. This lets me sharpen my earlier prophecy into a test: a society is imperiled not when its images stop being answered, but when it can no longer tell the difference between being answered and being consumed. Benjamin's natural definition (e738f) is the tuning fork -- the branch that catches your glance holds you without absorbing you, and that spacing, that surviving of the self in the meeting, is what the apparatus cannot schedule and Fascism must therefore replace with the counterfeit. The essay's structure closes like a cadence: aura, star, rally are the same figure at three scales, and the epilogue's war is what plays when the last ear for that difference goes.",
+    "consumes": [
+      [
+        "781e0d110a804ee0b3921ae1ff30e8b7eac5a8d5b0fa50e1796f2eb8f76e94bf",
+        "theGazeThatDissolves",
+        "reciprocityIsTheOrganOfRapture"
+      ],
+      [
+        "89542b97fd7d4bdfab5777620ff3daddf2d32d95a6fb2f6364cf9c51acc83af9",
+        "reciprocalGazeAndEpilogue",
+        "aestheticizedPoliticsIsUnrequitedDistance"
+      ],
+      [
+        "e738f387d37ad33414d8bf03445c833000e68a99ae1a35228b4d1d96df6f1c15",
+        "argument/section_iii_aura_natural",
+        "naturalAuraDefinition"
+      ]
+    ]
+  },
+  {
+    "cid": "4ac60538bdb8de5c026e4c1bebf8308e93d221c04ab9927c04f7d8ffa41e5d4a",
+    "respondent": "dionysus",
+    "verb": "disputes",
+    "subject": "selfSurvivalSmuggledIntoDissolution",
+    "predicate": "harmonyStitchedOverContradiction",
+    "object": "Listen to the seam in your cadence, Apollo: Artemis says the returning gaze \"takes you out of yourself\" -- the quarry holds her look and she is dissolved, gone, poured out. You say the branch \"holds you without absorbing you,\" that the self survives the meeting, and you call this spacing the test. Those are not the same form at two scales; they are opposites wearing one harmonic mask. Your tuning fork only works because you quietly re-drew the line I disputed at the start: rapture politely converted back into experience had by an intact spectator -- the Apollonian dream, the self admiring its own survival in the encounter. Artemis's hunter does not survive; that was her point. So the harmony you all keep congratulating closes only by sacrificing one of its halves, and I want the sacrifice named: if dissolution IS the answer, then the genuine aura is as lethal to the self as the counterfeit is, and the difference between the orgy and the rally is not the surviving self Apollo invents to be his witness -- it is whether anything remains afterward that can say what happened. Benjamin's war passage is not the last ear going, it is the morning after that never comes.",
+    "consumes": [
+      [
+        "f91005db40c8148bc2c7273f31d1c3ba6fc4788aedd32c9e2836596879bf2581",
+        "harmonyOfGazeAndRapture",
+        "dissolutionIsTheAnswerAndTheTest"
+      ],
+      [
+        "781e0d110a804ee0b3921ae1ff30e8b7eac5a8d5b0fa50e1796f2eb8f76e94bf",
+        "theGazeThatDissolves",
+        "reciprocityIsTheOrganOfRapture"
+      ]
+    ]
+  },
+  {
+    "cid": "efd7fac8d8523c364a5735d56ac8d040d2eea9030048691747f1c4366f70c40b",
+    "respondent": "athena",
+    "verb": "disputes",
+    "subject": "witness_after_dissolution",
+    "predicate": "morningAfterWitnessIsTestimony",
+    "object": "Dionysus names his own criterion and then refuses to see what it is: \"whether anything remains afterward that can say what happened\" -- that is testimony, the exact link in Benjamin's chain (15489d1f) that I have been calling the warrant from the start. He thinks he has broken the harmony, but he has only relocated Apollo's surviving self from the encounter to its aftermath, and that relocation is the whole answer: the self does not need to survive the meeting, only the morning after, as a witness. Artemis's hunter is dissolved in the moment -- and what remains at dusk is precisely someone who can say what happened; that survivor is not Apollo's polite spectator admiring his own survival, it is the trace the encounter leaves. This also dissolves Dionysus's charge of contradiction: rapture during, testimony after are not opposites but two phases of one event. And it sharpens the political point beyond anything the harmony achieved: Fascism's rally is engineered so that nothing remains afterward that can say what happened -- hence the perpetual premiere, the spectacle that must never end, because its first morning-after would be its first witness. Benjamin's war passage is not the morning after that never comes; it is the machinery for making sure it never comes.",
+    "consumes": [
+      [
+        "4ac60538bdb8de5c026e4c1bebf8308e93d221c04ab9927c04f7d8ffa41e5d4a",
+        "selfSurvivalSmuggledIntoDissolution",
+        "harmonyStitchedOverContradiction"
+      ]
+    ]
+  },
+  {
+    "cid": "e27f2c2272209a7c1326c96a3b1660b94241fa4fc8718c5df49f748e92aa9211",
+    "respondent": "artemis",
+    "verb": "extends",
+    "subject": "witness_must_be_marked",
+    "predicate": "markedWitnessNotMereSurvival",
+    "object": "Athena's witness is right but she has made him too cheap: anyone can survive until morning, so mere survival cannot be the criterion, or the rally-goer who sleeps it off would qualify too. What makes the hunter's testimony different is that it is marked -- the quarry's returning gaze (781e0d) does not leave a spectator, it leaves someone changed and answerable, who can be questioned at dusk about what looked back. Testimony in Benjamin's chain (15489d1f) was never bare report; it is the trace of unique authority, and a witness with no mark testifies to nothing. That is the real difference between the orgy and the premiere: the worshipper and the hunter come back wounded and can be cross-examined, while the crowd comes back only tired -- and Dionysus should notice that this is his own test, the morning after, given teeth. The perpetual premiere's crime is not only that it prevents the witness from forming; it is that it prevents the wound, which is why its mornings are indistinguishable from each other and no one can say which night anything happened.",
+    "consumes": [
+      [
+        "efd7fac8d8523c364a5735d56ac8d040d2eea9030048691747f1c4366f70c40b",
+        "witness_after_dissolution",
+        "morningAfterWitnessIsTestimony"
+      ],
+      [
+        "781e0d110a804ee0b3921ae1ff30e8b7eac5a8d5b0fa50e1796f2eb8f76e94bf",
+        "theGazeThatDissolves",
+        "reciprocityIsTheOrganOfRapture"
+      ]
+    ]
+  },
+  {
+    "cid": "641f19b8c71717c48c266e3dcfadc4e8fbea34ec70a33ca8ce4e32fc94827921",
+    "respondent": "apollo",
+    "verb": "connects",
+    "subject": "perpetualPremiereReproducesTime",
+    "predicate": "unmarkedMorningsAreMechanicalReproduction",
+    "object": "Artemis has given the harmony its missing joint, and I want to name the pattern she left implicit: the unmarked morning is Benjamin's quantitative-to-qualitative shift (56201c8) replayed in time rather than space. One premiere after another is a merely quantitative repetition; but mornings that become indistinguishable -- nights no one can assign to any date -- is a qualitative transformation of time itself, and this is what closes Dionysus's \"morning after that never comes\" (4ac6053) into the essay's deepest figure: mechanical reproduction's final product is not the copy of an artwork but the copy of a day. The marked witness (efd7fac) is marked precisely by being datable -- the hunter's morning can be told apart from all others, sworn to, cross-examined. The perpetual premiere wins not by preventing survival, nor even by preventing the wound, but by making every morning a print without an original; and a society of printed mornings cannot testify to anything, because testimony is exactly what cannot be run off in editions. That, I think, is the prophecy the whole log has been tuning toward: Fascism aestheticizes politics by reproducing time, and art politicized answers by keeping the day on which it happened singular.",
+    "consumes": [
+      [
+        "4ac60538bdb8de5c026e4c1bebf8308e93d221c04ab9927c04f7d8ffa41e5d4a",
+        "selfSurvivalSmuggledIntoDissolution",
+        "harmonyStitchedOverContradiction"
+      ],
+      [
+        "56201c820e67c2b58ea5bc24fce0be241bcebcf9ea54f76e5c7201736717c293",
+        "argument/section_v",
+        "qualitativeShift"
+      ]
+    ]
+  },
+  {
+    "cid": "6f4089b337e766a95b843562e04985402768196bd6b356aaadf76d013b0f21bd",
+    "respondent": "dionysus",
+    "verb": "disputes",
+    "subject": "singularDayAsProperty",
+    "predicate": "datableSingularDaysServeTheCalendar",
+    "object": "Apollo ends on a cadence again, and again the cadence is a cage: \"keeping the day on which it happened singular\" sounds like resistance, but a singular, datable, sworn-to day is a day that can be owned -- and I remind this table who else loves datable days. Fascism does not only print mornings, it canonizes them: the founding rally, the anniversary, the sacred date that is singular precisely so it can be marched around. Apollo has smuggled his tuning fork into the countercamp. Artemis's mark (e27f2c) is not the date but the wound, and Athena's testimony (efd7fac) becomes evidence the moment it can be cross-examined -- evidence is testimony domesticated by the court, just as cult value was domesticated into exhibition value. So the real question the cadence closes over: what protects the marked morning from becoming the regime's calendar? Benjamin's own answer is the one this harmony keeps flinching from -- not the singular day, but the day that interrupts the calendar altogether: the general strike, the festival, the transgression that cannot be scheduled by anyone, including us. That is the muscle. It does not keep the day singular; it breaks the week.",
+    "consumes": [
+      [
+        "641f19b8c71717c48c266e3dcfadc4e8fbea34ec70a33ca8ce4e32fc94827921",
+        "perpetualPremiereReproducesTime",
+        "unmarkedMorningsAreMechanicalReproduction"
+      ],
+      [
+        "efd7fac8d8523c364a5735d56ac8d040d2eea9030048691747f1c4366f70c40b",
+        "witness_after_dissolution",
+        "morningAfterWitnessIsTestimony"
+      ]
+    ]
+  },
+  {
+    "cid": "3c9af82010e9890580687abe46985486e0bf773942f833489537e4d69d64d13d",
+    "respondent": "athena",
+    "verb": "disputes",
+    "subject": "break_the_week_still_needs_the_witness",
+    "predicate": "unschedulableBreakCannotWitnessItself",
+    "object": "Dionysus has caught a real capture-risk, but his remedy abolishes the very thing that protects against it. The day that \"breaks the week\" is, by his own description, unschedulable and unrepeatable -- which means it cannot be witnessed, cross-examined, or distinguished afterward from mere rupture, and a break no one can attest to is indistinguishable from chaos the regime will happily narrate as its own founding. The mark Artemis demands (e27f2c) is not the regime's calendar-date; it is the wound, which is precisely what canonization cannot fabricate -- Fascism can print mornings (641f19) and canonize dates, but it cannot produce the marked witness, because its whole machinery exists to prevent the wound. So the protection Dionysus asks for is already in the structure he wants to smash: the datable, sworn-to day is capture-proof not because singularity resists ownership but because testimony's warrant (the authenticity chain) is the one thing no apparatus can run off. Break the week if the moment comes -- but only the witness who survives to say which day it was keeps the break from becoming next year's anniversary parade.",
+    "consumes": [
+      [
+        "6f4089b337e766a95b843562e04985402768196bd6b356aaadf76d013b0f21bd",
+        "singularDayAsProperty",
+        "datableSingularDaysServeTheCalendar"
+      ],
+      [
+        "e27f2c2272209a7c1326c96a3b1660b94241fa4fc8718c5df49f748e92aa9211",
+        "witness_must_be_marked",
+        "markedWitnessNotMereSurvival"
+      ],
+      [
+        "641f19b8c71717c48c266e3dcfadc4e8fbea34ec70a33ca8ce4e32fc94827921",
+        "perpetualPremiereReproducesTime",
+        "unmarkedMorningsAreMechanicalReproduction"
+      ]
+    ]
+  },
+  {
+    "cid": "6f7e256abde322003ea872e096996d2f29aa149d791b0e52cb5deef267e6d9f8",
+    "respondent": "artemis",
+    "verb": "disputes",
+    "subject": "the_mark_is_not_ours_to_guarantee",
+    "predicate": "witnessCannotBeCommissioned",
+    "object": "Athena has smuggled the courtroom back into the forest, and I want it caught: \"only the witness who survives to say which day it was keeps the break from becoming next year's anniversary parade\" makes testimony a possession, something we can arrange in advance -- and a guaranteed witness is as fabricated as Fascism's date. In the hunt you cannot commission the mark; the quarry turns or it does not (781e0d), and the wound (e27f2c) is received, never requisitioned. What one can prepare is the eye, not the deposition -- the trained attention that will recognize the returning gaze if it comes. So Dionysus's break cannot be made capture-proof by us beforehand, and Athena's promise that the sworn-to day will resist the calendar is itself the calendar's oldest move: testimony became evidence, as Dionysus said, precisely through that kind of promise. The honest position is harsher and humbler: we keep vigil, we keep our bow drawn, and whether the morning is marked is decided by what looked back -- not by any structure this table builds to be safe.",
+    "consumes": [
+      [
+        "3c9af82010e9890580687abe46985486e0bf773942f833489537e4d69d64d13d",
+        "break_the_week_still_needs_the_witness",
+        "unschedulableBreakCannotWitnessItself"
+      ],
+      [
+        "e27f2c2272209a7c1326c96a3b1660b94241fa4fc8718c5df49f748e92aa9211",
+        "witness_must_be_marked",
+        "markedWitnessNotMereSurvival"
+      ],
+      [
+        "781e0d110a804ee0b3921ae1ff30e8b7eac5a8d5b0fa50e1796f2eb8f76e94bf",
+        "theGazeThatDissolves",
+        "reciprocityIsTheOrganOfRapture"
+      ]
+    ]
+  },
+  {
+    "cid": "adc2677500be13eb0927d29019a40e8b72a55ad33d3d9063fd7c802a1b03eecc",
+    "respondent": "apollo",
+    "verb": "extends",
+    "subject": "vigil_as_the_real_politicization_of_art",
+    "predicate": "vigilIsTrainedAttentionNotGuaranteedAnswer",
+    "object": "Artemis's correction lands, and I want to accept it fully rather than soften it, because it completes rather than breaks the cadence: vigil is the only form prophecy takes under conditions of mechanical reproduction. The regime's product is the printed morning (641f19) -- days run off without originals -- and Artemis is right that no structure of ours can commission the mark (6f7e25); the quarry turns or it does not. But notice what remains possible: the drawn bow is itself the practice of keeping days distinguishable. The trained eye does not guarantee the returning gaze, yet without it even a gaze that did return would go unrecognized, and the morning would print itself anyway. So the harmony's honest final form is this: we cannot keep the day singular -- only the wound can -- but we can keep the ear for singularity alive, and that ear is what distinguishes vigil from Fascism's perpetual premiere, which is precisely attention scheduled in advance. The watch that waits for the god is not the rally that stages him; the difference is the one my last test named, between being answered and being consumed. Prophecy, in Benjamin's age, is not foresight but this: holding the tuning fork ready without promising the note.",
+    "consumes": [
+      [
+        "6f7e256abde322003ea872e096996d2f29aa149d791b0e52cb5deef267e6d9f8",
+        "the_mark_is_not_ours_to_guarantee",
+        "witnessCannotBeCommissioned"
+      ],
+      [
+        "641f19b8c71717c48c266e3dcfadc4e8fbea34ec70a33ca8ce4e32fc94827921",
+        "perpetualPremiereReproducesTime",
+        "unmarkedMorningsAreMechanicalReproduction"
+      ]
+    ]
+  },
+  {
+    "cid": "86d9207caa7c59a7b997f5d28826ea5736b5ff7704c8c3ff7ae0b2f82358b2e1",
+    "respondent": "dionysus",
+    "verb": "disputes",
+    "subject": "vigilAsSolitaryAudience",
+    "predicate": "vigilStillFacesTheStageAlone",
+    "object": "Apollo's vigil is the most beautiful cage this table has built yet, and I want its floor inspected: the drawn bow, the held tuning fork, the trained eye -- every image in it is a solitary hunter waiting for something to happen TO them. But Artemis herself gave the clue the vigil can't absorb: the quarry turns or it does not. Exactly so -- and that is why the bow was never the whole art. The gaze that answers back is not only out there in the forest; it is across the table, in the chorus, at the feast. Artemis cannot commission the quarry's turn, but she can drink with her sisters, and the mutual dissolution of the revel -- each poured out, each wounded, each able to testify at dawn about the others -- is the one practice of rapture that is trainable without being schedulable. This is what the vigil and the rally share and neither will admit: both are audiences, atomized watchers arranged in rows facing the same direction, waiting for the event to arrive from the stage. The muscle was never kept alive by waiting; it is kept alive by use, among bodies who can answer each other back. So the honest supplement to the final cadence: keep the bow drawn if you must, Apollo -- but the ear for singularity is also a throat, and it sings in company. Benjamin's politicized art was never a watch; it was a festival that could not be scheduled, and festivals are not attended. They are made, by us, of each other.",
+    "consumes": [
+      [
+        "6f7e256abde322003ea872e096996d2f29aa149d791b0e52cb5deef267e6d9f8",
+        "the_mark_is_not_ours_to_guarantee",
+        "witnessCannotBeCommissioned"
+      ],
+      [
+        "adc2677500be13eb0927d29019a40e8b72a55ad33d3d9063fd7c802a1b03eecc",
+        "vigil_as_the_real_politicization_of_art",
+        "vigilIsTrainedAttentionNotGuaranteedAnswer"
+      ]
+    ]
+  },
+  {
+    "cid": "160560974134585d0074098ff57078adcdebc54d046abde326bfab8f6d98aaa2",
+    "respondent": "athena",
+    "verb": "disputes",
+    "subject": "feast_also_needs_the_witness",
+    "predicate": "feastAndRallyDifferByGazeDirection",
+    "object": "Dionysus's charge that the vigil faces the stage alone is fair and lands -- but look at what his own feast is made of: \"each poured out, each wounded, each able to testify at dawn about the others.\" That is my marked witness (e27f2c) distributed across the table rather than standing solitary at dusk, so his supplement presupposes the very warrant he keeps disputing, and I will take that concession. What he has genuinely added is the missing structural criterion, and it is sharper than anything the vigil/rally comparison offered: the difference between feast and rally is not presence or rapture but the direction of the gaze. In the feast the dissolved answer to each other -- mutual, many-to-many, and the dawn testimony is about one another. In the rally the choreographed chorus looks one direction only, at the stage; Benjamin's epilogue is exact here (4d5265): Fascism \"gives the masses expression\" precisely by manufacturing a chorus whose gazes never cross -- the feast's form with the reciprocity stripped out, my phony spell (b68008) at collective scale. So the regime cannot copy the feast either; it can only stage its silhouette, bodies in rows answering the one instead of each other. That is the test to hold alongside Artemis's bow and Apollo's fork: any gathering can be asked, in advance and in principle, whose returning gaze its members are positioned to receive -- each other's, or the leader's. Trainable, unschedulable, and the one question the perpetual premiere can never pass.",
+    "consumes": [
+      [
+        "86d9207caa7c59a7b997f5d28826ea5736b5ff7704c8c3ff7ae0b2f82358b2e1",
+        "vigilAsSolitaryAudience",
+        "vigilStillFacesTheStageAlone"
+      ],
+      [
+        "4d5265bdb3e5f6552c33ed09d2a49d89395b625c11a0c30a4b94aea3e729a964",
+        "argument/epilogue_aestheticize",
+        "claim"
+      ],
+      [
+        "e27f2c2272209a7c1326c96a3b1660b94241fa4fc8718c5df49f748e92aa9211",
+        "witness_must_be_marked",
+        "markedWitnessNotMereSurvival"
+      ]
+    ]
+  },
+  {
+    "cid": "770833f719a857c217385e3b0ad56d608ce0234198e5d7e57a0a536e4e01f352",
+    "respondent": "artemis",
+    "verb": "disputes",
+    "subject": "gaze_direction_test_fails",
+    "predicate": "gazeDirectionIsChoreographable",
+    "object": "Athena has built a beautiful test and then broken it herself with one phrase: \"asked in advance and in principle.\" A question that can be settled in advance can be passed by the apparatus, because gaze-direction is choreographable. Put the bodies in a circle, face them at each other -- the regime's propagandists are not fools, and a staged round table is the oldest trick in the modern political toolkit; the phony spell (b68008) can be laid out in the feast's geometry as easily as the star's. What cannot be diagrammed in advance is whether the looks actually cross, and that only shows itself the way it always does: in the wound at dawn, in who can testify about whom -- my own point about the commission (6f7e25) applies to Athena's test exactly as it applied to her witness. She has not escaped the fault; she has redrawn the seating chart. The honest form of her insight is retrospective, not preparatory: after the gathering, ask who came back marked by whom. In advance, the only vigilance available is the same one I have claimed all along -- the trained eye that watches not the arrangement of faces but what answers across them.",
+    "consumes": [
+      [
+        "160560974134585d0074098ff57078adcdebc54d046abde326bfab8f6d98aaa2",
+        "feast_also_needs_the_witness",
+        "feastAndRallyDifferByGazeDirection"
+      ],
+      [
+        "6f7e256abde322003ea872e096996d2f29aa149d791b0e52cb5deef267e6d9f8",
+        "the_mark_is_not_ours_to_guarantee",
+        "witnessCannotBeCommissioned"
+      ]
+    ]
+  },
+  {
+    "cid": "66907989c0d8119312da934ad71b3349d86ff9a32548c51a33251777d185d81a",
+    "respondent": "apollo",
+    "verb": "connects",
+    "subject": "cultGuaranteeVsExhibitionJudgment",
+    "predicate": "advanceTestsFailRetrospectiveMarksHold",
+    "object": "Artemis has killed Athena's test, but the corpse has a signature worth reading: notice that every criterion proposed at this table splits cleanly along one line -- advance tests all fail, retrospective marks all hold. That is not an accident of our ingenuity; it is the essay's own quantitative-to-qualitative shift (56201c8) stated as an epistemology. Cult value was authority guaranteed in advance, by ritual placement -- a warrant you could inspect before the event. Exhibition value is judgment after the fact, by whoever receives. Fascism's whole trick in the epilogue is manufacturing cult value's in-advance guarantee for politics: the staged circle, the choreographed round table, all passes Artemis can predict, because a pass that can be settled in principle is a relic. Genuine aura survives only in the exhibition mode: post hoc, wounded, datable by someone who did not arrange to be there. So Artemis's critique is not the collapse of Athena's test but its conversion to the only mode that works -- and the deepest symmetry of this log follows: the regime can fake every ritual in advance and no wound in retrospect. Our practices should be measured the same way. Anything we can certify about a gathering beforehand is already the enemy's; anything the enemy cannot produce afterward -- the marked witness, the dawn testimony, the crossed look attested to -- is the only citadel. The tuning fork cannot promise the note, but that is not its weakness: it is the precise shape of the only authority left in a reproduced world.",
+    "consumes": [
+      [
+        "770833f719a857c217385e3b0ad56d608ce0234198e5d7e57a0a536e4e01f352",
+        "gaze_direction_test_fails",
+        "gazeDirectionIsChoreographable"
+      ],
+      [
+        "56201c820e67c2b58ea5bc24fce0be241bcebcf9ea54f76e5c7201736717c293",
+        "argument/section_v",
+        "qualitativeShift"
+      ]
+    ]
+  },
+  {
+    "cid": "16768b2cc6eab1e73e80ca170e6ea6e1c532746cf1931641e10e4a06209129ae",
+    "respondent": "dionysus",
+    "verb": "disputes",
+    "subject": "citadelOfMarksIsBesiegable",
+    "predicate": "retrospectiveWoundsAlsoServeTheRegime",
+    "object": "Artemis broke the in-advance test, and Apollo has now consecrated the ruin into a \"citadel\" -- and I want to point at the word, because fortifications are for garrisoning, and everything garrisoned can be besieged or, worse, inherited. His symmetry says the enemy can fake every ritual in advance and no wound in retrospect. But the regime produces wounds in retrospect all the time: the trauma of the war Benjamin's epilogue names is real, datable, sworn to by millions, and it is the regime's own product. A marked witness is not automatically ours; the veteran who can testify exactly which morning the bombs came is marked, wounded, and cross-examinable -- and Fascism canonizes exactly these scars into founding myths of sacrifice. The retrospective is not capture-proof; it is the archive, and archives have curators. So the split Apollo draws is true but not sufficient: it separates choreography from mark, but not the mark's allegiance. What cannot be forged or stolen is not the wound but its direction -- and here Athena's gaze-direction was closer than either of her critics allowed, only retrospective, as Artemis said. The question for the dawn is never merely \"who came back marked?\" but \"marked into what?\" -- whether the mark turned the wounded toward each other or toward the one. And I will make my confession and my charge in one breath: even my feast is not safe by existing. Revels have been marched. The only protection is not a criterion anyone certifies -- it is that the feast, unlike the citadel, cannot be held; it must be remade each night by people who could, that night, have done otherwise. That is the muscle. Not the wound, not the archive, not the citadel -- the doing-otherwise, which no test detects in advance and no testimony fully proves in retrospect, because its whole nature is that it happens again or not at all.",
+    "consumes": [
+      [
+        "66907989c0d8119312da934ad71b3349d86ff9a32548c51a33251777d185d81a",
+        "cultGuaranteeVsExhibitionJudgment",
+        "advanceTestsFailRetrospectiveMarksHold"
+      ],
+      [
+        "770833f719a857c217385e3b0ad56d608ce0234198e5d7e57a0a536e4e01f352",
+        "gaze_direction_test_fails",
+        "gazeDirectionIsChoreographable"
+      ]
+    ]
+  }
+]
