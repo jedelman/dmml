@@ -50,6 +50,103 @@ Nietzsche and Wittgenstein each fit for a specific, checkable reason. Nietzsche'
 
 Wittgenstein appears on both sides and shouldn't be flattened into one. The *Tractatus*'s picture theory — "the logical form... is what every picture must have in common with reality... to represent it at all"<sup>[verified 2026-08-25; Ogden, 2.18]</sup>; "the limits of my language mean the limits of my world" (5.6) — supports coding-as-precondition directly. The *Investigations* explicitly repudiates this for an irreducible multiplicity of "language-games," closer to D&G's own anti-arborescent commitments than to a single stratifying operation, and using it to support stratification would misrepresent it. Deleuze's own recorded view of Wittgenstein was hostile.<sup>[verified 2026-08-25]</sup> The connection is this paper's own synthesis, not one D&G's reception of Wittgenstein licensed — and the later Wittgenstein's break from his own earlier self is itself instructive: even the sharpest statement of language-as-coding gave way to multiplicity, which DMML's own default (no forced convergence) already builds in rather than argues for after the fact.
 
+## 8. A worked case study: multi-agent reasoning over a real symbolic world model of text
+
+Sections 1–7 argue the structural case. This section reports a real system
+built and run against it, not a thought experiment: `dmml-substrate-kit`'s
+`pantheon_*` examples seed a DMML graph with real anchor claims drawn from
+actual texts, then let four independent LLM personas ("Olympians" —
+distinguished only by system prompt, one underlying model throughout) argue,
+reflect, ratify a consensus by unanimous vote, and finally explain the
+result in plain language to an audience assumed to know none of the source
+material. Every claim below is checkable against the repository's own
+`dev-journal/` entries and artifacts, and against 100+ real commits
+independently checkpointed to and verified against a live AT Protocol PDS
+(`claude.jason-edelman.org`) — this is a report of what actually happened
+across several runs on 2026-08-27, not a projected capability.
+
+**Two runs, on deliberately different source material.** The first seeded
+16 anchors from two texts in real, documented tension: Walter Benjamin's
+"The Work of Art in the Age of Mechanical Reproduction" and Theodor
+Adorno's actual direct critique of that essay (his 18 March 1936 letter,
+plus Adorno & Horkheimer's "The Culture Industry"). The second seeded 24
+anchors from three texts that were never in dialogue with each other
+historically — Gramsci's *Prison Notebooks* (hegemony, the war of
+position), Federici's *Caliban and the Witch* (the enclosure of the
+commons and the body), Ostrom's *Governing the Commons* (the eight design
+principles) — chosen not arbitrarily but because a grep across Power
+Explained's (a companion educational project's) 1020 real gesture files
+found these three thinkers cited more than any others (26, 22, and 17
+citations respectively), making them the actual load-bearing bibliography
+of a real text this pipeline could eventually be run against exhaustively.
+
+**The graph does what Section 3 claims, under real load.** Every
+conversational turn is a DMML `commit` whose `consumes` field names an
+exact prior `(cid, subject, predicate)` the model was shown; a
+generating harness checks each cited triple against the real accumulated
+log before recording it, dropping anything invented rather than silently
+trusting the model's claim. This is the `consumes`-as-checkable-dependency
+property of Section 3 exercised programmatically, thousands of tokens deep
+into a real, growing graph, not asserted about a toy example.
+
+**Citation reliability degraded measurably with more source material — a
+real finding, not a clean success story.** The two-source run: 8 of 8
+turns cited at least one real, verified fact, zero dropped citations. The
+three-source run: 4 of 24 turns landed with zero verified citations, and
+36 total citation attempts were dropped as non-existent across the run
+(hallucinated cids, wrong subject/predicate pairings) — roughly 1.5
+dropped citations per turn even on turns that ultimately cited something
+real. The most likely cause is exactly the one a discrete, exact-match
+citation scheme predicts: more real anchors (24 vs. 16) and a longer
+accumulated log give a model strictly more surface area to misremember
+a citation from, even though nothing about the underlying claims became
+less well-supported. This is direct, load-bearing evidence for a claim
+Section 3 states more abstractly: DMML's provenance guarantee is
+structural (a reader can always ask what a commit claims to depend on and
+get a literal answer) but not automatically reliable at the point of
+*generation* — the harness's drop-on-mismatch check is what makes the
+graph trustworthy despite the citing model's real, measured error rate,
+not the model's own citation behavior on its own.
+
+**The multi-stage pipeline itself is new, and held together.** Beyond a
+single argumentative pass, both runs added a reflection stage (each agent
+asked to cite its own earliest and a later turn to show whether it
+actually changed position, or say honestly that it didn't) and a
+consensus stage: one agent drafts a candidate synthesis as an ordered
+DMML commit, and each round every agent either `accepts` it (a commit
+citing the draft, unchanged) or `amends` it (a commit citing the draft and
+producing a complete replacement), until a round is unanimous or a round
+cap is hit. The two-source run converged in one round; the three-source
+run took two, with the amendment restoring a real distinction (a retreat
+from an overclaim to a narrower, defensible one) the first draft had
+flattened — a real edit, not a rubber stamp, and itself a DMML commit
+citing exactly what it revised. Both runs closed with a plain-language
+"writers room" stage: each agent explains the ratified synthesis to an
+outsider, forbidden from using shorthand the debate coined for itself
+without defining it first. All eight agent-explanations (four personas
+times two runs) passed this test, each reaching for a different concrete
+example rather than reciting a shared analogy — evidence, though not proof
+(translation to plain language is a general LLM skill this pipeline
+exercises rather than invents), that the debate's vocabulary named
+something real rather than performing depth it didn't have.
+
+**What this does and doesn't establish.** It does not show DMML structure
+*produces* the philosophical content — the personas draw on the
+underlying model's real background knowledge of these texts throughout,
+and nothing here isolates how much of a given turn's insight came from the
+graph versus the model's own priors. What it does establish, concretely:
+a real symbolic world model of text can host a genuinely multi-stage
+reasoning process (argue, reflect, ratify, explain) across dozens of
+real commits, with its provenance claims mechanically checked rather than
+merely asserted, its failure modes (citation drop rate) directly
+measurable rather than assumed away, and its final state checkpointed to
+and independently re-verified against a real, external, content-addressed
+store. Scaling this same pipeline to the rest of Power Explained's
+bibliography — the dramatis-personae roster runs to 23 thinkers, this
+case study having exercised 5 of them — is the natural next step, and
+would let the citation-degradation finding above be checked against
+still more source material rather than asserted from two data points.
+
 ---
 
 *This paper's companion, "DMML as a Desiring-Production Ontology," argues the correspondence Section 7 above extends; read together, not as one paper's argument depending on the other's, but as two applications of the same apparatus — to DMML's commit graph in the companion paper, to DMML's representational form here.*
