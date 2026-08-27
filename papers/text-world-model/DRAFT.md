@@ -155,7 +155,68 @@ debtor rather than recording a relation, defeated as a general test by
 Fanon's epidermal schema (a boundary that travels with the fugitive), and
 resolved via second-person address as the deepest available exit — a real
 sign that adding sources changed the debate's actual content, not just its
-length.
+length. A seventh-source run (adding Kropotkin's *Mutual Aid* and
+Bookchin's *The Ecology of Freedom*, 56 anchors total) held the same flat
+citation-reliability pattern (3 of 24 turns with zero verified citations,
+same as the 40-anchor run) and produced its own new hinge — "circulation
+as the organ of un-learning" — reached only after the debate had broken
+three earlier proposed safeguards (a federated vault, contestable
+institutions, an unaddressable craft) in sequence, a real demonstration
+that the pipeline can host genuine dead ends and recoveries within a
+single run, not just forward accumulation.
+
+**A structurally distinct fourth stage: rupture and reconciliation, not
+just argument and synthesis.** Every run above pre-seeds all its source
+material at once. A further run instead froze the seven-source
+synthesis's eight ratified statements as citable commits in their own
+right, seeded 32 new anchors from four sources absent from that
+synthesis — Angela Davis, Audre Lorde, the Combahee River Collective
+Statement, Kimberle Crenshaw — and explicitly asked the four agents to
+test named, numbered items in the CLOSED synthesis against the new
+material: confirm, extend, or *rupture* (a new tool-schema verb, used in
+11 of 22 real turns — not decoration, roughly half the run's substantive
+moves). Four of the eight ratified items broke under real argumentative
+pressure, each traceably: an "insiders can't see their own blind spots"
+claim collapsed once Davis's documented history showed white feminist
+leaders reading Black women's analysis clearly and subordinating it
+anyway ("betrayal is an act of interest, not of grammar"); a "the
+dominated watch the dominators more precisely" claim was shown to
+flatter the hunted once Lorde's account of internalized distrust entered;
+a circulation-based safeguard was shown to presuppose a legibility
+Crenshaw's DeGraffenreid v. General Motors precedent shows was never
+guaranteed for everyone; and a debt the group had called "named but never
+discharged" gained a third, undenominable component — a loss the person
+it happened to was also robbed of the capacity to notice as loss. Most
+notably, this happened unprompted: without any instruction toward it, all
+four agents' independent reflections converged on refusing to re-ratify
+anything, on the explicit ground that four agents auditing new material
+through their own prior catalogue would re-enact the exact dynamic the
+new material diagnosed. The reconciliation stage that followed (same
+accept/amend ratification mechanism as every consensus run above) reached
+unanimous agreement in one round — not on a tidier synthesis, but on a
+document that names what broke without restoring it and leaves a final
+item permanently, explicitly open. This is real evidence the pipeline
+supports a genuinely different pedagogical structure than "debate to
+consensus": closing an argument, then deliberately reopening it with
+material chosen because it wasn't in the room the first time, is a
+different act than the consensus stage performs on a first pass, and nothing
+about the mechanism (frozen prior commits as citable facts, a rupture
+verb, a reconciliation vote explicitly barred from quiet restoration) is
+specific to these two runs — it is a repeatable pattern.
+
+This run also surfaced a citation-reliability failure mode none of the
+scale-up runs did: 14 of 22 turns landed with zero verified citations, a
+sharp regression from the 3-of-24 baseline the 40- and 56-anchor runs
+held. Root-caused by inspection rather than assumed: the frozen synthesis
+items were seeded with one predicate convention (`predicate="statement"`,
+`verb="ratifiedAs"`) while fresh anchors used another, and models
+repeatedly cited the verb as if it were the predicate — a self-inflicted
+schema ambiguity from mixing two citation conventions in one log for the
+first time, not a symptom of anchor count. Reported as a distinct finding
+rather than folded into the flat-curve pattern above: it is evidence that
+*how* prior material is represented for citation matters independently of
+*how much* of it there is, a variable the four scale-up runs never
+isolated because they never mixed representations within a single log.
 
 **What this does and doesn't establish.** It does not show DMML structure
 *produces* the philosophical content — the personas draw on the
@@ -163,16 +224,22 @@ underlying model's real background knowledge of these texts throughout,
 and nothing here isolates how much of a given turn's insight came from the
 graph versus the model's own priors. What it does establish, concretely:
 a real symbolic world model of text can host a genuinely multi-stage
-reasoning process (argue, reflect, ratify, explain) across dozens of
-real commits, with its provenance claims mechanically checked rather than
-merely asserted, its failure modes (citation drop rate) directly
-measurable rather than assumed away, and its final state checkpointed to
-and independently re-verified against a real, external, content-addressed
-store. Scaling this same pipeline to the rest of Power Explained's
-bibliography — the dramatis-personae roster runs to 23 thinkers, this
-case study having exercised 5 of them — is the natural next step, and
-would let the citation-degradation finding above be checked against
-still more source material rather than asserted from two data points.
+reasoning process (argue, reflect, ratify, explain, and — in the
+rupture/reconciliation run — reopen and re-adjudicate) across well over a
+hundred real commits, with its provenance claims mechanically checked
+rather than merely asserted, its failure modes (citation drop rate, and
+now a distinct schema-ambiguity mode) directly measurable rather than
+assumed away, and its final state checkpointed to and independently
+re-verified against a real, external, content-addressed store. Scaling
+this same pipeline to the rest of Power Explained's bibliography — the
+dramatis-personae roster runs to 23 thinkers, this case study having
+exercised 11 of them (Gramsci, Federici, Ostrom, Graeber, Fanon,
+Kropotkin, and Bookchin in the closed synthesis; Davis, Lorde, the
+Combahee River Collective, and Crenshaw in the rupture) — is the natural
+next step, and
+would let both the citation-degradation and the rupture/reconciliation
+findings above be checked against still more source material rather than
+asserted from a handful of runs.
 
 ---
 
