@@ -392,7 +392,7 @@ async fn main() -> anyhow::Result<()> {
     let raw = std::fs::read_to_string(EMBODIMENT_CONSENSUS_PATH)
         .map_err(|e| anyhow::anyhow!("couldn't read embodiment consensus at {EMBODIMENT_CONSENSUS_PATH}: {e}"))?;
     let phase1: ConsensusRun = serde_json::from_str(&raw)?;
-    println!("loaded reconciliation document ({} statements)\n", phase1.final_sequence.len());
+    println!("loaded embodiment consensus ({} statements)\n", phase1.final_sequence.len());
 
     let endpoint = EndpointBuilder::empty()
         .crypto_provider(std::sync::Arc::new(rustls::crypto::ring::default_provider()))
@@ -417,7 +417,7 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let substrate = IrohAppendSubstrate::new(
-        source_authors["reconciliation"],
+        source_authors["embodiment"],
         "pantheon-commons-shamanism".to_string(),
         doc.clone(),
         (*blobs).clone(),
@@ -425,7 +425,7 @@ async fn main() -> anyhow::Result<()> {
 
     let mut log: Vec<TurnRecord> = Vec::new();
 
-    println!("-- seeding {} frozen reconciliation-document items --", phase1.final_sequence.len());
+    println!("-- seeding {} frozen embodiment-consensus items --", phase1.final_sequence.len());
     // verb == predicate == "statement" here, deliberately: the rupture run
     // (pantheon_commons_rupture.rs) found models repeatedly citing the verb
     // field ("ratifiedAs") as if it were the predicate field ("statement"),
@@ -433,11 +433,11 @@ async fn main() -> anyhow::Result<()> {
     // for those fields on frozen prior-consensus items -- see dev-journal
     // 2026-08-27-pantheon-commons-rupture.md. Using the same string for
     // both fields here makes that specific confusion harmless.
-    let synthesis_author = source_authors["reconciliation"];
+    let synthesis_author = source_authors["embodiment"];
     for (i, statement) in phase1.final_sequence.iter().enumerate() {
         let subject = format!("embodiment_doc/item{i}");
         let mut rec = append(&substrate, &synthesis_author, 0, "statement", &subject, "statement", statement, &[]).await?;
-        rec.respondent = "reconciliation".to_string();
+        rec.respondent = "embodiment".to_string();
         println!("  [item{i}] {} -> \"{}\"", rec.cid, rec.object);
         log.push(rec);
     }
