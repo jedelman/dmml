@@ -42,6 +42,19 @@
 //! invented, same discipline as the Benjamin anchors always used. The
 //! four Olympians are told both sources exist and are given explicit
 //! autonomy to interpret, counter-interpret, or synthesize across them.
+//!
+//! Updated a third time per Jason's follow-up on the two-source run's
+//! finding that citation reliability degraded specifically once the
+//! debate turned inward (agents citing each other's own coined turns
+//! rather than the fixed anchors): "citation discipline getting worse
+//! could be a symptom of autonomous generation... are the interlocutors
+//! themselves altered by the encounter with the other? maybe let's ask
+//! them to reflect... see if we need to allow them to be a little more
+//! autopoietic." One more real round, after the argument rounds, not
+//! another dispute: each Olympian is shown the complete transcript and
+//! asked to reflect on their own trajectory specifically, and to cite
+//! their own earliest and a later turn if their position actually moved
+//! -- a genuinely different act (verb `reflects`) than arguing a claim.
 
 use std::collections::HashMap;
 
@@ -208,7 +221,7 @@ fn dmml_turn_tool() -> ChatCompletionTools {
             parameters: Some(serde_json::json!({
                 "type": "object",
                 "properties": {
-                    "verb": {"type": "string", "enum": ["argues", "questions", "extends", "disputes", "connects"]},
+                    "verb": {"type": "string", "enum": ["argues", "questions", "extends", "disputes", "connects", "reflects"]},
                     "subject": {"type": "string", "description": "short slug for what this turn is about"},
                     "predicate": {"type": "string", "description": "short camelCase predicate naming the claim"},
                     "object": {"type": "string", "description": "the actual claim, one or two sentences, in your own voice"},
@@ -233,13 +246,21 @@ fn dmml_turn_tool() -> ChatCompletionTools {
     })
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum DispatchMode {
+    Argue,
+    Reflect,
+}
+
 async fn dispatch(
     client: &Client<OpenAIConfig>,
     olympian: &Olympian,
     log: &[TurnRecord],
+    mode: DispatchMode,
 ) -> anyhow::Result<DmmlTurnArgs> {
-    let user_msg = format!(
-        "Four Olympians (Athena, Artemis, Apollo, Dionysus) are analyzing two texts in real \
+    let user_msg = match mode {
+        DispatchMode::Argue => format!(
+            "Four Olympians (Athena, Artemis, Apollo, Dionysus) are analyzing two texts in real \
 tension with each other, in a real, growing, checkable DMML commit log: Walter Benjamin's \"The \
 Work of Art in the Age of Mechanical Reproduction\" (respondent=benjamin) and Theodor Adorno's real, \
 documented direct critique of that exact essay -- his 18 March 1936 letter to Benjamin, plus \
@@ -257,8 +278,23 @@ actually would. Not a summary of either author, not a restatement. If you don't 
 make, say so honestly in `object` rather than padding. Call submit_dmml_turn with your answer. \
 `consumes` must copy at least one real (cid, subject, predicate) from the log above exactly -- \
 never invent one.",
-        transcript_so_far(log)
-    );
+            transcript_so_far(log)
+        ),
+        DispatchMode::Reflect => format!(
+            "The debate among the four Olympians (Athena, Artemis, Apollo, Dionysus) over Benjamin \
+and Adorno has just ended. Here is the complete real transcript, everything anyone actually said, in \
+order:\n\n{}\n\nThe debate is over -- this is not another argumentative move. Reflect, in your own \
+voice as this persona, on your OWN trajectory through it, specifically: did encountering the other \
+three Olympians' arguments -- and the real tension between Benjamin and Adorno -- change your \
+position from wherever you started, or did you end where you began? Name what specifically moved you \
+(a turn, a phrase, an argument), if anything did, or say honestly that nothing did and why not -- \
+false growth is worse than none. If you can, cite your own earliest turn and something later that \
+responds to or revises it (a real, exact citation from the log, not invented) to show the actual \
+shape of your own change, or its actual absence. Use verb `reflects`. `consumes` should include your \
+own earlier turn if you can find one, exactly as it appears in the log -- never invent a citation.",
+            transcript_so_far(log)
+        ),
+    };
 
     let request = CreateChatCompletionRequestArgs::default()
         .model(MODEL)
@@ -411,7 +447,7 @@ async fn main() -> anyhow::Result<()> {
             print!("  dispatching {}... ", olympian.name);
             use std::io::Write;
             std::io::stdout().flush().ok();
-            match dispatch(&client, olympian, &log).await {
+            match dispatch(&client, olympian, &log, DispatchMode::Argue).await {
                 Ok(reply) => {
                     let mut verified = Vec::new();
                     for c in &reply.consumes {
@@ -448,6 +484,57 @@ async fn main() -> anyhow::Result<()> {
                 }
                 Err(e) => println!("FAILED: {e}"),
             }
+        }
+    }
+
+    // Reflection round: per Jason's follow-up on whether interlocutors
+    // are actually altered by the encounter, and whether they should be
+    // allowed to be a little more autopoietic -- self-referential,
+    // explicitly citing and revising their own prior turns rather than
+    // only ever reacting outward. This is a genuinely different act than
+    // the argument rounds (verb `reflects`), not one more dispute.
+    let reflect_round = (ROUNDS + 1) as u32;
+    println!("\n-- reflection round --");
+    for olympian in OLYMPIANS {
+        print!("  dispatching {} (reflecting)... ", olympian.name);
+        use std::io::Write;
+        std::io::stdout().flush().ok();
+        match dispatch(&client, olympian, &log, DispatchMode::Reflect).await {
+            Ok(reply) => {
+                let mut verified = Vec::new();
+                for c in &reply.consumes {
+                    let real = log
+                        .iter()
+                        .any(|t| t.cid == c.cid && t.subject == c.subject && t.predicate == c.predicate);
+                    if real {
+                        verified.push((c.cid.clone(), c.subject.clone(), c.predicate.clone()));
+                    } else {
+                        println!(
+                            "\n    [WARNING] {} cited a non-existent fact (cid={}, subject={}, predicate={}) -- dropped",
+                            olympian.name, c.cid, c.subject, c.predicate
+                        );
+                    }
+                }
+                let author = olympian_authors[olympian.name];
+                let mut rec = append(
+                    &substrate,
+                    &author,
+                    reflect_round,
+                    &reply.verb,
+                    &reply.subject,
+                    &reply.predicate,
+                    &reply.object,
+                    &verified,
+                )
+                .await?;
+                rec.respondent = olympian.name.to_string();
+                println!(
+                    "ok -> {} : {} {} \"{}\" (consumes {})",
+                    rec.cid, rec.subject, rec.predicate, rec.object, verified.len()
+                );
+                log.push(rec);
+            }
+            Err(e) => println!("FAILED: {e}"),
         }
     }
 
