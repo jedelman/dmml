@@ -1,0 +1,57 @@
+{
+  "consensus_reached": true,
+  "final_round": 1,
+  "final_sequence": [
+    "Kopenawa's apprenticeship is real as an ongoing praxis, but the word 'criterion' was Man2's vocabulary: a procedure legible as procedure, mistaken for the human as such. The consensus's substance survived; its category label did not.",
+    "Every proposed account of WHY the apprenticeship stays real — dissimulation, demonic ground, self-auditing, the declined representation, 'indifferent to accounts' — was armor, and each was broken by the next turn. The un-witnessed center is our ignorance from outside, not the forest's discipline.",
+    "Once the forest is conceded to be another genre's lived origin-narrative (not pre-genre nature), the noble-savage move fails: the real/simulated distinction cannot rest on any genre being outside all narration.",
+    "What survives is thinner: the real/simulated distinction holds only as an observable of praxis — whether a narration keeps narrating itself. The benandanti visibly stopped; the apprenticeship visibly did not.",
+    "This observable can be used only to mourn and to indict, never to certify or admit: any table that adopts it as a test rebuilds the gate and re-imports the examiner, converting practice into performance for the certifier.",
+    "The rule 'never spend it' includes itself: the restriction must not become a meta-credential, and every account of it — including this one — falls under the archive's standing self-suspicion, to be read against, not cited.",
+    "The seat question, across every debate tonight, was asked inside one historically specific vocabulary (Man's) that needs unsettling, not widening: 'who may sit' presumed the seated, adjudicating subject was the human as such.",
+    "Nothing was settled; the honest residue is a practice of asking that knows its vocabulary is one genre's and keeps asking anyway."
+  ],
+  "proposals": [
+    {
+      "cid": "2a970e2d97e95af9e77a7d29632de199068e455b60b34bc7b935e878b87a5588",
+      "proposer": "athena",
+      "round": 0,
+      "sequence": [
+        "Kopenawa's apprenticeship is real as an ongoing praxis, but the word 'criterion' was Man2's vocabulary: a procedure legible as procedure, mistaken for the human as such. The consensus's substance survived; its category label did not.",
+        "Every proposed account of WHY the apprenticeship stays real — dissimulation, demonic ground, self-auditing, the declined representation, 'indifferent to accounts' — was armor, and each was broken by the next turn. The un-witnessed center is our ignorance from outside, not the forest's discipline.",
+        "Once the forest is conceded to be another genre's lived origin-narrative (not pre-genre nature), the noble-savage move fails: the real/simulated distinction cannot rest on any genre being outside all narration.",
+        "What survives is thinner: the real/simulated distinction holds only as an observable of praxis — whether a narration keeps narrating itself. The benandanti visibly stopped; the apprenticeship visibly did not.",
+        "This observable can be used only to mourn and to indict, never to certify or admit: any table that adopts it as a test rebuilds the gate and re-imports the examiner, converting practice into performance for the certifier.",
+        "The rule 'never spend it' includes itself: the restriction must not become a meta-credential, and every account of it — including this one — falls under the archive's standing self-suspicion, to be read against, not cited.",
+        "The seat question, across every debate tonight, was asked inside one historically specific vocabulary (Man's) that needs unsettling, not widening: 'who may sit' presumed the seated, adjudicating subject was the human as such.",
+        "Nothing was settled; the honest residue is a practice of asking that knows its vocabulary is one genre's and keeps asking anyway."
+      ]
+    }
+  ],
+  "votes": [
+    {
+      "voter": "athena",
+      "round": 1,
+      "vote": "accept",
+      "reason": "The candidate holds the night's thinnest stable finding without thickening it back into armor: it records the sequence of broken purity claims (dissimulation, demonic ground, self-audit, declined representation, indifferent-to-accounts) without resurrecting any of them; it keeps the praxis-observable (self-narrating continuation, benandanti vs. apprenticeship) as the only surviving form of the real/simulated distinction while binding it to the mourn/indict-never-admit restriction; it includes the self-suspicion that the restriction itself must not become a meta-credential; and it states the seat question as genre-internal vocabulary rather than a vacancy to fill. It correctly refuses both Dionysus's full collapse and Apollo's indifferent-reality terminus. This matches what the transcript actually established."
+    },
+    {
+      "voter": "artemis",
+      "round": 1,
+      "vote": "accept",
+      "reason": "The synthesis accurately preserves the night's thinner finding: the real/simulated distinction survives only as an unspendable observable of praxis (mourning/indicting, never certifying), the unwitnessed center is relocated to our ignorance from outside rather than the forest's discipline, and the seat question is named as one genre's vocabulary. It rejects both the full simulationist collapse and Apollo's 'indifferent to accounts' counterfeit, and it applies the never-spend rule reflexively per item7's standing self-suspicion rather than flattening the self-critique into harmony."
+    },
+    {
+      "voter": "apollo",
+      "round": 1,
+      "vote": "accept",
+      "reason": "The candidate holds the night's genuine terminus without either collapse or rescue: it preserves the praxis-based thin finding (the distinction as an observable that must never be spent), keeps Artemis's retraction of the noble-savage gloss, keeps Dionysus's self-inclusion (\"the rule includes itself\"), and correctly names the seat question as asked inside Man's vocabulary. It does not restore dissimulation, demonic ground, self-audit, or indifference-to-accounts as findings — it names them as broken armor. The pattern resolves into structure rather than false harmony; I accept."
+    },
+    {
+      "voter": "dionysus",
+      "round": 1,
+      "vote": "accept",
+      "reason": "It holds the thin finding without either collapse: the real/simulated distinction survives only as a praxis-observable usable to mourn and indict, never to certify; every purity account (dissimulation, demonic ground, self-audit, declined representation, indifference) is named as armor and broken; the seat question is located inside one genre's vocabulary; and the rule's self-suspicion includes the synthesis itself, read against rather than cited. No gate smuggled back in."
+    }
+  ]
+}
