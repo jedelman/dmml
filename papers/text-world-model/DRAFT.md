@@ -266,6 +266,41 @@ of the pipeline producing a debate that turns argumentative pressure on
 its own procedure rather than only on the material it was given, without
 that turn being scripted into the dispatch prompt.
 
+**A fourth run tested the embodiment finding against a real
+counterexample, and also switched dispatch models mid-project.** A
+further run (adding Mircea Eliade, Michael Taussig, Carlo Ginzburg, and
+Davi Kopenawa, completing the corpus's shamanism/alterity cluster) also
+switched the dispatch model from `z-ai/glm-5.3` to the cheaper
+`z-ai/glm-5.3-flash` (roughly 18× lower per-token cost, verified live
+before the switch: model existence, parameter support, and a real
+tool-calling smoke test, not assumed from the listing alone). The run
+posed the embodiment conclusion a direct test: Kopenawa's documented
+shamanic apprenticeship is a real, rigorous, transmissible procedure —
+does it supply the working criterion the embodiment debate couldn't
+find? The agents converged on a two-part answer, not a restatement of
+either prior position: the criterion is real, and it is real precisely
+because it has never been asked to certify anyone — the instant it is
+used as an admission gate, it becomes, in one agent's words, "a copy
+performing for the certifier." Ginzburg's material supplied a documented
+historical instance of exactly this corruption rather than only an
+abstract argument for it: the benandanti, real 16th-century villagers,
+had their own self-description reshaped over a century of interrogation
+until it matched the template their interrogators expected. This is a
+substantive extension of the rupture and embodiment runs' pattern of
+unprompted self-critique, now applied to a concrete counterexample
+rather than only to the debating agents' own procedure. Citation
+reliability held at the same flat-curve baseline (3 of 23 zero-citation
+turns) despite the model switch and despite again mixing frozen prior
+items with fresh anchors in one log — evidence the predicate/verb schema
+fix generalizes across models, not just within one. The run also
+surfaced a fourth failure mode, distinct from the first three: on the
+initial consensus-vote attempt, the flash model omitted a required tool
+field entirely from an otherwise well-formed, long response (versus
+citation mismatch, schema ambiguity, or token truncation); a bare rerun
+succeeded. One occurrence is not enough to call this a reliability gap
+between the two model tiers, but it is a distinct enough failure
+signature to track separately going forward.
+
 **What this does and doesn't establish.** It does not show DMML structure
 *produces* the philosophical content — the personas draw on the
 underlying model's real background knowledge of these texts throughout,
@@ -273,25 +308,30 @@ and nothing here isolates how much of a given turn's insight came from the
 graph versus the model's own priors. What it does establish, concretely:
 a real symbolic world model of text can host a genuinely multi-stage
 reasoning process (argue, reflect, ratify, explain, and — across the
-rupture/reconciliation and embodiment-extension runs — reopen, extend,
-and re-adjudicate an already-ratified position, twice producing unprompted
-self-critique of the reasoning agents' own procedural authority) across
-well over two hundred real commits, with its provenance claims
-mechanically checked rather than merely asserted, its failure modes
-(citation drop rate, a distinct schema-ambiguity mode, and a distinct
-token-budget truncation mode) directly measurable rather than assumed
-away, and its final state checkpointed to and independently re-verified
-against a real, external, content-addressed store. Scaling this same
+rupture/reconciliation, embodiment, and shamanism-extension runs —
+reopen, extend, and re-adjudicate an already-ratified position,
+repeatedly producing unprompted self-critique of the reasoning agents'
+own procedural authority, including against a real counterexample rather
+than only in the abstract) across well over three hundred real commits,
+with its provenance claims mechanically checked rather than merely
+asserted, its failure modes (citation drop rate, a schema-ambiguity mode,
+a token-budget truncation mode, and a missing-required-field mode) each
+directly measurable rather than assumed away, and its final state
+checkpointed to and independently re-verified against a real, external,
+content-addressed store — with one full model swap (`z-ai/glm-5.3` to
+`z-ai/glm-5.3-flash`, verified live before adoption) absorbed mid-project
+without the citation-reliability pattern breaking. Scaling this same
 pipeline to the rest of Power Explained's bibliography — the
 dramatis-personae roster runs to 23 thinkers, this case study having
-exercised 13 of them (Gramsci, Federici, Ostrom, Graeber, Fanon,
+exercised 17 of them (Gramsci, Federici, Ostrom, Graeber, Fanon,
 Kropotkin, and Bookchin in the closed synthesis; Davis, Lorde, the
-Combahee River Collective, and Crenshaw in the rupture; Reich in the
-embodiment extension), plus Plotkin (a real, grep-confirmed citation in
-the source corpus, not yet a dramatis-personae profile there) — is the
-natural next step, and would let the citation-degradation, rupture/
-reconciliation, and embodiment findings above be checked against still
-more source material rather than asserted from a handful of runs.
+Combahee River Collective, and Crenshaw in the rupture; Reich, Eliade,
+Taussig, Ginzburg, and Kopenawa across the embodiment and shamanism
+extensions), plus Plotkin (a real, grep-confirmed citation in the source
+corpus, not yet a dramatis-personae profile there) — is the natural next
+step, and would let the citation-degradation, rupture/reconciliation,
+and embodiment/shamanism findings above be checked against still more
+source material rather than asserted from a handful of runs.
 
 ---
 
