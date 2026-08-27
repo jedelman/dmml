@@ -80,28 +80,30 @@ async fn explain(
     synthesis: &str,
 ) -> anyhow::Result<String> {
     let user_msg = format!(
-        "Below is a synthesis your group (four Olympians) reached after a long debate about five \
-real texts that were never in dialogue with each other historically: Antonio Gramsci's Prison \
-Notebooks (hegemony, the war of position), Silvia Federici's Caliban and the Witch (the enclosure of \
-the commons and the body), Elinor Ostrom's Governing the Commons (the eight design principles for \
-durable commons), David Graeber's Debt and The Utopia of Rules (baseline communism, bureaucracy as \
-structural violence), and Frantz Fanon's The Wretched of the Earth and Black Skin, White Masks \
-(colonial violence, the epidermalization of imposed racial inferiority). Your group coined its own \
-vocabulary mid-debate -- terms like \"baseline communism as the substrate,\" \"the ledger creates the \
-debtor,\" \"exit versus consent,\" \"the grammatical exit,\" \"domination is a pronoun problem\" -- that \
-mean nothing to someone who wasn't in the room.\n\n\
-=== THE SYNTHESIS ===\n{synthesis}\n=== END ===\n\n\
-Explain the WHOLE argument -- what real question it's actually about, what the core disagreement was, \
-and what you all ultimately agreed on -- to a smart friend who has never read Gramsci, Federici, \
-Ostrom, Graeber, or Fanon, doesn't know what \"hegemony\" or \"design principles\" mean in this \
-context, and has no political theory background at all. Rules: (1) do not use any of your group's \
-coined shorthand \
+        "Below is a RECONCILIATION document your group (four Olympians) produced after a very \
+different kind of debate than usual. First you spent seven texts (Gramsci, Federici, Ostrom, Graeber, \
+Fanon, Kropotkin, Bookchin) building and unanimously ratifying a synthesis. Then you tested that CLOSED \
+synthesis against four more real sources it never had access to: Angela Davis's Women, Race and Class, \
+Audre Lorde's Sister Outsider, the Combahee River Collective Statement, and Kimberle Crenshaw's \
+'Demarginalizing the Intersection of Race and Sex.' Several of your own prior conclusions did not \
+survive contact with that new material -- the document below records what broke, what was only \
+incomplete, and, most uncomfortably, a finding about your OWN group: that your failure to anticipate \
+these harms wasn't innocent not-knowing, it was closer to interest -- the door was open, seeing cost \
+you nothing, and not seeing paid. Your group coined shorthand for this mid-debate -- terms like 'the \
+inward debt,' 'undenominable,' 'the keys on the table,' 'betrayal by visible interest, not blindness' \
+-- that mean nothing to someone who wasn't in the room.\n\n\
+=== THE RECONCILIATION DOCUMENT ===\n{synthesis}\n=== END ===\n\n\
+Explain the WHOLE thing -- what the original synthesis was, what it got wrong or missed once tested \
+against these four sources, and why your group refused to simply patch the old synthesis and call it \
+done -- to a smart friend with no background in any of this. This is a harder, more honest test than \
+explaining a tidy conclusion: you must explain your OWN group's mistake plainly, without softening it \
+into 'we just hadn't gotten to that part yet.' Rules: (1) do not use any of your group's coined \
+shorthand \
 without first explaining it in ordinary words the first time it appears; (2) use a real, concrete, \
-everyday example if it helps (a neighborhood, a co-op, a family, a town meeting -- whatever actually \
-clarifies it, not abstract restatement); (3) write in your own voice as this persona, but the goal is \
-that a stranger who reads only your explanation, never the original debate, walks away actually \
-understanding what was at stake and what was decided. Three to five short paragraphs. No tool call \
-needed -- just write the explanation directly.",
+everyday example if it helps; (3) write in your own voice as this persona, but the goal is that a \
+stranger who reads only your explanation walks away actually understanding both the original argument \
+AND why it had to be revised, including the parts your own group got right about being wrong. Three to \
+five short paragraphs. No tool call needed -- just write the explanation directly.",
     );
 
     let request = CreateChatCompletionRequestArgs::default()
@@ -138,9 +140,9 @@ struct DumpedExplanation<'a> {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    println!("== pantheon commons5 writers room: explain the argument to an outsider ==\n");
+    println!("== pantheon commons reconciliation writers room: explain what broke and why ==\n");
 
-    let consensus_path = "../dev-journal/artifacts/2026-08-27-pantheon-commons5-consensus.json";
+    let consensus_path = "../dev-journal/artifacts/2026-08-27-pantheon-commons-reconciliation.json";
     let raw = std::fs::read_to_string(consensus_path)
         .map_err(|e| anyhow::anyhow!("couldn't read {consensus_path}: {e}"))?;
     let consensus: ConsensusRun = serde_json::from_str(&raw)?;
@@ -166,7 +168,7 @@ async fn main() -> anyhow::Result<()> {
     let athena_author = olympian_authors["athena"];
     let substrate = IrohAppendSubstrate::new(
         athena_author,
-        "pantheon-commons5-explain".to_string(),
+        "pantheon-commons-reconciliation-explain".to_string(),
         doc.clone(),
         (*blobs).clone(),
     );
@@ -178,10 +180,10 @@ async fn main() -> anyhow::Result<()> {
     // local doc's own resolve_fact can check.
     let consensus_ref = ConsumeRef::Fact(FactRef {
         commit: StrongRef {
-            uri: "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu3esxpb6i2s".to_string(),
-            cid: "bafyreiheznchnvnowl6jpuygesbvi3litwfwk77l256lxgrvchpqtfpe64".to_string(),
+            uri: "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu3mkyu43g2a".to_string(),
+            cid: "bafyreiafeosyelpew2ksch2kscuj3lvhzcyvtsxqovpulflagg27yleoyy".to_string(),
         },
-        subject: "consensus5_v0_item0".to_string(),
+        subject: "reconciliation_v0_item0".to_string(),
         predicate: "statement".to_string(),
         object: None,
     });
@@ -226,8 +228,8 @@ async fn main() -> anyhow::Result<()> {
         })
         .collect();
     let json = serde_json::to_string_pretty(&dumped)?;
-    std::fs::write("pantheon_commons5_explain.json", &json)?;
-    println!("wrote pantheon_commons5_explain.json ({} explanations)", dumped.len());
+    std::fs::write("pantheon_commons_reconciliation_explain.json", &json)?;
+    println!("wrote pantheon_commons_reconciliation_explain.json ({} explanations)", dumped.len());
 
     Ok(())
 }
