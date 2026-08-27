@@ -65,7 +65,7 @@ independently checkpointed to and verified against a live AT Protocol PDS
 (`claude.jason-edelman.org`) — this is a report of what actually happened
 across several runs on 2026-08-27, not a projected capability.
 
-**Two runs, on deliberately different source material.** The first seeded
+**Three runs, scaling the source material each time.** The first seeded
 16 anchors from two texts in real, documented tension: Walter Benjamin's
 "The Work of Art in the Age of Mechanical Reproduction" and Theodor
 Adorno's actual direct critique of that essay (his 18 March 1936 letter,
@@ -77,8 +77,15 @@ commons and the body), Ostrom's *Governing the Commons* (the eight design
 principles) — chosen not arbitrarily but because a grep across Power
 Explained's (a companion educational project's) 1020 real gesture files
 found these three thinkers cited more than any others (26, 22, and 17
-citations respectively), making them the actual load-bearing bibliography
-of a real text this pipeline could eventually be run against exhaustively.
+citations respectively). The third scaled to 40 anchors across five
+texts, adding the next two highest-citation-density thinkers from the
+same survey, both likewise carrying a real dramatis-personae profile in
+that project: David Graeber's *Debt* and *The Utopia of Rules* (18
+citations), and Frantz Fanon's *The Wretched of the Earth* and *Black
+Skin, White Masks* (13 citations) — making these five the actual
+load-bearing bibliography of a real text this pipeline could eventually
+be run against exhaustively (23 thinkers total in that project's own
+roster; 5 exercised so far).
 
 **The graph does what Section 3 claims, under real load.** Every
 conversational turn is a DMML `commit` whose `consumes` field names an
@@ -89,46 +96,66 @@ trusting the model's claim. This is the `consumes`-as-checkable-dependency
 property of Section 3 exercised programmatically, thousands of tokens deep
 into a real, growing graph, not asserted about a toy example.
 
-**Citation reliability degraded measurably with more source material — a
-real finding, not a clean success story.** The two-source run: 8 of 8
+**Citation reliability dropped sharply once, then held — a real finding,
+not a clean monotonic story.** The two-source run (16 anchors): 8 of 8
 turns cited at least one real, verified fact, zero dropped citations. The
-three-source run: 4 of 24 turns landed with zero verified citations, and
-36 total citation attempts were dropped as non-existent across the run
-(hallucinated cids, wrong subject/predicate pairings) — roughly 1.5
-dropped citations per turn even on turns that ultimately cited something
-real. The most likely cause is exactly the one a discrete, exact-match
-citation scheme predicts: more real anchors (24 vs. 16) and a longer
-accumulated log give a model strictly more surface area to misremember
-a citation from, even though nothing about the underlying claims became
-less well-supported. This is direct, load-bearing evidence for a claim
-Section 3 states more abstractly: DMML's provenance guarantee is
-structural (a reader can always ask what a commit claims to depend on and
-get a literal answer) but not automatically reliable at the point of
-*generation* — the harness's drop-on-mismatch check is what makes the
-graph trustworthy despite the citing model's real, measured error rate,
-not the model's own citation behavior on its own.
+three-source run (24 anchors): 4 of 24 turns landed with zero verified
+citations, 36 total citation attempts dropped as non-existent across the
+run (hallucinated cids, wrong subject/predicate pairings). The five-source
+run (40 anchors): 3 of 24 turns with zero verified citations, 37 dropped
+attempts — essentially unchanged from the three-source run despite 67%
+more anchors and a correspondingly longer accumulated log by the debate's
+end. Three points are not enough to fit a curve, but the honest reading
+is that the real discontinuity sits between 16 and 24 anchors (or between
+two and three-plus sources), not a smooth decline that continues however
+far the source material scales — a speculative reading, offered as a
+concrete, falsifiable prediction for a fourth run rather than a settled
+result. What the three points establish without qualification: more
+source material did not just add content, it degraded citation mechanics
+measurably at least once, even though none of it broke the *argument's*
+real cumulative structure (every dropped citation still left at least one
+verified one standing, except where a turn genuinely floated free). This
+is direct, load-bearing evidence for a claim Section 3 states more
+abstractly: DMML's provenance guarantee is structural (a reader can
+always ask what a commit claims to depend on and get a literal answer)
+but not automatically reliable at the point of *generation* — the
+harness's drop-on-mismatch check is what makes the graph trustworthy
+despite the citing model's real, measured error rate, not the model's own
+citation behavior on its own.
 
-**The multi-stage pipeline itself is new, and held together.** Beyond a
-single argumentative pass, both runs added a reflection stage (each agent
-asked to cite its own earliest and a later turn to show whether it
-actually changed position, or say honestly that it didn't) and a
-consensus stage: one agent drafts a candidate synthesis as an ordered
-DMML commit, and each round every agent either `accepts` it (a commit
-citing the draft, unchanged) or `amends` it (a commit citing the draft and
-producing a complete replacement), until a round is unanimous or a round
-cap is hit. The two-source run converged in one round; the three-source
-run took two, with the amendment restoring a real distinction (a retreat
-from an overclaim to a narrower, defensible one) the first draft had
-flattened — a real edit, not a rubber stamp, and itself a DMML commit
-citing exactly what it revised. Both runs closed with a plain-language
-"writers room" stage: each agent explains the ratified synthesis to an
-outsider, forbidden from using shorthand the debate coined for itself
-without defining it first. All eight agent-explanations (four personas
-times two runs) passed this test, each reaching for a different concrete
-example rather than reciting a shared analogy — evidence, though not proof
-(translation to plain language is a general LLM skill this pipeline
-exercises rather than invents), that the debate's vocabulary named
-something real rather than performing depth it didn't have.
+**The multi-stage pipeline itself is new, and held together across all
+three runs.** Beyond a single argumentative pass, each run added a
+reflection stage (each agent asked to cite its own earliest and a later
+turn to show whether it actually changed position, or say honestly that
+it didn't) and a consensus stage: one agent drafts a candidate synthesis
+as an ordered DMML commit, and each round every agent either `accepts` it
+(a commit citing the draft, unchanged) or `amends` it (a commit citing the
+draft and producing a complete replacement), until a round is unanimous or
+a round cap is hit. The two-source and five-source runs each converged in
+one round; the three-source run took two, with the amendment restoring a
+real distinction (a retreat from an overclaim to a narrower, defensible
+one) the first draft had flattened — a real edit, not a rubber stamp, and
+itself a DMML commit citing exactly what it revised. Notably, one-round
+consensus on both the smallest and largest runs, with the middle run
+alone requiring revision, is further evidence against reading anything
+monotonic into scale here — convergence speed tracked the specific
+content of a given debate, not source count. All three runs closed with a
+plain-language "writers room" stage: each agent explains the ratified
+synthesis to an outsider, forbidden from using shorthand the debate coined
+for itself without defining it first. All twelve agent-explanations (four
+personas times three runs) passed this test, each reaching for a
+different concrete example rather than reciting a shared analogy —
+evidence, though not proof (translation to plain language is a general
+LLM skill this pipeline exercises rather than invents), that the debate's
+vocabulary named something real rather than performing depth it didn't
+have. The five-source run's synthesis also produced a genuinely new
+cross-source hinge irreducible to the three-source run's own — "domination
+is a pronoun problem," built from Graeber's claim that a ledger creates a
+debtor rather than recording a relation, defeated as a general test by
+Fanon's epidermal schema (a boundary that travels with the fugitive), and
+resolved via second-person address as the deepest available exit — a real
+sign that adding sources changed the debate's actual content, not just its
+length.
 
 **What this does and doesn't establish.** It does not show DMML structure
 *produces* the philosophical content — the personas draw on the
