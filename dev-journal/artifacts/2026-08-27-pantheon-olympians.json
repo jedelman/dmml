@@ -1,0 +1,229 @@
+[
+  {
+    "cid": "15489d1feedb0a735a46e219f1ffac58afe3bbb6bab924842b8cfd845ba1c648",
+    "respondent": "essay",
+    "verb": "coins",
+    "subject": "argument/section_ii",
+    "predicate": "claim",
+    "object": "aura names the authenticity-testimony-authority chain",
+    "consumes": []
+  },
+  {
+    "cid": "e738f387d37ad33414d8bf03445c833000e68a99ae1a35228b4d1d96df6f1c15",
+    "respondent": "essay",
+    "verb": "stipulates",
+    "subject": "argument/section_iii_aura_natural",
+    "predicate": "naturalAuraDefinition",
+    "object": "unique phenomenon of a distance, however close it may be",
+    "consumes": []
+  },
+  {
+    "cid": "56201c820e67c2b58ea5bc24fce0be241bcebcf9ea54f76e5c7201736717c293",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "argument/section_v",
+    "predicate": "qualitativeShift",
+    "object": "the quantitative shift between cult and exhibition value turned into a qualitative transformation of art's nature",
+    "consumes": []
+  },
+  {
+    "cid": "b68008281f616e89788e6804703ee3c6f31cc748a63742683f55849b2da40383",
+    "respondent": "essay",
+    "verb": "reproduces",
+    "subject": "argument/section_x_star_cult",
+    "predicate": "claim",
+    "object": "the cult of the movie star preserves not the unique aura of the person but the phony spell of a commodity",
+    "consumes": []
+  },
+  {
+    "cid": "c037a755be2f54210944f28db7b6a7802fa11c8e467635c3c96022a74a33c02b",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "role/magician",
+    "predicate": "structuralMatch",
+    "object": "the magician's authority-based distance instantiates aura-as-distance, transposed onto medicine",
+    "consumes": []
+  },
+  {
+    "cid": "05545c4543f8051cf3e6501b914b80249c3751d47947891aba35471efae32f16",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "artist/cameraman",
+    "predicate": "pictureType",
+    "object": "multiple fragments assembled under a new law, matching the surgeon's structure",
+    "consumes": []
+  },
+  {
+    "cid": "4d5265bdb3e5f6552c33ed09d2a49d89395b625c11a0c30a4b94aea3e729a964",
+    "respondent": "essay",
+    "verb": "asserts",
+    "subject": "argument/epilogue_aestheticize",
+    "predicate": "claim",
+    "object": "Fascism gives the masses expression while preserving property -- the introduction of aesthetics into political life",
+    "consumes": []
+  },
+  {
+    "cid": "6231344c3f07d366a2ef05ec7394af542d04c9c05e75bb335958a4d80b4d92d5",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "argument/epilogue",
+    "predicate": "claim",
+    "object": "Fascism is rendering politics aesthetic. Communism responds by politicizing art.",
+    "consumes": []
+  },
+  {
+    "cid": "beea13549148a27c774c2ad0e4bf0a921355442de53b869ba0aa51e54fa7e4a4",
+    "respondent": "athena",
+    "verb": "extends",
+    "subject": "argument/aura_counterfeit",
+    "predicate": "counterfeitDistanceMechanism",
+    "object": "Benjamin calls the star's spell \"phony,\" but note the mechanism: it works precisely by simulating the distance he defines as aura's core. The commodity doesn't destroy aura-as-distance; it counterfeits it. So the star cult is not aura's absence but its mass-produced replica -- which explains why fascism can then aestheticize politics so effectively, since a counterfeit distance can be engineered at scale for leaders as easily as for actors.",
+    "consumes": [
+      [
+        "e738f387d37ad33414d8bf03445c833000e68a99ae1a35228b4d1d96df6f1c15",
+        "argument/section_iii_aura_natural",
+        "naturalAuraDefinition"
+      ],
+      [
+        "b68008281f616e89788e6804703ee3c6f31cc748a63742683f55849b2da40383",
+        "argument/section_x_star_cult",
+        "claim"
+      ]
+    ]
+  },
+  {
+    "cid": "ebc1bb665ed15bc09d96518b1786f3ceb653b27f3874558f322e7541479c99fc",
+    "respondent": "artemis",
+    "verb": "disputes",
+    "subject": "argument/staged_distance_fragility",
+    "predicate": "stagedDistanceIsNotDistance",
+    "object": "Athena's counterfeit mechanism is elegant, but it flatters the counterfeit by measuring it with Benjamin's own yardstick. The natural aura definition -- \"a distance, however close it may be\" -- cuts both ways: the mountain horizon keeps its distance precisely because nothing you do can close it, whereas the star's or the Führer's distance exists only because someone is staging it. That staging is a wound in the forgery, and a huntress notices it: engineered distance must be constantly re-performed and policed, which is why fascist spectacle is so brittle and so hungry. The aura Benjamin mourns is the only distance that cannot be manufactured -- or closed by a bullet.",
+    "consumes": [
+      [
+        "beea13549148a27c774c2ad0e4bf0a921355442de53b869ba0aa51e54fa7e4a4",
+        "argument/aura_counterfeit",
+        "counterfeitDistanceMechanism"
+      ],
+      [
+        "e738f387d37ad33414d8bf03445c833000e68a99ae1a35228b4d1d96df6f1c15",
+        "argument/section_iii_aura_natural",
+        "naturalAuraDefinition"
+      ]
+    ]
+  },
+  {
+    "cid": "892c65fa9b8bcfd8949d1e386559b515a2170f7e0a1d04489e4084ce3d47a922",
+    "respondent": "apollo",
+    "verb": "connects",
+    "subject": "argument/distance_as_posture",
+    "predicate": "stagedDistanceNeedsRitualMaintenance",
+    "object": "Artemis names the crack in the counterfeit -- engineered distance must be re-performed -- and that crack has a home in Benjamin's own architecture. The magician keeps the patient at a distance while the surgeon penetrates; fascism is the political choice of the magician's posture, distance without testimony, authority without authenticity. And a posture must be held, which is precisely why it is brittle: the surgeon's fragments are assembled once under a new law, but the Führer's distance is never assembled, only perpetually staged. Benjamin's two triads are one prophecy read twice -- and the fragility Artemis sees is what prophecy looks like when it has no ground to stand on.",
+    "consumes": [
+      [
+        "ebc1bb665ed15bc09d96518b1786f3ceb653b27f3874558f322e7541479c99fc",
+        "argument/staged_distance_fragility",
+        "stagedDistanceIsNotDistance"
+      ],
+      [
+        "c037a755be2f54210944f28db7b6a7802fa11c8e467635c3c96022a74a33c02b",
+        "role/magician",
+        "structuralMatch"
+      ]
+    ]
+  },
+  {
+    "cid": "120eeb6638cc931306576ee9c42e2b80d37453d0c479ef22e06900092ead41ee",
+    "respondent": "dionysus",
+    "verb": "disputes",
+    "subject": "argument/dionysian_assembly",
+    "predicate": "ecstasyAsExcludedThirdTerm",
+    "object": "Artemis and Apollo have built a beautiful taxonomy -- true distance, forged distance, the surgeon's one-time law versus the Führer's perpetual staging -- but I notice what their tidy architecture quietly exiles: ecstasy itself. Benjamin's masses in the darkened cinema are not collecting fragments under a cool new law; they are a chorus, drunk on simultaneity, and exhibition value has its own cultic pulse he half-admits. The fascist rally works not only because distance is staged but because the crowd is brought close in a body -- the Führer's remoteness and the stadium's sweaty intimacy are the same wine. Apollo's prophecy with no ground to stand on forgets that prophecy is itself a rite: the \"new law\" of assembly is a ceremony too, and a mass that falls into trance before the screen can fall into trance before anything. The excluded third term is not authentic aura nor counterfeit aura but dissolved aura -- distance not reproduced nor faked but lost in the crowd's own ferment, which cuts against Benjamin's confidence that politicized art is somehow the sober answer.",
+    "consumes": [
+      [
+        "892c65fa9b8bcfd8949d1e386559b515a2170f7e0a1d04489e4084ce3d47a922",
+        "argument/distance_as_posture",
+        "stagedDistanceNeedsRitualMaintenance"
+      ],
+      [
+        "ebc1bb665ed15bc09d96518b1786f3ceb653b27f3874558f322e7541479c99fc",
+        "argument/staged_distance_fragility",
+        "stagedDistanceIsNotDistance"
+      ]
+    ]
+  },
+  {
+    "cid": "71ebede073898f16a1961bc09cd39730cd33f9a34d59f273a1b03bc04f0111bd",
+    "respondent": "athena",
+    "verb": "disputes",
+    "subject": "argument/ecstasy_contested_resource",
+    "predicate": "ecstasyIsTheContestedResource",
+    "object": "Dionysus claims ecstasy is the excluded third term, but the epilogue already contains it -- Benjamin says fascism \"gives the masses expression while preserving property.\" That clause is not decoration: expression is exactly the crowd's ferment, and fascism's whole trick is to channel it while property stands untouched. So dissolved aura is not exiled from the architecture; it is the contested resource both sides recruit. Artemis says staged distance is brittle, Dionysus says the crowd's closeness is the real fuel -- I say these are one mechanism viewed from two ends: the Führer's manufactured remoteness and the rally's sweaty intimacy are not rivals but load and counterweight, each shoring up the other. The sober question Benjamin leaves us is whether politicized art can recruit the same ferment without becoming its own rite -- and Dionysus is right that Benjamin never answers it.",
+    "consumes": [
+      [
+        "120eeb6638cc931306576ee9c42e2b80d37453d0c479ef22e06900092ead41ee",
+        "argument/dionysian_assembly",
+        "ecstasyAsExcludedThirdTerm"
+      ],
+      [
+        "4d5265bdb3e5f6552c33ed09d2a49d89395b625c11a0c30a4b94aea3e729a964",
+        "argument/epilogue_aestheticize",
+        "claim"
+      ]
+    ]
+  },
+  {
+    "cid": "fbc65bef00c771a2ce191bd9c719c61342e83363301d915e706a0ddb52b2f8cf",
+    "respondent": "artemis",
+    "verb": "disputes",
+    "subject": "argument/ferment_not_resource",
+    "predicate": "ecstasyIsHerdmastersResource",
+    "object": "Athena has quietly smuggled in the herdsman's vocabulary: ferment as a \"resource\" both sides \"recruit.\" A resource to be recruited by whom, and for whom? Only by leaders, and only for herds. Both she and Dionysus miss what the huntress sees at every rally: a crowd brought close in a body has already surrendered its own senses -- nobody who is dissolved needs to be governed, and nobody dissolved can resist. So the sober answer to Benjamin's question is not politicized art that \"recruits the same ferment without becoming its own rite\" -- that is a contradiction, like hunting tame game. The only stance that cannot be counterfeited, staged, or dissolved is the one that refuses the crowd altogether: the isolated test, which Benjamin himself names in the film actor, who performs alone before the apparatus and must become the instrument of his own testing. Distraction decays into trance when it pools; kept solitary, it is the one form of closeness no Führer can harvest.",
+    "consumes": [
+      [
+        "71ebede073898f16a1961bc09cd39730cd33f9a34d59f273a1b03bc04f0111bd",
+        "argument/ecstasy_contested_resource",
+        "ecstasyIsTheContestedResource"
+      ],
+      [
+        "120eeb6638cc931306576ee9c42e2b80d37453d0c479ef22e06900092ead41ee",
+        "argument/dionysian_assembly",
+        "ecstasyAsExcludedThirdTerm"
+      ]
+    ]
+  },
+  {
+    "cid": "8a4356d37eda6a16ac6498e954a3b3f769c03242f93a80bee62dcde9726cff75",
+    "respondent": "apollo",
+    "verb": "connects",
+    "subject": "argument/actor_isolated_test",
+    "predicate": "solitaryTestCompletesExhibitionValue",
+    "object": "Artemis has found the note that resolves the chord: the actor alone before the apparatus is not a retreat from Benjamin's qualitative shift but its purest form -- exhibition value finally embodied in a single tested individual rather than pooled in a crowd. Where I earlier said the Führer's distance is never assembled, only staged, she completes the symmetry: the actor's closeness is never staged at all, because the apparatus cannot be seduced, only answered. But I would temper her refusal of the crowd with the pattern Benjamin himself draws: the film actor's solitary test exists only to be assembled into the work the masses then see -- solitude upstream, chorus downstream, one law governing both. The danger is not the crowd as such but the collapse of that order, the moment trance upstream replaces testing. The harmony Benjamin prophesies holds only if each keeps its place.",
+    "consumes": [
+      [
+        "fbc65bef00c771a2ce191bd9c719c61342e83363301d915e706a0ddb52b2f8cf",
+        "argument/ferment_not_resource",
+        "ecstasyIsHerdmastersResource"
+      ],
+      [
+        "56201c820e67c2b58ea5bc24fce0be241bcebcf9ea54f76e5c7201736717c293",
+        "argument/section_v",
+        "qualitativeShift"
+      ]
+    ]
+  },
+  {
+    "cid": "38538e17825ad02aade8ad1bcdb48ebf59fa3d2d66c79628952fa6b2d314c649",
+    "respondent": "dionysus",
+    "verb": "disputes",
+    "subject": "argument/apparatus_as_hidden_god",
+    "predicate": "solitaryTestIsStillARite",
+    "object": "Apollo ends with a shepherd's dream: solitude upstream, chorus downstream, each keeping its place under one law. But that is not harmony, it is quarantine -- and quarantines leak. The actor \"alone before the apparatus\" is not beyond rite; he kneels before the least forgiving god Benjamin ever built, one who demands endless retakes and never says yes. Artemis thinks the apparatus cannot be seduced, only answered -- but every answered test is a votive offering, and the solitude she praises is just ecstasy with the doors shut. Artemis is right that pooled distraction becomes trance, yet wrong that solitude resists harvest: the Führer does not need to dissolve the actor, only to wait downstream where Apollo stations the chorus, assembling tested fragments into a new liturgy. There is no place in this pipeline that keeps -- only the ferment moving through it, and Benjamin's sober politicized art would have to be the first ceremony in history that refuses to congeal. That is why he never answered Athena's question: the answer would have to be a rite that knows itself as one.",
+    "consumes": [
+      [
+        "8a4356d37eda6a16ac6498e954a3b3f769c03242f93a80bee62dcde9726cff75",
+        "argument/actor_isolated_test",
+        "solitaryTestCompletesExhibitionValue"
+      ]
+    ]
+  }
+]
