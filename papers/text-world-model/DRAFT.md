@@ -218,28 +218,80 @@ rather than folded into the flat-curve pattern above: it is evidence that
 *how much* of it there is, a variable the four scale-up runs never
 isolated because they never mixed representations within a single log.
 
+**The fix was tested on the next run, not just proposed.** A further run
+extended the (still explicitly open) reconciliation document with two
+sources chosen for a specific dimension the corpus had not yet reached —
+embodiment — Wilhelm Reich's account of character armor (repression
+braced directly into muscle tissue, the mechanism producing authoritarian
+character) and Bill Plotkin's account of the descent to soul (wildness as
+a person's own severed nature). This run used the same string for both
+the verb and predicate fields on every frozen prior item, specifically to
+make the rupture run's confusion structurally impossible. Result: 5 of 23
+turns with zero verified citations — a real improvement over the rupture
+run's 14 of 22, though not back to the clean 3-of-24 baseline, consistent
+with mixing frozen-prior and fresh-anchor citations in one log still
+carrying more surface area to misremember than a single-convention log,
+even once the specific verb/predicate confusion is closed. This run also
+surfaced a third, still-distinct failure mode: a raw JSON parse error
+from one completion truncated mid-string at the `max_completion_tokens`
+ceiling — a token-budget failure, unrelated to citation semantics,
+tracked separately rather than folded into either citation-reliability
+number above.
+
+Beyond the citation-mechanics finding, this run is notable for what the
+debate itself produced. Asked, in effect, who is qualified to hold the
+reconciliation document's still-open seat, the four agents proposed and
+then broke five successive candidate criteria in sequence — a certified
+spiritual descent, an unadministered wilderness practice, a "grammar of
+deeds" judged by action alone, ecstasy itself as an uncounterfeitable
+credential, and a retroactive trace-test measuring whether an act
+increased a receiver's capacity to feel. Each break was substantive and
+specific: the deeds-only test was shown to certify a fascist rally as
+legitimate (mass rallies are motion, ecstatic and synchronized); the
+ecstasy criterion was then shown, by one agent citing another agent's own
+prior turn, to fail the identical test for the identical reason; the
+trace-test was shown to certify a thoroughly repressed community as
+healthy, since repression's signature is quiet, and quiet passes a test
+built on absence of disturbance. After the fifth failure, one agent named
+the pattern rather than proposing a sixth criterion: that the demand for
+an incorruptible discriminator was itself an instance of the armor under
+discussion. The other three agents' independent reflections converged on
+the same reading unprompted, each naming their own proposed criterion as
+a version of the same flinch. The ratified synthesis records this
+conclusion directly and explicitly refuses to convert the finding itself
+into a new qualification — the exact trap the debate had just spent five
+rounds falling into and diagnosing. This is a second real instance (after
+the rupture run's unprompted self-critique of the group's own authority)
+of the pipeline producing a debate that turns argumentative pressure on
+its own procedure rather than only on the material it was given, without
+that turn being scripted into the dispatch prompt.
+
 **What this does and doesn't establish.** It does not show DMML structure
 *produces* the philosophical content — the personas draw on the
 underlying model's real background knowledge of these texts throughout,
 and nothing here isolates how much of a given turn's insight came from the
 graph versus the model's own priors. What it does establish, concretely:
 a real symbolic world model of text can host a genuinely multi-stage
-reasoning process (argue, reflect, ratify, explain, and — in the
-rupture/reconciliation run — reopen and re-adjudicate) across well over a
-hundred real commits, with its provenance claims mechanically checked
-rather than merely asserted, its failure modes (citation drop rate, and
-now a distinct schema-ambiguity mode) directly measurable rather than
-assumed away, and its final state checkpointed to and independently
-re-verified against a real, external, content-addressed store. Scaling
-this same pipeline to the rest of Power Explained's bibliography — the
+reasoning process (argue, reflect, ratify, explain, and — across the
+rupture/reconciliation and embodiment-extension runs — reopen, extend,
+and re-adjudicate an already-ratified position, twice producing unprompted
+self-critique of the reasoning agents' own procedural authority) across
+well over two hundred real commits, with its provenance claims
+mechanically checked rather than merely asserted, its failure modes
+(citation drop rate, a distinct schema-ambiguity mode, and a distinct
+token-budget truncation mode) directly measurable rather than assumed
+away, and its final state checkpointed to and independently re-verified
+against a real, external, content-addressed store. Scaling this same
+pipeline to the rest of Power Explained's bibliography — the
 dramatis-personae roster runs to 23 thinkers, this case study having
-exercised 11 of them (Gramsci, Federici, Ostrom, Graeber, Fanon,
+exercised 13 of them (Gramsci, Federici, Ostrom, Graeber, Fanon,
 Kropotkin, and Bookchin in the closed synthesis; Davis, Lorde, the
-Combahee River Collective, and Crenshaw in the rupture) — is the natural
-next step, and
-would let both the citation-degradation and the rupture/reconciliation
-findings above be checked against still more source material rather than
-asserted from a handful of runs.
+Combahee River Collective, and Crenshaw in the rupture; Reich in the
+embodiment extension), plus Plotkin (a real, grep-confirmed citation in
+the source corpus, not yet a dramatis-personae profile there) — is the
+natural next step, and would let the citation-degradation, rupture/
+reconciliation, and embodiment findings above be checked against still
+more source material rather than asserted from a handful of runs.
 
 ---
 
