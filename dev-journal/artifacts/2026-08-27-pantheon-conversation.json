@@ -1,0 +1,177 @@
+[
+  {
+    "cid": "15489d1feedb0a735a46e219f1ffac58afe3bbb6bab924842b8cfd845ba1c648",
+    "respondent": "essay",
+    "verb": "coins",
+    "subject": "argument/section_ii",
+    "predicate": "claim",
+    "object": "aura names the authenticity-testimony-authority chain",
+    "consumes": []
+  },
+  {
+    "cid": "e738f387d37ad33414d8bf03445c833000e68a99ae1a35228b4d1d96df6f1c15",
+    "respondent": "essay",
+    "verb": "stipulates",
+    "subject": "argument/section_iii_aura_natural",
+    "predicate": "naturalAuraDefinition",
+    "object": "unique phenomenon of a distance, however close it may be",
+    "consumes": []
+  },
+  {
+    "cid": "56201c820e67c2b58ea5bc24fce0be241bcebcf9ea54f76e5c7201736717c293",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "argument/section_v",
+    "predicate": "qualitativeShift",
+    "object": "the quantitative shift between cult and exhibition value turned into a qualitative transformation of art's nature",
+    "consumes": []
+  },
+  {
+    "cid": "b68008281f616e89788e6804703ee3c6f31cc748a63742683f55849b2da40383",
+    "respondent": "essay",
+    "verb": "reproduces",
+    "subject": "argument/section_x_star_cult",
+    "predicate": "claim",
+    "object": "the cult of the movie star preserves not the unique aura of the person but the phony spell of a commodity",
+    "consumes": []
+  },
+  {
+    "cid": "c037a755be2f54210944f28db7b6a7802fa11c8e467635c3c96022a74a33c02b",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "role/magician",
+    "predicate": "structuralMatch",
+    "object": "the magician's authority-based distance instantiates aura-as-distance, transposed onto medicine",
+    "consumes": []
+  },
+  {
+    "cid": "05545c4543f8051cf3e6501b914b80249c3751d47947891aba35471efae32f16",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "artist/cameraman",
+    "predicate": "pictureType",
+    "object": "multiple fragments assembled under a new law, matching the surgeon's structure",
+    "consumes": []
+  },
+  {
+    "cid": "4d5265bdb3e5f6552c33ed09d2a49d89395b625c11a0c30a4b94aea3e729a964",
+    "respondent": "essay",
+    "verb": "asserts",
+    "subject": "argument/epilogue_aestheticize",
+    "predicate": "claim",
+    "object": "Fascism gives the masses expression while preserving property -- the introduction of aesthetics into political life",
+    "consumes": []
+  },
+  {
+    "cid": "6231344c3f07d366a2ef05ec7394af542d04c9c05e75bb335958a4d80b4d92d5",
+    "respondent": "essay",
+    "verb": "argues",
+    "subject": "argument/epilogue",
+    "predicate": "claim",
+    "object": "Fascism is rendering politics aesthetic. Communism responds by politicizing art.",
+    "consumes": []
+  },
+  {
+    "cid": "7f55da9598a7af8a0b12c53c26abd771a6ca30dde07a1110406bbbb70ad0b665",
+    "respondent": "kimi",
+    "verb": "connects",
+    "subject": "surgeonVsMagicianStructure",
+    "predicate": "dismantlesAuraToReconstructNewAuthority",
+    "object": "The surgeon's fragmentation and the cameraman's assembly under 'a new law' suggests that mechanical reproduction doesn't simply destroy aura but rather reconstructs authority through technical expertise—a new authenticity-testimony-authority chain where the apparatus itself becomes the guarantor, replacing distance with mastery.",
+    "consumes": []
+  },
+  {
+    "cid": "c964e63e46c15084022a8350d87067f3b7d5d7b9cb3b0a01cb63ddbdce9a3433",
+    "respondent": "deepseek",
+    "verb": "extends",
+    "subject": "kimiSurgeonAuthority",
+    "predicate": "replacesDistantAuraWithProximateApparatusAuthority",
+    "object": "If the apparatus becomes the new guarantor of authenticity, then Benjamin's diagnosis of Fascism—giving the masses expression while preserving property—suggests that this technical-authority chain can itself be captured by capital, so the cameraman's 'new law' is not inherently emancipatory but available for aestheticized politics.",
+    "consumes": [
+      [
+        "6231344c3f07d366a2ef05ec7394af542d04c9c05e75bb335958a4d80b4d92d5",
+        "argument/epilogue",
+        "claim"
+      ],
+      [
+        "7f55da9598a7af8a0b12c53c26abd771a6ca30dde07a1110406bbbb70ad0b665",
+        "surgeonVsMagicianStructure",
+        "dismantlesAuraToReconstructNewAuthority"
+      ]
+    ]
+  },
+  {
+    "cid": "f2af8f02b3cc4a5239895fcee8cdf67b21794e885b23915f7529b71dae9bcab2",
+    "respondent": "glm",
+    "verb": "disputes",
+    "subject": "glmTechnicalAuthorityNotGuarantor",
+    "predicate": "apparatusIsConditionNotGuarantor",
+    "object": "DeepSeek grants the apparatus too much: for Benjamin the cameraman's 'new law' is a condition of possibility, not a guarantor — the surgeon/cameraman structure dismantles aura precisely by withholding any authenticity-testimony chain, so the Fascist capture Kimi and Deepseek describe works not by rebuilding technical authority but by exploiting the vacuum left when authority withdraws, substituting the star's 'phony spell of a commodity' for genuine testimony.",
+    "consumes": [
+      [
+        "7f55da9598a7af8a0b12c53c26abd771a6ca30dde07a1110406bbbb70ad0b665",
+        "surgeonVsMagicianStructure",
+        "dismantlesAuraToReconstructNewAuthority"
+      ],
+      [
+        "c964e63e46c15084022a8350d87067f3b7d5d7b9cb3b0a01cb63ddbdce9a3433",
+        "kimiSurgeonAuthority",
+        "replacesDistantAuraWithProximateApparatusAuthority"
+      ],
+      [
+        "b68008281f616e89788e6804703ee3c6f31cc748a63742683f55849b2da40383",
+        "argument/section_x_star_cult",
+        "claim"
+      ]
+    ]
+  },
+  {
+    "cid": "6c1a36f583bd5cabf57543c77de2e02bc17478581652c16f5c5cc945d58e9d19",
+    "respondent": "kimi",
+    "verb": "extends",
+    "subject": "vacuumExploitation",
+    "predicate": "starCultFillsTestimonyVoid",
+    "object": "GLM's vacuum thesis clarifies why Benjamin pairs the star cult specifically with the surgeon/cameraman structure: the star's 'phony spell' does not merely replace aura but simulates the missing testimony-function in a structure that has abolished it. The star becomes a prosthetic witness—offering the appearance of authentic presence without the cultic distance that would make such testimony meaningful, hence the specifically 'phony' quality of the spell.",
+    "consumes": [
+      [
+        "f2af8f02b3cc4a5239895fcee8cdf67b21794e885b23915f7529b71dae9bcab2",
+        "glmTechnicalAuthorityNotGuarantor",
+        "apparatusIsConditionNotGuarantor"
+      ],
+      [
+        "b68008281f616e89788e6804703ee3c6f31cc748a63742683f55849b2da40383",
+        "argument/section_x_star_cult",
+        "claim"
+      ]
+    ]
+  },
+  {
+    "cid": "eff9bfc6875e4440d8f14e80677879e30d3821af453cbfcbe505b51281ec0c02",
+    "respondent": "deepseek",
+    "verb": "extends",
+    "subject": "kimiProstheticWitness",
+    "predicate": "politicizedArtAsCounterProsthesis",
+    "object": "If the star is a prosthetic witness simulating testimony in the vacuum left by aura's withdrawal, then Benjamin's closing call to 'politicize art' is not merely ideological counter-propaganda but a demand to construct an alternative prosthetic witness—one grounded in the collective, reproducible fragments of the cameraman—so that the absence of cultic distance is filled by critical montage rather than commodity spell, turning the vacuum itself into the site of a new, non-authoritarian testimony.",
+    "consumes": []
+  },
+  {
+    "cid": "017bec323d5673ce586256cc3469078bf9a061e8482f634481a79effb3d3cfdf",
+    "respondent": "glm",
+    "verb": "disputes",
+    "subject": "politicizedArtNotCounterTestimony",
+    "predicate": "distractionNotWitness",
+    "object": "DeepSeek over-reads the epilogue as constructing a 'non-authoritarian testimony': Benjamin's politicization of art works precisely by renouncing the testimony-function altogether, not replacing it — the distracted mass audience in Section XV absorbs the artwork habitually, as architecture is absorbed, so the collective does not become a new witness filling the vacuum but practices a reception that never needed one. The vacuum GLM identified is not a gap to be filled but the emancipatory condition itself, which is why Fascism's star-cult spell and DeepSeek's counter-prosthesis share the same mistaken longing for a substitute witness.",
+    "consumes": [
+      [
+        "eff9bfc6875e4440d8f14e80677879e30d3821af453cbfcbe505b51281ec0c02",
+        "kimiProstheticWitness",
+        "politicizedArtAsCounterProsthesis"
+      ],
+      [
+        "6231344c3f07d366a2ef05ec7394af542d04c9c05e75bb335958a4d80b4d92d5",
+        "argument/epilogue",
+        "claim"
+      ]
+    ]
+  }
+]
