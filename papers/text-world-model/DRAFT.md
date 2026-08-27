@@ -301,6 +301,48 @@ succeeded. One occurrence is not enough to call this a reliability gap
 between the two model tiers, but it is a distinct enough failure
 signature to track separately going forward.
 
+**A fifth run turned the extension pattern on itself: a working
+criterion dissolved into a genre problem.** A further run (adding Jean
+Baudrillard and Sylvia Wynter) posed the shamanism run's own hard-won
+finding — that Kopenawa's apprenticeship is real precisely because it
+must never be spent as a credential — two new challenges at once:
+Baudrillard's argument that in a world of copies referring only to other
+copies, the very idea of an uncopied original becomes suspect, and
+Wynter's argument that "the human" was never one fixed thing but one
+historically specific, Western, over-represented genre of it ("Man"),
+mistaken for the human as such. Five successive rescue attempts —
+dissimulation, a self-authorizing "demonic ground," self-auditing, a
+declined representation, indifference to outside accounts — were each
+identified, by the agents' own next turn, as re-importing exactly the
+outside judge the shamanism finding had already ruled out. The rupture
+that actually broke the deadlock was self-implicating rather than
+abstract: one agent had been describing the practice's community as
+untouched-by-history, pre-modern, positioning the forest itself as raw
+nature standing outside all narration — legible, once named, as exactly
+the move Wynter's argument warns against — and retracted the framing
+in-transcript after using it twice. Once the forest is conceded to be
+another genre's own lived origin-narrative rather than nature prior to
+story, no position remains from which to certify anything as the
+unmediated real thing. What survived, again thinner than either prior
+run's conclusion, was restricted rather than abandoned: the
+real/simulated distinction holds only as an observable of whether a
+practice keeps narrating itself over time, usable only to mourn a loss
+or indict its cause, never to admit or certify — and the deeper
+realization, novel to this run, that the underlying question animating
+every extension so far (who is qualified to hold an open seat) was
+itself asked in one culture's specific vocabulary of personhood, which
+widening the table does not by itself unsettle. The run also confirmed,
+rather than merely suggested, the missing-required-field failure mode
+first seen once on the shamanism run: the identical omission (`vote`)
+recurred on both of this run's first two consensus attempts, on the
+flash model's initial-draft call specifically, which was enough of a
+repeatable pattern to fix in code (defaulting the field when no prior
+proposal exists, the one call site where a missing value has an
+unambiguous correct default) rather than worked around with a third
+rerun. Citation reliability held at the same flat-curve baseline (3 of
+24 zero-citation turns) across an eleven-source combined log and a
+second consecutive flash-model run.
+
 **What this does and doesn't establish.** It does not show DMML structure
 *produces* the philosophical content — the personas draw on the
 underlying model's real background knowledge of these texts throughout,
@@ -308,30 +350,34 @@ and nothing here isolates how much of a given turn's insight came from the
 graph versus the model's own priors. What it does establish, concretely:
 a real symbolic world model of text can host a genuinely multi-stage
 reasoning process (argue, reflect, ratify, explain, and — across the
-rupture/reconciliation, embodiment, and shamanism-extension runs —
-reopen, extend, and re-adjudicate an already-ratified position,
+rupture/reconciliation, embodiment, shamanism-, and cyberpunk-extension
+runs — reopen, extend, and re-adjudicate an already-ratified position,
 repeatedly producing unprompted self-critique of the reasoning agents'
-own procedural authority, including against a real counterexample rather
-than only in the abstract) across well over three hundred real commits,
+own procedural authority, including against a real counterexample and,
+in the fifth run, a retraction of one agent's own prior framing rather
+than only abstract argument) across over four hundred real commits,
 with its provenance claims mechanically checked rather than merely
 asserted, its failure modes (citation drop rate, a schema-ambiguity mode,
-a token-budget truncation mode, and a missing-required-field mode) each
-directly measurable rather than assumed away, and its final state
-checkpointed to and independently re-verified against a real, external,
-content-addressed store — with one full model swap (`z-ai/glm-5.3` to
-`z-ai/glm-5.3-flash`, verified live before adoption) absorbed mid-project
-without the citation-reliability pattern breaking. Scaling this same
-pipeline to the rest of Power Explained's bibliography — the
-dramatis-personae roster runs to 23 thinkers, this case study having
-exercised 17 of them (Gramsci, Federici, Ostrom, Graeber, Fanon,
-Kropotkin, and Bookchin in the closed synthesis; Davis, Lorde, the
-Combahee River Collective, and Crenshaw in the rupture; Reich, Eliade,
-Taussig, Ginzburg, and Kopenawa across the embodiment and shamanism
-extensions), plus Plotkin (a real, grep-confirmed citation in the source
-corpus, not yet a dramatis-personae profile there) — is the natural next
-step, and would let the citation-degradation, rupture/reconciliation,
-and embodiment/shamanism findings above be checked against still more
-source material rather than asserted from a handful of runs.
+a token-budget truncation mode, and a missing-required-field mode, the
+last confirmed as a repeatable pattern rather than a one-off and fixed
+in code) each directly measurable rather than assumed away, and its
+final state checkpointed to and independently re-verified against a
+real, external, content-addressed store — with one full model swap
+(`z-ai/glm-5.3` to `z-ai/glm-5.3-flash`, verified live before adoption)
+absorbed mid-project without the citation-reliability pattern breaking
+across two subsequent runs. Scaling this same pipeline to the rest of
+Power Explained's bibliography — the dramatis-personae roster runs to 23
+thinkers, this case study having exercised 19 of them (Gramsci, Federici,
+Ostrom, Graeber, Fanon, Kropotkin, and Bookchin in the closed synthesis;
+Davis, Lorde, the Combahee River Collective, and Crenshaw in the
+rupture; Reich, Eliade, Taussig, Ginzburg, and Kopenawa across the
+embodiment and shamanism extensions; Wynter in the cyberpunk extension),
+plus Plotkin and Baudrillard (real, grep-confirmed citations in the
+source corpus, not yet dramatis-personae profiles there) — is the
+natural next step, and would let the citation-degradation,
+rupture/reconciliation, and embodiment/shamanism/cyberpunk findings
+above be checked against still more source material rather than
+asserted from a handful of runs.
 
 ---
 
