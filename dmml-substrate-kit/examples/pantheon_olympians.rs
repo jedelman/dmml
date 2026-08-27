@@ -31,6 +31,17 @@
 //! effect as the raw `{"reasoning":{"effort":...}}` object form used
 //! before) instead of hand-rolled `reqwest` JSON, and five rounds
 //! instead of two.
+//!
+//! Updated again per Jason's next follow-up: the single-source-material
+//! run "may not have anything to add" partly because it only had one
+//! source to react to. Anchors now seed from TWO real, tension-bearing
+//! sources -- Benjamin's essay and Adorno's actual, documented direct
+//! critique of that same essay (his 18 March 1936 letter, plus Adorno &
+//! Horkheimer's "The Culture Industry") -- both verified against real
+//! quotes (see the `ANCHORS` doc comment for exact sourcing), never
+//! invented, same discipline as the Benjamin anchors always used. The
+//! four Olympians are told both sources exist and are given explicit
+//! autonomy to interpret, counter-interpret, or synthesize across them.
 
 use std::collections::HashMap;
 
@@ -53,24 +64,50 @@ use iroh_docs::AuthorId;
 use serde::{Deserialize, Serialize};
 
 struct Anchor {
-    rkey: &'static str,
+    id: &'static str,
+    author: &'static str, // "benjamin" or "adorno" -- a real, distinct source identity
     verb: &'static str,
     subject: &'static str,
     predicate: &'static str,
     object: &'static str,
 }
 
-// Same eight real claims as pantheon_conversation.rs, pulled verbatim
-// from benjamin_full_essay.rs's own graph.
+// Benjamin's eight, same as before, pulled verbatim from
+// benjamin_full_essay.rs's own graph.
+//
+// Adorno's eight are new, per Jason's follow-up ("bring in both texts;
+// the dialogue agents should have autonomy to interpret and
+// counter-interpret them") -- real, verified quotes, not paraphrased or
+// invented, from two real sources:
+//
+// - Adorno's actual 18 March 1936 letter to Benjamin, a real, documented
+//   direct critique of this exact essay (Benjamin never fully answered
+//   it). Verified via https://classicalmusiclife.substack.com/p/theodor-adorno-to-walter-benjamin
+//   (secondary source quoting the letter directly) after a primary-source
+//   PDF (platypus1917.org) turned out to be an unreadable scanned image,
+//   not usable text.
+// - Adorno & Horkheimer's "The Culture Industry: Enlightenment as Mass
+//   Deception" (Dialectic of Enlightenment, 1944) -- verified against the
+//   full text at https://www.marxists.org/reference/archive/adorno/1944/culture-industry.htm
 const ANCHORS: &[Anchor] = &[
-    Anchor { rkey: "rkey0008", verb: "coins", subject: "argument/section_ii", predicate: "claim", object: "aura names the authenticity-testimony-authority chain" },
-    Anchor { rkey: "rkey0011", verb: "stipulates", subject: "argument/section_iii_aura_natural", predicate: "naturalAuraDefinition", object: "unique phenomenon of a distance, however close it may be" },
-    Anchor { rkey: "rkey0018", verb: "argues", subject: "argument/section_v", predicate: "qualitativeShift", object: "the quantitative shift between cult and exhibition value turned into a qualitative transformation of art's nature" },
-    Anchor { rkey: "rkey0026", verb: "reproduces", subject: "argument/section_x_star_cult", predicate: "claim", object: "the cult of the movie star preserves not the unique aura of the person but the phony spell of a commodity" },
-    Anchor { rkey: "rkey0029", verb: "argues", subject: "role/magician", predicate: "structuralMatch", object: "the magician's authority-based distance instantiates aura-as-distance, transposed onto medicine" },
-    Anchor { rkey: "rkey0030", verb: "argues", subject: "artist/cameraman", predicate: "pictureType", object: "multiple fragments assembled under a new law, matching the surgeon's structure" },
-    Anchor { rkey: "rkey0040", verb: "asserts", subject: "argument/epilogue_aestheticize", predicate: "claim", object: "Fascism gives the masses expression while preserving property -- the introduction of aesthetics into political life" },
-    Anchor { rkey: "rkey0044", verb: "argues", subject: "argument/epilogue", predicate: "claim", object: "Fascism is rendering politics aesthetic. Communism responds by politicizing art." },
+    Anchor { id: "benjamin/rkey0008", author: "benjamin", verb: "coins", subject: "argument/section_ii", predicate: "claim", object: "aura names the authenticity-testimony-authority chain" },
+    Anchor { id: "benjamin/rkey0011", author: "benjamin", verb: "stipulates", subject: "argument/section_iii_aura_natural", predicate: "naturalAuraDefinition", object: "unique phenomenon of a distance, however close it may be" },
+    Anchor { id: "benjamin/rkey0018", author: "benjamin", verb: "argues", subject: "argument/section_v", predicate: "qualitativeShift", object: "the quantitative shift between cult and exhibition value turned into a qualitative transformation of art's nature" },
+    Anchor { id: "benjamin/rkey0026", author: "benjamin", verb: "reproduces", subject: "argument/section_x_star_cult", predicate: "claim", object: "the cult of the movie star preserves not the unique aura of the person but the phony spell of a commodity" },
+    Anchor { id: "benjamin/rkey0029", author: "benjamin", verb: "argues", subject: "role/magician", predicate: "structuralMatch", object: "the magician's authority-based distance instantiates aura-as-distance, transposed onto medicine" },
+    Anchor { id: "benjamin/rkey0030", author: "benjamin", verb: "argues", subject: "artist/cameraman", predicate: "pictureType", object: "multiple fragments assembled under a new law, matching the surgeon's structure" },
+    Anchor { id: "benjamin/rkey0040", author: "benjamin", verb: "asserts", subject: "argument/epilogue_aestheticize", predicate: "claim", object: "Fascism gives the masses expression while preserving property -- the introduction of aesthetics into political life" },
+    Anchor { id: "benjamin/rkey0044", author: "benjamin", verb: "argues", subject: "argument/epilogue", predicate: "claim", object: "Fascism is rendering politics aesthetic. Communism responds by politicizing art." },
+    // Adorno's 1936 letter to Benjamin -- direct critique of this essay.
+    Anchor { id: "adorno/letter_myth", author: "adorno", verb: "disputes", subject: "letter/autonomous_art_myth", predicate: "claim", object: "the center of the autonomous work of art does not itself belong on the side of myth" },
+    Anchor { id: "adorno/letter_laughter", author: "adorno", verb: "disputes", subject: "letter/cinema_laughter", predicate: "claim", object: "The laughter of the audience at a cinema... is anything but good and revolutionary" },
+    Anchor { id: "adorno/letter_stigma", author: "adorno", verb: "argues", subject: "letter/high_low_art_stigma", predicate: "claim", object: "Both bear the stigma of capitalism, both contain elements of change" },
+    Anchor { id: "adorno/letter_fear", author: "adorno", verb: "asserts", subject: "letter/abolition_of_fear", predicate: "claim", object: "The goal of the revolution is the abolition of fear" },
+    // Adorno & Horkheimer, "The Culture Industry: Enlightenment as Mass Deception" (1944).
+    Anchor { id: "adorno/ci_monopoly", author: "adorno", verb: "argues", subject: "culture_industry/monopoly_uniformity", predicate: "claim", object: "Under monopoly all mass culture is identical, and the lines of its artificial framework begin to show through" },
+    Anchor { id: "adorno/ci_amusement", author: "adorno", verb: "argues", subject: "culture_industry/amusement_as_labor", predicate: "claim", object: "Amusement under late capitalism is the prolongation of work" },
+    Anchor { id: "adorno/ci_technology", author: "adorno", verb: "argues", subject: "culture_industry/technological_rationale", predicate: "claim", object: "A technological rationale is the rationale of domination itself" },
+    Anchor { id: "adorno/ci_movies_business", author: "adorno", verb: "asserts", subject: "culture_industry/movies_radio_business", predicate: "claim", object: "Movies and radio need no longer pretend to be art. The truth that they are just business is made into an ideology" },
 ];
 
 struct Olympian {
@@ -202,17 +239,24 @@ async fn dispatch(
     log: &[TurnRecord],
 ) -> anyhow::Result<DmmlTurnArgs> {
     let user_msg = format!(
-        "Four Olympians (Athena, Artemis, Apollo, Dionysus) are analyzing Walter Benjamin's \
-\"The Work of Art in the Age of Mechanical Reproduction\" together, in a real, growing, checkable \
-DMML commit log. Some entries are Benjamin's own claims (respondent=essay); others are prior turns \
-from you or the other three.\n\n\
+        "Four Olympians (Athena, Artemis, Apollo, Dionysus) are analyzing two texts in real \
+tension with each other, in a real, growing, checkable DMML commit log: Walter Benjamin's \"The \
+Work of Art in the Age of Mechanical Reproduction\" (respondent=benjamin) and Theodor Adorno's real, \
+documented direct critique of that exact essay -- his 18 March 1936 letter to Benjamin, plus \
+Adorno & Horkheimer's \"The Culture Industry\" (respondent=adorno). Benjamin is broadly optimistic \
+that mechanical reproduction can be politically emancipatory; Adorno is broadly skeptical, arguing \
+mass culture standardizes and dominates rather than liberates. You have full autonomy to interpret \
+EITHER author, counter-interpret one against the other, side with one against the other, or find a \
+synthesis neither author states -- whatever a real reader with your temperament would actually do. \
+Other entries in the log are prior turns from you or the other three Olympians.\n\n\
 Current log:\n{}\n\n\
 Make exactly one genuine analytical move in your own voice as this persona -- agreeing with, \
-extending, disputing, or connecting something SPECIFIC already in the log, in a way another \
-Olympian with your temperament actually would. Not a summary of Benjamin, not a restatement. If you \
-don't have a real move to make, say so honestly in `object` rather than padding. Call \
-submit_dmml_turn with your answer. `consumes` must copy at least one real (cid, subject, predicate) \
-from the log above exactly -- never invent one.",
+extending, disputing, or connecting something SPECIFIC already in the log (Benjamin's claims, \
+Adorno's claims, or a prior Olympian's turn), in a way another Olympian with your temperament \
+actually would. Not a summary of either author, not a restatement. If you don't have a real move to \
+make, say so honestly in `object` rather than padding. Call submit_dmml_turn with your answer. \
+`consumes` must copy at least one real (cid, subject, predicate) from the log above exactly -- \
+never invent one.",
         transcript_so_far(log)
     );
 
@@ -325,14 +369,18 @@ async fn main() -> anyhow::Result<()> {
     let doc: Doc = api.create().await?;
     println!("doc namespace: {}\n", doc.id());
 
-    let essay_author = api.author_create().await?;
+    let benjamin_author = api.author_create().await?;
+    let adorno_author = api.author_create().await?;
+    let mut source_authors: HashMap<&'static str, AuthorId> = HashMap::new();
+    source_authors.insert("benjamin", benjamin_author);
+    source_authors.insert("adorno", adorno_author);
     let mut olympian_authors: HashMap<&'static str, AuthorId> = HashMap::new();
     for o in OLYMPIANS {
         olympian_authors.insert(o.name, api.author_create().await?);
     }
 
     let substrate = IrohAppendSubstrate::new(
-        essay_author,
+        benjamin_author,
         "pantheon-olympians".to_string(),
         doc.clone(),
         (*blobs).clone(),
@@ -340,11 +388,12 @@ async fn main() -> anyhow::Result<()> {
 
     let mut log: Vec<TurnRecord> = Vec::new();
 
-    println!("-- seeding {} real anchor claims --", ANCHORS.len());
+    println!("-- seeding {} real anchor claims (benjamin + adorno) --", ANCHORS.len());
     for a in ANCHORS {
-        let mut rec = append(&substrate, &essay_author, 0, a.verb, a.subject, a.predicate, a.object, &[]).await?;
-        rec.respondent = "essay".to_string();
-        println!("  [{}] {} -> {} \"{}\"", a.rkey, rec.cid, rec.subject, rec.object);
+        let author = source_authors[a.author];
+        let mut rec = append(&substrate, &author, 0, a.verb, a.subject, a.predicate, a.object, &[]).await?;
+        rec.respondent = a.author.to_string();
+        println!("  [{}] {} -> {} \"{}\"", a.id, rec.cid, rec.subject, rec.object);
         log.push(rec);
     }
 
