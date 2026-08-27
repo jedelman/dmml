@@ -162,7 +162,7 @@ impl Delta {
 /// was observed at. Mirrors `com.atproto.repo.strongRef`, used by the
 /// lexicon's `consumes`/`via`/`respondsTo` fields -- see
 /// `lexicons/org/jason-edelman/writtenworld/commit.json`.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct StrongRef {
     pub uri: String,
     pub cid: String,
@@ -176,7 +176,7 @@ pub struct StrongRef {
 /// lexicon's own `consumes`/`#factRef` doc comments
 /// (`lexicons/org/jason-edelman/writtenworld/commit.json`) --
 /// `consumes`'s item type is a union of these two exactly.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum ConsumeRef {
     Strong(StrongRef),
     Fact(FactRef),
@@ -218,7 +218,7 @@ impl ConsumeRef {
 /// all (its `source` parameter is a free-text label like `"demiurge"`, not
 /// a DID) -- see `apply_commit`'s own doc comment for the narrower,
 /// best-effort-only guard it runs instead.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct FactRef {
     pub commit: StrongRef,
     pub subject: String,
@@ -291,7 +291,7 @@ pub enum ConsumeState {
 /// lexicon file for the full field semantics. This is a new, PDS-record-
 /// shaped path added alongside the existing hand-built `Delta`/`commit`
 /// path below -- it does not replace it.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Commit {
     /// Nodes or single facts this commit consumes. Empty for a mint. See
     /// `ConsumeRef`'s own doc comment for the two reference kinds this can

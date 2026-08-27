@@ -357,12 +357,29 @@ else already uses.
   pre-write step — proven implementable, not just designed, by
   `MockAppendSubstrate`'s own tests (a bare `produces` never retracts;
   two commits consuming the same base is the real, detectable conflict
-  signature; writes are genuinely author-partitioned). What's still
-  open: a concrete `CasSubstrate` implementation (real, against a live
-  PDS — the mock built here only covers the `AppendSubstrate` shape),
-  and wiring an application's actual checkpoint loop (build a commit →
-  check `resolve_fact` → append or dispute → eventually check-and-write
-  to a `CasSubstrate`) on top of these traits.
+  signature; writes are genuinely author-partitioned). ~~What's still
+  open: a concrete `CasSubstrate`/`AppendSubstrate` implementation
+  (real, against a live PDS / real iroh-docs)~~ **`AppendSubstrate`
+  built for real, 2026-08-27** (`dmml-substrate-kit/src/
+  iroh_substrate.rs`, real `iroh` 1.1.0 / `iroh-docs` 0.101.0 — not a
+  mock), proven by `examples/pantheon_swarm.rs`: three independently-
+  written, real, content-addressed commits coexist for one subject
+  (the original `pantheon.rs` finding, now over genuine storage); two
+  real, unaware-of-each-other commits consuming the same base produce
+  a real `Retracted { by: [both real CIDs] }`; a real `disputes`
+  commit resolves it naming both rivals. Deliberately scoped to one
+  process (every "god" is a distinct real `AuthorId` writing the same
+  local `Doc`, not a separate network node) — `(namespace, author,
+  key)` partitioning is exactly what makes that a faithful proof of
+  the concurrent-writer story regardless of process count; real
+  multi-node network sync (`doc.share()`/`api.import()` between
+  separate `Endpoint`s) is the next real step, not yet built. Still
+  open: a concrete `CasSubstrate` (real, against a live PDS — the
+  cold path is already live for real writes, see the Benjamin-essay
+  dev-journal entry, but not yet wrapped in this trait), and wiring an
+  application's actual checkpoint loop (build a commit → check
+  `resolve_fact` → append or dispute → eventually check-and-write to a
+  `CasSubstrate`) bridging the two.
 - **The conflict check needs no new primitive — see "The conflict check
   reuses `getResolved`, not a new query" below.** What remains open is
   narrower than a query design: whether `getResolved`'s Jetstream-driven

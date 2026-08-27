@@ -7,11 +7,18 @@ edition.workspace = true
 dmml = { path = "../dmml" }
 dmml-runtime = { path = "../dmml-runtime" }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 serde_ipld_dagcbor = "0.7"
 cid = "0.11"
 multihash = "0.19"
 sha2 = "0.10"
 oxigraph = { version = "0.5.9", default-features = false }
-
-[dev-dependencies]
-tokio = { version = "1", features = ["rt", "macros"] }
+iroh = "1"
+rustls = { version = "0.23", default-features = false, features = ["ring"] }
+iroh-docs = "0.101"
+iroh-blobs = "0.103"
+iroh-gossip = { version = "0.101", default-features = false }
+n0-future = "0.3"
+anyhow = "1"
+blake3 = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

@@ -15,4 +15,5 @@
 //! built here.
 
 pub mod atproto_cid;
+pub mod iroh_substrate;
 pub mod mock;
