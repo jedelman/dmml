@@ -1,0 +1,48 @@
+=== SOURCE MATERIAL ===
+
+ESSAY (coins, argument/section_ii):
+  "aura names the authenticity-testimony-authority chain"
+
+ESSAY (stipulates, argument/section_iii_aura_natural):
+  "unique phenomenon of a distance, however close it may be"
+
+ESSAY (argues, argument/section_v):
+  "the quantitative shift between cult and exhibition value turned into a qualitative transformation of art's nature"
+
+ESSAY (reproduces, argument/section_x_star_cult):
+  "the cult of the movie star preserves not the unique aura of the person but the phony spell of a commodity"
+
+ESSAY (argues, role/magician):
+  "the magician's authority-based distance instantiates aura-as-distance, transposed onto medicine"
+
+ESSAY (argues, artist/cameraman):
+  "multiple fragments assembled under a new law, matching the surgeon's structure"
+
+ESSAY (asserts, argument/epilogue_aestheticize):
+  "Fascism gives the masses expression while preserving property -- the introduction of aesthetics into political life"
+
+ESSAY (argues, argument/epilogue):
+  "Fascism is rendering politics aesthetic. Communism responds by politicizing art."
+
+KIMI (connects, surgeonVsMagicianStructure):
+  "The surgeon's fragmentation and the cameraman's assembly under 'a new law' suggests that mechanical reproduction doesn't simply destroy aura but rather reconstructs authority through technical expertise—a new authenticity-testimony-authority chain where the apparatus itself becomes the guarantor, replacing distance with mastery."
+
+DEEPSEEK (extends, kimiSurgeonAuthority):
+  [citing: Essay on "argument/epilogue"; Kimi on "surgeonVsMagicianStructure"]
+  "If the apparatus becomes the new guarantor of authenticity, then Benjamin's diagnosis of Fascism—giving the masses expression while preserving property—suggests that this technical-authority chain can itself be captured by capital, so the cameraman's 'new law' is not inherently emancipatory but available for aestheticized politics."
+
+GLM (disputes, glmTechnicalAuthorityNotGuarantor):
+  [citing: Kimi on "surgeonVsMagicianStructure"; Deepseek on "kimiSurgeonAuthority"; Essay on "argument/section_x_star_cult"]
+  "DeepSeek grants the apparatus too much: for Benjamin the cameraman's 'new law' is a condition of possibility, not a guarantor — the surgeon/cameraman structure dismantles aura precisely by withholding any authenticity-testimony chain, so the Fascist capture Kimi and Deepseek describe works not by rebuilding technical authority but by exploiting the vacuum left when authority withdraws, substituting the star's 'phony spell of a commodity' for genuine testimony."
+
+KIMI (extends, vacuumExploitation):
+  [citing: Glm on "glmTechnicalAuthorityNotGuarantor"; Essay on "argument/section_x_star_cult"]
+  "GLM's vacuum thesis clarifies why Benjamin pairs the star cult specifically with the surgeon/cameraman structure: the star's 'phony spell' does not merely replace aura but simulates the missing testimony-function in a structure that has abolished it. The star becomes a prosthetic witness—offering the appearance of authentic presence without the cultic distance that would make such testimony meaningful, hence the specifically 'phony' quality of the spell."
+
+DEEPSEEK (extends, kimiProstheticWitness):
+  "If the star is a prosthetic witness simulating testimony in the vacuum left by aura's withdrawal, then Benjamin's closing call to 'politicize art' is not merely ideological counter-propaganda but a demand to construct an alternative prosthetic witness—one grounded in the collective, reproducible fragments of the cameraman—so that the absence of cultic distance is filled by critical montage rather than commodity spell, turning the vacuum itself into the site of a new, non-authoritarian testimony."
+
+GLM (disputes, politicizedArtNotCounterTestimony):
+  [citing: Deepseek on "kimiProstheticWitness"; Essay on "argument/epilogue"]
+  "DeepSeek over-reads the epilogue as constructing a 'non-authoritarian testimony': Benjamin's politicization of art works precisely by renouncing the testimony-function altogether, not replacing it — the distracted mass audience in Section XV absorbs the artwork habitually, as architecture is absorbed, so the collective does not become a new witness filling the vacuum but practices a reception that never needed one. The vacuum GLM identified is not a gap to be filled but the emancipatory condition itself, which is why Fascism's star-cult spell and DeepSeek's counter-prosthesis share the same mistaken longing for a substitute witness."
+

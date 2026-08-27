@@ -114,6 +114,7 @@ const MODEL: &str = "z-ai/glm-5.3";
 struct TurnRecord {
     cid: String,
     respondent: String,
+    round: u32, // 0 for the seeded anchors, else the real round number
     verb: String,
     subject: String,
     predicate: String,
@@ -142,6 +143,7 @@ struct CitedFact {
 struct DumpedTurn<'a> {
     cid: &'a str,
     respondent: &'a str,
+    round: u32,
     verb: &'a str,
     subject: &'a str,
     predicate: &'a str,
@@ -263,6 +265,7 @@ fn nquad(subject_slug: &str, predicate: &str, object: &str) -> String {
 async fn append(
     substrate: &IrohAppendSubstrate,
     author: &AuthorId,
+    round: u32,
     verb: &str,
     subject: &str,
     predicate: &str,
@@ -296,6 +299,7 @@ async fn append(
     Ok(TurnRecord {
         cid: receipt.cid,
         respondent: String::new(),
+        round,
         verb: verb.to_string(),
         subject: subject.to_string(),
         predicate: predicate.to_string(),
@@ -338,7 +342,7 @@ async fn main() -> anyhow::Result<()> {
 
     println!("-- seeding {} real anchor claims --", ANCHORS.len());
     for a in ANCHORS {
-        let mut rec = append(&substrate, &essay_author, a.verb, a.subject, a.predicate, a.object, &[]).await?;
+        let mut rec = append(&substrate, &essay_author, 0, a.verb, a.subject, a.predicate, a.object, &[]).await?;
         rec.respondent = "essay".to_string();
         println!("  [{}] {} -> {} \"{}\"", a.rkey, rec.cid, rec.subject, rec.object);
         log.push(rec);
@@ -378,6 +382,7 @@ async fn main() -> anyhow::Result<()> {
                     let mut rec = append(
                         &substrate,
                         &author,
+                        round as u32,
                         &reply.verb,
                         &reply.subject,
                         &reply.predicate,
@@ -403,6 +408,7 @@ async fn main() -> anyhow::Result<()> {
         .map(|t| DumpedTurn {
             cid: &t.cid,
             respondent: &t.respondent,
+            round: t.round,
             verb: &t.verb,
             subject: &t.subject,
             predicate: &t.predicate,

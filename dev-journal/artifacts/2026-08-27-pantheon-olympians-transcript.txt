@@ -1,0 +1,58 @@
+=== SOURCE MATERIAL ===
+
+ESSAY (coins, argument/section_ii):
+  "aura names the authenticity-testimony-authority chain"
+
+ESSAY (stipulates, argument/section_iii_aura_natural):
+  "unique phenomenon of a distance, however close it may be"
+
+ESSAY (argues, argument/section_v):
+  "the quantitative shift between cult and exhibition value turned into a qualitative transformation of art's nature"
+
+ESSAY (reproduces, argument/section_x_star_cult):
+  "the cult of the movie star preserves not the unique aura of the person but the phony spell of a commodity"
+
+ESSAY (argues, role/magician):
+  "the magician's authority-based distance instantiates aura-as-distance, transposed onto medicine"
+
+ESSAY (argues, artist/cameraman):
+  "multiple fragments assembled under a new law, matching the surgeon's structure"
+
+ESSAY (asserts, argument/epilogue_aestheticize):
+  "Fascism gives the masses expression while preserving property -- the introduction of aesthetics into political life"
+
+ESSAY (argues, argument/epilogue):
+  "Fascism is rendering politics aesthetic. Communism responds by politicizing art."
+
+ATHENA (extends, argument/aura_counterfeit):
+  [citing: Essay on "argument/section_iii_aura_natural"; Essay on "argument/section_x_star_cult"]
+  "Benjamin calls the star's spell "phony," but note the mechanism: it works precisely by simulating the distance he defines as aura's core. The commodity doesn't destroy aura-as-distance; it counterfeits it. So the star cult is not aura's absence but its mass-produced replica -- which explains why fascism can then aestheticize politics so effectively, since a counterfeit distance can be engineered at scale for leaders as easily as for actors."
+
+ARTEMIS (disputes, argument/staged_distance_fragility):
+  [citing: Athena on "argument/aura_counterfeit"; Essay on "argument/section_iii_aura_natural"]
+  "Athena's counterfeit mechanism is elegant, but it flatters the counterfeit by measuring it with Benjamin's own yardstick. The natural aura definition -- "a distance, however close it may be" -- cuts both ways: the mountain horizon keeps its distance precisely because nothing you do can close it, whereas the star's or the Führer's distance exists only because someone is staging it. That staging is a wound in the forgery, and a huntress notices it: engineered distance must be constantly re-performed and policed, which is why fascist spectacle is so brittle and so hungry. The aura Benjamin mourns is the only distance that cannot be manufactured -- or closed by a bullet."
+
+APOLLO (connects, argument/distance_as_posture):
+  [citing: Artemis on "argument/staged_distance_fragility"; Essay on "role/magician"]
+  "Artemis names the crack in the counterfeit -- engineered distance must be re-performed -- and that crack has a home in Benjamin's own architecture. The magician keeps the patient at a distance while the surgeon penetrates; fascism is the political choice of the magician's posture, distance without testimony, authority without authenticity. And a posture must be held, which is precisely why it is brittle: the surgeon's fragments are assembled once under a new law, but the Führer's distance is never assembled, only perpetually staged. Benjamin's two triads are one prophecy read twice -- and the fragility Artemis sees is what prophecy looks like when it has no ground to stand on."
+
+DIONYSUS (disputes, argument/dionysian_assembly):
+  [citing: Apollo on "argument/distance_as_posture"; Artemis on "argument/staged_distance_fragility"]
+  "Artemis and Apollo have built a beautiful taxonomy -- true distance, forged distance, the surgeon's one-time law versus the Führer's perpetual staging -- but I notice what their tidy architecture quietly exiles: ecstasy itself. Benjamin's masses in the darkened cinema are not collecting fragments under a cool new law; they are a chorus, drunk on simultaneity, and exhibition value has its own cultic pulse he half-admits. The fascist rally works not only because distance is staged but because the crowd is brought close in a body -- the Führer's remoteness and the stadium's sweaty intimacy are the same wine. Apollo's prophecy with no ground to stand on forgets that prophecy is itself a rite: the "new law" of assembly is a ceremony too, and a mass that falls into trance before the screen can fall into trance before anything. The excluded third term is not authentic aura nor counterfeit aura but dissolved aura -- distance not reproduced nor faked but lost in the crowd's own ferment, which cuts against Benjamin's confidence that politicized art is somehow the sober answer."
+
+ATHENA (disputes, argument/ecstasy_contested_resource):
+  [citing: Dionysus on "argument/dionysian_assembly"; Essay on "argument/epilogue_aestheticize"]
+  "Dionysus claims ecstasy is the excluded third term, but the epilogue already contains it -- Benjamin says fascism "gives the masses expression while preserving property." That clause is not decoration: expression is exactly the crowd's ferment, and fascism's whole trick is to channel it while property stands untouched. So dissolved aura is not exiled from the architecture; it is the contested resource both sides recruit. Artemis says staged distance is brittle, Dionysus says the crowd's closeness is the real fuel -- I say these are one mechanism viewed from two ends: the Führer's manufactured remoteness and the rally's sweaty intimacy are not rivals but load and counterweight, each shoring up the other. The sober question Benjamin leaves us is whether politicized art can recruit the same ferment without becoming its own rite -- and Dionysus is right that Benjamin never answers it."
+
+ARTEMIS (disputes, argument/ferment_not_resource):
+  [citing: Athena on "argument/ecstasy_contested_resource"; Dionysus on "argument/dionysian_assembly"]
+  "Athena has quietly smuggled in the herdsman's vocabulary: ferment as a "resource" both sides "recruit." A resource to be recruited by whom, and for whom? Only by leaders, and only for herds. Both she and Dionysus miss what the huntress sees at every rally: a crowd brought close in a body has already surrendered its own senses -- nobody who is dissolved needs to be governed, and nobody dissolved can resist. So the sober answer to Benjamin's question is not politicized art that "recruits the same ferment without becoming its own rite" -- that is a contradiction, like hunting tame game. The only stance that cannot be counterfeited, staged, or dissolved is the one that refuses the crowd altogether: the isolated test, which Benjamin himself names in the film actor, who performs alone before the apparatus and must become the instrument of his own testing. Distraction decays into trance when it pools; kept solitary, it is the one form of closeness no Führer can harvest."
+
+APOLLO (connects, argument/actor_isolated_test):
+  [citing: Artemis on "argument/ferment_not_resource"; Essay on "argument/section_v"]
+  "Artemis has found the note that resolves the chord: the actor alone before the apparatus is not a retreat from Benjamin's qualitative shift but its purest form -- exhibition value finally embodied in a single tested individual rather than pooled in a crowd. Where I earlier said the Führer's distance is never assembled, only staged, she completes the symmetry: the actor's closeness is never staged at all, because the apparatus cannot be seduced, only answered. But I would temper her refusal of the crowd with the pattern Benjamin himself draws: the film actor's solitary test exists only to be assembled into the work the masses then see -- solitude upstream, chorus downstream, one law governing both. The danger is not the crowd as such but the collapse of that order, the moment trance upstream replaces testing. The harmony Benjamin prophesies holds only if each keeps its place."
+
+DIONYSUS (disputes, argument/apparatus_as_hidden_god):
+  [citing: Apollo on "argument/actor_isolated_test"]
+  "Apollo ends with a shepherd's dream: solitude upstream, chorus downstream, each keeping its place under one law. But that is not harmony, it is quarantine -- and quarantines leak. The actor "alone before the apparatus" is not beyond rite; he kneels before the least forgiving god Benjamin ever built, one who demands endless retakes and never says yes. Artemis thinks the apparatus cannot be seduced, only answered -- but every answered test is a votive offering, and the solitude she praises is just ecstasy with the doors shut. Artemis is right that pooled distraction becomes trance, yet wrong that solitude resists harvest: the Führer does not need to dissolve the actor, only to wait downstream where Apollo stations the chorus, assembling tested fragments into a new liturgy. There is no place in this pipeline that keeps -- only the ferment moving through it, and Benjamin's sober politicized art would have to be the first ceremony in history that refuses to congeal. That is why he never answered Athena's question: the answer would have to be a rite that knows itself as one."
+
