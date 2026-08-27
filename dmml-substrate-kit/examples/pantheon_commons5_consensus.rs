@@ -27,7 +27,7 @@ use iroh_docs::protocol::Docs;
 use iroh_docs::AuthorId;
 use serde::{Deserialize, Serialize};
 
-const MODEL: &str = "z-ai/glm-5.3";
+const MODEL: &str = "z-ai/glm-5.3-flash";
 const MAX_RATIFICATION_ROUNDS: u32 = 6;
 const TRANSCRIPT_PATH: &str = "../dev-journal/artifacts/2026-08-27-pantheon-commons5-transcript.txt";
 

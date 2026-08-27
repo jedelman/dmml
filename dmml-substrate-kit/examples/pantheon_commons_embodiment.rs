@@ -115,7 +115,7 @@ is quietly excluding.",
 ];
 
 const ROUNDS: usize = 5;
-const MODEL: &str = "z-ai/glm-5.3";
+const MODEL: &str = "z-ai/glm-5.3-flash";
 const RECONCILIATION_PATH: &str = "../dev-journal/artifacts/2026-08-27-pantheon-commons-reconciliation.json";
 
 #[derive(Deserialize)]

@@ -36,7 +36,7 @@ use iroh_docs::protocol::Docs;
 use iroh_docs::AuthorId;
 use serde::{Deserialize, Serialize};
 
-const MODEL: &str = "z-ai/glm-5.3";
+const MODEL: &str = "z-ai/glm-5.3-flash";
 
 struct Olympian {
     name: &'static str,

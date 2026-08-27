@@ -158,7 +158,7 @@ is quietly excluding.",
 ];
 
 const ROUNDS: usize = 5;
-const MODEL: &str = "z-ai/glm-5.3";
+const MODEL: &str = "z-ai/glm-5.3-flash";
 
 #[derive(Debug, Clone)]
 struct TurnRecord {
