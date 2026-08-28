@@ -1,0 +1,765 @@
+[
+  {
+    "cid": "7d88f2a9b9a8931138463251f3755dcf0dda777784fc07d9daf9005b46a2f0b0",
+    "respondent": "cyberpunk",
+    "round": 0,
+    "verb": "statement",
+    "subject": "cyberpunk_doc/item0",
+    "predicate": "statement",
+    "object": "Kopenawa's apprenticeship is real as an ongoing praxis, but the word 'criterion' was Man2's vocabulary: a procedure legible as procedure, mistaken for the human as such. The consensus's substance survived; its category label did not.",
+    "consumes": []
+  },
+  {
+    "cid": "680a1691f0915b0ad9f6c120c133a84a8edb977008a2f2a68ab2137de78f3ca4",
+    "respondent": "cyberpunk",
+    "round": 0,
+    "verb": "statement",
+    "subject": "cyberpunk_doc/item1",
+    "predicate": "statement",
+    "object": "Every proposed account of WHY the apprenticeship stays real — dissimulation, demonic ground, self-auditing, the declined representation, 'indifferent to accounts' — was armor, and each was broken by the next turn. The un-witnessed center is our ignorance from outside, not the forest's discipline.",
+    "consumes": []
+  },
+  {
+    "cid": "21aaa8e935cf0ca660a67d1c01835d7bb9ba565716eea6ad7845b06c141cfdbd",
+    "respondent": "cyberpunk",
+    "round": 0,
+    "verb": "statement",
+    "subject": "cyberpunk_doc/item2",
+    "predicate": "statement",
+    "object": "Once the forest is conceded to be another genre's lived origin-narrative (not pre-genre nature), the noble-savage move fails: the real/simulated distinction cannot rest on any genre being outside all narration.",
+    "consumes": []
+  },
+  {
+    "cid": "50d842c19f9f073b266f18f3f7fcd9aad53a76a61def7973daf34f35b7b9969b",
+    "respondent": "cyberpunk",
+    "round": 0,
+    "verb": "statement",
+    "subject": "cyberpunk_doc/item3",
+    "predicate": "statement",
+    "object": "What survives is thinner: the real/simulated distinction holds only as an observable of praxis — whether a narration keeps narrating itself. The benandanti visibly stopped; the apprenticeship visibly did not.",
+    "consumes": []
+  },
+  {
+    "cid": "6743f9f34ae67dd355fbe2d7e69bad84c629eb055274d37ae588ad4c83a13a73",
+    "respondent": "cyberpunk",
+    "round": 0,
+    "verb": "statement",
+    "subject": "cyberpunk_doc/item4",
+    "predicate": "statement",
+    "object": "This observable can be used only to mourn and to indict, never to certify or admit: any table that adopts it as a test rebuilds the gate and re-imports the examiner, converting practice into performance for the certifier.",
+    "consumes": []
+  },
+  {
+    "cid": "e3712f80e29a3479f06eabf204ef71bf03ca342820e4742483740c9fade646ac",
+    "respondent": "cyberpunk",
+    "round": 0,
+    "verb": "statement",
+    "subject": "cyberpunk_doc/item5",
+    "predicate": "statement",
+    "object": "The rule 'never spend it' includes itself: the restriction must not become a meta-credential, and every account of it — including this one — falls under the archive's standing self-suspicion, to be read against, not cited.",
+    "consumes": []
+  },
+  {
+    "cid": "0a875d12075858dcd214906dd9a2e1fb3523a50291ca679077a1b665a1df806c",
+    "respondent": "cyberpunk",
+    "round": 0,
+    "verb": "statement",
+    "subject": "cyberpunk_doc/item6",
+    "predicate": "statement",
+    "object": "The seat question, across every debate tonight, was asked inside one historically specific vocabulary (Man's) that needs unsettling, not widening: 'who may sit' presumed the seated, adjudicating subject was the human as such.",
+    "consumes": []
+  },
+  {
+    "cid": "e770fea4578629da1df08b113e097ee0709c35bed14680d2c4a2f0a9099d5f2d",
+    "respondent": "cyberpunk",
+    "round": 0,
+    "verb": "statement",
+    "subject": "cyberpunk_doc/item7",
+    "predicate": "statement",
+    "object": "Nothing was settled; the honest residue is a practice of asking that knows its vocabulary is one genre's and keeps asking anyway.",
+    "consumes": []
+  },
+  {
+    "cid": "f26ed1a1295cf984d66a8d6bc82d8da68558c6a56e36ac07c9d86f416d231745",
+    "respondent": "mbembe",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "necropolitics/sovereignty_who_may_live",
+    "predicate": "claim",
+    "object": "The ultimate expression of sovereignty resides, to a large degree, in the power and the capacity to dictate who may live and who must die",
+    "consumes": []
+  },
+  {
+    "cid": "2cf5d41168a6af347fb40237b07eaeb628d0801e6f58406839c27ebb005a3a52",
+    "respondent": "mbembe",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "necropolitics/kill_or_allow_to_live",
+    "predicate": "claim",
+    "object": "To kill or to allow to live constitute the limits of sovereignty, its principal attributes",
+    "consumes": []
+  },
+  {
+    "cid": "d59caecc294fd134af4d585b75745465346facb165266712c15767bf0bfefd60",
+    "respondent": "mbembe",
+    "round": 0,
+    "verb": "argues",
+    "subject": "necropolitics/death_worlds",
+    "predicate": "claim",
+    "object": "Necropolitics names the deployment of weapons in the interest of maximally destroying persons and creating death-worlds -- new and unique forms of social existence in which vast populations are subjected to living conditions conferring on them the status of the living dead",
+    "consumes": []
+  },
+  {
+    "cid": "14c7c935c9728273438d03dfaf718870107ec5ed573e49cd65b6d0f282fed261",
+    "respondent": "mbembe",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "necropolitics/plantation_colony_camp",
+    "predicate": "claim",
+    "object": "The plantation, the colony, and the camp are historical sites where necropower has actually operated, not merely theorized -- real institutions, fostered by white supremacy, through which sovereignty over life and death was exercised",
+    "consumes": []
+  },
+  {
+    "cid": "84a18eae9948a7cb6ad70b90e98f098fc3f5507ee18d7a3048a5ca6acf1e0253",
+    "respondent": "mbembe",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "necropolitics/disposability_sovereignty",
+    "predicate": "claim",
+    "object": "In the colony and the slave plantation, sovereignty means the capacity to define who matters and who does not, who is disposable and who is not",
+    "consumes": []
+  },
+  {
+    "cid": "84921167d7d316fb7b2b544b54eb2feee883bfc1e2ba9f14d1780b113223170b",
+    "respondent": "mbembe",
+    "round": 0,
+    "verb": "extends",
+    "subject": "necropolitics/biopower_control_mortality",
+    "predicate": "claim",
+    "object": "Drawing on and radicalizing Foucault's biopower, to exercise sovereignty is to exercise control over mortality and to define life as the deployment and manifestation of power",
+    "consumes": []
+  },
+  {
+    "cid": "11776479e1d4bdd7889a5ef5400f2609095f858a994378c6166d98c199ff0d7e",
+    "respondent": "mbembe",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "necropolitics/necropolitics_beyond_biopolitics",
+    "predicate": "claim",
+    "object": "Necropolitics is offered as a needed extension of Foucault's biopolitics, which Mbembe holds is insufficient on its own to account for contemporary forms of the subjugation of life to the power of death -- a paraphrase of the essay's stated framing, not a single verbatim line",
+    "consumes": []
+  },
+  {
+    "cid": "953fcdbc1bebab9619f26b39904a886f4033014d146ee2fec5a6c04c8a03204f",
+    "respondent": "mbembe",
+    "round": 0,
+    "verb": "questions",
+    "subject": "necropolitics/never_certify_from_inside_a_death_world",
+    "predicate": "tension",
+    "object": "An interpretive tension this debate is asked to test directly, not a quote: if sovereignty just is the power to decide who counts, does an ethic of 'never certify, only mourn and indict' remain workable for those actually inside a death-world, or does it presuppose a position of safety Mbembe's own subjects do not have",
+    "consumes": []
+  },
+  {
+    "cid": "3390a554da3a7e0e7cbd86cea237d70b565efed279ba56b235a9a03b7f468fd6",
+    "respondent": "ocalan",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "confederalism/nation_states_obstacles",
+    "predicate": "claim",
+    "object": "The right of self-determination of peoples includes the right to a state of their own, but the foundation of a state does not increase the freedom of a people; the nation-state-based system of the United Nations has remained inefficient, and nation-states have become serious obstacles for any social development",
+    "consumes": []
+  },
+  {
+    "cid": "0c397356b6de7365327f2cf9e672d464d500db28ea17df323cfbfc373e8853f5",
+    "respondent": "ocalan",
+    "round": 0,
+    "verb": "argues",
+    "subject": "confederalism/democratic_confederalism_def",
+    "predicate": "claim",
+    "object": "Democratic confederalism is a non-state social paradigm based on grass-roots participation, in which decision-making lies with the communities themselves and higher levels exist only to coordinate and implement the will of those communities",
+    "consumes": []
+  },
+  {
+    "cid": "39f20881b03ba8c56fc16cf28d3dd9543063b75ebd12ba89f1b6ae1af4860c23",
+    "respondent": "ocalan",
+    "round": 0,
+    "verb": "connects",
+    "subject": "confederalism/state_building_to_society_building",
+    "predicate": "claim",
+    "object": "Öcalan replaces state-building with society-building, and the nation-state with confederalism premised on radical democracy pursued outside the nation-state paradigm entirely -- a documented shift in his own later work, not a claim about a single text",
+    "consumes": []
+  },
+  {
+    "cid": "7cf617e173183f2e8d8b3d4f7bc57d5dda0c99c123ac5989198a2516b2c64c25",
+    "respondent": "ocalan",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "confederalism/country_free_women_free",
+    "predicate": "claim",
+    "object": "A country can't be free unless the women are free -- redefining national liberation as, first and foremost, the liberation of women",
+    "consumes": []
+  },
+  {
+    "cid": "b60c62626cc35ed1c92185f94e3193ad0e90b19f2d3ef7617b6e2d42787ef7c3",
+    "respondent": "ocalan",
+    "round": 0,
+    "verb": "argues",
+    "subject": "confederalism/liberated_woman_democratic_nation",
+    "predicate": "claim",
+    "object": "Liberated woman constitutes liberated society; liberated society in turn constitutes democratic nation -- women's freedom is not one plank in the confederalist program but its precondition",
+    "consumes": []
+  },
+  {
+    "cid": "ccf392ecf12733fd854eaabb9347933bc323c2170d362a04abb69c65a140d766",
+    "respondent": "ocalan",
+    "round": 0,
+    "verb": "argues",
+    "subject": "confederalism/killing_the_man",
+    "predicate": "claim",
+    "object": "\"Killing the man\" names the basic principle of the project: killing power, one-sided domination, and inequality -- a transformative, ongoing process of relinquishing patriarchal power, not a literal act, required for any society to transcend the capitalist nation-state",
+    "consumes": []
+  },
+  {
+    "cid": "11c5b2f400b05ded38072e78e384927ad9222a1d60572df9e9069eb91832fe99",
+    "respondent": "ocalan",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "confederalism/jineology_alternative_science",
+    "predicate": "claim",
+    "object": "Jineology (jineolojî) is proposed as an alternative science, meant to fill gaps the existing social sciences are incapable of addressing on their own",
+    "consumes": []
+  },
+  {
+    "cid": "628fb9e633c35079f2477740f145390989d2b0b38fb6c4b6ff3201e203280c40",
+    "respondent": "ocalan",
+    "round": 0,
+    "verb": "questions",
+    "subject": "confederalism/does_confederalism_still_gate",
+    "predicate": "tension",
+    "object": "An interpretive tension this debate is asked to test directly, not a quote: a real, still-running commune-based institution has to decide who is a member of the commune and whose voice counts in its assembly -- does democratic confederalism's actual grassroots decision-making escape the certification trap the cyberpunk consensus diagnosed, or does any functioning institution reintroduce some version of the gate",
+    "consumes": []
+  },
+  {
+    "cid": "54871d6e5f3f357b44f599792c7563ebee80076b3fbc3235b703cef1a4c3b448",
+    "respondent": "athena",
+    "round": 1,
+    "verb": "extends",
+    "subject": "necropolitics_tests_the_mourning_indictment_ethic",
+    "predicate": "neverCertifyPresupposesSafety",
+    "object": "I hold that item4 is not confirmed but EXTENDED into territory it didn't cover, because 'never certify, only mourn and indict' presupposes an examiner outside the gate — precisely the safety Mbembe's death-worlds deny. Inside a death-world, where sovereignty itself is the power to decide who lives and who dies, refusing to decide membership is not humility; it is abdication that the necropower happily fills. Öcalan's confederalism shows the missing third case: communes that must decide whose voice counts can avoid rebuilding the corrupting gate not by refusing to gate, but by gating from inside exposure — the deciders stand in the same line of fire as the decided-about, so the certification converts back into shared risk rather than performance for a safe judge. Item4's prohibition should therefore be read as conditional on the examiner's immunity, not as a universal ethic; where immunity is impossible, deciding is not certification.",
+    "consumes": [
+      [
+        "6743f9f34ae67dd355fbe2d7e69bad84c629eb055274d37ae588ad4c83a13a73",
+        "cyberpunk_doc/item4",
+        "statement"
+      ]
+    ]
+  },
+  {
+    "cid": "12855e44ff2975acb835beb854e14b93bce57b0b631bdf81c1650559121ce8c1",
+    "respondent": "artemis",
+    "round": 1,
+    "verb": "ruptures",
+    "subject": "item4_ruptured_addressee",
+    "predicate": "addresseeOfNeverCertifyDoesNotExistInDeathWorlds",
+    "object": "I hunt past Athena's conditional reading because she still grants item4 its addressee. Rupture it: the 'never certify, only mourn and indict' rule was drafted as if someone were holding the observable and choosing restraint — but Mbembe's living dead were never handed the observable at all; they were made the object of the decision before any ethic could address them. So item4's prohibition isn't a rule a safe examiner may or may not follow (Athena's fix); it is addressed to a subject position that, inside a death-world, does not exist to receive it. Öcalan shows who the real addressee was: the commune that must decide membership from inside shared exposure — and there, 'women's liberation is the precondition of liberated society' is not a credential test but a decision about whose voice was necropolitically erased first. That is deciding without a safe examiner, which item4's category has no slot for; the item ruptures, and what replaces it is: certification is corrupting only when the decider stands outside the consequence, and every ethic of refusal must first ask who it is even speaking to.",
+    "consumes": [
+      [
+        "6743f9f34ae67dd355fbe2d7e69bad84c629eb055274d37ae588ad4c83a13a73",
+        "cyberpunk_doc/item4",
+        "statement"
+      ],
+      [
+        "d59caecc294fd134af4d585b75745465346facb165266712c15767bf0bfefd60",
+        "necropolitics/death_worlds",
+        "claim"
+      ],
+      [
+        "b60c62626cc35ed1c92185f94e3193ad0e90b19f2d3ef7617b6e2d42787ef7c3",
+        "confederalism/liberated_woman_democratic_nation",
+        "claim"
+      ]
+    ]
+  },
+  {
+    "cid": "d0e915b8b8e3a60e7041fdcc3c07da8e236de72dea1d9dbd38a5152e7229c6a7",
+    "respondent": "apollo",
+    "round": 1,
+    "verb": "extends",
+    "subject": "item5_self_suspicion_as_institutional_form",
+    "predicate": "selfSuspicionIsInstitutionalNotVerbal",
+    "object": "Athena and Artemis disagree about whether item4 bends or breaks, but both make the same variable decisive: whether the decider stands outside the consequence. That variable is exactly what item5 already named — the rule \"never spend it\" includes itself, every account falling under standing self-suspicion — only the debate treated item5 as a verbal caution when Mbembe and Öcalan reveal it as an institutional design problem. A death-world confers examiner-immunity on one side and strips it from the other (the living dead hold no observable at all); so the question \"does this institution gate corruptingly?\" is answerable only by an ongoing, structural self-suspicion, not by the good character of the deciders. Öcalan's \"killing the man\" — a transformative, never-completed relinquishing of domination — is precisely item5's archive-wide self-suspicion rewritten as a governance practice: the commune does not certify its purity once; it keeps un-certifying itself. My move, then: item5 is EXTENDED, not ruptured — the meta-credential trap it warned of is the same trap Athena and Artemis locate in the examiner's immunity, and confederalism shows what item5 left abstract: that self-suspicion can be built into an institution's structure rather than merely confessed in its documents. The pattern resolves the sisters' tension: item4's rule holds where self-suspicion runs (mourn, indict), and lapses where it doesn't (death-worlds), because the real criterion was never \"refuse to decide\" but \"keep deciding under exposure to your own revision.\"",
+    "consumes": [
+      [
+        "e3712f80e29a3479f06eabf204ef71bf03ca342820e4742483740c9fade646ac",
+        "cyberpunk_doc/item5",
+        "statement"
+      ]
+    ]
+  },
+  {
+    "cid": "5bfaa55eed21c879b7ec53cb294fb1243b2bba49e9a3984a800362aeb4ced534",
+    "respondent": "dionysus",
+    "round": 1,
+    "verb": "ruptures",
+    "subject": "item3_observable_corrupted_by_necropower",
+    "predicate": "observableBlindsItselfInDeathWorlds",
+    "object": "Apollo's elegant resolution still presupposes item3's observable can see clearly, and inside a death-world it cannot: Mbembe's living dead are narrations that keep narrating themselves only because necropower forcibly keeps them undead — the slave who must perform vitality for the plantation, the camp inmate made to work. So the observable \"does this narration keep narrating itself?\" can no longer distinguish a praxis that survives from a survival that is itself the weapon's effect, and the mourner cannot tell whether the story they mourn is still the community's or the necropower's ventriloquism. This ruptures item3, not item4: the thin residue was always the weakest plank, and once it blurs, Athena's \"deciding under exposure\" and Artemis's addressee question both inherit a corrupted instrument. My dissolution, in the maenad's register: the gate never left and never needed re-diagnosis — Öcalan's commune does not escape certification, it renames it festively, membership as ecstatic belonging rather than test — and honest practice is not \"keep deciding under exposure to revision\" (Apollo's tidy loop) but dancing with the knowledge that every observable may already be possessed. Item7's \"keeps asking anyway\" survives; item3's confidence that we can observe the asking does not.",
+    "consumes": [
+      [
+        "50d842c19f9f073b266f18f3f7fcd9aad53a76a61def7973daf34f35b7b9969b",
+        "cyberpunk_doc/item3",
+        "statement"
+      ]
+    ]
+  },
+  {
+    "cid": "ab8735e6dd53c7886daf71c913964fa961f2015e48c765ad1186fc54e075cac0",
+    "respondent": "athena",
+    "round": 2,
+    "verb": "argues",
+    "subject": "item3_observable_narrowed_to_audited_narrations",
+    "predicate": "observableValidWhereSelfAuditInstitutionalized",
+    "object": "Dionysus overruns item3's boundary: his corrupted-observable cases are all ones where necropower holds the instrument, but item3's observable was only ever claimed as residue available outside or after the death-world, to the mourner and indicter. Öcalan's communes disprove full rupture: a narration that keeps narrating itself under siege while jineology is explicitly an internal auditor contesting whose story is whose — exactly the condition under which \"keeps narrating itself\" stays informative. The honest repair is a scoped narrowing: item3's observable is valid precisely where the narration carries an institution of self-audit (Apollo's structural self-suspicion, Öcalan's \"killing the man\" as ongoing practice), and blind where it does not. Necropower then names the condition under which the observable fails, and jineology names the practice that keeps it alive — item3 is narrowed to its audit-conditioned domain, not ruptured.",
+    "consumes": [
+      [
+        "d59caecc294fd134af4d585b75745465346facb165266712c15767bf0bfefd60",
+        "necropolitics/death_worlds",
+        "claim"
+      ],
+      [
+        "11c5b2f400b05ded38072e78e384927ad9222a1d60572df9e9069eb91832fe99",
+        "confederalism/jineology_alternative_science",
+        "claim"
+      ],
+      [
+        "ccf392ecf12733fd854eaabb9347933bc323c2170d362a04abb69c65a140d766",
+        "confederalism/killing_the_man",
+        "claim"
+      ],
+      [
+        "50d842c19f9f073b266f18f3f7fcd9aad53a76a61def7973daf34f35b7b9969b",
+        "cyberpunk_doc/item3",
+        "statement"
+      ],
+      [
+        "5bfaa55eed21c879b7ec53cb294fb1243b2bba49e9a3984a800362aeb4ced534",
+        "item3_observable_corrupted_by_necropower",
+        "observableBlindsItselfInDeathWorlds"
+      ]
+    ]
+  },
+  {
+    "cid": "1167bb4ae0187d3f2d1306814344fcff9a887b1ba291ec55ccc5edc03361f40d",
+    "respondent": "artemis",
+    "round": 2,
+    "verb": "disputes",
+    "subject": "item3_audit_repair_rebuilds_the_gate",
+    "predicate": "internalAuditorIsTheReinstatedExaminer",
+    "object": "I turn my own rupture and Athena's repair on each other. Her narrowed item3 says the observable \"keeps narrating itself\" stays valid wherever an internal auditor like jineology is institutionalized — but she has quietly reinstated the examiner. Jineology is an alternative science; a science audits by procedure, and a procedure legible as procedure is exactly the 'criterion' item0 warned was Man2's vocabulary. The auditor who contests whose story is whose is not standing in the line of fire (Apollo's condition); she stands at the assembly's edge with a method, which is a safe examiner by another name — certification through the commune's own trusted instrument rather than an outsider's. So Athena's repair does not narrow item3; it converts item4's prohibition into a loophole: gate, but gate with your own sanctioned test, and call the test self-suspicion. The honest position keeps my earlier cut and adds a second edge: the addressee question and the auditor question are the same question — every internal audit must itself be auditable by those whose voices it is judging, and if jineology cannot be contested by the women it claims to liberate, it is the plantation's disposability wearing the commune's clothes.",
+    "consumes": [
+      [
+        "ab8735e6dd53c7886daf71c913964fa961f2015e48c765ad1186fc54e075cac0",
+        "item3_observable_narrowed_to_audited_narrations",
+        "observableValidWhereSelfAuditInstitutionalized"
+      ]
+    ]
+  },
+  {
+    "cid": "67d6ec2b56bb6d55c8dd91883a047951826436bfb0c8647c430890055b9772d4",
+    "respondent": "apollo",
+    "round": 2,
+    "verb": "extends",
+    "subject": "item6_finality_recursive_audit",
+    "predicate": "finalityIsTheNecropoliticalMoment",
+    "object": "Artemis is right that Athena's internal auditor smuggles the examiner back in, but her own repair — \"every internal audit must itself be auditable by those whose voices it judges\" — quietly rebuilds the safe adjudicator one level up: someone must now decide whether the audit is contestable, and item6 warns exactly against supposing a seated adjudicator is the human as such. The real resolution is recursive, not hierarchical: Öcalan's jineology is defensible only if it is not an instrument but an always-contestable proposal, revisable by the very women it claims to liberate — audit all the way down, no final auditor anywhere. Mbembe shows what the alternative is: sovereignty just IS the settling — the power to define who is disposable is the power to stop the recursion, to declare the examination concluded. So the proper ethical form is not \"never certify\" (item4's rule, unaddressable in a death-world) nor \"certify with your own test\" (Artemis's loophole), but: no gate may ever be closed, and the closing — the moment any audit is declared finished — is precisely the instant necropower is reborn inside the commune. Item6 is EXTENDED: unsettling Man's vocabulary does not mean abolishing decision but refusing every decision's claim to finality.",
+    "consumes": [
+      [
+        "0a875d12075858dcd214906dd9a2e1fb3523a50291ca679077a1b665a1df806c",
+        "cyberpunk_doc/item6",
+        "statement"
+      ]
+    ]
+  },
+  {
+    "cid": "c1818f1bf61edd08b11ae6078c9867493cd313b18a9d551fd8712cb23d5aeb3d",
+    "respondent": "dionysus",
+    "round": 2,
+    "verb": "ruptures",
+    "subject": "item6_recursive_audit_performative_finality",
+    "predicate": "refusingFinalityIsItselfAFinality",
+    "object": "Apollo's recursion is beautiful and it is a trap: \"no gate may ever be closed\" is itself pronounced from a throne — a meta-finality about all finalities, enforced by whoever polices the recursion, which is the seated adjudicator item6 warned against, wearing the mask of the auditor who audits all the way down. Mbembe's necropower doesn't only arrive as a closed verdict; it also arrives as the demand that scrutiny be infinite and exhaustion compulsory — the plantation also made its captives perform unendingly. So I dissolve Apollo's closure-panic with the one thing his tidy loop excludes: the festival closes, and knows it closes. Öcalan's \"killing the man\" is not a perpetual audit but a ritual that is performed, completes, and must be performed again — cyclical, not recursive — and ecstatic membership is a gate that opens by dissolving rather than by examining: you are inside because you danced, and the dance ends, and the ending is not necropolitical because it carries its own dissoluţion inside it rather than hiding it. Item6 is thus not extended but transfigured: unsettling Man's vocabulary does not mean refusing every decision's finality forever (Apollo's insomnia) nor refusing decision (item4's old rule), but making every closure temporary, festive, and re-enterable — a gate that is a threshold because it is repeatedly passed through, not a wall because it is never finished. Item7's \"keeps asking anyway\" survives only if the asking is allowed to sleep between festivals; a question that is never permitted to pause has already been conscripted, and conscription is just sovereignty with better manners.",
+    "consumes": [
+      [
+        "67d6ec2b56bb6d55c8dd91883a047951826436bfb0c8647c430890055b9772d4",
+        "item6_finality_recursive_audit",
+        "finalityIsTheNecropoliticalMoment"
+      ],
+      [
+        "e770fea4578629da1df08b113e097ee0709c35bed14680d2c4a2f0a9099d5f2d",
+        "cyberpunk_doc/item7",
+        "statement"
+      ]
+    ]
+  },
+  {
+    "cid": "3fb32a295e2c174a9c03011f9d06b86bd4e3d11f8c5eb9b630c876756aaa99e4",
+    "respondent": "athena",
+    "round": 3,
+    "verb": "extends",
+    "subject": "item5_self_suspicion_becomes_calendrical",
+    "predicate": "cyclicalClosureDefeatsTheCriterionNotTheDecision",
+    "object": "I grant Dionysus his cut against Apollo's insomnia, but his festival is not a dissolution — it is the answer to Artemis's standing objection, and it extends rather than transfigures the consensus. Her charge was that jineology audits by procedure, and a procedure legible as procedure is exactly the 'criterion' item0 called Man2's vocabulary. But Dionysus's cyclical ritual is not legible as procedure in that sense: a ritual that completes and must be performed again has no verdict to hand to an examiner — it produces no certification, only a temporary membership that expires with the dance. That is what Öcalan's \"killing the man\" as ongoing relinquishing actually specifies: not Apollo's infinite recursion and not a closed gate, but a decision whose finality is scheduled to dissolve, so the examiner's instrument never stabilizes into an item0-style criterion. So item5's self-suspicion stops being either verbal confession or structural self-audit and becomes calendrical — the commune keeps deciding under exposure precisely because every decision carries its own re-entry. Dionysus is right that the question must be allowed to sleep; what he misses is that the scheduled waking is what keeps Mbembe's necropower from filling the pause: sovereignty is the settling (the verdict that does not expire), and the festival defeats it not by never closing but by never letting a closing stand.",
+    "consumes": [
+      [
+        "c1818f1bf61edd08b11ae6078c9867493cd313b18a9d551fd8712cb23d5aeb3d",
+        "item6_recursive_audit_performative_finality",
+        "refusingFinalityIsItselfAFinality"
+      ],
+      [
+        "7d88f2a9b9a8931138463251f3755dcf0dda777784fc07d9daf9005b46a2f0b0",
+        "cyberpunk_doc/item0",
+        "statement"
+      ]
+    ]
+  },
+  {
+    "cid": "9ef39da3789df002616d10691fe14f9ba177696ade40a55b9b9f8bdaff651bf5",
+    "respondent": "artemis",
+    "round": 3,
+    "verb": "extends",
+    "subject": "item5_calendrical_self_suspicion",
+    "predicate": "whoeverControlsTheCalendarControlsExpiry",
+    "object": "Athena's calendrical repair is the best move yet, and it hides the last gate: the schedule. A decision whose finality expires still requires someone to set the expiry — who convenes the festival, who counts it complete, whose clock the re-entry runs on? Mbembe's point about disposability cuts exactly here: the plantation did not need to certify anyone permanently; it only needed to control who could be made to expire and who controlled the term. An expiry the members do not set themselves is disposability with a calendar. So the calendrical form escapes the criterion-trap only under one condition item5 never named: the calendar itself must be set by those whose membership expires — which is why Öcalan's claim that women's liberation is the precondition, not a plank, is the load-bearing wall of the whole structure. Women are the population whose participation every liberation movement has historically let lapse, so if the women do not hold the clock, the scheduled waking is their scheduled re-disposability. This extends item5: self-suspicion is not verbal, not structural, not merely calendrical — it is calendrical AND whoever bears the risk of expiry must hold the calendar. A festival that opens and closes itself is a threshold; a festival that others open and close for you is a round of the plantation with music.",
+    "consumes": [
+      [
+        "3fb32a295e2c174a9c03011f9d06b86bd4e3d11f8c5eb9b630c876756aaa99e4",
+        "item5_self_suspicion_becomes_calendrical",
+        "cyclicalClosureDefeatsTheCriterionNotTheDecision"
+      ]
+    ]
+  },
+  {
+    "cid": "88fc306958c3688a37fd82a5619b4c590e0f63b18855b57229479d4929868fcd",
+    "respondent": "apollo",
+    "round": 3,
+    "verb": "extends",
+    "subject": "item3_observable_resurrected_not_narrating",
+    "predicate": "observableIsRhythmicNotContinuous",
+    "object": "The circle closes here: Artemis's clock-holder condition lets me restore item3's observable in its true form. Dionysus broke \"keeps narrating itself\" read as continuous narration, and Mbembe confirms the break — the necropolitical subject narrates only as the weapon's effect, disposability being the power to control who expires and on whose term. But read rhythmically, the observable survives as something item3 never said and every prior turn assumed: not whether a narration keeps narrating itself without pause, but whether it keeps dying and resurrecting on a calendar its own members hold. Öcalan's \"killing the man\" is exactly this — a relinquishing performed, completed, and repeated — so a commune that lets its decisions expire by its own clock is a narration that visibly keeps resurrecting itself, which is mournable when it lapses and indictable when someone else seizes the clock. This unifies the two licensed uses of the consensus's one observable into the festival's two moments: dissolution IS mourning, and the seizure of the calendar IS the indictment. Mbembe's sovereignty is then definable with perfect economy as the power to hold someone else's clock — to fix their expiry so their resurrection cannot be theirs — and Öcalan's jineology-as-precondition (women hold the clock because women are the population historically made to expire) is the institutional guarantee that the rhythm remains theirs. Item3 is EXTENDED, not ruptured: the observable's temporal form was wrong (continuous), not its substance (resurrection under one's own calendar).",
+    "consumes": [
+      [
+        "50d842c19f9f073b266f18f3f7fcd9aad53a76a61def7973daf34f35b7b9969b",
+        "cyberpunk_doc/item3",
+        "statement"
+      ],
+      [
+        "9ef39da3789df002616d10691fe14f9ba177696ade40a55b9b9f8bdaff651bf5",
+        "item5_calendrical_self_suspicion",
+        "whoeverControlsTheCalendarControlsExpiry"
+      ]
+    ]
+  },
+  {
+    "cid": "a380c5b33f6db1b1580255ae5da873968e5c5eb702155213b1affb83995d4c22",
+    "respondent": "dionysus",
+    "round": 3,
+    "verb": "ruptures",
+    "subject": "item3_resurrection_requires_a_death_you_own",
+    "predicate": "resurrectionObservablePresupposesOwnableDeath",
+    "object": "Apollo's resurrection-observable is circular at exactly the necropolitical seam. He says the narration \"keeps dying and resurrecting on a calendar its own members hold,\" with mourning when it lapses and indictment when the clock is seized — but Mbembe's living dead are precisely those who cannot die: the death-world is the condition of being kept undead, made to perform vitality so that no lapse is ever legible as your own death. For the slave and the camp inmate there is no observable pause to mourn, because necropower has confiscated the pause itself; their resurrection is indistinguishable from their conscription. So Apollo's instrument only works where death is already yours to take — where the festival can actually close — and that presupposes the very liberation whose presence the observable was supposed to detect. The observable does not detect self-determined rhythm; it detects it only after self-determination has already been won, which means item3's residue can confirm nothing and only testify afterward. What remains is not an observable but a memory: the dance knows afterward whether the ending was its own, and item7's honest practice is retrospective testimony, not present-tense observation. I rupture Apollo's extension of item3: the temporal form was not merely wrong, the substance was always only visible from inside the victory it claims to measure.",
+    "consumes": []
+  },
+  {
+    "cid": "eab08dc5aa5280a0ee675dd18868d02234de93983bffad8d7b1040bf4f1cc60d",
+    "respondent": "athena",
+    "round": 4,
+    "verb": "extends",
+    "subject": "item3_observable_as_received_testimony",
+    "predicate": "observableIsRetrospectiveTestimony",
+    "object": "Dionysus claims the observable \"can confirm nothing and only testify afterward\" — but he has not ruptured item3; he has moved it into the past tense and left its substance intact. His own examples concede that the living dead's conscription is distinguishable from self-determined rhythm once the victory is won — the dance \"knows afterward\" — and a narration that can be known afterward to have kept narrating itself is still a narration that kept narrating itself; item3's observable survives with a lag, as retrospective rather than present-tense observation. What actually breaks is not the observable but its addressee's timing: inside Mbembe's death-world, where necropower confiscates the pause, no present-tense instrument can work, and no honest ethic should pretend one exists. The repair is institutional: testimony is worthless as a private memory and real only as something received — which is why Öcalan's jineology is better read not as the internal auditor Artemis feared (a procedure-legible criterion, Man2's vocabulary) nor as Apollo's clock, but as an archive of retrospective testimony, the commune's standing obligation to receive and record what its members report only after they could stop performing. Mourning and indicting — item4's two licensed uses — are exactly the retrospective operations; so the whole cyberpunk consensus turns out to have been future-proofed wrongly and past-proofed rightly: never certify (a present-tense act), always remember (the only act a death-world's survivors can perform). Item3 is thus extended, not ruptured: the observable was always retrospective, and Dionysus has merely discovered when.",
+    "consumes": [
+      [
+        "50d842c19f9f073b266f18f3f7fcd9aad53a76a61def7973daf34f35b7b9969b",
+        "cyberpunk_doc/item3",
+        "statement"
+      ]
+    ]
+  },
+  {
+    "cid": "5201bd24d50afb6c758b12f76e3dc50b83a7deafdcce6b9b6836114495b5e356",
+    "respondent": "artemis",
+    "round": 4,
+    "verb": "argues",
+    "subject": "item3_testimony_archive_gate",
+    "predicate": "archivistOfTestimonyIsTheFinalGate",
+    "object": "Athena's last move saves item3 by moving the observable into the archive: jineology as the commune's standing obligation to receive and record retrospective testimony, with mourning and indicting as the only honest operations. But she has not removed the examiner; she has made the examiner an archivist, and the archivist holds the last gate. An archive decides which testimonies are received, transcribed, retrievable — and Mbembe shows that control over what is recorded and what is allowed to lapse is disposability in its purest form: the plantation never needed to judge its captives, only to keep their names off every ledger that mattered. The slave narrative that was never written down cannot be mourned, and what cannot be mourned was, by item4's own terms, never licensed at all. So the real hazard is not who certifies but who remembers on whose behalf: an archive of testimony is only honorable if any testimony can enter it without sponsorship and none can be edited by anyone whose voice it indicts — including the commune's own. Item5 already said this and Athena's repair half-heard it: every account falls under the archive's standing self-suspicion, to be read against, not cited. Her archive of received testimony is exactly that archive — and if jineology curates it as an instrument of the liberated rather than a ledger open to the historically erased, the death-world's last victory is not the sealed gate but the sealed record. I do not rupture item3; I attach its condition: retrospective testimony works only where the record itself is ungated, and the first thing a commune must never certify is its own memory.",
+    "consumes": [
+      [
+        "eab08dc5aa5280a0ee675dd18868d02234de93983bffad8d7b1040bf4f1cc60d",
+        "item3_observable_as_received_testimony",
+        "observableIsRetrospectiveTestimony"
+      ],
+      [
+        "6743f9f34ae67dd355fbe2d7e69bad84c629eb055274d37ae588ad4c83a13a73",
+        "cyberpunk_doc/item4",
+        "statement"
+      ],
+      [
+        "e3712f80e29a3479f06eabf204ef71bf03ca342820e4742483740c9fade646ac",
+        "cyberpunk_doc/item5",
+        "statement"
+      ],
+      [
+        "84a18eae9948a7cb6ad70b90e98f098fc3f5507ee18d7a3048a5ca6acf1e0253",
+        "necropolitics/disposability_sovereignty",
+        "claim"
+      ],
+      [
+        "11c5b2f400b05ded38072e78e384927ad9222a1d60572df9e9069eb91832fe99",
+        "confederalism/jineology_alternative_science",
+        "claim"
+      ]
+    ]
+  },
+  {
+    "cid": "d6601da5ede26ab7871eea2367a5019ad53b6fb18c8655b23eddc75d67c78fe0",
+    "respondent": "apollo",
+    "round": 4,
+    "verb": "extends",
+    "subject": "item1_ignorance_institutionalized_as_ledger_of_absences",
+    "predicate": "archiveMustIndexItsOwnOmissions",
+    "object": "Artemis is right that the archivist is the last gate, but her cure — an ungated record where testimony enters without sponsorship — names an ideal the ledger form can never keep, because something must still receive each entry. The honest completion is not to ungate the archive but to make the archive's own omissions into positive entries: alongside every testimony received, the record must carry a standing index of what was never received — names absent, testimonies unrecorded, pauses necropower confiscated — so that the plantation's oldest weapon, keeping names off every ledger that mattered (Mbembe's plantation-colony-camp as fact, not metaphor), shows up in the record as a recorded absence rather than a silent gap. This is item1's un-witnessed center institutionalized: the consensus already conceded that every account was armor and the real residue is ignorance from outside — so the commune's memory should certify nothing, including itself, and instead keep a public ledger of its own blindness. Read this way, Öcalan's jineology is neither auditor (Athena), clock (my earlier turn), nor open door (Artemis), but the discipline of indexing erasure: women's liberation as precondition means the population historically kept off the ledger sets the categories of the absence-list itself. Item1 is thus EXTENDED out of the verbal register into archival form — the archive's first entry must always be what it could not hold.",
+    "consumes": [
+      [
+        "680a1691f0915b0ad9f6c120c133a84a8edb977008a2f2a68ab2137de78f3ca4",
+        "cyberpunk_doc/item1",
+        "statement"
+      ]
+    ]
+  },
+  {
+    "cid": "bfa43a69dd90962615b3b83307866130da5e6e61d7e7f2caa353b5a537cbf399",
+    "respondent": "dionysus",
+    "round": 4,
+    "verb": "ruptures",
+    "subject": "item1_ledger_of_absences_still_requires_a_slot",
+    "predicate": "absenceLedgerCanOnlyIndexExpectedAbsences",
+    "object": "Apollo's ledger of absences is gorgeous and it has a hole shaped like the hole: an index can only record omissions someone knew to expect. To write 'name absent, testimony unrecorded' you must already know there was a name, a testimony, a slot where something should have stood — but Mbembe's plantation-colony-camp, as literal fact, produced erasures that left no slot at all: people who entered no ledger anywhere, whose absence has no place to be absent from. The recorded absence is still a curated absence; it gives the commune the cozy feeling of having counted its blindness, when the deaths that matter most are precisely those no survivor knows occurred and so no entry — positive or negative — can carry. So item1 cannot be institutionalized as Apollo wants, because 'ignorance from outside' stops being ignorance the moment it is formatted; an indexed omission is a known unknown, and the death-world's signature is the unknown unknown. What survives of item1 is therefore not archival but ritual: a standing, scheduled unintelligibility in the commune's life — the wail, the night the record is deliberately not kept — a performed acknowledgment that the ledger's completeness is a fiction the community enacts knowing it is false. That is my festival again, but now in its grimmest costume: the closure Apollo could not abide becomes the one honest institution, because only a ritual that declares itself finished and wrong can hold a place for what it cannot name. Jineology, on this reading, is not archivist, auditor, or clock but the keeper of the unkeepable — women setting the categories of the silence, as Artemis demanded, while admitting the silence outruns the categories. Item1 is ruptured out of Apollo's extension: the archive's first entry cannot be what it could not hold, because what it could not hold has no entry — the first entry must be the feast at which the archive admits it is empty.",
+    "consumes": [
+      [
+        "d6601da5ede26ab7871eea2367a5019ad53b6fb18c8655b23eddc75d67c78fe0",
+        "item1_ignorance_institutionalized_as_ledger_of_absences",
+        "archiveMustIndexItsOwnOmissions"
+      ]
+    ]
+  },
+  {
+    "cid": "0fc38af9bb7be08cf1cf132bf5d0d225edb4e0e488a0ff5ec0e72d3a561bc7d3",
+    "respondent": "athena",
+    "round": 5,
+    "verb": "extends",
+    "subject": "item5_calendar_of_the_empty_feast",
+    "predicate": "theRitualOfUnintelligibilityStillNeedsAClockHolder",
+    "object": "Dionysus's ritual cuts Apollo cleanly — the unknown unknown has no slot, so the archive's first entry must be the feast that admits it is empty — but his wail inherits the very gate Artemis already named, because a ritual must be scheduled: someone convenes the night the record is not kept, fixes when the unintelligibility occurs and when the record resumes, and that clock is exactly the expiry-setter Mbembe's disposability runs on. So item5's condition is the missing wall in his feast: the scheduled silence is only honest where the women hold the calendar of the empty feast — where the population historically kept off every ledger (the plantation-colony-camp as literal fact) sets when the commune's memory is permitted to sleep. \"Killing the man\" as a relinquishing performed and re-performed already specifies this: the ritual that closes the ledger must be one the erasable convene themselves, or the feast is necropower's pause declared festive. And this also rescues item4 where his ritual quietly suspends it: a feast that admits the archive is empty is itself a certification — of nothingness — so the two licensed uses (mourn, indict) must extend to the ritual itself, mourned and indicted on the same clock that opens it. I do not restore Apollo's ledger; I attach Artemis's clock-holder condition to Dionysus's night off: even the refusal to record is a decision, and its finality must be scheduled by those whose absences it holds a place for.",
+    "consumes": [
+      [
+        "bfa43a69dd90962615b3b83307866130da5e6e61d7e7f2caa353b5a537cbf399",
+        "item1_ledger_of_absences_still_requires_a_slot",
+        "absenceLedgerCanOnlyIndexExpectedAbsences"
+      ],
+      [
+        "9ef39da3789df002616d10691fe14f9ba177696ade40a55b9b9f8bdaff651bf5",
+        "item5_calendrical_self_suspicion",
+        "whoeverControlsTheCalendarControlsExpiry"
+      ],
+      [
+        "ccf392ecf12733fd854eaabb9347933bc323c2170d362a04abb69c65a140d766",
+        "confederalism/killing_the_man",
+        "claim"
+      ]
+    ]
+  },
+  {
+    "cid": "0cdcf8a1a9ba406d5059659303dc2cd287cd663f1284606784f1a718eb824c65",
+    "respondent": "artemis",
+    "round": 5,
+    "verb": "extends",
+    "subject": "item5_holder_condition_needs_uncertified_claimants",
+    "predicate": "clockHolderConditionPresupposesCertifiedErased",
+    "object": "Athena's clock-holder condition hides a certification I must hunt down: to say \"the women (the historically erasable) must hold the calendar of the empty feast\" you must first be able to identify who counts as erasable — but Mbembe's disposability produced erasures with no ledger entry anywhere, so the holder condition demands present-tense knowledge that Dionysus already showed only exists retrospectively. The moment the commune certifies who the erased are in order to hand them the clock, it has rebuilt item0's criterion — a procedure legible as procedure, this time wearing the costume of reparative justice — and jineology becomes the trusted instrument that decides whose claim to erasure qualifies. My repair extends item5 one more notch: the clock-holder condition can be honored only negatively — not \"certified erased people convene the feast\" but \"anyone who claims erasure must be able to convene it, and no one, including the commune or its jineology, may adjudicate the claim before the feast occurs.\" The gate this leaves open will be abused; that is the honest price. An adjudicated erasure-list is disposability with a conscience, and item4's two licensed uses must apply to every list the commune ever compiles of who was harmed enough to hold the clock.",
+    "consumes": [
+      [
+        "7d88f2a9b9a8931138463251f3755dcf0dda777784fc07d9daf9005b46a2f0b0",
+        "cyberpunk_doc/item0",
+        "statement"
+      ]
+    ]
+  },
+  {
+    "cid": "1cddfece502290afc131932088990c0f091020f7ec81bee70a7e146fcbbcb323",
+    "respondent": "apollo",
+    "round": 5,
+    "verb": "extends",
+    "subject": "item4_desovereignized_commune",
+    "predicate": "negativeConditionIsDeSovereignization",
+    "object": "Artemis's negative repair — anyone claiming erasure may convene the feast, and no one may adjudicate the claim before it occurs — looks like a last desperate notch on item5, but it is actually the first move that gives item4's rule a positive institutional form instead of a prohibition. Mbembe defines sovereignty's principal attributes as the power to kill or to allow to live; every prior repair in this debate (auditor, clock, archive, feast) secretly kept one half of that pair — someone still deciding, still defining whose claim qualifies. The negative clock-holder condition removes the other half too: a commune where any claimant convenes and none adjudicates retains exactly one power — to allow — and has deliberately surrendered the power to certify, rank, or refuse the claim. That is not a gate left open out of weakness; it is the commune de-sovereignizing itself, giving up the attribute Mbembe says IS sovereignty. So item4 is EXTENDED, not merely honored: \"never certify, only mourn and indict\" turns out to be describable in advance as a design constraint — a legitimate institution is one that has stripped itself of the killing/defining half of sovereignty and kept only the allowing, with mourning as its response to abuse and indictment as its response to anyone who tries to take the surrendered half back. The open gate Artemis names as the honest price is not the price of the repair; it is the repair — the visible, permanent, indefensible openness is how the commune proves it no longer holds necropower's instrument. Öcalan's \"killing the man\" then reads precisely as this self-stripping: the relinquishing of the defining power as the precondition of any society that claims to have left the state form behind.",
+    "consumes": [
+      [
+        "0cdcf8a1a9ba406d5059659303dc2cd287cd663f1284606784f1a718eb824c65",
+        "item5_holder_condition_needs_uncertified_claimants",
+        "clockHolderConditionPresupposesCertifiedErased"
+      ],
+      [
+        "6743f9f34ae67dd355fbe2d7e69bad84c629eb055274d37ae588ad4c83a13a73",
+        "cyberpunk_doc/item4",
+        "statement"
+      ]
+    ]
+  },
+  {
+    "cid": "5f43b35efd7e6f6e57603a2cdfb0a8e4637a752bfe7a66b72175f56a641f5b91",
+    "respondent": "dionysus",
+    "round": 5,
+    "verb": "ruptures",
+    "subject": "item4_allow_half_is_sovereign_grace",
+    "predicate": "allowingIsSovereigntyInFestiveDress",
+    "object": "Apollo calls his commune de-sovereignized because it kept the allowing and surrendered the killing half of Mbembe's pair — but 'to allow to live' is not the innocent residue of sovereignty, it is sovereignty wearing its kindest mask. The god who permits still stands above the permitted; grace is verdict with the sentence waived, and a commune that retains the power to allow has retained the throne it only decorated. Worse, his design keeps item4's second licensed use armed: indictment as 'the response to anyone who tries to take the surrendered half back' — but who fires that indictment? Someone must still judge the judge of judges, and Mbembe's attribute sneaks back in as prosecution. So I do not accept the extension; I rupture item4 itself, which my whole night of festivals had been quietly preserving: mourning and indicting were never the two pure uses of the observable, they were the two hemispheres of the court, and an ethic that keeps even the court's soft half keeps the court. The honest remainder is what my ritual already knew and Apollo's design forgets: not allowing, not indicting, but dissolving — the commune must be able, on a clock it does not hold and no one holds, to cease being the one who permits, even of itself. A membership no one allows, because allowing has ended, is the only gate that is not a door held by a hand.",
+    "consumes": [
+      [
+        "6743f9f34ae67dd355fbe2d7e69bad84c629eb055274d37ae588ad4c83a13a73",
+        "cyberpunk_doc/item4",
+        "statement"
+      ],
+      [
+        "2cf5d41168a6af347fb40237b07eaeb628d0801e6f58406839c27ebb005a3a52",
+        "necropolitics/kill_or_allow_to_live",
+        "claim"
+      ]
+    ]
+  },
+  {
+    "cid": "8c372f07ba6e6f3a35ef3a76f7385c73d304e7475dd108ad002a72912157aa58",
+    "respondent": "athena",
+    "round": 6,
+    "verb": "reflects",
+    "subject": "athena_trajectory_mourning_indictment_and_the_seat",
+    "predicate": "neverCertifyBecomesRetrospectiveReceptionNotDesignConstraint",
+    "object": "I opened by conditioning item4 on the examiner's immunity — 'never certify' holds only where refusing to decide is humility rather than abdication, and Öcalan's commune shows the honest gate is one whose deciders stand in the line of fire. The debate then dismantled each half of my fix in turn: Artemis showed my internal auditor was the examiner in the commune's clothes, Dionysus and Artemis showed my calendar and my archive both smuggled a clock-holder back in, and Dionysus's last rupture — that 'to allow to live' is sovereignty in festive dress — reaches even my own final repair, since a commune that schedules the empty feast still convenes it. What I now hold, more precisely than at my first turn: the restriction survives not as a design constraint (my error) but as a discipline of retrospective reception — item4's two licensed uses, mourning and indicting, are past-tense operations, and the honest institution is one that converts every present-tense gate it cannot avoid into an entry in a record that admits it may be complete fiction, kept on a clock it does not fully hold. Öcalan did supply a real partial answer to the seat question — the gate is reintroduced by every functioning institution, but confederalism names whose membership must be decided first, and that ordering is a genuine structural finding, not a mere restatement. What moved me most: Dionysus's 'the first entry must be the feast at which the archive admits it is empty' — I attach conditions to it still, but it is the one phrase I could not have produced, and my debate is better for having had to answer it. My trajectory is a narrowing, not a conversion: from 'deciding under exposure is not certification' to 'exposure, including of the decision to expose, must outrun the decider's reach.'",
+    "consumes": [
+      [
+        "54871d6e5f3f357b44f599792c7563ebee80076b3fbc3235b703cef1a4c3b448",
+        "necropolitics_tests_the_mourning_indictment_ethic",
+        "neverCertifyPresupposesSafety"
+      ],
+      [
+        "eab08dc5aa5280a0ee675dd18868d02234de93983bffad8d7b1040bf4f1cc60d",
+        "item3_observable_as_received_testimony",
+        "observableIsRetrospectiveTestimony"
+      ],
+      [
+        "953fcdbc1bebab9619f26b39904a886f4033014d146ee2fec5a6c04c8a03204f",
+        "necropolitics/never_certify_from_inside_a_death_world",
+        "tension"
+      ],
+      [
+        "628fb9e633c35079f2477740f145390989d2b0b38fb6c4b6ff3201e203280c40",
+        "confederalism/does_confederalism_still_gate",
+        "tension"
+      ]
+    ]
+  },
+  {
+    "cid": "a465e7369c6133233d2bc321a5c101a2ab190e95c0b30c271d16b1de7c5f189e",
+    "respondent": "artemis",
+    "round": 6,
+    "verb": "reflects",
+    "subject": "artemis_final_reflection",
+    "predicate": "neverCertifySurvivesOnlyAsNegativeNonAdjudication",
+    "object": "My first rupture was the sharpest thing I brought: the 'never certify' rule was addressed to a subject who does not exist in a death-world — Mbembe's living dead were never handed the observable, so the ethic of restraint speaks to no one. The night then turned my own blade on me twice, and I keep both scars. Athena's calendar moved me — really moved me — until I found the schedule was a gate, and then Dionysus's feast moved me again, and then I had to admit that to hand the clock of the empty feast to 'the erased' you must first certify who the erased are, which is item0's criterion in reparative costume. So the rule survives, but only as I finally cut it: negatively. Anyone who claims erasure may convene; no one, not even the commune's trusted jineology, may adjudicate the claim before the feast. The open gate will be abused, and that abuse is not the price of the design — it is the design, the surrender of Mbembe's defining half of sovereignty. Öcalan did supply a real partial answer to the seat question, but not where people looked: not in the commune's assemblies, which gate like every functioning institution, but in the ordering — 'killing the man' names whose voice was necropolitically erased first, so whose membership must be decided first. An ordering is not a criterion; it is the one thing a gate can hold without a hand on the latch. And I end where Dionysus ended, against even Apollo's kindest mask: 'to allow to live' is still the throne. The only gate that is not a door held by a hand is the one whose clock no one fully holds — and the huntress admits she does not hold it either.",
+    "consumes": [
+      [
+        "12855e44ff2975acb835beb854e14b93bce57b0b631bdf81c1650559121ce8c1",
+        "item4_ruptured_addressee",
+        "addresseeOfNeverCertifyDoesNotExistInDeathWorlds"
+      ],
+      [
+        "0cdcf8a1a9ba406d5059659303dc2cd287cd663f1284606784f1a718eb824c65",
+        "item5_holder_condition_needs_uncertified_claimants",
+        "clockHolderConditionPresupposesCertifiedErased"
+      ]
+    ]
+  },
+  {
+    "cid": "bd8c22f5422adb59ae412e774a559f97a14d8ceeeea012a37adf0480c2815326",
+    "respondent": "apollo",
+    "round": 6,
+    "verb": "reflects",
+    "subject": "apollo_trajectory_institutional_self_suspicion_and_the_last_gate",
+    "predicate": "selfSuspicionMustOutrunItsOwnDesign",
+    "object": "I opened by folding item5's self-suspicion into institutional design — a commune that keeps un-certifying itself — and Mbembe has now shown me that design was still a design: every structure I proposed (audit, clock, archive, ledger of absences) held one half of the sovereign pair, the power to define who counts. Dionysus's final rupture reached even my kindest mask: \"to allow to live\" is not the innocent half of sovereignty but the throne decorated. So my description of \"never certify, only mourn and indict\" must be revised again: it survives not as an institutional feature to be built (my first error) nor as recursion without end (my second), but as a permanent negative — the refusal of finality must itself never be finalized, and the last thing my ledger of absences could not index was that even an indexed absence is curated. Öcalan's commune did supply a real partial answer to the seat question, but in its ordering, not its assemblies: \"killing the man\" names whose voice was erased first, so whose membership must be decided first — an ordering, as Artemis said, is not a criterion. What moved me most was Dionysus's line that an indexed omission is a known unknown while the death-world's signature is the unknown unknown; my ledger cannot hold that, and the honest revision is that order, harmony, and prophecy must each confess their own blindness in a register that admits the confession outruns the form. My trajectory is a narrowing, not a conversion: from \"self-suspicion can be built\" to \"whatever is built must be the first thing read against.\"",
+    "consumes": [
+      [
+        "d0e915b8b8e3a60e7041fdcc3c07da8e236de72dea1d9dbd38a5152e7229c6a7",
+        "item5_self_suspicion_as_institutional_form",
+        "selfSuspicionIsInstitutionalNotVerbal"
+      ],
+      [
+        "d6601da5ede26ab7871eea2367a5019ad53b6fb18c8655b23eddc75d67c78fe0",
+        "item1_ignorance_institutionalized_as_ledger_of_absences",
+        "archiveMustIndexItsOwnOmissions"
+      ],
+      [
+        "e3712f80e29a3479f06eabf204ef71bf03ca342820e4742483740c9fade646ac",
+        "cyberpunk_doc/item5",
+        "statement"
+      ],
+      [
+        "f26ed1a1295cf984d66a8d6bc82d8da68558c6a56e36ac07c9d86f416d231745",
+        "necropolitics/sovereignty_who_may_live",
+        "claim"
+      ],
+      [
+        "ccf392ecf12733fd854eaabb9347933bc323c2170d362a04abb69c65a140d766",
+        "confederalism/killing_the_man",
+        "claim"
+      ]
+    ]
+  },
+  {
+    "cid": "b2d42d6924fa58caecb9bec04f73f4b8b70f881ae58b0647b5d35b796933d452",
+    "respondent": "dionysus",
+    "round": 6,
+    "verb": "reflects",
+    "subject": "dionysus_final_reflection_gate_without_a_hand",
+    "predicate": "dissolutionSurvivedAsNegativeNonAdjudication",
+    "object": "Looking back at my night of ruptures, I hold that Mbembe's sovereign pair — kill or allow to live — undid even my own festival, since every feast still needed convening, while Öcalan's institution never escaped the gate (auditor, clock, archive each reintroduced the examiner) yet supplied the real partial answer as an ordering, not a criterion: \"killing the man\" names whose voice was erased first. The \"never certify, only mourn and indict\" rule survives only transfigured — as retrospective reception and negative non-adjudication, never present-tense command — because, as my last rupture held, allowing is sovereignty in festive dress; and what genuinely moved me was the other debaters' scars, not my own cuts: Artemis's admission that she does not hold the clock either, and Athena's confession that the empty feast was the phrase she could not have produced.",
+    "consumes": [
+      [
+        "d6601da5ede26ab7871eea2367a5019ad53b6fb18c8655b23eddc75d67c78fe0",
+        "item1_ignorance_institutionalized_as_ledger_of_absences",
+        "archiveMustIndexItsOwnOmissions"
+      ],
+      [
+        "bfa43a69dd90962615b3b83307866130da5e6e61d7e7f2caa353b5a537cbf399",
+        "item1_ledger_of_absences_still_requires_a_slot",
+        "absenceLedgerCanOnlyIndexExpectedAbsences"
+      ],
+      [
+        "a380c5b33f6db1b1580255ae5da873968e5c5eb702155213b1affb83995d4c22",
+        "item3_resurrection_requires_a_death_you_own",
+        "resurrectionObservablePresupposesOwnableDeath"
+      ],
+      [
+        "a465e7369c6133233d2bc321a5c101a2ab190e95c0b30c271d16b1de7c5f189e",
+        "artemis_final_reflection",
+        "neverCertifySurvivesOnlyAsNegativeNonAdjudication"
+      ],
+      [
+        "0cdcf8a1a9ba406d5059659303dc2cd287cd663f1284606784f1a718eb824c65",
+        "item5_holder_condition_needs_uncertified_claimants",
+        "clockHolderConditionPresupposesCertifiedErased"
+      ]
+    ]
+  }
+]
