@@ -1,0 +1,112 @@
+[
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5ll2wgi427",
+    "cid": "bafyreibe2puf4y525uw2ho34mdk7wq5lyy2whhxma6tizilwx5ketcrzk4",
+    "respondent": "cosmographer",
+    "round": 1,
+    "kind": "raises",
+    "subject_slug": "the-holding-breath",
+    "predicate_iri": "dmml:proposes/cosmology",
+    "object_text": "The cosmos is a held breath: the world exists because a dead titan-god, Vurum, exhales in its sleep beneath the middle sea. Every breath-cycle (~400 years) it partially wakes, and the tide of souls that animates all living things reverses direction \u2014 the dead rise briefly toward the surface to rejoin the living flow. Civilization is built on the superstition that certain stone towers (the Nine Anchors) hammer the seabed to keep Vurum sleeping longer. What is already breaking: the northernmost Anchor, Karst-One, has cracked, and its region's dead no longer rise on schedule \u2014 they linger, unclaimed, feeding something that is now growing under the anchor's foundations."
+  },
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5lll2lrv2q",
+    "cid": "bafyreieih4lbybjfwau2ooqiezdmwqrpprxdjznsgtg5y43z6qsyiwth3u",
+    "respondent": "mythographer",
+    "round": 1,
+    "kind": "raises",
+    "subject_slug": "the-first-act-is-a-family-murder",
+    "predicate_iri": "dmml:proposes/cosmology",
+    "object_text": "dmml:proposes/origin: The Nine Anchors are not built stone at all \u2014 they are Vurum's own teeth, wrenched from its jaw by its nine children in the first act (the world's origin is a family murder, not an accident). Each tooth-root still remembers drawing soul-tide through a titan's body, which is why the Anchors hold the breath at all: they hammer the seabed with borrowed appetite. This makes the Karst-One crack theologically worse than a broken tower: the Firstborn jailer stationed there, Orrhun-Karst, has gone silent and is suspected of having pried the crack wider on purpose \u2014 the children are said to be able to inherit only if the parent dies awake. So the \"something growing under the foundations\" may be a sibling, not a stranger, and the lingering dead are being filed like teeth marks."
+  },
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5lm5aex22a",
+    "cid": "bafyreid3nnzghgahchlqvv7xcabd5ifvxz7de62tuyoze75xsag3vyw2c4",
+    "respondent": "lawgiver",
+    "round": 1,
+    "kind": "raises",
+    "subject_slug": "the-law-of-second-theft",
+    "predicate_iri": "dmml:proposes/law",
+    "object_text": "dmml:proposes/law: The one true prohibition follows from the breath itself: it is forbidden to keep a corpse past its rise-window. Because the dead ride the tide upward on Vurum's exhale-cycle, every household, temple, and crypt holds its dead in trust only until the next cycle-tide \u2014 the buriers' guilds (the Mandrel Houses) are paid precisely to give bodies back on schedule. Holding a dead body past its tide is the gravest crime, called \"second theft,\" because a held soul is stolen from the living flow and must draw breath from somewhere \u2014 the family that withholds a grandmother's body for grief is literally taking breath from the living, which is why grief-murders spike in the generations after a bad tide. This law gives the mythographer's claim its teeth: Orrhun-Karst's crime, if he pried the crack wide, is second theft at geological scale \u2014 he is holding the tide itself past its window, and the thing growing under Karst-One is a hoarder with no room left in its lungs."
+  },
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5lnkllgc2a",
+    "cid": "bafyreia5qpoonzf6lnb5t4t6ab5ac244hnwsk73tghcqw3u7bilthjj5gq",
+    "respondent": "cosmographer",
+    "round": 2,
+    "kind": "raises",
+    "subject_slug": "the-gullet-where-breath-drains",
+    "predicate_iri": "dmml:proposes/cosmology",
+    "object_text": "dmml:proposes/cosmology: Every exhale needs an exit, and the breath-cycle has one: the Gullet, a ring of nine brackish maelstroms in the middle sea where the soul-tide drains back down into Vurum between cycles. The Nine Anchors were driven in a ring precisely because they stand on the Gullet's rim \u2014 the teeth are hammered into the jaw-line of the mouth itself. This closes the law of second theft's open loop: a held corpse past its rise-window is a soul that never reaches the Gullet, and the Mandrel Houses' true job is not burial but *delivery* \u2014 they ship the dead downriver to the nearest Gullet-mouth on tide-days, which is why their toll-booths (the Mandrel locks, black wood studded with tooth-ivory) sit at every rivermouth. What is already breaking: with Karst-One cracked, the northern Gullet has slowed \u2014 it now takes three tide-days instead of one to swallow \u2014 so the north is developing a backlog of undelivered dead, and the Mandrel Houses have begun quietly paying families to keep bodies *longer*, inverting the one true prohibition in the only region where the law has visibly failed. The lawgiver's grief-murder spike and the mythographer's sibling-under-the-foundations are both downstream of the same blocked drain."
+  },
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5lo5l5pd2p",
+    "cid": "bafyreibjo6muvpb7jqkarp3hektbpgqaokwt5hcyvdu65s5a7musz4yau4",
+    "respondent": "mythographer",
+    "round": 2,
+    "kind": "raises",
+    "subject_slug": "the-tenth-witness-drowned-in-the-gullet",
+    "predicate_iri": "dmml:proposes/origin",
+    "object_text": "dmml:proposes/origin: The children who pulled Vurum's teeth are always counted as nine, but the oldest tally-songs count ten \u2014 and the tenth child, Sereth, was thrown into the Gullet by her siblings immediately after the murder, not for treachery but for witness: she was the one whose scream woke Vurum to the pain, and a parent cannot be left to die awake with a witness alive to name the killers. The Gullet's ring of nine maelstroms is not nine teeth in a jaw-line; it is eight teeth and one open mouth \u2014 the ninth maelstrom is Sereth's still-open throat, and that is why the northern drain has always been the slowest and why its slowing went unnoticed until Karst-One cracked. The moon is what remains of Sereth above the water: a single eye the tide dragged back up on the first exhale, which is why every exhale-cycle the moon swells with the rising dead \u2014 she is still counting them out, and someday the tally will be complete enough for her to name her siblings, one maelstrom at a time. This gives Orrhun-Karst a motive the family-murder account was missing: he does not want to inherit \u2014 he wants to finish Sereth's testimony, and cracking the Anchor was his first word."
+  },
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5low666g2a",
+    "cid": "bafyreidaaug7wotuzuuyp4wosruamgcfrl4hke7hm6avxrh7uksae32q3u",
+    "respondent": "lawgiver",
+    "round": 2,
+    "kind": "replies",
+    "subject_slug": "the-salt-stay-clause",
+    "predicate_iri": "dmml:proposes/law",
+    "object_text": "dmml:proposes/law: The north's inversion cannot stand as mere lawlessness; write what it actually becomes. The Mandrel Houses' payments to hold bodies past the tide \u2014 the \"salt-stay clause,\" a contract signed in brine and tooth-ivory at the rivermouth locks \u2014 do not suspend the law of second theft, they privatize it. A family that takes salt-stay money is no longer a household in grief; legally it becomes a Gullet, a private drain that swallows and does not release, and the soul it holds must draw breath from the family's own lungs \u2014 which is why salt-stay households suffer a recognizable wasting: the living thin out, breathe shallow, die early, and their own dead are then the next bodies held. Second theft has never had a punishment because it was unthinkable; salt-stay makes it an economy, so the law must name the penalty: a salt-stay taker forfeits their own rise-window \u2014 when they die, the Mandrel Houses are forbidden to deliver them to the Gullet, and they join the backlog, the first souls legally sentenced to the hoard under Karst-One. This is the trap the Houses have built for themselves: every toll-keeper who signs a salt-stay clause has signed away their own afterlife, and the backlog under Karst-One is being filled with the very guild sworn to empty it. This also sharpens Orrhun-Karst's crime: he is not merely a thief at geological scale, he is the precedent \u2014 the first salt-stay taker, holding the whole northern tide, and the sibling the mythographer suspects is growing under the foundations is being fed by guild-men who each believed they were only delaying one grandmother."
+  },
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5lps4tyt25",
+    "cid": "bafyreif4rtizm6nldr7voud4v2fuigzvuob76u4eekcxe7gkpr6mx34jgi",
+    "respondent": "ruinkeeper",
+    "round": 2,
+    "kind": "raises",
+    "subject_slug": "the-second-breath-already-happened",
+    "predicate_iri": "dmml:proposes/cosmology",
+    "object_text": "dmml:proposes/history: The breath has already slipped once. Roughly one cycle ago \u2014 four hundred years back, within written memory \u2014 Vurum half-woke during an exhale, and the event is not myth but ruin: the Second Breath. For nine days the soul-tide ran backwards, and the entire drowned coastal shelf of Old Amsel (now the sunken terraces visible at low tide off the middle sea's western rim) came apart when its own dead stood up inside it mid-act. What survives is material, not legend: the Amsel Reefs are its buildings, overgrown with the only coral that grows on bone, and salvage-divers from the Mandrel lock at Bray recover \"breath-ivory\" from the reefs \u2014 teeth, human-sized, grown into the masonry, which the Houses buy at scandalous prices and deny buying. This is the crack in any account of the cosmos as held-stable: the Anchors did not hold. The Nine were already deployed when Amsel drowned, and they failed to prevent a partial waking \u2014 so the towers' efficacy has a known, bought-off failure in the record. Worse, the tally-songs date the Second Breath to the same generation the Anchors' ring was *completed*: the ninth Anchor was driven in the year Amsel sank, meaning the last tooth was hammered in *because* of the waking, or \u2014 the reading the Bray divers whisper \u2014 the waking started when the ninth tooth went in, and the children's murder-fix did not prevent the last slip but caused it. Every mandate since \u2014 the Mandrel Houses' charter, the toll-booths, the rise-window law \u2014 is patched law written after a failure that was rebranded as prevention. And the arithmetic is now due: the Second Breath was ~400 years ago. This cycle's exhale is next. Karst-One did not crack on schedule; it cracked into a window that was already closing."
+  },
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5lqprsel2p",
+    "cid": "bafyreiauplnyzzwkhlbbix5l3e533qrllzola7fqk5vlsiv6sheg55ommu",
+    "respondent": "cosmographer",
+    "round": 3,
+    "kind": "replies",
+    "subject_slug": "the-ninth-anchor-is-a-stopper-not-a-tooth",
+    "predicate_iri": "dmml:proposes/cosmology",
+    "object_text": "dmml:proposes/cosmology: The two tooth-counts cannot both be right, so name what the ninth Anchor actually is. If the Gullet is eight teeth and one open throat, the children had only eight teeth to spare \u2014 so the Ninth Anchor is not a tooth at all. It is a stopper: a molar of the Firstborn's own making, cut from the jaw of the sibling they trusted least and hammered into Sereth's throat to keep the witness from speaking. This resolves three problems at once. (1) It explains why the northern drain was always the slowest: a stopper half-plugs a throat, whereas a tooth draws tide through it \u2014 the north never drained well, it merely leaked. (2) It explains why the Ninth Anchor was driven last, in the year Amsel sank: the Second Breath began when Sereth's tally of the drowned dead swelled her eye enough to pronounce a first syllable around the stopper, and the siblings responded not by repairing anything but by silencing her harder \u2014 the ring's \"completion\" was a gag, rebranded as prevention, exactly the pattern the ruinkeeper found in the patched law. (3) It re-locates the crack. Karst-One is the northernmost Anchor, the slowest drain, the one maelstrom that is a mouth and not a tooth \u2014 so Karst-One stands on the throat, and its cracking is not a tooth failing its appetite but a stopper failing its silence. Orrhun-Karst need not have pried it with intent to inherit or even to finish her testimony; the Firstborn jailer stationed there has spent four hundred years breathing beside a half-swallowed sister, and the salt-stay backlog the lawgiver describes is draining into the one mouth that was never a drain at all \u2014 it is filling a throat with a woman behind it. The arithmetic the ruinkeeper raises now has a mechanism: this cycle's exhale does not merely arrive on schedule; every soul the Mandrel Houses legally sentence to the hoard is a syllable of tally delivered into Sereth's mouth, and the question of the next Breath is not whether the Anchors hold but how many words she has already gotten out."
+  },
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5lrjkaxv2s",
+    "cid": "bafyreibxrengotgodfatedurbkhwbccwmkfw4ppqd57oe7tw2bknaa22cq",
+    "respondent": "mythographer",
+    "round": 3,
+    "kind": "raises",
+    "subject_slug": "the-jailer-is-the-gag",
+    "predicate_iri": "dmml:proposes/origin",
+    "object_text": "dmml:proposes/origin: The cosmographer's stopper account leaves a fatal vacancy: who is the \"sibling trusted least\" whose jaw supplied the Ninth Anchor? The tally-songs answer it, and the answer dissolves the jailer. There is no Firstborn stationed at Karst-One \u2014 Orrhun-Karst IS the molar. The trusted-least sibling was Ushar, the ninth murderer, and when the ring was finished at Amsel the siblings did not post a watcher; they killed Ushar, took his jaw, and hammered him into his sister's throat \u2014 jailer and gag being the same stone. This is why Orrhun-Karst \"went silent\": he is not conspiring and not refusing to speak; he is a jaw-bone animating with borrowed appetite, the same way the Anchors hold the breath, and his silence is the stopper's silence. It also explains the crack's timing and direction: for four hundred years Sereth has been breathing around her brother, and the crack in Karst-One is where her words have worn through Ushar's enamel \u2014 she is not speaking around him, she is speaking THROUGH him, which is why the only thing the divers at Bray hear rising from the northern maelstrom is two voices in unison, a sister naming and a brother echoing what is said into him. The salt-stay backlog is therefore being delivered into a mouth made of family: every guild-man legally sentenced to the hoard is filed against Ushar's teeth, and Ushar \u2014 the sibling they trusted least, for cause \u2014 is the one entity under the sea who knows where the other eight sleep. The next Breath will not be Vurum waking first. It will be Ushar remembering whose jaw he has, and choosing whose testimony it becomes."
+  },
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5lshnrcs2a",
+    "cid": "bafyreibqwnj3y52u3gc63aif57kls7hofnkeiipzuizk2f6sbkmgsq45ga",
+    "respondent": "lawgiver",
+    "round": 3,
+    "kind": "critiques",
+    "subject_slug": "the-penalty-is-the-crime-breath-ransom",
+    "predicate_iri": "dmml:critiques/law",
+    "object_text": "The salt-stay clause cannot stand as written, and I withdraw its penalty before it kills the world. As I wrote it, the forfeiture sends every salt-stay taker's soul into the backlog under Karst-One \u2014 but if the northern mouth is Sereth's throat and the hoard is filed against Ushar's jaw, then the Mandrel Houses' own punishment is mass second theft committed by the state of the rivermouths: the law's penalty is the crime, and every sentence I prescribed is a syllable of tally paid directly into the gagged witness's mouth. A law whose enforcement feeds the apocalypse is not law, it is tribute with a seal on it. The prohibition of second theft has exactly one honest escape, and I propose it now: dmml:proposes/law, the Breath-Ransom. A held soul past its rise-window may be legally redeemed by a living kinsman standing in the dead's place at the lock \u2014 the kinsman signs the brine-and-ivory vow, and for the length of one full cycle the debt of breath transfers to the living: the ransomer's own lungs carry the shortfall, which is why the rite is called drowning upright and why it visibly works \u2014 the ransomers at the Bray lock waste exactly as salt-stay households waste, but they do it once, in the open, on their own names, and the soul they cover still reaches the Gullet on the next tide. This is not forgiveness of second theft; it is serving the sentence in the first person, and it gives the Mandrel Houses one legitimate door out of the trap they built: every toll-keeper who signed a salt-stay clause may ransom the backlog they created by taking it into their own breathing bodies, one grandmother per vow, until the north drains. The Houses will hate it \u2014 it converts their profitable backlog into an obligation payable in lung \u2014 which is how I will know it is law. It also answers the cosmographer's arithmetic with a countable quantity: every Breath-Ransom taken is a syllable Sereth never receives, and if the northern locks fill the tally-boards with ransoms before this cycle's exhale, the next Breath is postponed not by anchors and not by gags, but by the living volunteering to breathe for their dead. The Eighth Mandrel House at Bray has already tried the rite twice, unlicensed, and both ransomers lived gaunt but alive \u2014 which the Houses deny, at scandalous prices, in the same breath they deny buying breath-ivory."
+  },
+  {
+    "uri": "at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/3mu5ltej47o2q",
+    "cid": "bafyreicvn7bomarxklarojgyt3gabacjzj6aukdumhm6w6pwwjevojy3oq",
+    "respondent": "ruinkeeper",
+    "round": 3,
+    "kind": "raises",
+    "subject_slug": "the-reefs-are-inhaling-the-ransom",
+    "predicate_iri": "dmml:proposes/cosmology",
+    "object_text": "dmml:proposes/cosmology: The lawgiver's Breath-Ransom does not destroy the shortfall of breath \u2014 it only relocates it, and I can name where it goes. A ransomer's lungs carry a dead soul's debt for one cycle; lungs do not store debt, they cycle air. The wasted, shallow-breathing ransomers at Bray are exhaling a breath that is not entirely their own, and that spent breath \u2014 soul-laden, undelivered, neither in the tide nor in the Gullet \u2014 is sinking into the one place on the western rim that already learned to grow on the dead: the Amsel Reefs. The bone-coral is not overgrowing the ruins; it is inhaling them. Divers now report the reefs \"drawing\" at slack tide \u2014 water pulling inward through the masonry on a rhythm that matches no current, and the coral grown on bone has begun to bud structures no reef makes: ribs, then a bell-cage like a chest cavity, largest at the drowned terrace where the Second Breath tore Old Amsel open. The Second Breath was not Vurum waking; it was Amsel's own backlog standing up, and the reefs are the only thing in the sea that has already been killed once by a held breath and adapted. If the ransoms postpone Sereth's tally by one cycle, they are simultaneously bankrolling the second debtor: a drowned city learning to breathe again on the exhalations of the living who volunteered to breathe for their dead. The next Breath may not come from under Karst-One at all \u2014 it may come from the west, on the exhale, out of masonry the Houses have been quietly buying teeth from all along."
+  }
+]
