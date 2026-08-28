@@ -1,0 +1,25 @@
+# Draft only -- the exact spindle workflow schema wasn't independently
+# confirmed before writing this (tangled.org's docs describe the shape in
+# general but a specific run wasn't verified against a live spindle).
+# Check the real syntax at https://docs.tangled.org/spindles before relying
+# on this running as-is.
+#
+# The one thing that IS confirmed: don't put the key here. Anything in this
+# file is visible to anyone viewing the repo. OPENROUTER_API_KEY goes into
+# this repo's own Settings > Secrets panel on tangled.sh, and is referenced
+# by name below, never by value.
+
+name: harness
+
+on:
+  push:
+    branches: [main]
+
+steps:
+  - name: run harness
+    command: python3 harness.py
+    environment:
+      DMML_PDS: ${{ secrets.DMML_PDS }}
+      DMML_DID: ${{ secrets.DMML_DID }}
+      DMML_APP_PASSWORD: ${{ secrets.DMML_APP_PASSWORD }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
