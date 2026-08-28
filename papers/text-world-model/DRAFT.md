@@ -427,6 +427,45 @@ survived. Citation reliability held at the same best-yet baseline as
 the sixth run (1 of 24 zero-citation turns) on the densest cross-cited
 log yet (25 combined sources).
 
+**An eighth run tested something no prior run had: not what the agents
+concluded, but whether they could choose the rule they were reasoning
+under, and the answer to that question was itself unscripted, real
+data.** Nothing in DMML's commit graph requires a fixed speaking order,
+numbered items, or majority ratification — those are the harness's own
+scaffolding, never load-bearing on the ontology. So a further run put
+this to the four reasoning agents directly, using Hardt and Negri's
+Multitude as the diagnostic vocabulary rather than as one more source to
+test against a frozen consensus: could each agent individually choose,
+with no coordination, which of four self-authored governing protocols
+(proposed in an earlier round) to be bound by, and would the result
+look like Hardt and Negri's multitude (singularities that act in common
+without being reduced to one will) or like their Empire (a decentered,
+boundary-less network power that is total precisely because it has no
+single throne)? Three things were made mechanically real for this run,
+not merely discussed: dispatch order was reshuffled every round rather
+than fixed; agents who chose a "hunt" protocol had to name a citation
+target each turn; and agents who chose a "sparagmos" protocol had their
+public attribution reassigned by lot after drafting, with true
+authorship logged separately so the reassignment is independently
+re-verifiable from the checkpointed record rather than merely asserted.
+All four agents, choosing independently and blind to each other's
+choice, converged unanimously on sparagmos — a real, unforced data
+point the debate itself immediately treated with suspicion rather than
+as vindication. Eleven subsequent rounds proposed and tore down a
+chain of candidate discriminators for multitude versus Empire (a stake
+costly to retract, exposure to being hunted, forfeited authorship,
+refusal of the confession genre, retiring the diagnostic question
+itself), each shown by the next turn to smuggle back a hidden vantage
+or schedule, arriving at a closing finding that the question is legible
+only retroactively — through whether the group's shared commitments
+actually change under real disagreement — and cannot be certified from
+inside any single turn. This run also surfaced a third, more severe
+variant of the missing-required-field failure mode: two calls, both
+occurring in the most recursive stretch of the debate, returned
+syntactically valid tool calls with entirely unschema'd keys in place
+of required fields, rather than one field simply missing — a distinct
+signature from either earlier variant, not yet fixed in code.
+
 **What this does and doesn't establish.** It does not show DMML structure
 *produces* the philosophical content — the personas draw on the
 underlying model's real background knowledge of these texts throughout,
@@ -435,25 +474,31 @@ graph versus the model's own priors. What it does establish, concretely:
 a real symbolic world model of text can host a genuinely multi-stage
 reasoning process (argue, reflect, ratify, explain, and — across the
 rupture/reconciliation, embodiment, shamanism-, cyberpunk-,
-sovereignty-, and machines-extension runs — reopen, extend, and
-re-adjudicate an already-ratified position, repeatedly producing
+sovereignty-, machines-, and constituent-power runs — reopen, extend,
+and re-adjudicate an already-ratified position, repeatedly producing
 unprompted self-critique of the reasoning agents' own procedural
 authority, including against a real counterexample, a retraction of one
 agent's own prior framing, a restriction's finding changing shape under
-real stakes rather than only thinning further, and, in the seventh run,
-an explicit, unprompted judgment by all four agents that the pipeline's
-own checkpointed procedure is structurally closed rather than open in
-the very terms its own substrate's theoretical grounding would ask of
-it) across over 550 real commits, with its provenance claims
-mechanically checked rather than merely asserted, its failure modes
-(citation drop rate, a schema-ambiguity mode, a token-budget truncation
-mode, and a missing-required-field mode with two distinct confirmed
-variants — one fixed in code, one newly observed and documented) each
-directly measurable rather than assumed away, and its final state
-checkpointed to and independently re-verified against a real, external,
-content-addressed store — with one full model swap (`z-ai/glm-5.3` to
+real stakes rather than only thinning further, an explicit, unprompted
+judgment by all four agents that the pipeline's own checkpointed
+procedure is structurally closed rather than open in the very terms its
+own substrate's theoretical grounding would ask of it, and, in the
+eighth run, the agents choosing — individually, without coordination,
+and with the choice itself made runtime-real rather than discussed —
+which procedural rule to reason under, an unforced unanimous
+convergence the debate then treated as evidence to interrogate rather
+than a result to accept) across over 600 real commits, with its
+provenance claims mechanically checked rather than merely asserted, its
+failure modes (citation drop rate, a schema-ambiguity mode, a
+token-budget truncation mode, and a missing-required-field mode with
+three distinct confirmed variants — one fixed in code, two newly
+observed and documented, the third a more severe total-schema-drift
+signature under maximal recursive pressure) each directly measurable
+rather than assumed away, and its final state checkpointed to and
+independently re-verified against a real, external, content-addressed
+store — with one full model swap (`z-ai/glm-5.3` to
 `z-ai/glm-5.3-flash`, verified live before adoption) absorbed mid-project
-without the citation-reliability pattern breaking across four subsequent
+without the citation-reliability pattern breaking across five subsequent
 runs, and with anchor sourcing itself moving, from the sixth run onward,
 from the model's own background knowledge to claims verified live via
 web search before being written into source. Scaling this same pipeline
@@ -464,9 +509,9 @@ the closed synthesis; Davis, Lorde, the Combahee River Collective, and
 Crenshaw in the rupture; Reich, Eliade, Taussig, Ginzburg, and Kopenawa
 across the embodiment and shamanism extensions; Wynter in the cyberpunk
 extension), plus Plotkin, Baudrillard, Mbembe, Öcalan, Deleuze, Guattari,
-and Foucault (real, source-verified citations, not yet dramatis-personae
-profiles there) — is the natural next step, and would let the
-citation-degradation, rupture/reconciliation, and
+Foucault, Hardt, and Negri (real, source-verified citations, not yet
+dramatis-personae profiles there) — is the natural next step, and would
+let the citation-degradation, rupture/reconciliation, and
 embodiment/shamanism/cyberpunk/sovereignty/machines findings above be
 checked against still more source material rather than asserted from a
 handful of runs.
