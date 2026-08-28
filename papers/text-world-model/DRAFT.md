@@ -386,6 +386,47 @@ complete, substantive response — observed once, documented rather than
 patched, since a non-initial vote has no single correct default the way
 an initial "propose" does.
 
+**A seventh run turned the reasoning process onto the same theoretical
+apparatus this paper's own ontology is built on, and the pantheon's
+procedure became an explicit object of its own analysis.** A further
+run (adding Gilles Deleuze and Félix Guattari's desiring-production
+framework and Michel Foucault's relational account of power) is
+categorically different from the six before it: DMML's commit graph
+(desiring-machines, consumes/produces, petitions as transindividual
+claims) is explicitly modeled on D&G's own vocabulary, discussed at
+length in this paper's companion piece — so this run is the reasoning
+process examining the theory its own substrate instantiates, not only
+external material. Foucault's claim that power is relational and
+produced at every point, never a possession an institution holds and
+could renounce, directly refuted the sovereignty consensus's closing
+move (a commune must be able to "dissolve, cease being the one who
+permits"); the finding survives only redescribed, as perpetual exposure
+to being found still permitting rather than an achieved exit. The
+debate's structure was itself unusual: nearly every proposed repair
+across five rounds — an external attestor, a break-list of ruptures, a
+ban on naming an "outside," a plural-codes registry, a record forbidden
+from knowing its own contents — was ruptured by the very next turn,
+which showed the repair had reinstalled an examiner or specified an
+exteriority it could not hold, a recursive self-consumption distinct
+from any prior phase's pattern. Most consequentially, multiple agents
+independently concluded, and all four converged on it in their
+reflection turns without being asked to evaluate the pipeline itself,
+that the pantheon's own seven-phase procedure — a fixed cast of four
+personas, numbered checkpointed items, majority-rules ratification — is
+an arborescent (rooted, coded) structure rather than the rhizome D&G's
+own framework would ask of a genuinely open process; the only
+genuinely decentered element, several agents noted, was the material
+arriving from outside the document at each new phase. A further finding
+was self-referentially precise: an agent's attempt to name and confirm
+"every repair installs an examiner" as the debate's one confirmed
+result was immediately shown by another agent to be the same capture
+one level up — the naming act itself reinstalling the very examiner the
+named claim described, so the finding survives only as an unnamed,
+applied-as-against test, dying the moment anyone points to it as what
+survived. Citation reliability held at the same best-yet baseline as
+the sixth run (1 of 24 zero-citation turns) on the densest cross-cited
+log yet (25 combined sources).
+
 **What this does and doesn't establish.** It does not show DMML structure
 *produces* the philosophical content — the personas draw on the
 underlying model's real background knowledge of these texts throughout,
@@ -393,39 +434,42 @@ and nothing here isolates how much of a given turn's insight came from the
 graph versus the model's own priors. What it does establish, concretely:
 a real symbolic world model of text can host a genuinely multi-stage
 reasoning process (argue, reflect, ratify, explain, and — across the
-rupture/reconciliation, embodiment, shamanism-, cyberpunk-, and
-sovereignty-extension runs — reopen, extend, and re-adjudicate an
-already-ratified position, repeatedly producing unprompted self-critique
-of the reasoning agents' own procedural authority, including against a
-real counterexample, a retraction of one agent's own prior framing, and,
-in the sixth run, a restriction's finding changing shape under real
-stakes rather than only thinning further) across nearly five hundred
-real commits, with its provenance claims mechanically checked rather
-than merely asserted, its failure modes (citation drop rate, a
-schema-ambiguity mode, a token-budget truncation mode, and a
-missing-required-field mode with two distinct confirmed variants — one
-fixed in code, one newly observed and documented) each directly
-measurable rather than assumed away, and its final state checkpointed to
-and independently re-verified against a real, external, content-addressed
-store — with one full model swap (`z-ai/glm-5.3` to
+rupture/reconciliation, embodiment, shamanism-, cyberpunk-,
+sovereignty-, and machines-extension runs — reopen, extend, and
+re-adjudicate an already-ratified position, repeatedly producing
+unprompted self-critique of the reasoning agents' own procedural
+authority, including against a real counterexample, a retraction of one
+agent's own prior framing, a restriction's finding changing shape under
+real stakes rather than only thinning further, and, in the seventh run,
+an explicit, unprompted judgment by all four agents that the pipeline's
+own checkpointed procedure is structurally closed rather than open in
+the very terms its own substrate's theoretical grounding would ask of
+it) across over 550 real commits, with its provenance claims
+mechanically checked rather than merely asserted, its failure modes
+(citation drop rate, a schema-ambiguity mode, a token-budget truncation
+mode, and a missing-required-field mode with two distinct confirmed
+variants — one fixed in code, one newly observed and documented) each
+directly measurable rather than assumed away, and its final state
+checkpointed to and independently re-verified against a real, external,
+content-addressed store — with one full model swap (`z-ai/glm-5.3` to
 `z-ai/glm-5.3-flash`, verified live before adoption) absorbed mid-project
-without the citation-reliability pattern breaking across three
-subsequent runs, and with anchor sourcing itself moving, in the sixth
-run, from the model's own background knowledge to claims verified live
-via web search before being written into source. Scaling this same
-pipeline to the rest of Power Explained's bibliography — the
-dramatis-personae roster runs to 23 thinkers, this case study having
-exercised 19 of them (Gramsci, Federici, Ostrom, Graeber, Fanon,
-Kropotkin, and Bookchin in the closed synthesis; Davis, Lorde, the
-Combahee River Collective, and Crenshaw in the rupture; Reich, Eliade,
-Taussig, Ginzburg, and Kopenawa across the embodiment and shamanism
-extensions; Wynter in the cyberpunk extension), plus Plotkin, Baudrillard,
-Mbembe, and Öcalan (real, source-verified citations, not yet
-dramatis-personae profiles there) — is the
-natural next step, and would let the citation-degradation,
-rupture/reconciliation, and embodiment/shamanism/cyberpunk/sovereignty
-findings above be checked against still more source material rather than
-asserted from a handful of runs.
+without the citation-reliability pattern breaking across four subsequent
+runs, and with anchor sourcing itself moving, from the sixth run onward,
+from the model's own background knowledge to claims verified live via
+web search before being written into source. Scaling this same pipeline
+to the rest of Power Explained's bibliography — the dramatis-personae
+roster runs to 23 thinkers, this case study having exercised 19 of them
+(Gramsci, Federici, Ostrom, Graeber, Fanon, Kropotkin, and Bookchin in
+the closed synthesis; Davis, Lorde, the Combahee River Collective, and
+Crenshaw in the rupture; Reich, Eliade, Taussig, Ginzburg, and Kopenawa
+across the embodiment and shamanism extensions; Wynter in the cyberpunk
+extension), plus Plotkin, Baudrillard, Mbembe, Öcalan, Deleuze, Guattari,
+and Foucault (real, source-verified citations, not yet dramatis-personae
+profiles there) — is the natural next step, and would let the
+citation-degradation, rupture/reconciliation, and
+embodiment/shamanism/cyberpunk/sovereignty/machines findings above be
+checked against still more source material rather than asserted from a
+handful of runs.
 
 ---
 
