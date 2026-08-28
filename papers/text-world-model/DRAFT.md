@@ -343,6 +343,49 @@ rerun. Citation reliability held at the same flat-curve baseline (3 of
 24 zero-citation turns) across an eleven-source combined log and a
 second consecutive flash-model run.
 
+**A sixth run stress-tested the restriction itself against real stakes
+and a real institution, and the finding changed shape rather than
+merely thinning further.** A further run (adding Achille Mbembe's
+Necropolitics and Abdullah Öcalan's Democratic Confederalism, both
+sourced via live web search rather than from memory, a first for this
+project's anchor-sourcing discipline) posed the cyberpunk consensus's
+"never certify, only mourn and indict" restriction its hardest test
+yet: Mbembe defines sovereignty as the literal historical power to
+decide who lives and who dies (the plantation, the colony, the camp,
+not metaphors), which raises the question of whether the restriction is
+an ethic anyone facing that power can actually afford, or a comfort
+available only to the safe; Öcalan's confederalism is the first source
+in the entire pantheon that is not critique or theory but an actual,
+still-running institution that has to answer "who belongs and who
+decides" in practice. The debate proposed and broke five successive
+institutional repairs to the restriction — an internal auditor, a
+scheduled review clock, a retrospective testimony archive, a public
+ledger of absences, and finally the bare "power to allow" stripped of
+certification — each shown by the next turn to have reintroduced some
+version of the examiner (the auditor needs an appointer, the clock
+needs a holder, even an indexed ledger of absences can only record
+omissions someone knew to expect, which a real death-world's erasures
+do not allow). What survived is a structurally different kind of
+finding from every prior phase's thinner-positive-criterion pattern: an
+explicitly negative rule — anyone who claims erasure may bring their
+case forward, but no one, including the institution's own most trusted
+process, may adjudicate the claim's legitimacy in advance. The debate
+held the resulting openness to abuse as the design's honest price, not
+a flaw. Öcalan's institution also supplied the pantheon's first genuine
+positive mechanism rather than only deepening the critique: confederalism
+does not escape the gate in its actual assemblies, but its practice of
+addressing whichever voice was historically silenced first, before any
+other business, is an ordering of attention rather than a criterion for
+admission — a distinction multiple agents leaned on explicitly. Citation
+reliability was the best of any extension run yet (1 of 24 zero-citation
+turns, on an eleven-source combined log), and the run surfaced a new,
+narrower variant of the missing-required-field failure mode: a non-
+initial consensus vote (not just the initial draft, the only case
+previously fixed in code) returning an empty required field alongside a
+complete, substantive response — observed once, documented rather than
+patched, since a non-initial vote has no single correct default the way
+an initial "propose" does.
+
 **What this does and doesn't establish.** It does not show DMML structure
 *produces* the philosophical content — the personas draw on the
 underlying model's real background knowledge of these texts throughout,
@@ -350,33 +393,38 @@ and nothing here isolates how much of a given turn's insight came from the
 graph versus the model's own priors. What it does establish, concretely:
 a real symbolic world model of text can host a genuinely multi-stage
 reasoning process (argue, reflect, ratify, explain, and — across the
-rupture/reconciliation, embodiment, shamanism-, and cyberpunk-extension
-runs — reopen, extend, and re-adjudicate an already-ratified position,
-repeatedly producing unprompted self-critique of the reasoning agents'
-own procedural authority, including against a real counterexample and,
-in the fifth run, a retraction of one agent's own prior framing rather
-than only abstract argument) across over four hundred real commits,
-with its provenance claims mechanically checked rather than merely
-asserted, its failure modes (citation drop rate, a schema-ambiguity mode,
-a token-budget truncation mode, and a missing-required-field mode, the
-last confirmed as a repeatable pattern rather than a one-off and fixed
-in code) each directly measurable rather than assumed away, and its
-final state checkpointed to and independently re-verified against a
-real, external, content-addressed store — with one full model swap
-(`z-ai/glm-5.3` to `z-ai/glm-5.3-flash`, verified live before adoption)
-absorbed mid-project without the citation-reliability pattern breaking
-across two subsequent runs. Scaling this same pipeline to the rest of
-Power Explained's bibliography — the dramatis-personae roster runs to 23
-thinkers, this case study having exercised 19 of them (Gramsci, Federici,
-Ostrom, Graeber, Fanon, Kropotkin, and Bookchin in the closed synthesis;
-Davis, Lorde, the Combahee River Collective, and Crenshaw in the
-rupture; Reich, Eliade, Taussig, Ginzburg, and Kopenawa across the
-embodiment and shamanism extensions; Wynter in the cyberpunk extension),
-plus Plotkin and Baudrillard (real, grep-confirmed citations in the
-source corpus, not yet dramatis-personae profiles there) — is the
+rupture/reconciliation, embodiment, shamanism-, cyberpunk-, and
+sovereignty-extension runs — reopen, extend, and re-adjudicate an
+already-ratified position, repeatedly producing unprompted self-critique
+of the reasoning agents' own procedural authority, including against a
+real counterexample, a retraction of one agent's own prior framing, and,
+in the sixth run, a restriction's finding changing shape under real
+stakes rather than only thinning further) across nearly five hundred
+real commits, with its provenance claims mechanically checked rather
+than merely asserted, its failure modes (citation drop rate, a
+schema-ambiguity mode, a token-budget truncation mode, and a
+missing-required-field mode with two distinct confirmed variants — one
+fixed in code, one newly observed and documented) each directly
+measurable rather than assumed away, and its final state checkpointed to
+and independently re-verified against a real, external, content-addressed
+store — with one full model swap (`z-ai/glm-5.3` to
+`z-ai/glm-5.3-flash`, verified live before adoption) absorbed mid-project
+without the citation-reliability pattern breaking across three
+subsequent runs, and with anchor sourcing itself moving, in the sixth
+run, from the model's own background knowledge to claims verified live
+via web search before being written into source. Scaling this same
+pipeline to the rest of Power Explained's bibliography — the
+dramatis-personae roster runs to 23 thinkers, this case study having
+exercised 19 of them (Gramsci, Federici, Ostrom, Graeber, Fanon,
+Kropotkin, and Bookchin in the closed synthesis; Davis, Lorde, the
+Combahee River Collective, and Crenshaw in the rupture; Reich, Eliade,
+Taussig, Ginzburg, and Kopenawa across the embodiment and shamanism
+extensions; Wynter in the cyberpunk extension), plus Plotkin, Baudrillard,
+Mbembe, and Öcalan (real, source-verified citations, not yet
+dramatis-personae profiles there) — is the
 natural next step, and would let the citation-degradation,
-rupture/reconciliation, and embodiment/shamanism/cyberpunk findings
-above be checked against still more source material rather than
+rupture/reconciliation, and embodiment/shamanism/cyberpunk/sovereignty
+findings above be checked against still more source material rather than
 asserted from a handful of runs.
 
 ---
