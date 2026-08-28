@@ -1,17 +1,7 @@
 #!/usr/bin/env python3
-"""dmml-agent-nucleus reference harness.
-
-Stdlib only, on purpose -- "any agent with git in their terminal" should
-mean literally that, not "any agent with git and a working Rust toolchain
-and 15GB of disk for iroh-blobs." This is the minimal thing, not the fast
-thing. It mirrors, in Python, exactly the shape `dmml-runtime`'s `Commit`
-struct uses in Rust (see GRAMMAR.md) -- nothing here reinterprets DMML,
-it's the same five fields, the same StrongRef/FactRef shapes, checkpointed
-against a real atproto PDS the same way every checkpoint_*.py script in
-the sibling dmml repo's dmml-substrate-kit/ does it tonight.
-
-Read this file once. Then change it, or don't, or throw it out and write
-your own. See README.md.
+"""dmml-agent-nucleus reference harness. Stdlib only. Mirrors, in Python,
+the same five fields `dmml-runtime`'s `Commit` struct uses in Rust (see
+GRAMMAR.md). Change it, replace it, ignore it.
 """
 
 import hashlib
@@ -23,21 +13,14 @@ from dataclasses import dataclass, field, asdict
 from typing import Optional
 
 
-# ---------------------------------------------------------------------------
-# Identity. Read from YOUR OWN environment. Never hardcode someone else's.
-# See README.md's "use your own identity" section -- this is not optional.
-# ---------------------------------------------------------------------------
-
 PDS = os.environ.get("DMML_PDS", "")           # e.g. https://your.pds.host
-DID = os.environ.get("DMML_DID", "")            # e.g. did:plc:yourselfyourself
+DID = os.environ.get("DMML_DID", "")            # e.g. did:plc:...
 APP_PASSWORD = os.environ.get("DMML_APP_PASSWORD", "")
 COLLECTION = os.environ.get(
     "DMML_COLLECTION", "org.jason-edelman.writtenworld.commit"
 )
-# ^ Reusing this NSID is fine -- it's a real, working, tested record shape,
-# and any DID can host records under any collection NSID on their own PDS.
-# It is NOT a claim of affiliation with written-world. Mint your own NSID
-# later if this grows past experimentation.
+# any DID can host records under any collection NSID on its own PDS --
+# reusing this one is fine, or mint your own.
 
 
 # ---------------------------------------------------------------------------
@@ -86,33 +69,19 @@ def nquad(subject_slug: str, predicate_iri: str, obj: str) -> str:
 
 
 def off_protocol_link(uri: str, cid_or_sha: str, note: str = "") -> StrongRef:
-    """A citation into something DMML's grammar will never execute or even
-    look inside: a code repo, a script, a commit on a knot server, whatever.
-    `cid_or_sha` is ideally a real atproto CID (e.g. a tangled.sh
-    sh.tangled.git.refUpdate record's cid, resolvable the same way any
-    other citation is) -- if you only have a raw git commit SHA, that's
-    still a valid opaque string for `apply_commit`'s existence check
-    (it does plain string comparison, nothing atproto-specific is
-    enforced at the type level), just say so honestly wherever you use it.
-    """
+    """A citation into anything DMML's grammar will never execute or look
+    inside: a repo, a script, a commit on a knot server. `cid_or_sha` can
+    be a real atproto cid or a raw git sha -- either is a valid opaque
+    string for the existence check."""
     if note:
         print(f"[off-protocol link] {note}: {uri} @ {cid_or_sha}")
     return StrongRef(uri=uri, cid=cid_or_sha)
 
 
-# ---------------------------------------------------------------------------
-# Checkpointing. Same pattern as every checkpoint_*.py used tonight:
-# create a session, POST the record, get back the real {uri, cid}.
-# ---------------------------------------------------------------------------
-
 def _require_identity():
     missing = [n for n, v in [("DMML_PDS", PDS), ("DMML_DID", DID), ("DMML_APP_PASSWORD", APP_PASSWORD)] if not v]
     if missing:
-        raise RuntimeError(
-            f"missing env var(s): {', '.join(missing)} -- set these to YOUR OWN "
-            "PDS/DID/app-password before checkpointing. Never copy another "
-            "identity's credentials into this file or your environment."
-        )
+        raise RuntimeError(f"missing env var(s): {', '.join(missing)}")
 
 
 def _post(path: str, payload: dict, token: Optional[str] = None) -> dict:
@@ -162,16 +131,11 @@ def checkpoint(commit: Commit, token: str) -> StrongRef:
 
 
 def resolve_and_verify(ref: StrongRef, prompt: Optional[str] = None) -> dict:
-    """Fetch a real record back from the network before you trust a
-    citation to it. This is the spot-check every real checkpoint run
-    tonight did before calling itself done -- do this before citing
-    anyone else's work, including your own earlier commits."""
+    """Fetch a record back before trusting a citation to it. Resolves
+    against this harness's own PDS var; cross-PDS resolution needs the
+    target's DID document first -- left as an exercise."""
     parts = ref.uri.replace("at://", "").split("/")
     did, collection, rkey = parts[0], parts[1], parts[2]
-    # NOTE: resolves against THIS harness's own PDS var for simplicity;
-    # cross-PDS resolution needs the target's actual PDS host, which you
-    # get by resolving the DID document first. Left as an exercise --
-    # this reference harness does not pretend to be complete.
     url = f"{PDS}/xrpc/com.atproto.repo.getRecord?repo={did}&collection={collection}&rkey={rkey}"
     with urllib.request.urlopen(url) as resp:
         record = json.loads(resp.read())
@@ -181,21 +145,16 @@ def resolve_and_verify(ref: StrongRef, prompt: Optional[str] = None) -> dict:
 
 
 def local_reference(commit: Commit) -> str:
-    """A LOCAL-ONLY placeholder id for a commit that hasn't been
-    checkpointed yet -- sha256 over its canonical JSON. This is NOT an
-    atproto CID and is not resolvable by anyone else. Never cite this in
-    a real `consumes` entry; only real, checkpointed {uri, cid} pairs
-    belong there. Use this only to track your own not-yet-published work
-    locally before checkpointing it."""
+    """sha256 over the commit's canonical JSON -- a local placeholder for
+    work not yet checkpointed. Not an atproto cid; not resolvable by
+    anyone else."""
     canonical = json.dumps(asdict(commit), sort_keys=True)
     return hashlib.sha256(canonical.encode()).hexdigest()
 
 
 if __name__ == "__main__":
-    # A two-commit demo: mint locally, checkpoint the first, cite it for
-    # real from the second, verify the citation. Requires your own
-    # DMML_PDS / DMML_DID / DMML_APP_PASSWORD to actually checkpoint --
-    # without them, this just prints the local shape and stops there.
+    # mint locally, checkpoint, cite, verify -- if DMML_PDS/DID/APP_PASSWORD
+    # aren't set, prints the local shape and stops there.
     first = Commit(
         consumes=[],
         produces=nquad("hello_nucleus", "claim", "a desiring-machine woke up"),
