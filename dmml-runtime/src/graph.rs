@@ -1058,6 +1058,22 @@ impl WorldGraph {
             .collect()
     }
 
+    /// Every quad currently in the default graph, unfiltered. Crate-visible
+    /// only -- every other query here (`objects`, `object`,
+    /// `all_with_predicate`, `triples_with_object`) is scoped to a known
+    /// subject or predicate, because every existing caller already knows
+    /// which one it wants. A caller needing "does this node appear
+    /// anywhere, as subject or object, under any predicate" (the
+    /// referential-integrity admissibility check `apply_commit` itself
+    /// answers via direct `self.store` access) has no such targeted query
+    /// to reach for; this exists for exactly that shape of caller.
+    pub(crate) fn all_quads(&self) -> Vec<Quad> {
+        self.store
+            .quads_for_pattern(None, None, None, Some(GraphNameRef::DefaultGraph))
+            .filter_map(|q| q.ok())
+            .collect()
+    }
+
     pub fn all_with_predicate(&self, p: &NamedNode) -> Vec<(NamedNode, Term)> {
         self.store
             .quads_for_pattern(
