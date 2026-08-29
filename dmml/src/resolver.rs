@@ -23,7 +23,13 @@
 //!   property tests (`resolver_properties.rs`) instead of a formal proof
 //!   -- not full provability, but real, checked behavior, per the
 //!   decision to prioritize working code over chasing an induction proof
-//!   that would have been a materially bigger, riskier lift.
+//!   that would have been a materially bigger, riskier lift. As of the
+//!   Datalog cutover, also cross-checked by `datalog_worldstate`'s crepe
+//!   fixpoint oracle -- a one-shot batch recomputation of `is_current`
+//!   over a whole recorded operation log, not a live replacement for
+//!   this struct (crepe's `run(self)` consumes its instance; there's no
+//!   incremental "keep the derived state, add one more fact" shape for
+//!   an always-growing, live-mutated struct like this one to take).
 
 use std::collections::HashMap;
 
