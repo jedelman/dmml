@@ -602,85 +602,85 @@ pub fn reference_from_json(json: &str) -> Result<ast::ReferenceStmt, FromJsonErr
 }
 
 // ---------------------------------------------------------------------
-// WorldInput: batching many commits/machines into one authoring call
+// UpdateInput: batching many commits/machines into one authoring call
 // ---------------------------------------------------------------------
 
-/// Many independent commits and machines, submitted together. Each item
-/// is exactly the same `CommitInput`/`MachineInput` shape a single-item
-/// call would use -- a batch is "many independent commits authored in
-/// one round trip," not a new kind of history record, so there is no
-/// cross-item referencing: `consumes` still only ever points at real,
-/// already-committed `{uri, cid}` pairs, never at another item in the
-/// same batch (which has no real CID yet). Genesis/world-building
-/// authoring is additive, so this is not a real limitation for that use
-/// case; a workflow that genuinely needs commit N to consume commit N-1
-/// within one authoring burst still submits them as separate calls, in
-/// order, same as today.
-///
-/// `parallel` names the one real fork in how a batch's commits relate to
-/// each other, and is checked accordingly -- not just documentation, an
-/// actual difference in what gets validated:
-///
-/// - `false` (default): the commits are real sequential history, same as
-///   submitting them one at a time -- a later commit legitimately
-///   overwriting an earlier commit's `(subject, predicate)` is correct
-///   append-only-log behavior (`later_commit_overwrites_earlier_for_
-///   same_subject_predicate` in `interpret_examples.rs` is exactly this
-///   case), so only a same-commit self-collision is checked (unconditionally,
-///   regardless of `parallel`, in `commit_stmt_from_input` -- there is
-///   never a legitimate reason for one commit to assert the same
-///   `(subject, predicate)` pair against itself).
-/// - `true`: the commits together describe ONE simultaneous snapshot --
-///   typically a genesis/world-building batch that was only split across
-///   several `CommitInput`s for authoring convenience, not because they
-///   represent distinct moments in time. There is no legitimate
-///   "later corrects earlier" case here, so the duplicate-fact check
-///   extends across every commit in the batch: two different commits
-///   asserting the same `(subject, predicate)` is exactly the bug a
-///   same-commit-only check would silently miss (confirmed against a
-///   real model's output during this feature's own design: splitting
-///   `player/1 holds key/1` into one commit and `player/1 holds key/2`
-///   into another passed the same-commit check, then silently dropped
-///   `key/1` at materialization -- the accident `parallel: true` exists
-///   to catch).
-///
-/// This governs validation only. Application is unaffected either way:
-/// `WorldGraph::apply_commit` still takes one commit at a time, in the
-/// order the caller supplies them -- `parallel` does not yet change how
-/// (or whether concurrently) `dmml-runtime` applies a batch's commits;
-/// that's real, separate follow-up work in that crate, not done here.
+/// One group of commits (and machines) meant to land as ONE simultaneous
+/// snapshot -- typically genesis/world-building content only split
+/// across several `CommitInput`s for authoring convenience, not because
+/// they represent distinct moments in time. Being grouped in the same
+/// batch IS the claim "there is no legitimate order between these" --
+/// not a flag alongside them, a structural fact about where they sit in
+/// `UpdateInput.update`. Each item is exactly the same `CommitInput`/
+/// `MachineInput` shape a single-item call would use; there is still no
+/// cross-item referencing (`consumes` only ever points at real,
+/// already-committed `{uri, cid}` pairs, never at a sibling in the same
+/// batch, which has no real CID yet).
 #[derive(Debug, Clone, Deserialize)]
-pub struct WorldInput {
+pub struct BatchInput {
     #[serde(default)]
     pub commits: Vec<CommitInput>,
     #[serde(default)]
     pub machines: Vec<MachineInput>,
-    #[serde(default)]
-    pub parallel: bool,
+}
+
+/// The top-level batching shape: an ordered sequence of `BatchInput`
+/// groups. Structure alone carries what a `parallel: bool` flag on a
+/// single flat list could only approximate as one global choice:
+///
+/// - Commits WITHIN one batch are simultaneous -- checked accordingly:
+///   a duplicate `(subject, predicate)` across two commits in the same
+///   batch is rejected the same way a self-collision within one commit
+///   already is (real bug this catches, found while designing the
+///   flag-based predecessor of this shape: a model split `player/1
+///   holds key/1` into one commit and `player/1 holds key/2` into a
+///   sibling commit in the same batch, silently dropping `key/1` at
+///   materialization).
+/// - Commits ACROSS separate batches are sequential -- a later batch's
+///   commit legitimately overwriting an earlier batch's fact is correct
+///   append-only-log behavior (`later_commit_overwrites_earlier_for_
+///   same_subject_predicate` in `interpret_examples.rs` is exactly this
+///   case), so nothing is checked across batch boundaries.
+///
+/// This expresses shapes a single global flag genuinely couldn't: two
+/// turns, each turn's own commits simultaneous internally, the second
+/// turn's facts legitimately superseding the first's -- `update:
+/// [batch_one, batch_two]`, each holding several commits, says exactly
+/// that. A lone commit is just a batch of one, in a sequence of one:
+/// `{"update": [{"commits": [c]}]}`.
+///
+/// Governs validation only. Application is unaffected: `WorldGraph::
+/// apply_commit` still takes one commit at a time, in the order the
+/// caller supplies them -- this does not yet change how (or whether
+/// concurrently) `dmml-runtime` applies a batch's commits; that's real,
+/// separate follow-up work in that crate, not done here.
+#[derive(Debug, Clone, Deserialize)]
+pub struct UpdateInput {
+    pub update: Vec<BatchInput>,
 }
 
 /// Unlike every single-item `*_from_json` function, this never fails
 /// fast: a pile of facts is exactly the case where finding only the
 /// first mistake and forcing another round trip is most costly, so
-/// every commit and machine in the batch is built independently and
+/// every commit and machine in every batch is built independently and
 /// every failure is collected before returning.
 #[derive(Debug)]
-pub enum WorldFromJsonError {
-    /// The batch's own JSON wasn't valid, or didn't match `WorldInput`'s
-    /// shape at all.
+pub enum UpdateFromJsonError {
+    /// The update's own JSON wasn't valid, or didn't match
+    /// `UpdateInput`'s shape at all.
     Json(serde_json::Error),
     /// The JSON was shaped correctly, but one or more items inside it
     /// weren't valid DMML content. Every entry's `pointer` is rebased
-    /// onto the batch (e.g. `/commits/3/facts/1/subject`), not just the
-    /// offending item's own local pointer.
+    /// onto the update (e.g. `/update/1/commits/3/facts/1/subject`), not
+    /// just the offending item's own local pointer.
     Invalid(Vec<JsonError>),
 }
 
-impl fmt::Display for WorldFromJsonError {
+impl fmt::Display for UpdateFromJsonError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            WorldFromJsonError::Json(e) => write!(f, "invalid JSON: {e}"),
-            WorldFromJsonError::Invalid(errs) => {
+            UpdateFromJsonError::Json(e) => write!(f, "invalid JSON: {e}"),
+            UpdateFromJsonError::Invalid(errs) => {
                 for (i, e) in errs.iter().enumerate() {
                     if i > 0 {
                         writeln!(f)?;
@@ -693,68 +693,80 @@ impl fmt::Display for WorldFromJsonError {
     }
 }
 
-impl std::error::Error for WorldFromJsonError {}
+impl std::error::Error for UpdateFromJsonError {}
 
-/// A successfully-built batch: every commit and machine, already
+/// One successfully-built batch: every commit and machine, already
 /// deserialized, validated for shape, and converted to AST -- ready for
 /// `validate_declarations`/`lower_commit`/`all_machines` exactly as a
-/// single-item commit would be, applied one at a time by the caller in
-/// whatever order it chooses (batching is an authoring-time convenience
-/// over N JSON items, not a new runtime concept -- `WorldGraph::
-/// apply_commit` still takes one commit at a time).
+/// single-item commit would be.
 #[derive(Debug)]
-pub struct World {
+pub struct Batch {
     pub commits: Vec<ast::CommitStmt>,
     pub machines: Vec<ast::MachineStmt>,
 }
 
-pub fn world_from_json(json: &str) -> Result<World, WorldFromJsonError> {
-    let input: WorldInput = serde_json::from_str(json).map_err(WorldFromJsonError::Json)?;
+/// A successfully-built update: every batch, in the order submitted --
+/// applied by the caller one commit at a time, batch by batch, in that
+/// same order (batching is an authoring-time convenience over N JSON
+/// items, not a new runtime concept -- `WorldGraph::apply_commit` still
+/// takes one commit at a time).
+#[derive(Debug)]
+pub struct Update {
+    pub batches: Vec<Batch>,
+}
+
+pub fn update_from_json(json: &str) -> Result<Update, UpdateFromJsonError> {
+    let input: UpdateInput = serde_json::from_str(json).map_err(UpdateFromJsonError::Json)?;
 
     let mut errors = Vec::new();
-    let mut commits = Vec::new();
-    for (i, c) in input.commits.iter().enumerate() {
-        match commit_stmt_from_input(c) {
-            Ok(stmt) => commits.push(stmt),
-            Err(FromJsonError::Invalid(e)) => errors.push(JsonError {
-                pointer: format!("/commits/{i}{}", e.pointer),
-                message: e.message,
-            }),
-            Err(FromJsonError::Json(_)) => unreachable!("commit_stmt_from_input never returns Json"),
-        }
-    }
+    let mut batches = Vec::new();
 
-    let mut machines = Vec::new();
-    for (i, m) in input.machines.iter().enumerate() {
-        match machine_stmt_from_input(m) {
-            Ok(stmt) => machines.push(stmt),
-            Err(FromJsonError::Invalid(e)) => errors.push(JsonError {
-                pointer: format!("/machines/{i}{}", e.pointer),
-                message: e.message,
-            }),
-            Err(FromJsonError::Json(_)) => unreachable!("machine_stmt_from_input never returns Json"),
+    for (bi, batch_input) in input.update.iter().enumerate() {
+        let mut commits = Vec::new();
+        for (ci, c) in batch_input.commits.iter().enumerate() {
+            match commit_stmt_from_input(c) {
+                Ok(stmt) => commits.push(stmt),
+                Err(FromJsonError::Invalid(e)) => errors.push(JsonError {
+                    pointer: format!("/update/{bi}/commits/{ci}{}", e.pointer),
+                    message: e.message,
+                }),
+                Err(FromJsonError::Json(_)) => unreachable!("commit_stmt_from_input never returns Json"),
+            }
         }
-    }
 
-    // `parallel: true` means these commits describe one simultaneous
-    // snapshot, not real sequential history -- see WorldInput's own doc
-    // comment for why that means extending the duplicate-fact check
-    // across commit boundaries, not just within each one. Checked on the
-    // raw JSON strings, same as the within-commit check, so it still
-    // fires even when a commit also has its own unrelated shape errors.
-    if input.parallel {
+        let mut machines = Vec::new();
+        for (mi, m) in batch_input.machines.iter().enumerate() {
+            match machine_stmt_from_input(m) {
+                Ok(stmt) => machines.push(stmt),
+                Err(FromJsonError::Invalid(e)) => errors.push(JsonError {
+                    pointer: format!("/update/{bi}/machines/{mi}{}", e.pointer),
+                    message: e.message,
+                }),
+                Err(FromJsonError::Json(_)) => unreachable!("machine_stmt_from_input never returns Json"),
+            }
+        }
+
+        // Every commit in THIS batch is simultaneous with every other
+        // commit in THIS batch -- that's what being grouped here means
+        // -- so the duplicate-fact check extends across them. It does
+        // NOT extend across batch boundaries: a later batch overwriting
+        // an earlier one is real, legitimate sequential history. Checked
+        // on the raw JSON strings, same as the within-commit check, so
+        // it still fires even when a commit also has its own unrelated
+        // shape errors.
         let mut seen: std::collections::HashMap<(&str, &str), (usize, usize)> = std::collections::HashMap::new();
-        for (ci, commit) in input.commits.iter().enumerate() {
+        for (ci, commit) in batch_input.commits.iter().enumerate() {
             for (fi, fact) in commit.facts.iter().enumerate() {
                 let key = (fact.subject.as_str(), fact.predicate.as_str());
                 match seen.get(&key) {
                     Some(&(first_ci, first_fi)) => {
                         errors.push(JsonError {
-                            pointer: format!("/commits/{ci}/facts/{fi}"),
+                            pointer: format!("/update/{bi}/commits/{ci}/facts/{fi}"),
                             message: format!(
-                                "duplicate ({}, {}) across parallel commits -- already asserted at \
-                                 /commits/{first_ci}/facts/{first_fi}; parallel commits describe one \
-                                 simultaneous snapshot, so there is no legitimate later-wins here",
+                                "duplicate ({}, {}) within the same batch -- already asserted at \
+                                 /update/{bi}/commits/{first_ci}/facts/{first_fi}; commits in the same \
+                                 batch describe one simultaneous snapshot, so there is no legitimate \
+                                 later-wins here",
                                 fact.subject, fact.predicate
                             ),
                         });
@@ -765,12 +777,14 @@ pub fn world_from_json(json: &str) -> Result<World, WorldFromJsonError> {
                 }
             }
         }
+
+        batches.push(Batch { commits, machines });
     }
 
     if errors.is_empty() {
-        Ok(World { commits, machines })
+        Ok(Update { batches })
     } else {
-        Err(WorldFromJsonError::Invalid(errors))
+        Err(UpdateFromJsonError::Invalid(errors))
     }
 }
 
@@ -970,86 +984,105 @@ mod tests {
     }
 
     #[test]
-    fn world_builds_multiple_commits_and_machines_in_one_call() {
+    fn update_builds_multiple_batches_of_commits_and_machines_in_one_call() {
         let json = r#"{
-            "commits": [
-                {"verb": "mints", "declares": [{"kind": "relation", "name": "opensTo"}],
-                 "facts": [{"subject": "room/1", "predicate": "opensTo", "object": {"kind": "node", "value": "room/2"}}]},
-                {"verb": "mints", "declares": [{"kind": "relation", "name": "state"}],
-                 "facts": [{"subject": "door/1", "predicate": "state", "object": {"kind": "node", "value": "locked"}}]}
-            ],
-            "machines": [
-                {"node": "door/1", "states": [{"ident": "locked"}, {"ident": "unlocked"}],
-                 "transitions": [{"ident": "unlock", "from": "locked", "to": "unlocked"}]}
+            "update": [
+                {
+                    "commits": [
+                        {"verb": "mints", "declares": [{"kind": "relation", "name": "opensTo"}],
+                         "facts": [{"subject": "room/1", "predicate": "opensTo", "object": {"kind": "node", "value": "room/2"}}]},
+                        {"verb": "mints", "declares": [{"kind": "relation", "name": "state"}],
+                         "facts": [{"subject": "door/1", "predicate": "state", "object": {"kind": "node", "value": "locked"}}]}
+                    ],
+                    "machines": [
+                        {"node": "door/1", "states": [{"ident": "locked"}, {"ident": "unlocked"}],
+                         "transitions": [{"ident": "unlock", "from": "locked", "to": "unlocked"}]}
+                    ]
+                }
             ]
         }"#;
-        let world = world_from_json(json).expect("batch should build");
-        assert_eq!(world.commits.len(), 2);
-        assert_eq!(world.machines.len(), 1);
+        let update = update_from_json(json).expect("update should build");
+        assert_eq!(update.batches.len(), 1);
+        assert_eq!(update.batches[0].commits.len(), 2);
+        assert_eq!(update.batches[0].machines.len(), 1);
     }
 
     #[test]
-    fn world_collects_every_error_across_the_whole_batch_not_just_the_first() {
+    fn update_collects_every_error_across_every_batch_not_just_the_first() {
         let json = r#"{
-            "commits": [
-                {"verb": "mints", "facts": [{"subject": "not a node", "predicate": "opensTo", "object": {"kind": "node", "value": "room/2"}}]},
-                {"verb": "mints", "facts": [{"subject": "room/1", "predicate": "also not valid!", "object": {"kind": "node", "value": "room/2"}}]}
-            ],
-            "machines": [
-                {"node": "door/1", "transitions": [{"ident": "noop"}]}
+            "update": [
+                {"commits": [
+                    {"verb": "mints", "facts": [{"subject": "not a node", "predicate": "opensTo", "object": {"kind": "node", "value": "room/2"}}]}
+                ]},
+                {
+                    "commits": [
+                        {"verb": "mints", "facts": [{"subject": "room/1", "predicate": "also not valid!", "object": {"kind": "node", "value": "room/2"}}]}
+                    ],
+                    "machines": [
+                        {"node": "door/1", "transitions": [{"ident": "noop"}]}
+                    ]
+                }
             ]
         }"#;
-        let err = world_from_json(json).expect_err("batch has three separate mistakes");
+        let err = update_from_json(json).expect_err("update has three separate mistakes");
         match err {
-            WorldFromJsonError::Invalid(errs) => {
+            UpdateFromJsonError::Invalid(errs) => {
                 assert_eq!(errs.len(), 3);
-                assert_eq!(errs[0].pointer, "/commits/0/facts/0/subject");
-                assert_eq!(errs[1].pointer, "/commits/1/facts/0/predicate");
-                assert_eq!(errs[2].pointer, "/machines/0/transitions/0");
+                assert_eq!(errs[0].pointer, "/update/0/commits/0/facts/0/subject");
+                assert_eq!(errs[1].pointer, "/update/1/commits/0/facts/0/predicate");
+                assert_eq!(errs[2].pointer, "/update/1/machines/0/transitions/0");
             }
             other => panic!("expected Invalid, got {other:?}"),
         }
     }
 
     #[test]
-    fn sequential_batch_allows_a_later_commit_to_overwrite_an_earlier_one() {
-        // parallel defaults to false: this is exactly real append-only
-        // history (a later commit legitimately overwriting an earlier
-        // commit's fact), submitted as a batch purely to save round
-        // trips -- must NOT be treated as a mistake.
+    fn separate_batches_allow_a_later_one_to_overwrite_an_earlier_one() {
+        // Two SEPARATE batches: this is exactly real append-only history
+        // (a later batch's commit legitimately overwriting an earlier
+        // batch's fact), submitted together purely to save round trips --
+        // must NOT be treated as a mistake, since being in different
+        // batches is exactly the structural signal that there's no
+        // simultaneity claim between them.
         let json = r#"{
-            "commits": [
-                {"verb": "mints", "declares": [{"kind": "attribute", "name": "locked"}],
-                 "facts": [{"subject": "door/1", "predicate": "locked", "object": {"kind": "boolean", "value": true}}]},
-                {"verb": "unlocks", "declares": [{"kind": "attribute", "name": "locked"}],
-                 "facts": [{"subject": "door/1", "predicate": "locked", "object": {"kind": "boolean", "value": false}}]}
+            "update": [
+                {"commits": [
+                    {"verb": "mints", "declares": [{"kind": "attribute", "name": "locked"}],
+                     "facts": [{"subject": "door/1", "predicate": "locked", "object": {"kind": "boolean", "value": true}}]}
+                ]},
+                {"commits": [
+                    {"verb": "unlocks", "declares": [{"kind": "attribute", "name": "locked"}],
+                     "facts": [{"subject": "door/1", "predicate": "locked", "object": {"kind": "boolean", "value": false}}]}
+                ]}
             ]
         }"#;
-        let world = world_from_json(json).expect("sequential batch should build");
-        assert_eq!(world.commits.len(), 2);
+        let update = update_from_json(json).expect("two sequential batches should build");
+        assert_eq!(update.batches.len(), 2);
     }
 
     #[test]
-    fn parallel_batch_rejects_the_same_cross_commit_collision() {
+    fn one_batch_rejects_a_cross_commit_collision_within_it() {
         // The exact accident a real model's output hit while designing
         // this feature: the same (subject, predicate) split across two
-        // sibling commits in one batch, meant to both hold simultaneously
-        // -- a same-commit-only check would silently miss this.
+        // sibling commits in the SAME batch, meant to both hold
+        // simultaneously -- a same-commit-only check would silently miss
+        // this; being grouped in one batch is what makes it an error.
         let json = r#"{
-            "parallel": true,
-            "commits": [
-                {"verb": "mints", "declares": [{"kind": "relation", "name": "holds"}],
-                 "facts": [{"subject": "player/1", "predicate": "holds", "object": {"kind": "node", "value": "key/1"}}]},
-                {"verb": "mints", "declares": [{"kind": "relation", "name": "holds"}],
-                 "facts": [{"subject": "player/1", "predicate": "holds", "object": {"kind": "node", "value": "key/2"}}]}
+            "update": [
+                {"commits": [
+                    {"verb": "mints", "declares": [{"kind": "relation", "name": "holds"}],
+                     "facts": [{"subject": "player/1", "predicate": "holds", "object": {"kind": "node", "value": "key/1"}}]},
+                    {"verb": "mints", "declares": [{"kind": "relation", "name": "holds"}],
+                     "facts": [{"subject": "player/1", "predicate": "holds", "object": {"kind": "node", "value": "key/2"}}]}
+                ]}
             ]
         }"#;
-        let err = world_from_json(json).expect_err("parallel batch should reject the cross-commit collision");
+        let err = update_from_json(json).expect_err("same-batch collision should be rejected");
         match err {
-            WorldFromJsonError::Invalid(errs) => {
+            UpdateFromJsonError::Invalid(errs) => {
                 assert_eq!(errs.len(), 1);
-                assert_eq!(errs[0].pointer, "/commits/1/facts/0");
-                assert!(errs[0].message.contains("parallel"));
+                assert_eq!(errs[0].pointer, "/update/0/commits/1/facts/0");
+                assert!(errs[0].message.contains("same batch"));
             }
             other => panic!("expected Invalid, got {other:?}"),
         }
