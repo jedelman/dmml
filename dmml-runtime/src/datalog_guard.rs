@@ -1,68 +1,60 @@
-//! A real Datalog replacement candidate for `machine::requirement_met` /
+//! A real Datalog replacement for `machine::requirement_met` /
 //! `machine::machines_for_verb`'s "are this machine's requirements
 //! satisfied" check, built on `crepe` (semi-naive evaluation, stratified
 //! negation, compiled to native Rust -- not an interpreter over an AST).
 //!
-//! Scope, stated honestly: this covers requirement evaluation only, not
-//! `apply_commit`'s referential-integrity checks (those are genuinely
-//! oxigraph pattern queries, not admissibility logic, and don't map onto
-//! Datalog any better than they already work). Wired into `game.rs`'s
-//! live dispatch (`verbs_available_on`, `fire_object_verb`) as of the
-//! cutover that added the `Equipped` input/`agrees_...` and
-//! `a_requirement_free_machine_is_always_ready` tests below --
-//! `machines_ready` is validated for equivalence against the existing
-//! hand-rolled `requirement_met` there, including the requirement-free
-//! case real content (`demiurge.rs`'s frontier generator) actually
-//! relies on, which an earlier version of this module got wrong (see
-//! `Equipped`'s own doc comment in the `crepe!` block below).
+//! Wired into `game.rs`'s `verbs_available_on` only -- the read-only
+//! affordance-listing path, which never fires an effect and so has no
+//! reason to need anything beyond plain gating. `fire_object_verb`
+//! (which actually fires effects, and needs a machine's own effect to be
+//! able to satisfy another machine's requirement within the same turn)
+//! moved to `datalog_effects.rs`'s own gating instead, which subsumes
+//! this module's job for that specific call site -- see that module's
+//! doc comment for why the two can't just be one engine. `machines_ready`
+//! is validated for equivalence against the existing hand-rolled
+//! `requirement_met` below, including the requirement-free case real
+//! content (`demiurge.rs`'s frontier generator) actually relies on, which
+//! an earlier version of this module got wrong (see `Equipped`'s own doc
+//! comment in the `crepe!` block below).
+//!
+//! Referential integrity turned out to map onto Datalog just as well as
+//! requirement evaluation does -- an earlier revision of this doc
+//! comment claimed otherwise ("genuinely oxigraph pattern queries...
+//! don't map onto Datalog any better than they already work"), which
+//! `datalog_referential_integrity.rs`'s real cutover into `apply_commit`
+//! directly disproved. That file, not this paragraph, is the source of
+//! truth on that module's own scope and design now.
 //!
 //! crepe requires every fact field to implement `Copy` (its own docs: "if
 //! fields do not implement Copy, consider passing references instead") --
 //! `NamedNode`/`String` don't, so node identity is interned to a `u32`
-//! symbol via `SymbolTable` below, the standard Datalog technique, not a
-//! workaround specific to this module. Float attribute values are lowered
-//! to fixed-point `i64` (six decimal digits) for the same Copy-and-Ord
-//! requirement; the graph's own oxigraph float terms stay the source of
-//! truth, nothing here writes a value back.
+//! symbol via `datalog_support::SymbolTable`, the standard Datalog
+//! technique, not a workaround specific to this module. Float attribute
+//! values are lowered to fixed-point `i64` (six decimal digits) for the
+//! same Copy-and-Ord requirement; the graph's own oxigraph float terms
+//! stay the source of truth, nothing here writes a value back.
+//!
+//! This module's gating is deliberately unbounded-requirements and
+//! negation-based -- safe here because gating never feeds into anything
+//! that could change within the same evaluation (every input is a plain
+//! `@input` fact, never itself derived). Contrast `datalog_effects.rs`,
+//! which needs a machine's fired effect to satisfy ANOTHER machine's
+//! requirement in the same fixpoint, and so cannot use negation the same
+//! way (a negated relation inside that cycle is a hard compile error in
+//! crepe, not just a style preference -- see that module's own doc
+//! comment for the exact mechanism). The two modules answer a similarly-
+//! named question ("is this machine ready") by genuinely different means
+//! for that reason; don't "consolidate" them without re-reading both
+//! doc comments first.
 
-use std::collections::HashMap;
 use std::collections::HashSet;
 
 use oxigraph::model::NamedNode;
 
+use crate::datalog_support::{quantize, SymbolTable};
 use crate::graph::{as_bool, as_float, WorldGraph};
 use crate::machine::{read_requirement, Requirement};
 use crate::vocab;
-
-const FIXED_POINT_SCALE: f64 = 1_000_000.0;
-
-fn quantize(v: f32) -> i64 {
-    (v as f64 * FIXED_POINT_SCALE).round() as i64
-}
-
-/// Interns node identities (their IRI string) to small `u32` symbols, since
-/// crepe's fact fields must be `Copy` and a `NamedNode`/`String` isn't.
-#[derive(Default)]
-struct SymbolTable {
-    by_str: HashMap<String, u32>,
-    by_sym: Vec<NamedNode>,
-}
-
-impl SymbolTable {
-    fn intern(&mut self, node: &NamedNode) -> u32 {
-        if let Some(&s) = self.by_str.get(node.as_str()) {
-            return s;
-        }
-        let s = self.by_sym.len() as u32;
-        self.by_sym.push(node.clone());
-        self.by_str.insert(node.as_str().to_string(), s);
-        s
-    }
-
-    fn resolve(&self, s: u32) -> NamedNode {
-        self.by_sym[s as usize].clone()
-    }
-}
 
 use crepe::crepe;
 
@@ -136,7 +128,7 @@ crepe! {
 pub fn machines_ready(graph: &WorldGraph, player_room: &NamedNode) -> HashSet<NamedNode> {
     let mut sym = SymbolTable::default();
     let mut runtime = Crepe::new();
-    runtime.extend([PlayerRoom(sym.intern(player_room))]);
+    runtime.extend([PlayerRoom(sym.intern(player_room.as_str()))]);
 
     // Every equipped node, requirement-free or not -- see `Equipped`'s
     // own doc comment in the `crepe!` block above for why this can't be
@@ -145,7 +137,7 @@ pub fn machines_ready(graph: &WorldGraph, player_room: &NamedNode) -> HashSet<Na
     // just across every owner in the graph at once.
     for (_owner, machine_term) in graph.all_with_predicate(&vocab::equips()) {
         if let oxigraph::model::Term::NamedNode(m) = machine_term {
-            runtime.extend([Equipped(sym.intern(&m))]);
+            runtime.extend([Equipped(sym.intern(m.as_str()))]);
         }
     }
 
@@ -156,12 +148,12 @@ pub fn machines_ready(graph: &WorldGraph, player_room: &NamedNode) -> HashSet<Na
     // `has_requirement` predicate `machine.rs` itself reads -- not a fresh
     // traversal invented for this module.
     for (machine, req_term) in graph.all_with_predicate(&vocab::has_requirement()) {
-        let machine_sym = sym.intern(&machine);
+        let machine_sym = sym.intern(machine.as_str());
         let req_node = match req_term {
             oxigraph::model::Term::NamedNode(n) => n,
             _ => continue,
         };
-        let req_sym = sym.intern(&req_node);
+        let req_sym = sym.intern(req_node.as_str());
         runtime.extend([HasRequirement(machine_sym, req_sym)]);
 
         let Some(req) = read_requirement(graph, &req_node) else {
@@ -169,10 +161,10 @@ pub fn machines_ready(graph: &WorldGraph, player_room: &NamedNode) -> HashSet<Na
         };
         match req {
             Requirement::PlayerInRoom { room } => {
-                runtime.extend([ReqPlayerInRoom(req_sym, sym.intern(&room))]);
+                runtime.extend([ReqPlayerInRoom(req_sym, sym.intern(room.as_str()))]);
             }
             Requirement::EdgeLocked { edge, equals } => {
-                let edge_sym = sym.intern(&edge);
+                let edge_sym = sym.intern(edge.as_str());
                 runtime.extend([ReqEdgeLocked(req_sym, edge_sym, equals)]);
                 if seen_edges.insert(edge_sym) {
                     if let Some(t) = graph.object(&edge, &vocab::locked()) {
@@ -183,8 +175,8 @@ pub fn machines_ready(graph: &WorldGraph, player_room: &NamedNode) -> HashSet<Na
                 }
             }
             Requirement::AttrAtLeast { node, attr, threshold } => {
-                let node_sym = sym.intern(&node);
-                let attr_sym = sym.intern(&attr);
+                let node_sym = sym.intern(node.as_str());
+                let attr_sym = sym.intern(attr.as_str());
                 runtime.extend([ReqAttrAtLeast(req_sym, node_sym, attr_sym, quantize(threshold))]);
                 if seen_attrs.insert((node_sym, attr_sym)) {
                     if let Some(t) = graph.object(&node, &attr) {
@@ -200,7 +192,7 @@ pub fn machines_ready(graph: &WorldGraph, player_room: &NamedNode) -> HashSet<Na
     let (_met, _unmet, ready) = runtime.run();
     ready
         .into_iter()
-        .map(|AllRequirementsMet(m)| sym.resolve(m))
+        .map(|AllRequirementsMet(m)| sym.resolve_node(m))
         .collect()
 }
 

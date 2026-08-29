@@ -5,6 +5,7 @@ pub mod dag;
 pub mod datalog_effects;
 pub mod datalog_guard;
 pub mod datalog_referential_integrity;
+mod datalog_support;
 pub mod demiurge;
 pub mod direction;
 pub mod game;

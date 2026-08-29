@@ -32,39 +32,53 @@
 //! spike, all found necessary by actually trying to wire it into
 //! `fire_object_verb` rather than assumed):
 //!
-//! 1. **Multi-requirement support.** The spike's `EffectMachine` carried
-//!    `requirement: Option<Requirement>` -- at most one. Real content
-//!    needs two: `demiurge.rs`'s lever `threshold_delta` machine has
-//!    `[EdgeLocked{equals:true}, AttrAtLeast{wear,threshold}]`. The
-//!    spike's own doc comment already named the fix ("provenance-tagged
-//!    satisfaction facts, not more negation") without building it, since
-//!    it wasn't needed to prove the cascade. Built here as two fixed
-//!    requirement *slots* (`ReqSlot1*`/`ReqSlot2*`, `NoReqSlot1`/
-//!    `NoReqSlot2` for absent slots) -- bounded at 2 because that's the
-//!    real, verified maximum across every `build_action_machine` call
-//!    site in this workspace (0 for the frontier generator, 1 for the
-//!    lever's drift machine, 2 for its threshold machine; grep confirms
-//!    no third). `EffectMachine::new` panics if handed more than 2 --
-//!    an explicit, loud stop if content ever needs a third slot, not a
-//!    silently-dropped requirement. This is exactly the "smallest
-//!    generic extension the failure actually demands" this workspace's
-//!    own `SPEC.md` §18 razor asks for, not a general N-requirement
-//!    system nothing yet needs.
-//! 2. **Why multi-requirement isn't more negation.** The spike's doc
-//!    comment was right that a *derived* "all requirements met" via
-//!    `!UnmetReq(m)` can't work here: `AllReqsMet` feeds `NewAttrValue`/
-//!    `NewEdgeLocked` feeds `AttrNow`/`EdgeNow` feeds the requirement
-//!    check itself, so a negated relation would sit inside a genuine
-//!    recursive cycle and crepe would (correctly) reject it as
-//!    unstratifiable. The slot design sidesteps this the same way the
-//!    original single-requirement version did: enumerate every
-//!    combination explicitly (`Slot1Sat(m) <- NoReqSlot1(m)` /
-//!    `<- ReqSlot1AttrAtLeast(...)` / `<- ReqSlot1EdgeLockedIs(...)` /
-//!    `<- ReqSlot1PlayerInRoom(...)`, same for slot 2, then
-//!    `AllReqsMet(m) <- Slot1Sat(m), Slot2Sat(m), Has*(m, ...)`) -- pure
-//!    positive joins, no `!` anywhere in the cycle. Positive recursion
-//!    through the cycle is exactly caveat 2 below and is fine; negation
-//!    through it is not, and never appears.
+//! 1. **Multi-requirement support -- genuinely unbounded, not capped at
+//!    2.** The spike's `EffectMachine` carried `requirement:
+//!    Option<Requirement>` -- at most one. An earlier revision of this
+//!    module bounded it at 2 instead, justified as "the real, verified
+//!    maximum across every `build_action_machine` call site in this
+//!    workspace" -- that was a real mistake, corrected after Jason caught
+//!    it (see written-world's `CLAUDE.md`, "Code is never ground truth
+//!    for a domain invariant"): a grep over today's call sites answers
+//!    what existing code happens to do, never what the domain actually
+//!    allows. `requires: &[Requirement]` (`machine.rs`) is an unbounded
+//!    slice, nothing in `vocab.rs`/`validate.rs` caps `has_requirement`
+//!    triple count, and this is a sovereign, atproto-backed content
+//!    system where a future `demiurge` generator or a hand-authored
+//!    commit could equip any number of requirements without touching a
+//!    line of Rust a cap would live in. Worse, the cap lived in
+//!    `EffectMachine::new`, called directly from `fire_object_verb`'s
+//!    live dispatch -- it would have panicked and crashed a real
+//!    player's turn the day content needed a third requirement, directly
+//!    contradicting this same file's own `GenerateFrontier` handling
+//!    ("a future content bug... should degrade quietly, not crash a
+//!    player's turn"). Replaced with a driver-built chain of arbitrary
+//!    length (`ReqChainStart`/`ReqChainNext`/`ReqChainLast`,
+//!    `NoRequirements` for the empty case) -- unification over an
+//!    explicit position index, per Jason's own proposed design, adapted
+//!    for the one real constraint that design needs (see point 2).
+//! 2. **Why this still isn't negation, and why that matters.** Jason's
+//!    original sketch for unbounded requirements used double negation
+//!    ("no requirement this machine's type requires is unfulfilled") --
+//!    exactly `datalog_guard.rs`'s own `UnmetRequirement`/
+//!    `AllRequirementsMet` shape, which is completely correct THERE
+//!    because gating never feeds into effect derivation in that module,
+//!    so there's no cycle for the negation to sit inside. Here there is
+//!    one: `AllReqsMet` feeds `NewAttrValue`/`NewEdgeLocked` feeds
+//!    `AttrNow`/`EdgeNow` feeds the requirement check itself. This isn't
+//!    a soft crepe limitation -- verified directly in crepe 0.2.0's own
+//!    source (`strata.rs` computes strongly-connected components via
+//!    Kosaraju's algorithm; `lib.rs` then walks every rule and calls
+//!    `abort!` -- a hard compile error -- the instant a negated relation
+//!    shares a stratum with its own rule's goal relation). So the chain
+//!    design keeps Jason's actual insight (unification/joins generalize
+//!    over an explicit index without needing enumeration or aggregation,
+//!    which crepe has none of) while staying strictly positive: `ReqSatAt`
+//!    (one clause per requirement kind, keyed by position instead of a
+//!    fixed slot) and `AllSatUpTo` (recursive threading through the
+//!    driver-built chain, one link at a time) never use `!` anywhere in
+//!    the cycle. Positive recursion through the cycle is exactly caveat 2
+//!    below and is fine; negation through it is not, and never appears.
 //! 3. **`PlayerInRoom` support added.** The spike's `Requirement` enum
 //!    only had `AttrAtLeast`/`EdgeLockedIs` -- two of `machine::
 //!    Requirement`'s three variants. Since this module's gating now
@@ -138,47 +152,13 @@
 //!   machine self-justifies its firing; flagging it so nobody mistakes
 //!   it for guarded sequencing.
 
-use std::collections::HashMap;
-
 use crepe::crepe;
 use oxigraph::model::{NamedNode, Term};
 
+use crate::datalog_support::{dequantize, quantize, SymbolTable};
 use crate::graph::{as_bool, as_float, graded_range, WorldGraph};
 use crate::machine::Effect;
 use crate::vocab;
-
-/// Same convention as `datalog_guard`: IRI -> u32 so crepe fact fields stay `Copy`.
-#[derive(Default)]
-struct SymbolTable {
-    by_str: HashMap<String, u32>,
-    by_sym: Vec<NamedNode>,
-}
-
-impl SymbolTable {
-    fn intern(&mut self, node: &NamedNode) -> u32 {
-        if let Some(&s) = self.by_str.get(node.as_str()) {
-            return s;
-        }
-        let s = self.by_sym.len() as u32;
-        self.by_str.insert(node.as_str().to_string(), s);
-        self.by_sym.push(node.clone());
-        s
-    }
-
-    fn resolve(&self, s: u32) -> NamedNode {
-        self.by_sym[s as usize].clone()
-    }
-}
-
-const FIXED_POINT_SCALE: f64 = 1_000_000.0;
-
-fn quantize(v: f32) -> i64 {
-    (v as f64 * FIXED_POINT_SCALE).round() as i64
-}
-
-fn dequantize(v: i64) -> f32 {
-    (v as f64 / FIXED_POINT_SCALE) as f32
-}
 
 /// `(current + step).clamp(lo, hi)` in fixed-point. Note `quantize(f32::MIN)`
 /// and `quantize(f32::MAX)` saturate to `i64::MIN`/`i64::MAX`, which is exactly
@@ -204,9 +184,10 @@ pub enum Requirement {
 }
 
 /// One machine's dispatch-relevant description: its effect plus every
-/// requirement gating it. Bounded to 2 requirements -- see module doc
-/// point 1 for why that's the real, verified maximum, not an arbitrary
-/// limit.
+/// requirement gating it -- genuinely unbounded (see module doc point 1
+/// for why an earlier version of this struct capped it at 2, and why
+/// that was wrong: nothing in this repo's own schema/protocol caps how
+/// many requirements a machine can carry, so neither should this).
 #[derive(Debug, Clone)]
 pub struct EffectMachine {
     pub id: NamedNode,
@@ -215,17 +196,7 @@ pub struct EffectMachine {
 }
 
 impl EffectMachine {
-    /// Panics if `requirements.len() > 2` -- see this module's doc
-    /// comment for why 2 is real content's verified maximum, not a
-    /// guess, and why silently dropping a third requirement would be
-    /// the wrong failure mode.
     pub fn new(id: NamedNode, effect: Effect, requirements: Vec<Requirement>) -> Self {
-        assert!(
-            requirements.len() <= 2,
-            "datalog_effects supports at most 2 requirements per machine \
-             (real content's verified maximum); machine {id} has {}",
-            requirements.len()
-        );
         Self { id, effect, requirements }
     }
 }
@@ -272,32 +243,35 @@ crepe! {
     @input
     struct HasSetEdgeLocked(u32, u32, bool);     // (machine, edge, value)
 
-    // Requirements, in two fixed slots (see module doc points 1-2 for
-    // why this shape and not a general N-requirement/negation design).
+    // Requirements, threaded through a driver-built chain of arbitrary
+    // length -- see module doc point 1 for why a fixed slot count was
+    // wrong and this replaces it. `position` is a plain 0-based index,
+    // reused freely across different machines (every rule below always
+    // joins it together with `m`, so it never needs to be globally
+    // unique).
     @input
-    struct ReqSlot1AttrAtLeast(u32, u32, u32, i64);
+    struct ReqAttrAtLeastAt(u32, u32, u32, u32, i64); // (machine, position, node, attr, min_fp)
     @input
-    struct ReqSlot1EdgeLockedIs(u32, u32, bool);
+    struct ReqEdgeLockedIsAt(u32, u32, u32, bool);    // (machine, position, edge, want)
     @input
-    struct ReqSlot1PlayerInRoom(u32, u32);
+    struct ReqPlayerInRoomAt(u32, u32, u32);          // (machine, position, room)
     @input
-    struct NoReqSlot1(u32);
+    struct ReqChainStart(u32, u32);                   // (machine, first position)
     @input
-    struct ReqSlot2AttrAtLeast(u32, u32, u32, i64);
+    struct ReqChainNext(u32, u32, u32);                // (machine, position, next position)
     @input
-    struct ReqSlot2EdgeLockedIs(u32, u32, bool);
+    struct ReqChainLast(u32, u32);                    // (machine, last position)
     @input
-    struct ReqSlot2PlayerInRoom(u32, u32);
-    @input
-    struct NoReqSlot2(u32);
+    struct NoRequirements(u32);                       // (machine) -- the empty-chain case
 
     // ---- internal derived relations ----------------------------------
     struct BaseAttr(u32, u32, i64);       // pre-effect attr values
     struct HasBaseAttr(u32, u32);
     struct AttrNow(u32, u32, i64);        // base OR post-effect values
     struct EdgeNow(u32, bool);
-    struct Slot1Sat(u32);
-    struct Slot2Sat(u32);
+    struct ReqSatAt(u32, u32);            // (machine, position): that one requirement holds
+    struct AllSatUpTo(u32, u32);          // (machine, position): every requirement from the
+                                          // chain's start through this position holds
     struct AllReqsMet(u32);
 
     // ---- outputs ------------------------------------------------------
@@ -325,23 +299,27 @@ crepe! {
     EdgeNow(edge, v) <- EdgeLockedState(edge, v);
     EdgeNow(edge, v) <- NewEdgeLocked(_, edge, v);
 
-    // Each slot is satisfied if the machine has no requirement in that
-    // slot, or the requirement it does have (whichever kind) holds.
+    // Each chain position is satisfied if the requirement it names holds.
     // Purely positive -- see module doc point 2.
-    Slot1Sat(m) <- NoReqSlot1(m);
-    Slot1Sat(m) <- ReqSlot1AttrAtLeast(m, node, attr, min), AttrNow(node, attr, v), (v >= min);
-    Slot1Sat(m) <- ReqSlot1EdgeLockedIs(m, edge, want), EdgeNow(edge, want);
-    Slot1Sat(m) <- ReqSlot1PlayerInRoom(m, room), PlayerRoom(room);
+    ReqSatAt(m, pos) <- ReqAttrAtLeastAt(m, pos, node, attr, min), AttrNow(node, attr, v), (v >= min);
+    ReqSatAt(m, pos) <- ReqEdgeLockedIsAt(m, pos, edge, want), EdgeNow(edge, want);
+    ReqSatAt(m, pos) <- ReqPlayerInRoomAt(m, pos, room), PlayerRoom(room);
 
-    Slot2Sat(m) <- NoReqSlot2(m);
-    Slot2Sat(m) <- ReqSlot2AttrAtLeast(m, node, attr, min), AttrNow(node, attr, v), (v >= min);
-    Slot2Sat(m) <- ReqSlot2EdgeLockedIs(m, edge, want), EdgeNow(edge, want);
-    Slot2Sat(m) <- ReqSlot2PlayerInRoom(m, room), PlayerRoom(room);
+    // Positive recursive threading, not aggregation (crepe has none) and
+    // not negation (would create a cycle with AttrNow/EdgeNow -- see
+    // module doc point 2): "every requirement from the chain's start
+    // through `pos` holds" is built up one link at a time. Terminates
+    // because the driver-built chain is a finite, acyclic linked list.
+    AllSatUpTo(m, pos) <- ReqChainStart(m, pos), ReqSatAt(m, pos);
+    AllSatUpTo(m, next) <- AllSatUpTo(m, pos), ReqChainNext(m, pos, next), ReqSatAt(m, next);
 
-    // A machine may fire iff it has an effect and every requirement slot
-    // it has is satisfied.
-    AllReqsMet(m) <- Slot1Sat(m), Slot2Sat(m), HasIncrementAttr(m, _, _, _);
-    AllReqsMet(m) <- Slot1Sat(m), Slot2Sat(m), HasSetEdgeLocked(m, _, _);
+    // A machine may fire iff it has an effect and either has no
+    // requirements at all, or every requirement in its (arbitrary-length)
+    // chain is satisfied through the last position.
+    AllReqsMet(m) <- NoRequirements(m), HasIncrementAttr(m, _, _, _);
+    AllReqsMet(m) <- NoRequirements(m), HasSetEdgeLocked(m, _, _);
+    AllReqsMet(m) <- ReqChainLast(m, last), AllSatUpTo(m, last), HasIncrementAttr(m, _, _, _);
+    AllReqsMet(m) <- ReqChainLast(m, last), AllSatUpTo(m, last), HasSetEdgeLocked(m, _, _);
 
     // Effect application. IncrementAttr reproduces build_effect_delta:
     // new = (current + step).clamp(graded_range(attr) or unbounded).
@@ -380,16 +358,15 @@ pub fn resolve_effects(
     let mut ranges = Vec::new();
     let mut has_inc = Vec::new();
     let mut has_lock = Vec::new();
-    let mut req_slot1_attr = Vec::new();
-    let mut req_slot1_edge = Vec::new();
-    let mut req_slot1_room = Vec::new();
-    let mut no_req_slot1 = Vec::new();
-    let mut req_slot2_attr = Vec::new();
-    let mut req_slot2_edge = Vec::new();
-    let mut req_slot2_room = Vec::new();
-    let mut no_req_slot2 = Vec::new();
+    let mut req_attr_at = Vec::new();
+    let mut req_edge_at = Vec::new();
+    let mut req_room_at = Vec::new();
+    let mut chain_start = Vec::new();
+    let mut chain_next = Vec::new();
+    let mut chain_last = Vec::new();
+    let mut no_requirements = Vec::new();
 
-    let player_room_sym = syms.intern(player_room);
+    let player_room_sym = syms.intern(player_room.as_str());
 
     // Attrs/edges referenced anywhere (effects or requirements), so the
     // fixpoint sees the existing state it needs. Base-0 for missing attr
@@ -422,8 +399,8 @@ pub fn resolve_effects(
 
     // Existing attr values + graded ranges.
     for (node, attr) in &referenced_attrs {
-        let ns = syms.intern(node);
-        let as_ = syms.intern(attr);
+        let ns = syms.intern(node.as_str());
+        let as_ = syms.intern(attr.as_str());
         let current = graph
             .object(node, attr)
             .and_then(|t: Term| as_float(&t))
@@ -437,7 +414,7 @@ pub fn resolve_effects(
     // apply_commit/render.rs/everything else in this crate reads and
     // writes (see module doc point 4).
     for edge in &referenced_edges {
-        let es = syms.intern(edge);
+        let es = syms.intern(edge.as_str());
         let locked = graph
             .object(edge, &vocab::locked())
             .and_then(|t: Term| as_bool(&t))
@@ -447,56 +424,56 @@ pub fn resolve_effects(
 
     // Effects and requirement slots.
     for m in machines {
-        let ms = syms.intern(&m.id);
+        let ms = syms.intern(m.id.as_str());
         match &m.effect {
             Effect::IncrementAttr { node, attr, step } => {
                 has_inc.push(HasIncrementAttr(
                     ms,
-                    syms.intern(node),
-                    syms.intern(attr),
+                    syms.intern(node.as_str()),
+                    syms.intern(attr.as_str()),
                     quantize(*step),
                 ));
             }
             Effect::SetEdgeLocked { edge, value } => {
-                has_lock.push(HasSetEdgeLocked(ms, syms.intern(edge), *value));
+                has_lock.push(HasSetEdgeLocked(ms, syms.intern(edge.as_str()), *value));
             }
             Effect::GenerateFrontier { .. } => {} // out of scope, never fires here
         }
 
-        match m.requirements.first() {
-            Some(Requirement::AttrAtLeast { node, attr, min }) => {
-                req_slot1_attr.push(ReqSlot1AttrAtLeast(
-                    ms,
-                    syms.intern(node),
-                    syms.intern(attr),
-                    quantize(*min),
-                ));
+        // Requirements, threaded as a chain of arbitrary length -- see
+        // module doc point 1. `position` is just the 0-based index into
+        // `m.requirements`; safe to reuse across machines since every
+        // rule always joins it together with `ms`.
+        if m.requirements.is_empty() {
+            no_requirements.push(NoRequirements(ms));
+        } else {
+            chain_start.push(ReqChainStart(ms, 0));
+            chain_last.push(ReqChainLast(ms, (m.requirements.len() - 1) as u32));
+            for (pos, req) in m.requirements.iter().enumerate() {
+                let pos = pos as u32;
+                if let Some(next) = pos.checked_add(1) {
+                    if (next as usize) < m.requirements.len() {
+                        chain_next.push(ReqChainNext(ms, pos, next));
+                    }
+                }
+                match req {
+                    Requirement::AttrAtLeast { node, attr, min } => {
+                        req_attr_at.push(ReqAttrAtLeastAt(
+                            ms,
+                            pos,
+                            syms.intern(node.as_str()),
+                            syms.intern(attr.as_str()),
+                            quantize(*min),
+                        ));
+                    }
+                    Requirement::EdgeLockedIs { edge, value } => {
+                        req_edge_at.push(ReqEdgeLockedIsAt(ms, pos, syms.intern(edge.as_str()), *value));
+                    }
+                    Requirement::PlayerInRoom { room } => {
+                        req_room_at.push(ReqPlayerInRoomAt(ms, pos, syms.intern(room.as_str())));
+                    }
+                }
             }
-            Some(Requirement::EdgeLockedIs { edge, value }) => {
-                req_slot1_edge.push(ReqSlot1EdgeLockedIs(ms, syms.intern(edge), *value));
-            }
-            Some(Requirement::PlayerInRoom { room }) => {
-                req_slot1_room.push(ReqSlot1PlayerInRoom(ms, syms.intern(room)));
-            }
-            None => no_req_slot1.push(NoReqSlot1(ms)),
-        }
-
-        match m.requirements.get(1) {
-            Some(Requirement::AttrAtLeast { node, attr, min }) => {
-                req_slot2_attr.push(ReqSlot2AttrAtLeast(
-                    ms,
-                    syms.intern(node),
-                    syms.intern(attr),
-                    quantize(*min),
-                ));
-            }
-            Some(Requirement::EdgeLockedIs { edge, value }) => {
-                req_slot2_edge.push(ReqSlot2EdgeLockedIs(ms, syms.intern(edge), *value));
-            }
-            Some(Requirement::PlayerInRoom { room }) => {
-                req_slot2_room.push(ReqSlot2PlayerInRoom(ms, syms.intern(room)));
-            }
-            None => no_req_slot2.push(NoReqSlot2(ms)),
         }
     }
 
@@ -507,31 +484,30 @@ pub fn resolve_effects(
     program.extend(ranges);
     program.extend(has_inc);
     program.extend(has_lock);
-    program.extend(req_slot1_attr);
-    program.extend(req_slot1_edge);
-    program.extend(req_slot1_room);
-    program.extend(no_req_slot1);
-    program.extend(req_slot2_attr);
-    program.extend(req_slot2_edge);
-    program.extend(req_slot2_room);
-    program.extend(no_req_slot2);
+    program.extend(req_attr_at);
+    program.extend(req_edge_at);
+    program.extend(req_room_at);
+    program.extend(chain_start);
+    program.extend(chain_next);
+    program.extend(chain_last);
+    program.extend(no_requirements);
 
     let (new_attr, new_edge, fired) = program.run();
 
     let mut out = EffectFixpoint::default();
     for NewAttrValue(m, node, attr, v) in new_attr {
         out.attr_deltas.push((
-            syms.resolve(m),
-            syms.resolve(node),
-            syms.resolve(attr),
+            syms.resolve_node(m),
+            syms.resolve_node(node),
+            syms.resolve_node(attr),
             dequantize(v),
         ));
     }
     for NewEdgeLocked(m, edge, value) in new_edge {
-        out.edge_locks.push((syms.resolve(m), syms.resolve(edge), value));
+        out.edge_locks.push((syms.resolve_node(m), syms.resolve_node(edge), value));
     }
     for MachineFired(m) in fired {
-        out.fired_machines.push(syms.resolve(m));
+        out.fired_machines.push(syms.resolve_node(m));
     }
     out
 }
@@ -646,21 +622,82 @@ mod tests {
         assert_eq!(out.fired_machines, vec![node("urn:dmml:machine:m1")]);
     }
 
+    /// Genuinely unbounded, not just "more than 2": four requirements, all
+    /// four kinds represented across positions in an arbitrary order, all
+    /// satisfied -- and one flipped false to prove the whole chain still
+    /// correctly rejects on a single unmet link, wherever it sits (first,
+    /// middle, or last position, not just the boundary a 2-slot design
+    /// would have had to special-case). Real regression test for the
+    /// mistake this module's own doc comment (point 1) records: there is
+    /// no real maximum, and this proves the mechanism actually reflects
+    /// that, not just says so.
     #[test]
-    #[should_panic(expected = "at most 2 requirements")]
-    fn three_requirements_panics_rather_than_silently_dropping_one() {
-        EffectMachine::new(
-            node("urn:dmml:machine:overloaded"),
-            Effect::SetEdgeLocked { edge: node("urn:dmml:edge:e"), value: false },
-            vec![
-                Requirement::PlayerInRoom { room: node("urn:dmml:room:r") },
-                Requirement::EdgeLockedIs { edge: node("urn:dmml:edge:e"), value: true },
-                Requirement::AttrAtLeast {
-                    node: node("urn:dmml:node:x"),
-                    attr: wear(),
-                    min: 1.0,
-                },
-            ],
+    fn four_requirements_all_kinds_arbitrary_order() {
+        let mut graph = empty_graph();
+        let room = node("urn:dmml:room:r");
+        let other_room = node("urn:dmml:room:other");
+        let edge_a = node("urn:dmml:edge:a");
+        let edge_b = node("urn:dmml:edge:b");
+        let x = node("urn:dmml:node:x");
+
+        graph
+            .commit(
+                "test",
+                Delta::new()
+                    .assert(edge_a.clone(), vocab::locked(), crate::graph::lit_bool(true))
+                    .assert(edge_b.clone(), vocab::locked(), crate::graph::lit_bool(false))
+                    .assert(x.clone(), vocab::wear(), crate::graph::lit_float(1.5)),
+            )
+            .expect("fixture delta is always valid");
+
+        let requirements = vec![
+            Requirement::EdgeLockedIs { edge: edge_a.clone(), value: true }, // holds
+            Requirement::PlayerInRoom { room: room.clone() },                // holds
+            Requirement::AttrAtLeast { node: x.clone(), attr: wear(), min: 1.0 }, // holds
+            Requirement::EdgeLockedIs { edge: edge_b.clone(), value: true }, // does NOT hold (edge_b is false)
+        ];
+
+        let m = EffectMachine::new(
+            node("urn:dmml:machine:four"),
+            Effect::SetEdgeLocked { edge: edge_a.clone(), value: false },
+            requirements.clone(),
+        );
+        let out = resolve_effects(&graph, &room, &[m]);
+        assert!(
+            !out.fired_machines.contains(&node("urn:dmml:machine:four")),
+            "the 4th requirement (edge_b locked=true) does not hold, so the whole chain must reject"
+        );
+
+        // Flip the 4th requirement to what the graph actually says, and
+        // wrong-room the PlayerInRoom one (2nd position) instead --
+        // proves rejection isn't hardcoded to "the last position", it's
+        // wherever in the chain the unmet link actually is.
+        let mut requirements_wrong_middle = requirements.clone();
+        requirements_wrong_middle[3] = Requirement::EdgeLockedIs { edge: edge_b.clone(), value: false };
+        requirements_wrong_middle[1] = Requirement::PlayerInRoom { room: other_room };
+        let m2 = EffectMachine::new(
+            node("urn:dmml:machine:four"),
+            Effect::SetEdgeLocked { edge: edge_a.clone(), value: false },
+            requirements_wrong_middle,
+        );
+        let out2 = resolve_effects(&graph, &room, &[m2]);
+        assert!(
+            !out2.fired_machines.contains(&node("urn:dmml:machine:four")),
+            "a mismatch at the 2nd position (not the last) must still reject the whole chain"
+        );
+
+        // Now all four genuinely hold.
+        let mut requirements_all_hold = requirements;
+        requirements_all_hold[3] = Requirement::EdgeLockedIs { edge: edge_b.clone(), value: false };
+        let m3 = EffectMachine::new(
+            node("urn:dmml:machine:four"),
+            Effect::SetEdgeLocked { edge: edge_a, value: false },
+            requirements_all_hold,
+        );
+        let out3 = resolve_effects(&graph, &room, &[m3]);
+        assert!(
+            out3.fired_machines.contains(&node("urn:dmml:machine:four")),
+            "all four requirements genuinely hold, across all four kinds and positions -- must fire"
         );
     }
 

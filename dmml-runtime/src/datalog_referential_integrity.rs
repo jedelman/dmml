@@ -29,36 +29,12 @@
 //! close that gap -- a minimal, crate-visible accessor, not a spike-side
 //! guess.
 
-use std::collections::HashMap;
-
 use crepe::crepe;
 use oxigraph::model::{NamedNode, NamedOrBlankNode, Term};
 
+use crate::datalog_support::SymbolTable;
 use crate::graph::{Commit, ConsumeRef, FactRef, WorldGraph};
 use crate::vocab;
-
-// ---------------------------------------------------------------------------
-// Symbol table (same pattern as datalog_guard.rs): crepe facts need Copy
-// fields, so IRI strings and CID strings are interned as u32 symbols.
-// ---------------------------------------------------------------------------
-
-#[derive(Default)]
-struct SymbolTable {
-    by_str: HashMap<String, u32>,
-    by_sym: Vec<String>,
-}
-
-impl SymbolTable {
-    fn intern(&mut self, s: &str) -> u32 {
-        if let Some(&sym) = self.by_str.get(s) {
-            return sym;
-        }
-        let sym = self.by_sym.len() as u32;
-        self.by_str.insert(s.to_string(), sym);
-        self.by_sym.push(s.to_string());
-        sym
-    }
-}
 
 /// The comparison key for a Fact-ref's `object` string against a quad's
 /// actual object term -- per `SPEC.md`'s "durable node identity"
