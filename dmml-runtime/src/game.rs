@@ -2,13 +2,14 @@ use oxigraph::model::{NamedNode, Quad, Term};
 
 use crate::command::{parse, HELP_TEXT};
 use crate::commune;
+use crate::datalog_guard;
 use crate::demiurge;
 use crate::direction::Direction;
 use crate::graph::{
     as_bool, as_float, as_int, as_node, as_string, lit_bool, lit_float, lit_int, lit_str, Commit,
     Delta, WorldGraph,
 };
-use crate::machine::{self, Effect, Requirement};
+use crate::machine::{self, Effect};
 use crate::render;
 use crate::vocab;
 
@@ -842,23 +843,14 @@ impl Game {
     /// not two.
     fn verbs_available_on(&self, item: &NamedNode, room: &NamedNode) -> Vec<String> {
         let mut verbs = std::collections::BTreeSet::new();
+        let ready = datalog_guard::machines_ready(&self.graph, room);
         for m in self
             .graph
             .objects(item, &vocab::equips())
             .into_iter()
             .filter_map(as_node)
         {
-            let requirements: Vec<Requirement> = self
-                .graph
-                .objects(&m, &vocab::has_requirement())
-                .into_iter()
-                .filter_map(as_node)
-                .filter_map(|r| machine::read_requirement(&self.graph, &r))
-                .collect();
-            if !requirements
-                .iter()
-                .all(|r| machine::requirement_met(&self.graph, r, room))
-            {
+            if !ready.contains(&m) {
                 continue;
             }
             for t in self.graph.objects(&m, &vocab::trigger()) {
@@ -1332,17 +1324,17 @@ impl Game {
 
         let mut messages = Vec::new();
         for m in machines {
-            let requirements: Vec<Requirement> = self
-                .graph
-                .objects(&m, &vocab::has_requirement())
-                .into_iter()
-                .filter_map(as_node)
-                .filter_map(|r| machine::read_requirement(&self.graph, &r))
-                .collect();
-            if !requirements
-                .iter()
-                .all(|r| machine::requirement_met(&self.graph, r, &room))
-            {
+            // Recomputed fresh on every iteration, not hoisted above the
+            // loop: an earlier machine in this same `verb` firing (e.g. a
+            // drift machine incrementing wear) can satisfy a later
+            // machine's threshold requirement (e.g. the unlock machine)
+            // within the same player turn -- `game.rs`'s pre-Datalog
+            // version got this "for free" by calling `requirement_met`
+            // fresh per machine per iteration; hoisting this call would
+            // silently reintroduce a one-turn lag (confirmed by a real
+            // test failure when tried: `locked_exit_requires_accumulated_
+            // wear_and_resolves_within_one_turn`).
+            if !datalog_guard::machines_ready(&self.graph, &room).contains(&m) {
                 continue;
             }
             let Some(effect_node) = self

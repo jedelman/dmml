@@ -6,10 +6,15 @@
 //! Scope, stated honestly: this covers requirement evaluation only, not
 //! `apply_commit`'s referential-integrity checks (those are genuinely
 //! oxigraph pattern queries, not admissibility logic, and don't map onto
-//! Datalog any better than they already work). Not wired into `game.rs`'s
-//! live dispatch yet -- `machines_ready` below is validated for equivalence
-//! against the existing hand-rolled `requirement_met` in this module's own
-//! test, and that has to hold before any real cutover is worth doing.
+//! Datalog any better than they already work). Wired into `game.rs`'s
+//! live dispatch (`verbs_available_on`, `fire_object_verb`) as of the
+//! cutover that added the `Equipped` input/`agrees_...` and
+//! `a_requirement_free_machine_is_always_ready` tests below --
+//! `machines_ready` is validated for equivalence against the existing
+//! hand-rolled `requirement_met` there, including the requirement-free
+//! case real content (`demiurge.rs`'s frontier generator) actually
+//! relies on, which an earlier version of this module got wrong (see
+//! `Equipped`'s own doc comment in the `crepe!` block below).
 //!
 //! crepe requires every fact field to implement `Copy` (its own docs: "if
 //! fields do not implement Copy, consider passing references instead") --
@@ -85,14 +90,26 @@ crepe! {
     @input
     struct AttrValue(u32, u32, i64); // (node, attr, current value_fp)
 
-    // A machine node, derived just so `AllRequirementsMet` can range over
-    // every machine that has at least one requirement -- a
-    // requirement-free machine is out of scope for this check (matches
-    // `requirement_met`'s own contract: it's never called with an empty
-    // slice by `.all()`'s real call sites without an equipped machine to
-    // begin with).
+    // Every node ever seen as the object of an `equips` edge, regardless
+    // of whether it has any requirements -- real content builds
+    // requirement-free machines on purpose (`demiurge.rs`'s frontier
+    // generator: `build_action_machine(..., &[], ...)`, meant to fire
+    // unconditionally whenever its trigger matches), and `.all()` over an
+    // empty requirement slice is vacuously true in the hand-rolled
+    // version this replaces. Without this input, such a machine would
+    // never get a `HasRequirement` fact and so could never reach
+    // `Machine`/`AllRequirementsMet` at all -- silently and wrongly
+    // excluding every unconditional machine in the game.
+    @input
+    struct Equipped(u32);
+
+    // A machine node, derived from either source: has a requirement, or
+    // is equipped anywhere (covers the requirement-free case above).
+    // Two rules for the same head is ordinary Datalog disjunction, not a
+    // conflict.
     struct Machine(u32);
     Machine(m) <- HasRequirement(m, _);
+    Machine(m) <- Equipped(m);
 
     @output
     struct RequirementMet(u32);
@@ -120,6 +137,17 @@ pub fn machines_ready(graph: &WorldGraph, player_room: &NamedNode) -> HashSet<Na
     let mut sym = SymbolTable::default();
     let mut runtime = Crepe::new();
     runtime.extend([PlayerRoom(sym.intern(player_room))]);
+
+    // Every equipped node, requirement-free or not -- see `Equipped`'s
+    // own doc comment in the `crepe!` block above for why this can't be
+    // skipped. Same traversal `verbs_available_on`/`fire_object_verb`
+    // already do per-owner via `graph.objects(owner, &vocab::equips())`,
+    // just across every owner in the graph at once.
+    for (_owner, machine_term) in graph.all_with_predicate(&vocab::equips()) {
+        if let oxigraph::model::Term::NamedNode(m) = machine_term {
+            runtime.extend([Equipped(sym.intern(&m))]);
+        }
+    }
 
     let mut seen_edges: HashSet<u32> = HashSet::new();
     let mut seen_attrs: HashSet<(u32, u32)> = HashSet::new();
@@ -283,5 +311,45 @@ mod tests {
                 "Datalog and hand-rolled requirement_met disagree for a machine"
             );
         }
+    }
+
+    /// A requirement-free machine (`&[]`, the exact shape
+    /// `demiurge.rs`'s frontier generator uses) must always be ready --
+    /// `.all()` over an empty slice is vacuously true in the hand-rolled
+    /// path, and `Equipped` (see its own doc comment above) exists
+    /// specifically so the Datalog path agrees. Real regression: an
+    /// earlier version of this module had no `Equipped` input, so a
+    /// requirement-free machine never got a `HasRequirement` fact and
+    /// could never reach `Machine`/`AllRequirementsMet` at all --
+    /// unconditional machines would have silently stopped firing the
+    /// moment `game.rs` switched to this module.
+    #[test]
+    fn a_requirement_free_machine_is_always_ready() {
+        let mut graph = WorldGraph::new();
+        crate::demiurge::bootstrap(&mut graph);
+        let room = graph.fresh("room/");
+        let owner = graph.fresh("owner/");
+        graph
+            .commit(
+                "test",
+                Delta::new().assert(owner.clone(), vocab::rdf_type(), vocab::class_item()),
+            )
+            .expect("owner-typing delta is always valid");
+
+        let (machine_unconditional, d) = build_action_machine(
+            &mut graph,
+            &owner,
+            "generate",
+            &[],
+            &Effect::GenerateFrontier { domain: "test".to_string() },
+        );
+        graph.commit("test", d).expect("machine delta is always valid");
+
+        let ready = machines_ready(&graph, &room);
+        assert!(
+            ready.contains(&machine_unconditional),
+            "a requirement-free machine must always be ready, same as \
+             `.all()` over an empty requirement slice being vacuously true"
+        );
     }
 }
