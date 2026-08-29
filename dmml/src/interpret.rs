@@ -246,31 +246,18 @@ pub fn ancestors_of(commits: &[IdentifiedCommit], at_cid: &str) -> Vec<Identifie
 /// this function only walks the links it's given; a commit written
 /// without a `respondsTo` chain back to `root_cid` is correctly
 /// excluded, not an error in this function.
+///
+/// Datalog-backed as of the cutover that added `crate::
+/// datalog_reachability` -- a real transitive-closure fixpoint (crepe)
+/// replaced the hand-rolled "fixed-point iteration... simpler than a
+/// proper graph walk" this doc comment used to describe here, proven
+/// equivalent by that module's own tests (including a cycle-inside-the-
+/// reachable-set case this function had never actually had a test for).
+/// Kept as a stable, named function since it's part of this crate's
+/// public API even though nothing in this repo currently calls it
+/// outside its own module doc references.
 pub fn reachable_from(commits: &[IdentifiedCommit], root_cid: &str) -> Vec<IdentifiedCommit> {
-    let mut included_cids: std::collections::HashSet<&str> = std::collections::HashSet::new();
-    included_cids.insert(root_cid);
-
-    // Fixed-point iteration: a commit whose `respondsTo.cid` is already
-    // included gets included too, repeated until nothing new is added.
-    // Simpler than a proper graph walk and correct for the same reason
-    // `engine::dag::topo_sort`'s own doc comment gives for its approach
-    // being adequate here -- these chains are small, not a performance-
-    // sensitive path.
-    loop {
-        let before = included_cids.len();
-        for c in commits {
-            if let Some(parent) = &c.commit.responds_to {
-                if included_cids.contains(parent.cid.as_str()) {
-                    included_cids.insert(c.cid.as_str());
-                }
-            }
-        }
-        if included_cids.len() == before {
-            break;
-        }
-    }
-
-    commits.iter().filter(|c| included_cids.contains(c.cid.as_str())).cloned().collect()
+    crate::datalog_reachability::reachable_from(commits, root_cid)
 }
 
 /// Applies one `ConsumeRef` against the running fold state, per
