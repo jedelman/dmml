@@ -85,6 +85,21 @@ struct StoredCommit {
     commit: Commit,
 }
 
+/// One entry from `commits_since`: a `StoredCommit` plus its position in
+/// the server's append order, so a caller can track "everything up to
+/// and including index N" as its own cursor without needing to compare
+/// CIDs or timestamps -- the log's own append order is already a total
+/// order, this just exposes it. Public (unlike `StoredCommit`, which
+/// stays server-internal) since this is the one query meant for a
+/// caller to poll on a timer, not a one-shot lookup.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct JetstreamEntry {
+    pub index: usize,
+    pub cid: String,
+    pub author: SocketIdentity,
+    pub commit: Commit,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 enum Request {
     Append {
@@ -95,6 +110,14 @@ enum Request {
         cid: String,
     },
     AllCommits,
+    /// Everything appended at or after `after_index` (0-based, inclusive)
+    /// -- the poll-since-cursor shape a timer-driven caller actually
+    /// wants: "what happened since my last tick," not "give me
+    /// everything and let me diff it myself." Pass 0 for a full
+    /// backfill from the start of the log.
+    CommitsSince {
+        after_index: usize,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -102,6 +125,7 @@ enum Response {
     Appended { cid: String },
     Commit(Option<StoredCommit>),
     AllCommits(Vec<StoredCommit>),
+    CommitsSince(Vec<JetstreamEntry>),
     Error(String),
 }
 
@@ -143,6 +167,21 @@ impl ServerState {
             Request::AllCommits => {
                 let log = self.log.read().expect("server lock poisoned");
                 Response::AllCommits(log.clone())
+            }
+            Request::CommitsSince { after_index } => {
+                let log = self.log.read().expect("server lock poisoned");
+                let entries = log
+                    .iter()
+                    .enumerate()
+                    .skip(after_index)
+                    .map(|(index, c)| JetstreamEntry {
+                        index,
+                        cid: c.cid.clone(),
+                        author: c.author.clone(),
+                        commit: c.commit.clone(),
+                    })
+                    .collect();
+                Response::CommitsSince(entries)
             }
         }
     }
@@ -247,6 +286,25 @@ impl SocketAppendSubstrate {
             Response::Error(e) => Err(SocketSubstrateError(e)),
             other => Err(SocketSubstrateError(format!(
                 "unexpected reply to AllCommits: {other:?}"
+            ))),
+        }
+    }
+
+    /// The backplane a timer-driven caller polls: every commit appended
+    /// at or after `after_index`, in append order, including who
+    /// appended it -- pass `0` for a full backfill, or the index just
+    /// past the last entry you already saw to pick up only what's new.
+    /// This is genuinely different from `assertions`/`resolve_fact`
+    /// (which answer "what does the world currently say"): this answers
+    /// "what happened, and who did it," the shape an agent needs to
+    /// digest and possibly react to someone else's commit rather than
+    /// only ever reading the world's current resolved state.
+    pub async fn commits_since(&self, after_index: usize) -> Result<Vec<JetstreamEntry>, SocketSubstrateError> {
+        match self.call(&Request::CommitsSince { after_index }).await? {
+            Response::CommitsSince(entries) => Ok(entries),
+            Response::Error(e) => Err(SocketSubstrateError(e)),
+            other => Err(SocketSubstrateError(format!(
+                "unexpected reply to CommitsSince: {other:?}"
             ))),
         }
     }
@@ -550,5 +608,113 @@ mod tests {
         let predicate = NamedNode::new("x:origin").unwrap();
         let found = sub.assertions(&subject, &predicate).await.unwrap();
         assert_eq!(found.len(), 2, "both independent assertions must coexist: {found:?}");
+    }
+
+    #[tokio::test]
+    async fn commits_since_zero_backfills_the_whole_log_in_append_order() {
+        let srv = server().await;
+        let sub = SocketAppendSubstrate::new(
+            SocketIdentity("did:example:alice".into()),
+            "world/1",
+            srv.local_addr,
+        );
+        let a = SocketIdentity("author:helios".into());
+
+        sub.append_commit(&a, &commit(vec![], "<x:sky/1> <x:origin> \"sunfire\" ."))
+            .await
+            .unwrap();
+        sub.append_commit(&a, &commit(vec![], "<x:sky/2> <x:origin> \"duskweave\" ."))
+            .await
+            .unwrap();
+
+        let entries = sub.commits_since(0).await.unwrap();
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[0].index, 0);
+        assert_eq!(entries[1].index, 1);
+        assert!(entries[0].commit.produces.contains("sunfire"));
+        assert!(entries[1].commit.produces.contains("duskweave"));
+    }
+
+    #[tokio::test]
+    async fn commits_since_only_returns_what_landed_after_the_given_index() {
+        let srv = server().await;
+        let sub = SocketAppendSubstrate::new(
+            SocketIdentity("did:example:alice".into()),
+            "world/1",
+            srv.local_addr,
+        );
+        let a = SocketIdentity("author:helios".into());
+
+        sub.append_commit(&a, &commit(vec![], "<x:sky/1> <x:origin> \"sunfire\" ."))
+            .await
+            .unwrap();
+        sub.append_commit(&a, &commit(vec![], "<x:sky/2> <x:origin> \"duskweave\" ."))
+            .await
+            .unwrap();
+        sub.append_commit(&a, &commit(vec![], "<x:sky/3> <x:origin> \"moonwoven\" ."))
+            .await
+            .unwrap();
+
+        // A caller that already saw index 0 (the first commit) polls
+        // from index 1 onward -- exactly the "what's new since my last
+        // tick" shape a timer-driven agent needs.
+        let entries = sub.commits_since(1).await.unwrap();
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[0].index, 1);
+        assert!(entries[0].commit.produces.contains("duskweave"));
+        assert_eq!(entries[1].index, 2);
+        assert!(entries[1].commit.produces.contains("moonwoven"));
+    }
+
+    #[tokio::test]
+    async fn commits_since_reports_every_authors_writes_including_concurrent_ones() {
+        let srv = server().await;
+        let device_a = SocketAppendSubstrate::new(
+            SocketIdentity("did:example:alice".into()),
+            "world/1",
+            srv.local_addr,
+        );
+        let device_b = SocketAppendSubstrate::new(
+            SocketIdentity("did:example:bob".into()),
+            "world/1",
+            srv.local_addr,
+        );
+        let author_a = SocketIdentity("author:device-a".into());
+        let author_b = SocketIdentity("author:device-b".into());
+
+        device_a
+            .append_commit(&author_a, &commit(vec![], "<x:sky/1> <x:origin> \"sunfire\" ."))
+            .await
+            .unwrap();
+        device_b
+            .append_commit(&author_b, &commit(vec![], "<x:sky/2> <x:origin> \"moonwoven\" ."))
+            .await
+            .unwrap();
+
+        // Either device's own substrate handle can poll the SAME shared
+        // backplane and see the OTHER device's write -- this is the
+        // whole point: a real cross-connection, cross-author feed, not
+        // just each writer seeing its own history.
+        let entries = device_a.commits_since(0).await.unwrap();
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[0].author, author_a);
+        assert_eq!(entries[1].author, author_b);
+    }
+
+    #[tokio::test]
+    async fn commits_since_past_the_end_of_the_log_is_empty_not_an_error() {
+        let srv = server().await;
+        let sub = SocketAppendSubstrate::new(
+            SocketIdentity("did:example:alice".into()),
+            "world/1",
+            srv.local_addr,
+        );
+        let a = SocketIdentity("author:helios".into());
+        sub.append_commit(&a, &commit(vec![], "<x:sky/1> <x:origin> \"sunfire\" ."))
+            .await
+            .unwrap();
+
+        let entries = sub.commits_since(50).await.unwrap();
+        assert!(entries.is_empty());
     }
 }
