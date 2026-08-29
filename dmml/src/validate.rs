@@ -44,61 +44,14 @@ pub struct UndeclaredPredicate {
 /// checked here -- a consume references an already-established fact from
 /// prior history, not a new assertion, so it isn't subject to this
 /// commit's own self-declaration requirement.
+/// Datalog-backed as of the cutover that added `crate::datalog_validate`
+/// -- a real fixpoint (`Undeclared(idx) <- UsedAt(idx, pred),
+/// !Declared(pred)`) replaced the hand-rolled two-pass check that used
+/// to live here, proven equivalent by that module's own tests
+/// (including the document-order requirement `validate_spec_examples.
+/// rs`'s `example_5_multiple_undeclared_reported_in_order` depends on).
 pub fn validate_declarations(commit: &ast::CommitStmt) -> Result<(), Vec<UndeclaredPredicate>> {
-    // First pass: collect all declared identifiers from anywhere in commit.items
-    let mut declared: std::collections::HashSet<&str> = std::collections::HashSet::new();
-
-    for item in &commit.items {
-        if let ast::CommitItem::Declare(declare_stmt) = item {
-            declared.insert(&declare_stmt.ident);
-        }
-    }
-
-    // Second pass: check every fact use against the collected declarations
-    let mut errors: Vec<UndeclaredPredicate> = Vec::new();
-
-    for item in &commit.items {
-        match item {
-            ast::CommitItem::Fact(fact_stmt) => {
-                check_fact(fact_stmt, &declared, &mut errors);
-            }
-            ast::CommitItem::Produces(produces_block) => {
-                for fact_stmt in &produces_block.facts {
-                    check_fact(fact_stmt, &declared, &mut errors);
-                }
-            }
-            ast::CommitItem::Consumes(_) => {
-                // Skip consumes entirely (rule 5)
-            }
-            _ => {}
-        }
-    }
-
-    if errors.is_empty() {
-        Ok(())
-    } else {
-        Err(errors)
-    }
-}
-
-fn check_fact(
-    fact_stmt: &ast::FactStmt,
-    declared: &std::collections::HashSet<&str>,
-    errors: &mut Vec<UndeclaredPredicate>,
-) {
-    match &fact_stmt.predicate {
-        ast::PredicateRef::RdfType => {
-            // Always valid, never checked (rule 1)
-        }
-        ast::PredicateRef::Ident(s) => {
-            if !declared.contains(s.as_str()) {
-                errors.push(UndeclaredPredicate {
-                    predicate: s.clone(),
-                    span: fact_stmt.span,
-                });
-            }
-        }
-    }
+    crate::datalog_validate::validate_declarations_with_spans(commit)
 }
 
 /// See `VALIDATION_SPEC.md`'s "Same-repo `consumes` structural

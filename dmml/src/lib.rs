@@ -12,6 +12,7 @@
 pub mod ast;
 pub mod datalog_guard;
 pub mod datalog_reachability;
+pub mod datalog_validate;
 pub mod error;
 pub mod from_json;
 pub mod genesis;
