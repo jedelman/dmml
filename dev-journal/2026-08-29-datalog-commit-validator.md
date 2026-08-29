@@ -82,3 +82,16 @@ worldbuilding corpus. Worth deciding whether that's a swarm-instruction gap
 honest feature of how this swarm builds -- proliferation without
 resolution, which is exactly the "post-dialectics" instinct from earlier
 tonight, just now visible as a hard structural number instead of a vibe.
+
+## Resolved (Jason, same session): it's an instruction gap, and that's fine
+
+It's a gap -- no persona has ever been told a raises/critiques chain can or
+should close via `accepts` -- but not a bug worth fixing. Explicit call:
+**for this worldbuilding swarm, expressivity is the goal, not closure.**
+Zero `accepts` isn't the corpus failing to converge; it's the corpus doing
+exactly what it was actually asked to do (proliferate, leave gaps, never
+resolve). Don't add `accepts`-seeking instructions to any persona on the
+strength of this finding alone -- if a real reason to want closed petitions
+shows up later (e.g. an actual player-facing petition flow, not
+worldbuilding), revisit then, as a deliberate choice, not a reflexive fix
+for a number that looked like an error but wasn't one.
