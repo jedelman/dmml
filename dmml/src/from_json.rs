@@ -616,12 +616,47 @@ pub fn reference_from_json(json: &str) -> Result<ast::ReferenceStmt, FromJsonErr
 /// case; a workflow that genuinely needs commit N to consume commit N-1
 /// within one authoring burst still submits them as separate calls, in
 /// order, same as today.
+///
+/// `parallel` names the one real fork in how a batch's commits relate to
+/// each other, and is checked accordingly -- not just documentation, an
+/// actual difference in what gets validated:
+///
+/// - `false` (default): the commits are real sequential history, same as
+///   submitting them one at a time -- a later commit legitimately
+///   overwriting an earlier commit's `(subject, predicate)` is correct
+///   append-only-log behavior (`later_commit_overwrites_earlier_for_
+///   same_subject_predicate` in `interpret_examples.rs` is exactly this
+///   case), so only a same-commit self-collision is checked (unconditionally,
+///   regardless of `parallel`, in `commit_stmt_from_input` -- there is
+///   never a legitimate reason for one commit to assert the same
+///   `(subject, predicate)` pair against itself).
+/// - `true`: the commits together describe ONE simultaneous snapshot --
+///   typically a genesis/world-building batch that was only split across
+///   several `CommitInput`s for authoring convenience, not because they
+///   represent distinct moments in time. There is no legitimate
+///   "later corrects earlier" case here, so the duplicate-fact check
+///   extends across every commit in the batch: two different commits
+///   asserting the same `(subject, predicate)` is exactly the bug a
+///   same-commit-only check would silently miss (confirmed against a
+///   real model's output during this feature's own design: splitting
+///   `player/1 holds key/1` into one commit and `player/1 holds key/2`
+///   into another passed the same-commit check, then silently dropped
+///   `key/1` at materialization -- the accident `parallel: true` exists
+///   to catch).
+///
+/// This governs validation only. Application is unaffected either way:
+/// `WorldGraph::apply_commit` still takes one commit at a time, in the
+/// order the caller supplies them -- `parallel` does not yet change how
+/// (or whether concurrently) `dmml-runtime` applies a batch's commits;
+/// that's real, separate follow-up work in that crate, not done here.
 #[derive(Debug, Clone, Deserialize)]
 pub struct WorldInput {
     #[serde(default)]
     pub commits: Vec<CommitInput>,
     #[serde(default)]
     pub machines: Vec<MachineInput>,
+    #[serde(default)]
+    pub parallel: bool,
 }
 
 /// Unlike every single-item `*_from_json` function, this never fails
@@ -698,6 +733,37 @@ pub fn world_from_json(json: &str) -> Result<World, WorldFromJsonError> {
                 message: e.message,
             }),
             Err(FromJsonError::Json(_)) => unreachable!("machine_stmt_from_input never returns Json"),
+        }
+    }
+
+    // `parallel: true` means these commits describe one simultaneous
+    // snapshot, not real sequential history -- see WorldInput's own doc
+    // comment for why that means extending the duplicate-fact check
+    // across commit boundaries, not just within each one. Checked on the
+    // raw JSON strings, same as the within-commit check, so it still
+    // fires even when a commit also has its own unrelated shape errors.
+    if input.parallel {
+        let mut seen: std::collections::HashMap<(&str, &str), (usize, usize)> = std::collections::HashMap::new();
+        for (ci, commit) in input.commits.iter().enumerate() {
+            for (fi, fact) in commit.facts.iter().enumerate() {
+                let key = (fact.subject.as_str(), fact.predicate.as_str());
+                match seen.get(&key) {
+                    Some(&(first_ci, first_fi)) => {
+                        errors.push(JsonError {
+                            pointer: format!("/commits/{ci}/facts/{fi}"),
+                            message: format!(
+                                "duplicate ({}, {}) across parallel commits -- already asserted at \
+                                 /commits/{first_ci}/facts/{first_fi}; parallel commits describe one \
+                                 simultaneous snapshot, so there is no legitimate later-wins here",
+                                fact.subject, fact.predicate
+                            ),
+                        });
+                    }
+                    None => {
+                        seen.insert(key, (ci, fi));
+                    }
+                }
+            }
         }
     }
 
@@ -940,6 +1006,50 @@ mod tests {
                 assert_eq!(errs[0].pointer, "/commits/0/facts/0/subject");
                 assert_eq!(errs[1].pointer, "/commits/1/facts/0/predicate");
                 assert_eq!(errs[2].pointer, "/machines/0/transitions/0");
+            }
+            other => panic!("expected Invalid, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn sequential_batch_allows_a_later_commit_to_overwrite_an_earlier_one() {
+        // parallel defaults to false: this is exactly real append-only
+        // history (a later commit legitimately overwriting an earlier
+        // commit's fact), submitted as a batch purely to save round
+        // trips -- must NOT be treated as a mistake.
+        let json = r#"{
+            "commits": [
+                {"verb": "mints", "declares": [{"kind": "attribute", "name": "locked"}],
+                 "facts": [{"subject": "door/1", "predicate": "locked", "object": {"kind": "boolean", "value": true}}]},
+                {"verb": "unlocks", "declares": [{"kind": "attribute", "name": "locked"}],
+                 "facts": [{"subject": "door/1", "predicate": "locked", "object": {"kind": "boolean", "value": false}}]}
+            ]
+        }"#;
+        let world = world_from_json(json).expect("sequential batch should build");
+        assert_eq!(world.commits.len(), 2);
+    }
+
+    #[test]
+    fn parallel_batch_rejects_the_same_cross_commit_collision() {
+        // The exact accident a real model's output hit while designing
+        // this feature: the same (subject, predicate) split across two
+        // sibling commits in one batch, meant to both hold simultaneously
+        // -- a same-commit-only check would silently miss this.
+        let json = r#"{
+            "parallel": true,
+            "commits": [
+                {"verb": "mints", "declares": [{"kind": "relation", "name": "holds"}],
+                 "facts": [{"subject": "player/1", "predicate": "holds", "object": {"kind": "node", "value": "key/1"}}]},
+                {"verb": "mints", "declares": [{"kind": "relation", "name": "holds"}],
+                 "facts": [{"subject": "player/1", "predicate": "holds", "object": {"kind": "node", "value": "key/2"}}]}
+            ]
+        }"#;
+        let err = world_from_json(json).expect_err("parallel batch should reject the cross-commit collision");
+        match err {
+            WorldFromJsonError::Invalid(errs) => {
+                assert_eq!(errs.len(), 1);
+                assert_eq!(errs[0].pointer, "/commits/1/facts/0");
+                assert!(errs[0].message.contains("parallel"));
             }
             other => panic!("expected Invalid, got {other:?}"),
         }
