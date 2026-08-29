@@ -13,7 +13,16 @@
 //! iroh-substrate.md`) and an in-memory mock `Substrate` implementation
 //! for testing `dmml-runtime` are both real, named next steps -- not yet
 //! built here.
+//!
+//! `iroh_substrate` is gated behind the `iroh` feature (on by default)
+//! since its dependency graph is the heaviest thing in this crate.
+//! `socket_substrate` is a build-weight-only stand-in for it -- same
+//! author-partitioned `AppendSubstrate` shape, plain TCP instead of
+//! iroh-docs/iroh-gossip -- for a local sanity build that can't afford
+//! (disk, link time) the real one; see its own doc comment for why.
 
 pub mod atproto_cid;
+#[cfg(feature = "iroh")]
 pub mod iroh_substrate;
 pub mod mock;
+pub mod socket_substrate;
