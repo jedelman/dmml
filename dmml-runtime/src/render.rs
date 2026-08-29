@@ -625,35 +625,76 @@ pub fn render_assemblage(graph: &WorldGraph, node: &NamedNode) -> String {
     lines.join("\n")
 }
 
+/// Whether a self-declared predicate is a relation (object is a node) or
+/// an attribute (object is a literal) -- mirrors `dmml::ast::DeclKind`,
+/// kept as its own type here since `dmml-runtime` doesn't depend on
+/// `dmml`'s AST at this layer (this reads the *materialized* world, not
+/// authoring input).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PredicateKind {
+    Relation,
+    Attribute,
+}
+
+/// One self-declared predicate as it currently stands in the world:
+/// its short (un-namespaced) name, which kind it was declared as, and
+/// how many triples currently use it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeclaredPredicate {
+    pub name: String,
+    pub kind: PredicateKind,
+    pub use_count: usize,
+}
+
+/// The world's complete self-declared vocabulary right now -- every
+/// predicate ever asserted `<p> rdf:type ww:Relation|ww:Attribute`, each
+/// with its current use count. This is the structured form of what
+/// `render_relations` renders as prose: meant for a caller that needs to
+/// hand an authoring agent "here is what already exists, reuse it rather
+/// than inventing a synonym" as data it can put in a prompt or a tool
+/// result, not text meant for a player to read. Real gap this closes:
+/// nothing upstream of a commit landing has ever had a way to ask "what
+/// vocabulary already exists" before authoring more of it -- an agent
+/// dispatched without this answer has no way to know `state`/`opensTo`
+/// already cover what it's about to reinvent under a different name.
+pub fn declared_vocabulary(graph: &WorldGraph) -> Vec<DeclaredPredicate> {
+    let relations = graph.subjects(&vocab::rdf_type(), &Term::NamedNode(vocab::class_relation()));
+    let attributes = graph.subjects(&vocab::rdf_type(), &Term::NamedNode(vocab::class_attribute()));
+
+    let mut out: Vec<DeclaredPredicate> = relations
+        .into_iter()
+        .map(|p| DeclaredPredicate {
+            use_count: graph.all_with_predicate(&p).len(),
+            name: short(&p),
+            kind: PredicateKind::Relation,
+        })
+        .collect();
+    out.extend(attributes.into_iter().map(|p| DeclaredPredicate {
+        use_count: graph.all_with_predicate(&p).len(),
+        name: short(&p),
+        kind: PredicateKind::Attribute,
+    }));
+    out
+}
+
 /// Every predicate the world has self-declared via `<p> rdf:type
 /// ww:Relation|ww:Attribute` so far, with how many triples actually use it
 /// -- the introspection view for genuinely new relation types, the same
 /// "watch it operating from inside the game" ethos `render_kinds` already
 /// gives crystallization.
 pub fn render_relations(graph: &WorldGraph) -> String {
-    let relations = graph.subjects(
-        &vocab::rdf_type(),
-        &Term::NamedNode(vocab::class_relation()),
-    );
-    let attributes = graph.subjects(
-        &vocab::rdf_type(),
-        &Term::NamedNode(vocab::class_attribute()),
-    );
-    if relations.is_empty() && attributes.is_empty() {
+    let declared = declared_vocabulary(graph);
+    if declared.is_empty() {
         return "No new relations have been declared -- everything so far uses the fixed vocabulary."
             .to_string();
     }
     let mut lines = vec!["Declared relation vocabulary:".to_string()];
-    for p in relations {
-        let uses = graph.all_with_predicate(&p).len();
-        lines.push(format!("  {} (relation) -- used {uses} time(s)", short(&p)));
-    }
-    for p in attributes {
-        let uses = graph.all_with_predicate(&p).len();
-        lines.push(format!(
-            "  {} (attribute) -- used {uses} time(s)",
-            short(&p)
-        ));
+    for p in declared {
+        let kind = match p.kind {
+            PredicateKind::Relation => "relation",
+            PredicateKind::Attribute => "attribute",
+        };
+        lines.push(format!("  {} ({kind}) -- used {} time(s)", p.name, p.use_count));
     }
     lines.join("\n")
 }

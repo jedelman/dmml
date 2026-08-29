@@ -1416,6 +1416,54 @@ fn relations_command_lists_self_declared_predicates_and_use_counts() {
 }
 
 #[test]
+fn declared_vocabulary_returns_structured_data_for_the_same_world_render_relations_describes() {
+    use dmml_runtime::render::{declared_vocabulary, PredicateKind};
+
+    let mut graph = WorldGraph::new();
+    let room_a = graph.fresh("room/");
+    let room_b = graph.fresh("room/");
+    let echoes_from = graph.fresh("relation/");
+    let dampness = graph.fresh("attribute/");
+    graph
+        .commit(
+            "test",
+            Delta::new()
+                .assert(room_a.clone(), vocab::rdf_type(), vocab::class_room())
+                .assert(room_b.clone(), vocab::rdf_type(), vocab::class_room())
+                .assert(echoes_from.clone(), vocab::rdf_type(), vocab::class_relation())
+                .assert(dampness.clone(), vocab::rdf_type(), vocab::class_attribute())
+                .assert(room_a.clone(), echoes_from, room_b)
+                .assert(room_a, dampness, oxigraph::model::Literal::from("0.4")),
+        )
+        .expect("declare-and-use in one delta is valid");
+
+    let declared = declared_vocabulary(&graph);
+    assert_eq!(declared.len(), 2, "both the relation and the attribute should be listed");
+
+    let relation = declared
+        .iter()
+        .find(|p| p.kind == PredicateKind::Relation)
+        .expect("the declared relation should be present");
+    assert!(relation.name.starts_with("relation/"), "got {}", relation.name);
+    assert_eq!(relation.use_count, 1);
+
+    let attribute = declared
+        .iter()
+        .find(|p| p.kind == PredicateKind::Attribute)
+        .expect("the declared attribute should be present");
+    assert!(attribute.name.starts_with("attribute/"), "got {}", attribute.name);
+    assert_eq!(attribute.use_count, 1);
+}
+
+#[test]
+fn declared_vocabulary_is_empty_for_a_world_with_no_self_declared_predicates() {
+    use dmml_runtime::render::declared_vocabulary;
+
+    let graph = WorldGraph::new();
+    assert!(declared_vocabulary(&graph).is_empty());
+}
+
+#[test]
 fn declaring_and_using_a_new_relation_in_the_same_delta_commits() {
     let mut graph = WorldGraph::new();
     let room_a = graph.fresh("room/");
