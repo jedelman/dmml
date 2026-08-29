@@ -2,6 +2,7 @@ pub mod character;
 pub mod command;
 pub mod commune;
 pub mod dag;
+pub mod datalog_guard;
 pub mod demiurge;
 pub mod direction;
 pub mod game;
