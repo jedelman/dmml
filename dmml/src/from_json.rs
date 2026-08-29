@@ -287,6 +287,32 @@ pub fn commit_stmt_from_input(input: &CommitInput) -> Result<ast::CommitStmt, Fr
         }));
     }
 
+    // A repeated (subject, predicate) pair within one commit's own facts
+    // is never something an agent means to do -- `Materialized` (and
+    // `WorldGraph`) keep exactly one current value per (subject,
+    // predicate), so the second occurrence would silently overwrite the
+    // first with no signal at all. Real bug this catches: an agent
+    // authoring `room/1 opensTo room/2` and `room/1 opensTo door/1` in
+    // the same commit, meaning to assert both, and getting only one.
+    // Checked on the raw JSON strings (before node/predicate validation
+    // has necessarily run for every entry), so a duplicate is reported
+    // even alongside other shape errors, not masked by them.
+    let mut seen: std::collections::HashMap<(&str, &str), usize> = std::collections::HashMap::new();
+    for (i, fact) in input.facts.iter().enumerate() {
+        let key = (fact.subject.as_str(), fact.predicate.as_str());
+        if let Some(&first) = seen.get(&key) {
+            return Err(invalid(
+                format!("/facts/{i}"),
+                format!(
+                    "duplicate ({}, {}) -- already asserted at /facts/{first}; \
+                     the second occurrence would silently overwrite the first",
+                    fact.subject, fact.predicate
+                ),
+            ));
+        }
+        seen.insert(key, i);
+    }
+
     for (i, fact) in input.facts.iter().enumerate() {
         let pointer = format!("/facts/{i}");
         items.push(ast::CommitItem::Fact(ast::FactStmt {
@@ -576,6 +602,113 @@ pub fn reference_from_json(json: &str) -> Result<ast::ReferenceStmt, FromJsonErr
 }
 
 // ---------------------------------------------------------------------
+// WorldInput: batching many commits/machines into one authoring call
+// ---------------------------------------------------------------------
+
+/// Many independent commits and machines, submitted together. Each item
+/// is exactly the same `CommitInput`/`MachineInput` shape a single-item
+/// call would use -- a batch is "many independent commits authored in
+/// one round trip," not a new kind of history record, so there is no
+/// cross-item referencing: `consumes` still only ever points at real,
+/// already-committed `{uri, cid}` pairs, never at another item in the
+/// same batch (which has no real CID yet). Genesis/world-building
+/// authoring is additive, so this is not a real limitation for that use
+/// case; a workflow that genuinely needs commit N to consume commit N-1
+/// within one authoring burst still submits them as separate calls, in
+/// order, same as today.
+#[derive(Debug, Clone, Deserialize)]
+pub struct WorldInput {
+    #[serde(default)]
+    pub commits: Vec<CommitInput>,
+    #[serde(default)]
+    pub machines: Vec<MachineInput>,
+}
+
+/// Unlike every single-item `*_from_json` function, this never fails
+/// fast: a pile of facts is exactly the case where finding only the
+/// first mistake and forcing another round trip is most costly, so
+/// every commit and machine in the batch is built independently and
+/// every failure is collected before returning.
+#[derive(Debug)]
+pub enum WorldFromJsonError {
+    /// The batch's own JSON wasn't valid, or didn't match `WorldInput`'s
+    /// shape at all.
+    Json(serde_json::Error),
+    /// The JSON was shaped correctly, but one or more items inside it
+    /// weren't valid DMML content. Every entry's `pointer` is rebased
+    /// onto the batch (e.g. `/commits/3/facts/1/subject`), not just the
+    /// offending item's own local pointer.
+    Invalid(Vec<JsonError>),
+}
+
+impl fmt::Display for WorldFromJsonError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            WorldFromJsonError::Json(e) => write!(f, "invalid JSON: {e}"),
+            WorldFromJsonError::Invalid(errs) => {
+                for (i, e) in errs.iter().enumerate() {
+                    if i > 0 {
+                        writeln!(f)?;
+                    }
+                    write!(f, "{e}")?;
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
+impl std::error::Error for WorldFromJsonError {}
+
+/// A successfully-built batch: every commit and machine, already
+/// deserialized, validated for shape, and converted to AST -- ready for
+/// `validate_declarations`/`lower_commit`/`all_machines` exactly as a
+/// single-item commit would be, applied one at a time by the caller in
+/// whatever order it chooses (batching is an authoring-time convenience
+/// over N JSON items, not a new runtime concept -- `WorldGraph::
+/// apply_commit` still takes one commit at a time).
+#[derive(Debug)]
+pub struct World {
+    pub commits: Vec<ast::CommitStmt>,
+    pub machines: Vec<ast::MachineStmt>,
+}
+
+pub fn world_from_json(json: &str) -> Result<World, WorldFromJsonError> {
+    let input: WorldInput = serde_json::from_str(json).map_err(WorldFromJsonError::Json)?;
+
+    let mut errors = Vec::new();
+    let mut commits = Vec::new();
+    for (i, c) in input.commits.iter().enumerate() {
+        match commit_stmt_from_input(c) {
+            Ok(stmt) => commits.push(stmt),
+            Err(FromJsonError::Invalid(e)) => errors.push(JsonError {
+                pointer: format!("/commits/{i}{}", e.pointer),
+                message: e.message,
+            }),
+            Err(FromJsonError::Json(_)) => unreachable!("commit_stmt_from_input never returns Json"),
+        }
+    }
+
+    let mut machines = Vec::new();
+    for (i, m) in input.machines.iter().enumerate() {
+        match machine_stmt_from_input(m) {
+            Ok(stmt) => machines.push(stmt),
+            Err(FromJsonError::Invalid(e)) => errors.push(JsonError {
+                pointer: format!("/machines/{i}{}", e.pointer),
+                message: e.message,
+            }),
+            Err(FromJsonError::Json(_)) => unreachable!("machine_stmt_from_input never returns Json"),
+        }
+    }
+
+    if errors.is_empty() {
+        Ok(World { commits, machines })
+    } else {
+        Err(WorldFromJsonError::Invalid(errors))
+    }
+}
+
+// ---------------------------------------------------------------------
 // Chat-fence extraction (unchanged: still needed by any caller that lets
 // an agent narrate around a JSON commit in one reply)
 // ---------------------------------------------------------------------
@@ -768,6 +901,68 @@ mod tests {
         }"#;
         let reference = reference_from_json(json).expect("should build");
         assert!(reference.as_name.is_some());
+    }
+
+    #[test]
+    fn world_builds_multiple_commits_and_machines_in_one_call() {
+        let json = r#"{
+            "commits": [
+                {"verb": "mints", "declares": [{"kind": "relation", "name": "opensTo"}],
+                 "facts": [{"subject": "room/1", "predicate": "opensTo", "object": {"kind": "node", "value": "room/2"}}]},
+                {"verb": "mints", "declares": [{"kind": "relation", "name": "state"}],
+                 "facts": [{"subject": "door/1", "predicate": "state", "object": {"kind": "node", "value": "locked"}}]}
+            ],
+            "machines": [
+                {"node": "door/1", "states": [{"ident": "locked"}, {"ident": "unlocked"}],
+                 "transitions": [{"ident": "unlock", "from": "locked", "to": "unlocked"}]}
+            ]
+        }"#;
+        let world = world_from_json(json).expect("batch should build");
+        assert_eq!(world.commits.len(), 2);
+        assert_eq!(world.machines.len(), 1);
+    }
+
+    #[test]
+    fn world_collects_every_error_across_the_whole_batch_not_just_the_first() {
+        let json = r#"{
+            "commits": [
+                {"verb": "mints", "facts": [{"subject": "not a node", "predicate": "opensTo", "object": {"kind": "node", "value": "room/2"}}]},
+                {"verb": "mints", "facts": [{"subject": "room/1", "predicate": "also not valid!", "object": {"kind": "node", "value": "room/2"}}]}
+            ],
+            "machines": [
+                {"node": "door/1", "transitions": [{"ident": "noop"}]}
+            ]
+        }"#;
+        let err = world_from_json(json).expect_err("batch has three separate mistakes");
+        match err {
+            WorldFromJsonError::Invalid(errs) => {
+                assert_eq!(errs.len(), 3);
+                assert_eq!(errs[0].pointer, "/commits/0/facts/0/subject");
+                assert_eq!(errs[1].pointer, "/commits/1/facts/0/predicate");
+                assert_eq!(errs[2].pointer, "/machines/0/transitions/0");
+            }
+            other => panic!("expected Invalid, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn duplicate_subject_predicate_within_one_commit_is_rejected() {
+        let json = r#"{
+            "verb": "mints",
+            "declares": [{"kind": "relation", "name": "opensTo"}],
+            "facts": [
+                {"subject": "room/1", "predicate": "opensTo", "object": {"kind": "node", "value": "room/2"}},
+                {"subject": "room/1", "predicate": "opensTo", "object": {"kind": "node", "value": "door/1"}}
+            ]
+        }"#;
+        let err = commit_from_json(json).expect_err("should reject the duplicate fact");
+        match err {
+            FromJsonError::Invalid(JsonError { pointer, message }) => {
+                assert_eq!(pointer, "/facts/1");
+                assert!(message.contains("duplicate"));
+            }
+            other => panic!("expected an Invalid error, got {other:?}"),
+        }
     }
 
     #[test]
