@@ -699,47 +699,18 @@ pub struct EvalContext {
     pub params: std::collections::HashMap<String, String>,
 }
 
-/// Resolves a `PatternTerm` to a concrete node string, or `None` if it's
-/// an existentially-open position (a `?var`, or a `$param` `ctx` doesn't
-/// have a binding for) -- see `MACHINE_SPEC.md`'s term-resolution rules.
-fn resolve_term(term: &PatternTerm, ctx: &EvalContext) -> Option<String> {
-    match term {
-        PatternTerm::SelfRef => Some(ctx.self_node.clone()),
-        PatternTerm::Param(name) => ctx.params.get(name).cloned(),
-        PatternTerm::Node(s) => Some(s.clone()),
-        PatternTerm::Var(_) => None,
-    }
-}
-
-/// Walks `hops` starting from the concrete node `start`, against
-/// `world`. Never panics: any missing/non-`Node` fact along the way is
-/// simply a failed walk, not an error.
-fn walk_pattern(start: &str, hops: &[PatternHop], ctx: &EvalContext, world: &crate::interpret::Materialized) -> bool {
-    let mut current = start.to_string();
-    for hop in hops {
-        let actual = match world.current_value(&current, &hop.predicate) {
-            Some(crate::lower::TripleValue::Node(actual)) => actual.clone(),
-            _ => return false,
-        };
-        if let Some(expected) = resolve_term(&hop.term, ctx) {
-            if actual != expected {
-                return false;
-            }
-        }
-        current = actual;
-    }
-    true
-}
-
 /// Evaluates one `EXISTS(pattern)` against `world`, per `MACHINE_SPEC.md`'s
 /// "Evaluating EXISTS". Never panics.
+///
+/// Datalog-backed as of the cutover that added `crate::datalog_guard`
+/// (see that module's own doc comment for the full design and the
+/// equivalence tests it was proven against before this delegation
+/// replaced the hand-rolled walker that used to live here). Kept as a
+/// stable, named function -- not inlined at call sites -- since this
+/// crate's own test suite (`tests/machine_eval_examples.rs` and others)
+/// calls `eval_exists` directly by name.
 pub fn eval_exists(pattern: &Pattern, ctx: &EvalContext, world: &crate::interpret::Materialized) -> bool {
-    match resolve_term(&pattern.anchor, ctx) {
-        Some(start) => walk_pattern(&start, &pattern.hops, ctx, world),
-        None => world
-            .subjects()
-            .any(|subject| walk_pattern(subject, &pattern.hops, ctx, world)),
-    }
+    crate::datalog_guard::eval_exists(pattern, ctx, world)
 }
 
 /// Evaluates one `GuardClause` (its `EXISTS` result, XORed with

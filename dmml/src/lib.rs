@@ -10,6 +10,7 @@
 //! the property the fuzz target in `fuzz/` checks continuously.
 
 pub mod ast;
+pub mod datalog_guard;
 pub mod error;
 pub mod from_json;
 pub mod genesis;
