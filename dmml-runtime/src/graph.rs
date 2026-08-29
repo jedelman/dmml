@@ -656,128 +656,48 @@ impl WorldGraph {
     /// `FactRef` never marks a node itself as retracted -- only
     /// `getResolved`'s resolution-time filtering acts on it at all).
     pub fn apply_commit(&mut self, source: &str, commit: Commit) -> Result<(), GraphError> {
-        let mut consumed_nodes = Vec::with_capacity(commit.consumes.len());
+        // A `FactRef`'s predicate must at least be a syntactically valid
+        // IRI -- a distinct failure mode from "no matching fact exists,"
+        // and one `datalog_referential_integrity::consumes_admissible`
+        // below doesn't itself check (it only ever interns predicate
+        // strings for comparison, never parses them as `NamedNode`, so a
+        // malformed one would just silently never match anything instead
+        // of reporting what's actually wrong with it).
         for r in &commit.consumes {
-            match r {
-                ConsumeRef::Strong(r) => {
-                    let node = vocab::foreign_uri_node(&r.uri);
-                    let as_subject = self
-                        .store
-                        .quads_for_pattern(
-                            Some(NamedOrBlankNode::from(node.clone()).as_ref()),
-                            None,
-                            None,
-                            Some(GraphNameRef::DefaultGraph),
-                        )
-                        .next()
-                        .is_some();
-                    let object_term = Term::NamedNode(node.clone());
-                    let as_object = self
-                        .store
-                        .quads_for_pattern(
-                            None,
-                            None,
-                            Some(TermRef::from(&object_term)),
-                            Some(GraphNameRef::DefaultGraph),
-                        )
-                        .next()
-                        .is_some();
-                    if !as_subject && !as_object {
-                        return Err(GraphError::Invalid(format!(
-                            "consumes references unknown node: {}",
-                            r.uri
-                        )));
-                    }
-
-                    // Issue #53: check the `cid` half, not just `uri`.
-                    // `foreignCid` facts are the only record this graph
-                    // ever keeps of a genuinely observed cid for a node
-                    // (asserted by `via`/`respondsTo` below) -- existence,
-                    // not currency (`SPEC.md` section 11): a cid matching
-                    // ANY prior observation is accepted, not just the most
-                    // recent one, since an older-but-real reference is a
-                    // true statement about what it actually referenced,
-                    // not a stale error. A node with no recorded cid yet
-                    // has nothing to check against, so it's accepted the
-                    // same as before this check existed -- #53 asks for
-                    // "was this cid genuinely ever recorded," not "every
-                    // node must always carry one."
-                    let mut recorded_cids: Vec<String> = self
-                        .store
-                        .quads_for_pattern(
-                            Some(NamedOrBlankNode::from(node.clone()).as_ref()),
-                            Some(NamedNodeRef::from(&vocab::foreign_cid())),
-                            None,
-                            Some(GraphNameRef::DefaultGraph),
-                        )
-                        .flatten()
-                        .filter_map(|q| match q.object {
-                            Term::NamedNode(n) => vocab::foreign_cid_from_node(&n),
-                            _ => None,
-                        })
-                        .collect();
-                    // This SAME commit's own `via`/`respondsTo` (asserted
-                    // further down, after this loop) also counts as a
-                    // genuine observation, even though it hasn't landed in
-                    // the store yet at this point in the function -- a
-                    // commit that observes a node's new cid (`respondsTo`)
-                    // and, in the same breath, acts on that new cid
-                    // (`consumes`) is self-consistent, not a forward
-                    // reference to a fact that doesn't exist yet. Without
-                    // this, whether that legitimate pattern is accepted
-                    // would depend on this loop running before the
-                    // via/respondsTo block below -- an implementation
-                    // detail, not something a caller should have to know
-                    // or a future refactor should be free to break.
-                    if let Some(via) = &commit.via {
-                        if via.uri == r.uri {
-                            recorded_cids.push(via.cid.clone());
-                        }
-                    }
-                    if let Some(responds_to) = &commit.responds_to {
-                        if responds_to.uri == r.uri {
-                            recorded_cids.push(responds_to.cid.clone());
-                        }
-                    }
-                    if !recorded_cids.is_empty() && !recorded_cids.iter().any(|c| c == &r.cid) {
-                        return Err(GraphError::Invalid(format!(
-                            "consumes cid does not match any cid ever recorded for {}: got {}, recorded {:?}",
-                            r.uri, r.cid, recorded_cids
-                        )));
-                    }
-
-                    consumed_nodes.push(node);
-                }
-                ConsumeRef::Fact(fr) => {
-                    let subject_node = vocab::foreign_uri_node(&fr.subject);
-                    let predicate_node = NamedNode::new(&fr.predicate).map_err(|e| {
-                        GraphError::Invalid(format!(
-                            "factRef predicate is not a valid IRI: {}: {e}",
-                            fr.predicate
-                        ))
-                    })?;
-                    let matches = self
-                        .store
-                        .quads_for_pattern(
-                            Some(NamedOrBlankNode::from(subject_node.clone()).as_ref()),
-                            Some(NamedNodeRef::from(&predicate_node)),
-                            None,
-                            Some(GraphNameRef::DefaultGraph),
-                        )
-                        .flatten()
-                        .any(|q| match &fr.object {
-                            None => true,
-                            Some(expected) => term_matches_fact_object(&q.object, expected),
-                        });
-                    if !matches {
-                        return Err(GraphError::Invalid(format!(
-                            "consumes references unknown fact: ({}, {}, {:?})",
-                            fr.subject, fr.predicate, fr.object
-                        )));
-                    }
-                }
+            if let ConsumeRef::Fact(fr) = r {
+                NamedNode::new(&fr.predicate).map_err(|e| {
+                    GraphError::Invalid(format!(
+                        "factRef predicate is not a valid IRI: {}: {e}",
+                        fr.predicate
+                    ))
+                })?;
             }
         }
+
+        // Referential-integrity admissibility: Datalog-derived (crepe),
+        // cross-checked for equivalence against this exact imperative
+        // logic in `datalog_referential_integrity.rs`'s own test suite
+        // before this cutover (including the `via`/`respondsTo`
+        // self-consistency subtlety described in this method's own doc
+        // comment -- built into `consumes_admissible` itself, not
+        // duplicated here). Mutation stays imperative below; this only
+        // decides whether `commit.consumes` is admissible at all.
+        crate::datalog_referential_integrity::consumes_admissible(self, &commit)
+            .map_err(|reasons| GraphError::Invalid(reasons.join("; ")))?;
+
+        // Every Strong-ref's target node, for `CommitRecord.consumes`
+        // bookkeeping (`consume_state`'s supersession query) -- unrelated
+        // to the admissibility check just performed above, just
+        // collecting the list a `Fact` ref is deliberately excluded from
+        // (see this method's own doc comment).
+        let consumed_nodes: Vec<NamedNode> = commit
+            .consumes
+            .iter()
+            .filter_map(|r| match r {
+                ConsumeRef::Strong(sr) => Some(vocab::foreign_uri_node(&sr.uri)),
+                ConsumeRef::Fact(_) => None,
+            })
+            .collect();
 
         let quads = parse_nquads(&commit.produces)?;
 
@@ -1414,24 +1334,6 @@ pub fn term_str(t: &Term) -> String {
         Term::NamedNode(n) => short(n),
         Term::Literal(l) => l.value().to_string(),
         other => format!("{other:?}"),
-    }
-}
-
-/// Does `object` match a `FactRef.object` value, per
-/// `SPEC.md`'s "durable node identity" convention?
-/// A `NamedNode` object is compared as the `at://` URI it decodes from
-/// (`vocab::foreign_uri_from_node`) -- `FactRef.object` is always written
-/// in that same durable-address form (never a raw local IRI), matching
-/// `FactRef.subject`'s own convention. A `Literal` object (an Attribute's
-/// value, e.g. a graded float) is compared by its plain string value.
-/// Shared by `WorldGraph::apply_commit`'s FactRef guard and (as its own,
-/// appview-local copy -- `appview` doesn't depend on `dmml_runtime::graph`'s
-/// private items) `appview`'s resolve-time retraction filter.
-fn term_matches_fact_object(object: &Term, expected: &str) -> bool {
-    match object {
-        Term::NamedNode(n) => vocab::foreign_uri_from_node(n).as_deref() == Some(expected),
-        Term::Literal(l) => l.value() == expected,
-        _ => false,
     }
 }
 

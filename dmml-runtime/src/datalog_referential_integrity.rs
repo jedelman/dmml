@@ -61,10 +61,20 @@ impl SymbolTable {
 }
 
 /// The comparison key for a Fact-ref's `object` string against a quad's
-/// actual object term -- mirrors `apply_commit`'s own (private)
-/// `term_matches_fact_object` exactly: a `NamedNode` object only matches
-/// via its *decoded* foreign-URI form (`vocab::foreign_uri_from_node`),
-/// never its raw encoded IRI string, and a `Literal` matches by value.
+/// actual object term -- per `SPEC.md`'s "durable node identity"
+/// convention, the same one `apply_commit`'s own (now-removed, folded in
+/// here) `term_matches_fact_object` implemented: a `NamedNode` object
+/// only matches via its *decoded* foreign-URI form
+/// (`vocab::foreign_uri_from_node`), never its raw encoded IRI string,
+/// and a `Literal` matches by value. `FactRef.object` is always written
+/// in that same durable-address form (never a raw local IRI), matching
+/// `FactRef.subject`'s own convention. This exact semantic is also
+/// independently maintained as its own, appview-local copy in
+/// written-world's `appview` service for its resolve-time retraction
+/// filter (appview doesn't depend on this crate's internals) -- the two
+/// are meant to agree and have to be kept in sync by hand; changing this
+/// function's semantics without changing appview's copy is a real,
+/// silent-drift risk.
 /// `None` means "this object can never satisfy a closed-object FactRef" --
 /// an ordinary same-repo internal node has no foreign-URI decoding and so
 /// (correctly) never matches a specific expected string, only the
