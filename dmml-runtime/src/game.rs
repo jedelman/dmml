@@ -2,14 +2,15 @@ use oxigraph::model::{NamedNode, Quad, Term};
 
 use crate::command::{parse, HELP_TEXT};
 use crate::commune;
+use crate::datalog_effects;
 use crate::datalog_guard;
 use crate::demiurge;
 use crate::direction::Direction;
 use crate::graph::{
-    as_bool, as_float, as_int, as_node, as_string, lit_bool, lit_float, lit_int, lit_str, Commit,
+    as_bool, as_int, as_node, as_string, lit_bool, lit_float, lit_int, lit_str, Commit,
     Delta, WorldGraph,
 };
-use crate::machine::{self, Effect};
+use crate::machine::{self, Effect, Requirement};
 use crate::render;
 use crate::vocab;
 
@@ -1322,24 +1323,39 @@ impl Game {
             );
         }
 
-        let mut messages = Vec::new();
-        for m in machines {
-            // Recomputed fresh on every iteration, not hoisted above the
-            // loop: an earlier machine in this same `verb` firing (e.g. a
-            // drift machine incrementing wear) can satisfy a later
-            // machine's threshold requirement (e.g. the unlock machine)
-            // within the same player turn -- `game.rs`'s pre-Datalog
-            // version got this "for free" by calling `requirement_met`
-            // fresh per machine per iteration; hoisting this call would
-            // silently reintroduce a one-turn lag (confirmed by a real
-            // test failure when tried: `locked_exit_requires_accumulated_
-            // wear_and_resolves_within_one_turn`).
-            if !datalog_guard::machines_ready(&self.graph, &room).contains(&m) {
-                continue;
-            }
+        // Build one EffectMachine per candidate, translating
+        // machine::Requirement into datalog_effects::Requirement, then
+        // resolve gating + effect arithmetic + cascade in ONE fixpoint --
+        // not per-machine, and not recomputed per iteration the way the
+        // pre-cutover version needed to (see datalog_effects.rs's own
+        // module doc for why that's no longer necessary: the cascade is
+        // derived inside the single evaluation, "turn" isn't a primitive
+        // the causality model needs at all).
+        let mut effect_machines = Vec::new();
+        let mut effects_by_id: std::collections::HashMap<NamedNode, Effect> =
+            std::collections::HashMap::new();
+        for m in &machines {
+            let requirements: Vec<datalog_effects::Requirement> = self
+                .graph
+                .objects(m, &vocab::has_requirement())
+                .into_iter()
+                .filter_map(as_node)
+                .filter_map(|r| machine::read_requirement(&self.graph, &r))
+                .map(|req| match req {
+                    Requirement::PlayerInRoom { room } => {
+                        datalog_effects::Requirement::PlayerInRoom { room }
+                    }
+                    Requirement::EdgeLocked { edge, equals } => {
+                        datalog_effects::Requirement::EdgeLockedIs { edge, value: equals }
+                    }
+                    Requirement::AttrAtLeast { node, attr, threshold } => {
+                        datalog_effects::Requirement::AttrAtLeast { node, attr, min: threshold }
+                    }
+                })
+                .collect();
             let Some(effect_node) = self
                 .graph
-                .object(&m, &vocab::has_effect())
+                .object(m, &vocab::has_effect())
                 .and_then(as_node)
             else {
                 continue;
@@ -1347,10 +1363,64 @@ impl Game {
             let Some(effect) = machine::read_effect(&self.graph, &effect_node) else {
                 continue;
             };
+            effects_by_id.insert(m.clone(), effect.clone());
+            effect_machines.push(datalog_effects::EffectMachine::new(
+                m.clone(),
+                effect,
+                requirements,
+            ));
+        }
 
-            let delta = self.build_effect_delta(&effect);
+        let fixpoint = datalog_effects::resolve_effects(&self.graph, &room, &effect_machines);
+
+        // Commit and render one machine at a time, in machines_for_verb's
+        // own creation order -- same commit granularity and message
+        // sequencing the pre-cutover loop had, even though gating and
+        // arithmetic were already fully resolved above in one shot.
+        let mut messages = Vec::new();
+        for m in &machines {
+            if !fixpoint.fired_machines.contains(m) {
+                continue;
+            }
+            let Some(effect) = effects_by_id.get(m) else {
+                continue;
+            };
+            let delta = match effect {
+                Effect::IncrementAttr { node, attr, .. } => {
+                    let (_, _, _, new_value) = fixpoint
+                        .attr_deltas
+                        .iter()
+                        .find(|(fm, n, a, _)| fm == m && n == node && a == attr)
+                        .expect("a fired IncrementAttr machine always has a derived attr delta");
+                    let mut d = Delta::new();
+                    if let Some(old) = self.graph.object(node, attr) {
+                        d = d.retract(node.clone(), attr.clone(), old);
+                    }
+                    d.assert(node.clone(), attr.clone(), lit_float(*new_value))
+                }
+                Effect::SetEdgeLocked { edge, .. } => {
+                    let (_, _, new_value) = fixpoint
+                        .edge_locks
+                        .iter()
+                        .find(|(fm, e, _)| fm == m && e == edge)
+                        .expect("a fired SetEdgeLocked machine always has a derived edge lock");
+                    let mut d = Delta::new();
+                    if let Some(old) = self.graph.object(edge, &vocab::locked()) {
+                        d = d.retract(edge.clone(), vocab::locked(), old);
+                    }
+                    d.assert(edge.clone(), vocab::locked(), lit_bool(*new_value))
+                }
+                // Never actually reached: a `GenerateFrontier` machine is
+                // equipped to a room, not to an item/npc `fire_object_verb`
+                // resolves an object against, so this dispatch path can't
+                // find one to fire. Handled as an inert no-op (not a panic)
+                // rather than assumed unreachable, since a future content
+                // bug mis-equipping one onto an object should degrade
+                // quietly, not crash a player's turn.
+                Effect::GenerateFrontier { .. } => Delta::new(),
+            };
             match self.graph.commit("player", delta) {
-                Ok(()) => messages.push(render::describe_effect_outcome(&self.graph, &effect)),
+                Ok(()) => messages.push(render::describe_effect_outcome(&self.graph, effect)),
                 Err(e) => messages.push(format!("The mechanism jams. ({e})")),
             }
         }
@@ -1359,40 +1429,6 @@ impl Game {
             "Nothing happens.".to_string()
         } else {
             messages.join(" ")
-        }
-    }
-
-    fn build_effect_delta(&self, effect: &Effect) -> Delta {
-        match effect {
-            Effect::IncrementAttr { node, attr, step } => {
-                let current = self
-                    .graph
-                    .object(node, attr)
-                    .and_then(|t| as_float(&t))
-                    .unwrap_or(0.0);
-                let (lo, hi) = crate::graph::graded_range(attr).unwrap_or((f32::MIN, f32::MAX));
-                let new_value = (current + step).clamp(lo, hi);
-                let mut d = Delta::new();
-                if let Some(old) = self.graph.object(node, attr) {
-                    d = d.retract(node.clone(), attr.clone(), old);
-                }
-                d.assert(node.clone(), attr.clone(), lit_float(new_value))
-            }
-            Effect::SetEdgeLocked { edge, value } => {
-                let mut d = Delta::new();
-                if let Some(old) = self.graph.object(edge, &vocab::locked()) {
-                    d = d.retract(edge.clone(), vocab::locked(), old);
-                }
-                d.assert(edge.clone(), vocab::locked(), lit_bool(*value))
-            }
-            // Never actually reached: a `GenerateFrontier` machine is
-            // equipped to a room, not to an item/npc `fire_object_verb`
-            // resolves an object against, so this dispatch path can't find
-            // one to fire. Handled as an inert no-op (not a panic) rather
-            // than assumed unreachable, since a future content bug
-            // mis-equipping one onto an object should degrade quietly, not
-            // crash a player's turn.
-            Effect::GenerateFrontier { .. } => Delta::new(),
         }
     }
 }
