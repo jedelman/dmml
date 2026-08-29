@@ -3,22 +3,21 @@
 //! worked examples, plus the not-fully-worked ordering case (multi-
 //! segment subject, foreignUri strictly before foreignCid).
 
-use dmml::ast::TopLevelItem;
+use dmml::from_json::reference_from_json;
 use dmml::lower::{lower_reference, Triple, TripleValue};
 
-fn lower_first_reference(src: &str) -> Vec<Triple> {
-    let doc = dmml::parse(src).expect("should parse");
-    let TopLevelItem::Reference(r) = &doc.items[0] else {
-        panic!("expected a reference statement");
-    };
-    lower_reference(r)
+fn lower_json_reference(json: &str) -> Vec<Triple> {
+    let r = reference_from_json(json).expect("should build");
+    lower_reference(&r)
 }
 
 #[test]
 fn example_1_as_given_two_triples_in_order() {
-    let src = "reference at://did:plc:zzzz9999/org.jason-edelman.writtenworld.commit/qrs456
-  (cid: bafyqrs456) as room/42.reach";
-    let triples = lower_first_reference(src);
+    let json = r#"{
+        "target": {"uri": "at://did:plc:zzzz9999/org.jason-edelman.writtenworld.commit/qrs456", "cid": "bafyqrs456"},
+        "asName": "room/42.reach"
+    }"#;
+    let triples = lower_json_reference(json);
     assert_eq!(
         triples,
         vec![
@@ -41,9 +40,10 @@ fn example_1_as_given_two_triples_in_order() {
 
 #[test]
 fn example_2_as_omitted_empty_result() {
-    let src = "reference at://did:plc:zzzz9999/org.jason-edelman.writtenworld.commit/qrs456
-  (cid: bafyqrs456)";
-    let triples = lower_first_reference(src);
+    let json = r#"{
+        "target": {"uri": "at://did:plc:zzzz9999/org.jason-edelman.writtenworld.commit/qrs456", "cid": "bafyqrs456"}
+    }"#;
+    let triples = lower_json_reference(json);
     assert_eq!(triples, vec![]);
 }
 
@@ -54,8 +54,11 @@ fn example_2_as_omitted_empty_result() {
 /// still comes strictly before foreignCid.
 #[test]
 fn multi_segment_as_name_shares_subject_uri_before_cid() {
-    let src = "reference at://did:plc:abc/org.foo.bar/rkey1 (cid: bafyxyz1) as key/7/label";
-    let triples = lower_first_reference(src);
+    let json = r#"{
+        "target": {"uri": "at://did:plc:abc/org.foo.bar/rkey1", "cid": "bafyxyz1"},
+        "asName": "key/7/label"
+    }"#;
+    let triples = lower_json_reference(json);
     assert_eq!(triples.len(), 2);
     assert_eq!(triples[0].subject, "key/7/label");
     assert_eq!(triples[1].subject, "key/7/label");

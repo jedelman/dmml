@@ -1,25 +1,20 @@
-//! Structural types and parser for a `machine_stmt` body, per
-//! `MACHINE_SPEC.md` (issue #50 Tier 2). `crate::ast::MachineStmt` still
-//! carries the body as an opaque, balanced-brace `String` (see that
-//! type's own doc comment) -- `parse_machine_body` is the second-pass
-//! parser that turns that raw text into these structural types, kept
-//! deliberately separate from `crate::parser`'s main recursive-descent
-//! pass rather than threading machine-body tokens through the whole
-//! document's lexer/parser. Spans in this module are byte offsets into
-//! the `body` string itself (post `{`/`}` stripping), not into the
-//! whole document -- consistent with `MachineStmt.body` already being a
-//! standalone `String`, not a document slice.
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Span {
-    pub start: usize,
-    pub end: usize,
-}
+//! Structural types for a machine's states/transitions, per
+//! `MACHINE_SPEC.md` (issue #50 Tier 2). These are built directly from
+//! JSON authoring input (`crate::from_json`) into `crate::ast::MachineStmt`
+//! -- there is no text grammar and no parser here anymore; a hand-written
+//! DMML source language existed for the tokenizer/recursive-descent
+//! `parse_machine_body` that used to live in this module, but it was
+//! retired once JSON became the sole authoring format (nothing hand-
+//! writes DMML source text; see `from_json`'s own doc comment for why).
+//! What's left is exactly the semantic layer `MACHINE_SPEC.md` describes
+//! -- states, transitions, guards, `EXISTS` patterns, effects -- and the
+//! functions that evaluate them, none of which cared how the structure
+//! was built.
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StateDecl {
     pub ident: String,
-    pub span: Span,
+    pub span: crate::ast::Span,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -30,20 +25,20 @@ pub struct TransitionDecl {
     pub to: Option<String>,
     pub guards: Vec<GuardClause>,
     pub effects: Vec<Effect>,
-    pub span: Span,
+    pub span: crate::ast::Span,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GuardClause {
     pub negated: bool,
     pub exists: ExistsExpr,
-    pub span: Span,
+    pub span: crate::ast::Span,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExistsExpr {
     pub pattern: Pattern,
-    pub span: Span,
+    pub span: crate::ast::Span,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -72,581 +67,33 @@ pub enum Effect {
     Assert(String),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MachineParseError {
-    pub message: String,
-    pub span: Span,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct MachineBody {
     pub states: Vec<StateDecl>,
     pub transitions: Vec<TransitionDecl>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum TokKind {
-    Ident(String),
-    Slash,
-    Dollar,
-    Question,
-    Colon,
-    Comma,
-    LParen,
-    RParen,
-    LBrace,
-    RBrace,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct Tok {
-    kind: TokKind,
-    span: Span,
-}
-
-/// Byte-offset tokenizer for a machine body. Never panics: any byte that
-/// doesn't start a recognized token (including non-ASCII/continuation
-/// bytes) is a `MachineParseError`, not a crash.
-fn tokenize(body: &str) -> Result<Vec<Tok>, MachineParseError> {
-    let bytes = body.as_bytes();
-    let mut i = 0;
-    let mut toks = Vec::new();
-    while i < bytes.len() {
-        let c = bytes[i] as char;
-        if c.is_ascii_whitespace() {
-            i += 1;
-            continue;
-        }
-        let single = |kind: TokKind, i: usize| Tok {
-            kind,
-            span: Span { start: i, end: i + 1 },
-        };
-        match c {
-            '/' => {
-                toks.push(single(TokKind::Slash, i));
-                i += 1;
-            }
-            '$' => {
-                toks.push(single(TokKind::Dollar, i));
-                i += 1;
-            }
-            '?' => {
-                toks.push(single(TokKind::Question, i));
-                i += 1;
-            }
-            ':' => {
-                toks.push(single(TokKind::Colon, i));
-                i += 1;
-            }
-            ',' => {
-                toks.push(single(TokKind::Comma, i));
-                i += 1;
-            }
-            '(' => {
-                toks.push(single(TokKind::LParen, i));
-                i += 1;
-            }
-            ')' => {
-                toks.push(single(TokKind::RParen, i));
-                i += 1;
-            }
-            '{' => {
-                toks.push(single(TokKind::LBrace, i));
-                i += 1;
-            }
-            '}' => {
-                toks.push(single(TokKind::RBrace, i));
-                i += 1;
-            }
-            c if c.is_ascii_alphanumeric() || c == '_' => {
-                let start = i;
-                while i < bytes.len() {
-                    let cc = bytes[i] as char;
-                    if cc.is_ascii_alphanumeric() || cc == '_' {
-                        i += 1;
-                    } else {
-                        break;
-                    }
-                }
-                toks.push(Tok {
-                    kind: TokKind::Ident(body[start..i].to_string()),
-                    span: Span { start, end: i },
-                });
-            }
-            other => {
-                return Err(MachineParseError {
-                    message: format!("unexpected character {:?}", other),
-                    span: Span { start: i, end: i + 1 },
-                });
-            }
+/// Collects every `machine` item in `doc`, keyed by the machine's own
+/// node, joined the same way `crate::lower::lower_reference` joins a
+/// `NodeRef`'s segments (`stmt.node.segments.join("/")`). Infallible --
+/// unlike the retired text parser this replaces, a `MachineStmt` already
+/// carries validated structural data by the time it's in the AST, so
+/// there's no malformed-body case left to fail on.
+pub fn all_machines(doc: &crate::ast::Document) -> std::collections::HashMap<String, MachineBody> {
+    let mut map = std::collections::HashMap::new();
+    for item in &doc.items {
+        if let crate::ast::TopLevelItem::Machine(stmt) = item {
+            let key = stmt.node.segments.join("/");
+            map.insert(
+                key,
+                MachineBody {
+                    states: stmt.states.clone(),
+                    transitions: stmt.transitions.clone(),
+                },
+            );
         }
     }
-    Ok(toks)
-}
-
-struct TokenCursor<'a> {
-    toks: &'a [Tok],
-    pos: usize,
-    body_len: usize,
-}
-
-impl<'a> TokenCursor<'a> {
-    fn new(toks: &'a [Tok], body_len: usize) -> Self {
-        TokenCursor { toks, pos: 0, body_len }
-    }
-
-    /// Span for error messages when we're at end-of-input: an empty span
-    /// at the end of the body.
-    fn eof_span(&self) -> Span {
-        Span { start: self.body_len, end: self.body_len }
-    }
-
-    fn peek(&self) -> Option<&Tok> {
-        self.toks.get(self.pos)
-    }
-
-    fn peek_span(&self) -> Span {
-        self.peek().map(|t| t.span).unwrap_or_else(|| self.eof_span())
-    }
-
-    fn advance(&mut self) -> Option<&Tok> {
-        let t = self.toks.get(self.pos);
-        if t.is_some() {
-            self.pos += 1;
-        }
-        t
-    }
-
-    /// True if the next token is `Ident(text)` for the exact given
-    /// keyword text (case-sensitive), without consuming it.
-    fn peek_is_kw(&self, text: &str) -> bool {
-        matches!(self.peek(), Some(Tok { kind: TokKind::Ident(s), .. }) if s == text)
-    }
-
-    /// Consumes the next token, requiring it to be `Ident(text)` for the
-    /// exact given keyword text. Returns its span, or a `MachineParseError`.
-    fn expect_kw(&mut self, text: &str) -> Result<Span, MachineParseError> {
-        match self.peek() {
-            Some(Tok { kind: TokKind::Ident(s), span }) if s == text => {
-                let span = *span;
-                self.advance();
-                Ok(span)
-            }
-            Some(Tok { span, .. }) => Err(MachineParseError {
-                message: format!("expected keyword {:?}", text),
-                span: *span,
-            }),
-            None => Err(MachineParseError {
-                message: format!("expected keyword {:?}, found end of input", text),
-                span: self.eof_span(),
-            }),
-        }
-    }
-
-    /// Consumes the next token, requiring it to be an `Ident` that is
-    /// NOT one of the reserved keywords listed in `RESERVED`. Returns
-    /// the ident text and its span.
-    fn expect_ident(&mut self) -> Result<(String, Span), MachineParseError> {
-        match self.peek() {
-            Some(Tok { kind: TokKind::Ident(s), span }) => {
-                if RESERVED.contains(&s.as_str()) {
-                    return Err(MachineParseError {
-                        message: format!("expected an identifier, found reserved keyword {:?}", s),
-                        span: *span,
-                    });
-                }
-                let s = s.clone();
-                let span = *span;
-                self.advance();
-                Ok((s, span))
-            }
-            Some(Tok { span, .. }) => Err(MachineParseError {
-                message: "expected an identifier".to_string(),
-                span: *span,
-            }),
-            None => Err(MachineParseError {
-                message: "expected an identifier, found end of input".to_string(),
-                span: self.eof_span(),
-            }),
-        }
-    }
-
-    fn expect_punct(&mut self, kind: TokKind) -> Result<Span, MachineParseError> {
-        match self.peek() {
-            Some(Tok { kind: k, span }) if *k == kind => {
-                let span = *span;
-                self.advance();
-                Ok(span)
-            }
-            Some(Tok { span, .. }) => Err(MachineParseError {
-                message: format!("expected {:?}", kind),
-                span: *span,
-            }),
-            None => Err(MachineParseError {
-                message: format!("expected {:?}, found end of input", kind),
-                span: self.eof_span(),
-            }),
-        }
-    }
-}
-
-/// Keywords that are never valid as a plain `ident` production (state
-/// names, transition names, param names, predicate names, node_ref
-/// segments) -- matches `MACHINE_SPEC.md`'s "not valid as a plain ident"
-/// note. `"self"` is deliberately included: as a `pattern_term` it's the
-/// dedicated `self` keyword, never a `node_ref`.
-const RESERVED: &[&str] = &[
-    "state", "transition", "from", "to", "guard", "effect", "EXISTS", "not", "retract", "assert",
-    "self",
-];
-
-/// Parses the raw text between (exclusive) a `machine <node_ref> { ... }`
-/// block's outer braces -- i.e. `ast::MachineStmt.body` -- into structural
-/// `state_decl`/`transition_decl` items per `MACHINE_SPEC.md`'s grammar.
-/// Never panics on malformed input; every rejection is a
-/// `MachineParseError`.
-pub fn parse_machine_body(body: &str) -> Result<MachineBody, MachineParseError> {
-    let toks = tokenize(body)?;
-    let mut cursor = TokenCursor::new(&toks, body.len());
-    parse_machine_body_from(&mut cursor)
-}
-
-fn parse_machine_body_from(cursor: &mut TokenCursor) -> Result<MachineBody, MachineParseError> {
-    let mut body = MachineBody::default();
-
-    loop {
-        match cursor.peek() {
-            None => break,
-            Some(tok) => {
-                if tok.kind == TokKind::Ident("state".to_string()) {
-                    let state = parse_state_decl(cursor)?;
-                    body.states.push(state);
-                } else if tok.kind == TokKind::Ident("transition".to_string()) {
-                    let transition = parse_transition_decl(cursor)?;
-                    body.transitions.push(transition);
-                } else {
-                    return Err(MachineParseError {
-                        message: "unexpected token: expected 'state' or 'transition'".to_string(),
-                        span: tok.span,
-                    });
-                }
-            }
-        }
-    }
-
-    Ok(body)
-}
-
-fn parse_state_decl(cursor: &mut TokenCursor) -> Result<StateDecl, MachineParseError> {
-    let start_span = cursor.expect_kw("state")?;
-    let (ident, ident_span) = cursor.expect_ident()?;
-    let span = Span { start: start_span.start, end: ident_span.end };
-    Ok(StateDecl { ident, span })
-}
-
-fn parse_transition_decl(cursor: &mut TokenCursor) -> Result<TransitionDecl, MachineParseError> {
-    let start_span = cursor.expect_kw("transition")?;
-    let (ident, ident_span) = cursor.expect_ident()?;
-    let _ = ident_span;
-
-    let params = if let Some(tok) = cursor.peek() {
-        if tok.kind == TokKind::LParen {
-            parse_params(cursor)?
-        } else {
-            Vec::new()
-        }
-    } else {
-        Vec::new()
-    };
-
-    cursor.expect_punct(TokKind::LBrace)?;
-
-    let mut from: Option<String> = None;
-    if cursor.peek_is_kw("from") {
-        cursor.expect_kw("from")?;
-        cursor.expect_punct(TokKind::Colon)?;
-        let (f, _) = cursor.expect_ident()?;
-        from = Some(f);
-    }
-
-    let mut to: Option<String> = None;
-    if cursor.peek_is_kw("to") {
-        cursor.expect_kw("to")?;
-        cursor.expect_punct(TokKind::Colon)?;
-        let (t, _) = cursor.expect_ident()?;
-        to = Some(t);
-    }
-
-    let mut guards = Vec::new();
-    while cursor.peek_is_kw("guard") {
-        let guard = parse_guard_clause(cursor)?;
-        guards.push(guard);
-    }
-
-    let mut effects = Vec::new();
-    if cursor.peek_is_kw("effect") {
-        cursor.expect_kw("effect")?;
-        cursor.expect_punct(TokKind::Colon)?;
-        effects = parse_effect_list(cursor)?;
-    }
-
-    let has_content = !guards.is_empty() || (from.is_some() && to.is_some()) || !effects.is_empty();
-    if !has_content {
-        return Err(MachineParseError {
-            message: "transition must have at least one of: guard clause, from+to pair, or effect list".to_string(),
-            span: cursor.peek_span(),
-        });
-    }
-
-    let close_span = cursor.expect_punct(TokKind::RBrace)?;
-    let span = Span { start: start_span.start, end: close_span.end };
-
-    Ok(TransitionDecl {
-        ident,
-        params,
-        from,
-        to,
-        guards,
-        effects,
-        span,
-    })
-}
-
-fn parse_params(cursor: &mut TokenCursor) -> Result<Vec<String>, MachineParseError> {
-    cursor.expect_punct(TokKind::LParen)?;
-    let mut params = Vec::new();
-
-    let (first, _) = cursor.expect_ident()?;
-    params.push(first);
-
-    loop {
-        match cursor.peek() {
-            Some(tok) if tok.kind == TokKind::Comma => {
-                cursor.advance();
-                let (p, _) = cursor.expect_ident()?;
-                params.push(p);
-            }
-            _ => break,
-        }
-    }
-
-    cursor.expect_punct(TokKind::RParen)?;
-    Ok(params)
-}
-
-fn parse_guard_clause(cursor: &mut TokenCursor) -> Result<GuardClause, MachineParseError> {
-    let guard_span = cursor.expect_kw("guard")?;
-    cursor.expect_punct(TokKind::Colon)?;
-
-    let negated = if cursor.peek_is_kw("not") {
-        cursor.expect_kw("not")?;
-        true
-    } else {
-        false
-    };
-
-    let exists = parse_exists_expr(cursor)?;
-    let span = Span { start: guard_span.start, end: exists.span.end };
-
-    Ok(GuardClause { negated, exists, span })
-}
-
-fn parse_exists_expr(cursor: &mut TokenCursor) -> Result<ExistsExpr, MachineParseError> {
-    let start_span = cursor.expect_kw("EXISTS")?;
-    cursor.expect_punct(TokKind::LParen)?;
-    let pattern = parse_pattern(cursor)?;
-    let close_span = cursor.expect_punct(TokKind::RParen)?;
-    let span = Span { start: start_span.start, end: close_span.end };
-
-    Ok(ExistsExpr { pattern, span })
-}
-
-fn parse_pattern(cursor: &mut TokenCursor) -> Result<Pattern, MachineParseError> {
-    let anchor = parse_pattern_term(cursor)?;
-
-    let mut hops = Vec::new();
-    while matches!(cursor.peek(), Some(Tok { kind: TokKind::Ident(_), .. })) {
-        let hop = parse_pattern_hop(cursor)?;
-        hops.push(hop);
-    }
-
-    if hops.is_empty() {
-        return Err(MachineParseError {
-            message: "pattern must have at least one hop".to_string(),
-            span: cursor.peek_span(),
-        });
-    }
-
-    Ok(Pattern { anchor, hops })
-}
-
-fn parse_pattern_hop(cursor: &mut TokenCursor) -> Result<PatternHop, MachineParseError> {
-    // The predicate is an ident, but reserved words (e.g. "state") are
-    // valid predicate names -- so this bypasses `expect_ident`'s
-    // reserved-word rejection and checks `TokKind::Ident` directly.
-    let eof = cursor.eof_span();
-    let pred_tok = cursor.advance().ok_or_else(|| MachineParseError {
-        message: "expected predicate identifier".to_string(),
-        span: eof,
-    })?;
-
-    let predicate = match &pred_tok.kind {
-        TokKind::Ident(s) => s.clone(),
-        _ => {
-            return Err(MachineParseError {
-                message: "expected identifier for predicate".to_string(),
-                span: pred_tok.span,
-            })
-        }
-    };
-
-    let term = parse_pattern_term(cursor)?;
-    Ok(PatternHop { predicate, term })
-}
-
-fn parse_pattern_term(cursor: &mut TokenCursor) -> Result<PatternTerm, MachineParseError> {
-    match cursor.peek() {
-        Some(tok) => match &tok.kind {
-            TokKind::Ident(s) if s == "self" => {
-                cursor.advance();
-                Ok(PatternTerm::SelfRef)
-            }
-            TokKind::Dollar => {
-                cursor.advance();
-                let ident = expect_any_ident(cursor, "expected identifier after '$'")?;
-                Ok(PatternTerm::Param(ident))
-            }
-            TokKind::Question => {
-                cursor.advance();
-                let ident = expect_any_ident(cursor, "expected identifier after '?'")?;
-                Ok(PatternTerm::Var(ident))
-            }
-            TokKind::Ident(_) => parse_node_ref(cursor),
-            _ => Err(MachineParseError {
-                message: "expected pattern term (self, $param, ?var, or node reference)".to_string(),
-                span: tok.span,
-            }),
-        },
-        None => Err(MachineParseError {
-            message: "unexpected end of input, expected pattern term".to_string(),
-            span: cursor.eof_span(),
-        }),
-    }
-}
-
-/// Consumes the next token as a plain identifier, bypassing
-/// `TokenCursor::expect_ident`'s `RESERVED`-word rejection -- `$param`/
-/// `?var` names (like node_ref segments and hop predicates) aren't
-/// declaring anything in this machine's own closed vocabulary
-/// (states/transitions), so a variable happening to be named e.g.
-/// `guard` (colliding with the `guard:` keyword) is not ambiguous here
-/// and must not be rejected.
-fn expect_any_ident(cursor: &mut TokenCursor, message: &str) -> Result<String, MachineParseError> {
-    let eof = cursor.eof_span();
-    let tok = cursor.advance().ok_or_else(|| MachineParseError {
-        message: message.to_string(),
-        span: eof,
-    })?;
-    match &tok.kind {
-        TokKind::Ident(s) => Ok(s.clone()),
-        _ => Err(MachineParseError {
-            message: message.to_string(),
-            span: tok.span,
-        }),
-    }
-}
-
-fn parse_node_ref(cursor: &mut TokenCursor) -> Result<PatternTerm, MachineParseError> {
-    let mut parts = Vec::new();
-
-    let eof = cursor.eof_span();
-    let first_tok = cursor.advance().ok_or_else(|| MachineParseError {
-        message: "expected identifier for node reference".to_string(),
-        span: eof,
-    })?;
-
-    match &first_tok.kind {
-        TokKind::Ident(s) => parts.push(s.clone()),
-        _ => {
-            return Err(MachineParseError {
-                message: "expected identifier".to_string(),
-                span: first_tok.span,
-            })
-        }
-    }
-
-    loop {
-        match cursor.peek() {
-            Some(tok) if tok.kind == TokKind::Slash => {
-                cursor.advance();
-                let eof = cursor.eof_span();
-                let next_tok = cursor.advance().ok_or_else(|| MachineParseError {
-                    message: "expected identifier after '/'".to_string(),
-                    span: eof,
-                })?;
-                match &next_tok.kind {
-                    TokKind::Ident(s) => {
-                        parts.push(s.clone());
-                    }
-                    _ => {
-                        return Err(MachineParseError {
-                            message: "expected identifier after '/'".to_string(),
-                            span: next_tok.span,
-                        })
-                    }
-                }
-            }
-            _ => break,
-        }
-    }
-
-    let node_text = parts.join("/");
-    Ok(PatternTerm::Node(node_text))
-}
-
-fn parse_effect_list(cursor: &mut TokenCursor) -> Result<Vec<Effect>, MachineParseError> {
-    let mut effects = Vec::new();
-
-    let first = parse_effect(cursor)?;
-    effects.push(first);
-
-    loop {
-        match cursor.peek() {
-            Some(tok) if tok.kind == TokKind::Comma => {
-                cursor.advance();
-                let eff = parse_effect(cursor)?;
-                effects.push(eff);
-            }
-            _ => break,
-        }
-    }
-
-    Ok(effects)
-}
-
-fn parse_effect(cursor: &mut TokenCursor) -> Result<Effect, MachineParseError> {
-    match cursor.peek() {
-        Some(tok) => {
-            if tok.kind == TokKind::Ident("retract".to_string()) {
-                cursor.advance();
-                let (ident, _) = cursor.expect_ident()?;
-                Ok(Effect::Retract(ident))
-            } else if tok.kind == TokKind::Ident("assert".to_string()) {
-                cursor.advance();
-                let (ident, _) = cursor.expect_ident()?;
-                Ok(Effect::Assert(ident))
-            } else {
-                Err(MachineParseError {
-                    message: "expected 'retract' or 'assert'".to_string(),
-                    span: tok.span,
-                })
-            }
-        }
-        None => Err(MachineParseError {
-            message: "unexpected end of input, expected 'retract' or 'assert'".to_string(),
-            span: cursor.eof_span(),
-        }),
-    }
+    map
 }
 
 /// Desugars `decl.from`/`decl.to` into the full guard/effect lists per
@@ -672,9 +119,9 @@ pub fn resolve_transition(decl: &TransitionDecl) -> (Vec<GuardClause>, Vec<Effec
                         term: PatternTerm::Node(from_value.clone()),
                     }],
                 },
-                span: decl.span,
+                span: decl.span.clone(),
             },
-            span: decl.span,
+            span: decl.span.clone(),
         };
         guards.insert(0, implicit_guard);
     }
@@ -725,30 +172,6 @@ pub fn eval_guard(guard: &GuardClause, ctx: &EvalContext, world: &crate::interpr
 /// every guard holds.
 pub fn eval_guards(guards: &[GuardClause], ctx: &EvalContext, world: &crate::interpret::Materialized) -> bool {
     guards.iter().all(|guard| eval_guard(guard, ctx, world))
-}
-
-/// Parses every `machine_stmt` in `doc`, keyed by the machine's own
-/// node, joined the same way `crate::lower::lower_reference` joins a
-/// `NodeRef`'s segments (`stmt.node.segments.join("/")`). Stops at the
-/// first malformed machine body, in document order.
-pub fn parse_all_machines(
-    doc: &crate::ast::Document,
-) -> Result<std::collections::HashMap<String, MachineBody>, (String, MachineParseError)> {
-    let mut map = std::collections::HashMap::new();
-    for item in &doc.items {
-        if let crate::ast::TopLevelItem::Machine(stmt) = item {
-            let key = stmt.node.segments.join("/");
-            match parse_machine_body(&stmt.body) {
-                Ok(machine_body) => {
-                    map.insert(key, machine_body);
-                }
-                Err(e) => {
-                    return Err((key, e));
-                }
-            }
-        }
-    }
-    Ok(map)
 }
 
 /// Whether `ident`'s transition may fire right now, given `ctx` and

@@ -21,7 +21,7 @@
 /// the same way `edge/12` does, so moving between rooms goes through
 /// the identical guard-and-retraction machinery #80 already built for
 /// unlocking a door: `check_and_synthesize_transition_consumes` finds
-/// `player` in `parse_all_machines`'s map exactly like it finds
+/// `player` in `all_machines`'s map exactly like it finds
 /// `edge/12`, no new code needed, only new content. The one declared
 /// transition mirrors the one `opensTo` fact genesis actually asserts
 /// (`room/1 opensTo room/2`) -- gated on `edge/12` actually being

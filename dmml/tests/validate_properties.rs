@@ -15,12 +15,14 @@ use dmml::validate::validate_declarations;
 use proptest::prelude::*;
 use std::collections::HashSet;
 
-const DUMMY_SPAN: Span = Span { start: 0, end: 0 };
+fn dummy_span() -> Span {
+    Span::new("")
+}
 
 fn dummy_node_ref() -> NodeRef {
     NodeRef {
         segments: vec!["n".to_string()],
-        span: DUMMY_SPAN,
+        span: dummy_span(),
     }
 }
 
@@ -54,19 +56,19 @@ fn to_ast_item(g: &GenItem) -> CommitItem {
         GenItem::Declare(ident) => CommitItem::Declare(DeclareStmt {
             kind: DeclKind::Relation,
             ident: ident.clone(),
-            span: DUMMY_SPAN,
+            span: dummy_span(),
         }),
         GenItem::FactRdfType => CommitItem::Fact(FactStmt {
             subject: dummy_node_ref(),
             predicate: PredicateRef::RdfType,
             value: Value::Literal(Literal::Boolean(true)),
-            span: DUMMY_SPAN,
+            span: dummy_span(),
         }),
         GenItem::FactIdent(ident) => CommitItem::Fact(FactStmt {
             subject: dummy_node_ref(),
             predicate: PredicateRef::Ident(ident.clone()),
             value: Value::Literal(Literal::Boolean(true)),
-            span: DUMMY_SPAN,
+            span: dummy_span(),
         }),
     }
 }
@@ -77,7 +79,7 @@ proptest! {
         let commit = CommitStmt {
             predicate_verb: "mints".to_string(),
             items: items.iter().map(to_ast_item).collect(),
-            span: DUMMY_SPAN,
+            span: dummy_span(),
         };
 
         // Independent reference: declared set from any Declare, then every

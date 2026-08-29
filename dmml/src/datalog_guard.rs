@@ -212,8 +212,11 @@ pub fn eval_exists(pattern: &Pattern, ctx: &EvalContext, world: &Materialized) -
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast;
     use crate::lower::{LoweredCommit, Triple};
-    use crate::machine::{eval_exists as hand_rolled_eval_exists, eval_guard, parse_machine_body};
+    use crate::machine::{
+        eval_exists as hand_rolled_eval_exists, eval_guard, ExistsExpr, GuardClause, PatternHop, PatternTerm,
+    };
 
     fn fact(subject: &str, predicate: &str, object: TripleValue) -> Triple {
         Triple {
@@ -246,9 +249,29 @@ mod tests {
         Materialized::from_commits(&[commit])
     }
 
-    fn parse_first_guard(body: &str) -> crate::machine::GuardClause {
-        let parsed = parse_machine_body(body).expect("should parse");
-        parsed.transitions[0].guards[0].clone()
+    /// Builds a `GuardClause` directly against the AST -- the equivalent
+    /// of parsing `guard: [not] EXISTS(<anchor> <hop> ...)`, back when
+    /// this crate had a text grammar for it. Takes hops as
+    /// `(predicate, term)` pairs to keep each test's fixture readable.
+    fn guard(negated: bool, anchor: PatternTerm, hops: &[(&str, PatternTerm)]) -> GuardClause {
+        GuardClause {
+            negated,
+            exists: ExistsExpr {
+                pattern: Pattern {
+                    anchor,
+                    hops: hops
+                        .iter()
+                        .cloned()
+                        .map(|(predicate, term)| PatternHop {
+                            predicate: predicate.to_string(),
+                            term,
+                        })
+                        .collect(),
+                },
+                span: ast::Span::new(""),
+            },
+            span: ast::Span::new(""),
+        }
     }
 
     fn assert_agrees(pattern: &Pattern, ctx: &EvalContext, world: &Materialized) -> bool {
@@ -260,7 +283,7 @@ mod tests {
 
     #[test]
     fn example_1_self_state_check_true() {
-        let guard = parse_first_guard("transition t { guard: EXISTS(self state unlocked) }");
+        let guard = guard(false, PatternTerm::SelfRef, &[("state", PatternTerm::Node("unlocked".to_string()))]);
         let ctx = EvalContext {
             self_node: "edge/12".to_string(),
             params: HashMap::new(),
@@ -271,7 +294,7 @@ mod tests {
 
     #[test]
     fn example_2_self_state_check_false_for_different_edge() {
-        let guard = parse_first_guard("transition t { guard: EXISTS(self state unlocked) }");
+        let guard = guard(false, PatternTerm::SelfRef, &[("state", PatternTerm::Node("unlocked".to_string()))]);
         let ctx = EvalContext {
             self_node: "edge/99".to_string(),
             params: HashMap::new(),
@@ -281,8 +304,13 @@ mod tests {
 
     #[test]
     fn example_3_multi_hop_traversal_with_existential_anchor() {
-        let guard = parse_first_guard(
-            "transition t { guard: EXISTS(?room hasEdge self connectsTo $dest) }",
+        let guard = guard(
+            false,
+            PatternTerm::Var("room".to_string()),
+            &[
+                ("hasEdge", PatternTerm::SelfRef),
+                ("connectsTo", PatternTerm::Param("dest".to_string())),
+            ],
         );
         let mut params = HashMap::new();
         params.insert("dest".to_string(), "room/2".to_string());
@@ -295,8 +323,13 @@ mod tests {
 
     #[test]
     fn example_3_fails_when_dest_does_not_match() {
-        let guard = parse_first_guard(
-            "transition t { guard: EXISTS(?room hasEdge self connectsTo $dest) }",
+        let guard = guard(
+            false,
+            PatternTerm::Var("room".to_string()),
+            &[
+                ("hasEdge", PatternTerm::SelfRef),
+                ("connectsTo", PatternTerm::Param("dest".to_string())),
+            ],
         );
         let mut params = HashMap::new();
         params.insert("dest".to_string(), "room/999".to_string());
@@ -309,7 +342,11 @@ mod tests {
 
     #[test]
     fn example_4_negated_guard_holds_on_empty_world() {
-        let guard = parse_first_guard("transition t { guard: not EXISTS(guardPost/3 occupiedBy ?guard) }");
+        let guard = guard(
+            true,
+            PatternTerm::Node("guardPost/3".to_string()),
+            &[("occupiedBy", PatternTerm::Var("guard".to_string()))],
+        );
         let ctx = EvalContext::default();
         let empty = Materialized::default();
         assert!(!assert_agrees(&guard.exists.pattern, &ctx, &empty));
@@ -328,14 +365,18 @@ mod tests {
         };
         let world = Materialized::from_commits(&[commit]);
 
-        let guard = parse_first_guard("transition t { guard: EXISTS(room/1 dampness ?x) }");
+        let guard = guard(
+            false,
+            PatternTerm::Node("room/1".to_string()),
+            &[("dampness", PatternTerm::Var("x".to_string()))],
+        );
         let ctx = EvalContext::default();
         assert!(!assert_agrees(&guard.exists.pattern, &ctx, &world));
     }
 
     #[test]
     fn unbound_param_fails_the_guard_without_panicking() {
-        let guard = parse_first_guard("transition t { guard: EXISTS(self holds $item) }");
+        let guard = guard(false, PatternTerm::SelfRef, &[("holds", PatternTerm::Param("item".to_string()))]);
         let ctx = EvalContext {
             self_node: "player".to_string(),
             params: HashMap::new(),
@@ -365,7 +406,14 @@ mod tests {
         };
         let world = Materialized::from_commits(&[commit]);
 
-        let guard = parse_first_guard("transition t { guard: EXISTS(a left ?x right ?x) }");
+        let guard = guard(
+            false,
+            PatternTerm::Node("a".to_string()),
+            &[
+                ("left", PatternTerm::Var("x".to_string())),
+                ("right", PatternTerm::Var("x".to_string())),
+            ],
+        );
         let ctx = EvalContext::default();
         // Per MACHINE_SPEC.md's "Multi-hop patterns and ?vars", ?x at the
         // second hop is a fresh, unconstrained wildcard -- it does NOT

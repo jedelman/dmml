@@ -1,32 +1,30 @@
-//! End-to-end: real DMML source -> parse -> lower -> materialize,
+//! End-to-end: real JSON commit authoring -> AST -> lower -> materialize,
 //! checking the actual `current_value` a resolver would answer.
 
-use dmml::ast::TopLevelItem;
+use dmml::from_json::commit_from_json;
 use dmml::interpret::Materialized;
 use dmml::lower::{lower_commit, LoweredCommit, TripleValue};
 
-fn lower_all_commits(src: &str) -> Vec<LoweredCommit> {
-    let doc = dmml::parse(src).expect("should parse");
-    doc.items
+fn lower_all_commits(jsons: &[&str]) -> Vec<LoweredCommit> {
+    jsons
         .iter()
-        .filter_map(|item| match item {
-            TopLevelItem::Commit(c) => Some(lower_commit(c)),
-            _ => None,
+        .map(|json| {
+            let commit = commit_from_json(json).expect("should build");
+            lower_commit(&commit)
         })
         .collect()
 }
 
 #[test]
 fn single_commit_current_values() {
-    let commits = lower_all_commits(
-        r#"
-commit mints {
-  declare relation opensTo
-  room/42 a Room
-  room/42 opensTo room/43
-}
-"#,
-    );
+    let commits = lower_all_commits(&[r#"{
+        "verb": "mints",
+        "declares": [{"kind": "relation", "name": "opensTo"}],
+        "facts": [
+            {"subject": "room/42", "predicate": "a", "object": {"kind": "node", "value": "Room"}},
+            {"subject": "room/42", "predicate": "opensTo", "object": {"kind": "node", "value": "room/43"}}
+        ]
+    }"#]);
     let m = Materialized::from_commits(&commits);
     assert_eq!(
         m.current_value("room/42", "rdf:type"),
@@ -49,17 +47,12 @@ commit mints {
 
 #[test]
 fn later_commit_overwrites_earlier_for_same_subject_predicate() {
-    let commits = lower_all_commits(
-        r#"
-commit mints {
-  room/42 locked true
-}
-
-commit unlocks {
-  room/42 locked false
-}
-"#,
-    );
+    let commits = lower_all_commits(&[
+        r#"{"verb": "mints",
+            "facts": [{"subject": "room/42", "predicate": "locked", "object": {"kind": "boolean", "value": true}}]}"#,
+        r#"{"verb": "unlocks",
+            "facts": [{"subject": "room/42", "predicate": "locked", "object": {"kind": "boolean", "value": false}}]}"#,
+    ]);
     let m = Materialized::from_commits(&commits);
     assert_eq!(
         m.current_value("room/42", "locked"),
@@ -70,18 +63,15 @@ commit unlocks {
 
 #[test]
 fn unrelated_subject_predicate_pairs_are_untouched_by_a_later_commit() {
-    let commits = lower_all_commits(
-        r#"
-commit mints {
-  room/42 locked true
-  room/43 locked true
-}
-
-commit unlocks {
-  room/42 locked false
-}
-"#,
-    );
+    let commits = lower_all_commits(&[
+        r#"{"verb": "mints",
+            "facts": [
+                {"subject": "room/42", "predicate": "locked", "object": {"kind": "boolean", "value": true}},
+                {"subject": "room/43", "predicate": "locked", "object": {"kind": "boolean", "value": true}}
+            ]}"#,
+        r#"{"verb": "unlocks",
+            "facts": [{"subject": "room/42", "predicate": "locked", "object": {"kind": "boolean", "value": false}}]}"#,
+    ]);
     let m = Materialized::from_commits(&commits);
     assert_eq!(
         m.current_value("room/42", "locked"),

@@ -1,8 +1,0 @@
-commit mints {
-  declare relation opensTo
-  declare attribute dampness
-
-  room/42 a Room
-  room/42 opensTo room/43
-  room/42 dampness 0.4
-}

@@ -1,37 +1,32 @@
-//! DMML (Desiring-Machine Markup Language) reference parser.
+//! DMML (Desiring-Machine Markup Language) ontology and reference
+//! materializer.
 //!
-//! Implements the EBNF grammar from `SPEC.md` section 10 ("Formal grammar
-//! (EBNF)") as a hand-written recursive-descent parser -- no
-//! parser-generator dependency, per that section's own justification
-//! (error-message quality, minimal build-pipeline surface area).
-//!
-//! `parse` never panics on any input, including malformed or adversarial
-//! byte sequences: every rejection is a `ParseError`, not a panic. This is
-//! the property the fuzz target in `fuzz/` checks continuously.
+//! Authoring happens through JSON (`from_json`), deserialized directly
+//! into `ast::Document`'s node types -- there is no text grammar and no
+//! text parser. DMML used to be a hand-written source language with its
+//! own recursive-descent parser (retired along with the lexer/parser
+//! modules and the fuzz target that exercised them; see `from_json`'s own
+//! doc comment for why: nothing hand-writes DMML source text, only
+//! agents author it, and JSON is what a tool-calling agent actually
+//! produces). Everything downstream of the AST -- `validate`, `lower`,
+//! `interpret`, `resolver`, the `datalog_*` modules -- operates on
+//! `ast::Document`'s types and never cared how they were built, so none
+//! of it changed when the authoring surface did.
 
 pub mod ast;
 pub mod datalog_guard;
 pub mod datalog_reachability;
 pub mod datalog_validate;
 pub mod datalog_worldstate;
-pub mod error;
 pub mod from_json;
 pub mod genesis;
 pub mod graphview;
 pub mod identity;
 pub mod interpret;
-mod lexer;
 pub mod lower;
 pub mod machine;
-mod parser;
 pub mod resolver;
 pub mod validate;
 pub mod view;
 
 pub use ast::Document;
-pub use error::ParseError;
-
-/// Parses `input` as a DMML document. Never panics.
-pub fn parse(input: &str) -> Result<Document, ParseError> {
-    parser::parse_document(input)
-}

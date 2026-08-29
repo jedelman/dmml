@@ -1,11 +1,12 @@
-//! Independent verification of `dmml::machine::parse_all_machines`/
-//! `may_fire` against MACHINE_SPEC.md's "Worked examples (wiring)"
-//! section -- written from the spec text, not derived from the
-//! implementation.
+//! Independent verification of `dmml::machine::all_machines`/`may_fire`
+//! against MACHINE_SPEC.md's "Worked examples (wiring)" section --
+//! written from the spec text, not derived from the implementation.
 
+use dmml::ast::{Document, TopLevelItem};
+use dmml::from_json::{commit_from_json, machine_from_json};
 use dmml::interpret::Materialized;
 use dmml::lower::{LoweredCommit, Triple, TripleValue};
-use dmml::machine::{may_fire, parse_all_machines, EvalContext};
+use dmml::machine::{all_machines, may_fire, EvalContext};
 
 fn fact(subject: &str, predicate: &str, object: TripleValue) -> Triple {
     Triple {
@@ -34,23 +35,35 @@ fn world() -> Materialized {
     Materialized::from_commits(&[commit])
 }
 
-const DOC_SRC: &str = "
-machine edge/12 {
-  state locked
-  state unlocked
+const DOC_JSON: &str = r#"{
+    "node": "edge/12",
+    "states": [{"ident": "locked"}, {"ident": "unlocked"}],
+    "transitions": [
+        {
+            "ident": "unlock",
+            "from": "locked",
+            "to": "unlocked",
+            "guards": [
+                {"exists": {
+                    "anchor": {"kind": "node", "value": "player"},
+                    "hops": [{"predicate": "holds", "term": {"kind": "node", "value": "key/7"}}]
+                }}
+            ]
+        }
+    ]
+}"#;
 
-  transition unlock {
-    from: locked
-    to: unlocked
-    guard: EXISTS(player holds key/7)
-  }
+fn doc_with_edge_12_machine() -> Document {
+    let stmt = machine_from_json(DOC_JSON).expect("machine JSON should build");
+    Document {
+        items: vec![TopLevelItem::Machine(stmt)],
+    }
 }
-";
 
 #[test]
-fn example_1_parse_all_machines_keys_by_joined_node_ref() {
-    let doc = dmml::parse(DOC_SRC).expect("should parse");
-    let map = parse_all_machines(&doc).expect("machine body should parse");
+fn example_1_all_machines_keys_by_joined_node_ref() {
+    let doc = doc_with_edge_12_machine();
+    let map = all_machines(&doc);
     assert_eq!(map.len(), 1);
     let body = map.get("edge/12").expect("keyed by \"edge/12\"");
     assert_eq!(body.states.len(), 2);
@@ -60,8 +73,8 @@ fn example_1_parse_all_machines_keys_by_joined_node_ref() {
 
 #[test]
 fn example_2_may_fire_false_short_circuits_on_implicit_from_guard() {
-    let doc = dmml::parse(DOC_SRC).expect("should parse");
-    let map = parse_all_machines(&doc).expect("machine body should parse");
+    let doc = doc_with_edge_12_machine();
+    let map = all_machines(&doc);
     let body = &map["edge/12"];
 
     let ctx = EvalContext {
@@ -77,8 +90,8 @@ fn example_2_may_fire_false_short_circuits_on_implicit_from_guard() {
 
 #[test]
 fn example_3_may_fire_none_for_undeclared_transition() {
-    let doc = dmml::parse(DOC_SRC).expect("should parse");
-    let map = parse_all_machines(&doc).expect("machine body should parse");
+    let doc = doc_with_edge_12_machine();
+    let map = all_machines(&doc);
     let body = &map["edge/12"];
 
     let ctx = EvalContext {
@@ -89,25 +102,17 @@ fn example_3_may_fire_none_for_undeclared_transition() {
 }
 
 /// Not a worked example in the spec -- generalization: a document with
-/// no `machine_stmt` items at all parses to an empty map, not an error.
+/// no `machine_stmt` items at all builds an empty map, not an error.
 #[test]
 fn no_machines_in_document_is_an_empty_map() {
-    let doc = dmml::parse("commit becomes {\n  declare relation opensTo\n  room/1 opensTo room/2\n}\n")
-        .expect("should parse");
-    let map = parse_all_machines(&doc).expect("no machines to fail on");
+    let commit = commit_from_json(
+        r#"{"verb": "becomes", "declares": [{"kind": "relation", "name": "opensTo"}],
+            "facts": [{"subject": "room/1", "predicate": "opensTo", "object": {"kind": "node", "value": "room/2"}}]}"#,
+    )
+    .expect("should build");
+    let doc = Document {
+        items: vec![TopLevelItem::Commit(commit)],
+    };
+    let map = all_machines(&doc);
     assert!(map.is_empty());
-}
-
-/// Generalization: a malformed machine body surfaces its own node as
-/// the error key, not a generic failure.
-#[test]
-fn malformed_machine_body_reports_its_own_node_as_the_error_key() {
-    let src = "
-machine door/9 {
-  transition noop { }
-}
-";
-    let doc = dmml::parse(src).expect("should parse at the document level");
-    let err = parse_all_machines(&doc).expect_err("noop transition should be rejected");
-    assert_eq!(err.0, "door/9");
 }

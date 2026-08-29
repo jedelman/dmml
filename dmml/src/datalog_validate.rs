@@ -110,7 +110,7 @@ pub fn validate_declarations_with_spans(
         .filter_map(|(_, fact_stmt)| match &fact_stmt.predicate {
             ast::PredicateRef::Ident(s) => Some(crate::validate::UndeclaredPredicate {
                 predicate: s.clone(),
-                span: fact_stmt.span,
+                span: fact_stmt.span.clone(),
             }),
             ast::PredicateRef::RdfType => None,
         })
@@ -128,14 +128,8 @@ mod tests {
     use super::*;
     use crate::validate::validate_declarations as hand_rolled_validate_declarations;
 
-    fn first_commit(src: &str) -> ast::CommitStmt {
-        let doc = crate::parse(src).expect("should parse");
-        for item in doc.items {
-            if let ast::TopLevelItem::Commit(c) = item {
-                return c;
-            }
-        }
-        panic!("no commit in document");
+    fn first_commit(json: &str) -> ast::CommitStmt {
+        crate::from_json::commit_from_json(json).expect("should build")
     }
 
     fn assert_agrees(commit: &ast::CommitStmt) -> Result<(), Vec<String>> {
@@ -159,12 +153,8 @@ mod tests {
     #[test]
     fn declared_before_use_is_ok() {
         let commit = first_commit(
-            r#"
-commit mints {
-  declare relation opensTo
-  room/42 opensTo room/43
-}
-"#,
+            r#"{"verb": "mints", "declares": [{"kind": "relation", "name": "opensTo"}],
+                "facts": [{"subject": "room/42", "predicate": "opensTo", "object": {"kind": "node", "value": "room/43"}}]}"#,
         );
         assert!(assert_agrees(&commit).is_ok());
     }
@@ -172,12 +162,9 @@ commit mints {
     #[test]
     fn declared_after_use_is_ok_order_independent() {
         let commit = first_commit(
-            r#"
-commit mints {
-  room/42 opensTo room/43
-  declare relation opensTo
-}
-"#,
+            r#"{"verb": "mints",
+                "facts": [{"subject": "room/42", "predicate": "opensTo", "object": {"kind": "node", "value": "room/43"}}],
+                "declares": [{"kind": "relation", "name": "opensTo"}]}"#,
         );
         assert!(assert_agrees(&commit).is_ok());
     }
@@ -185,11 +172,8 @@ commit mints {
     #[test]
     fn never_declared_is_an_error() {
         let commit = first_commit(
-            r#"
-commit mints {
-  room/42 opensTo room/43
-}
-"#,
+            r#"{"verb": "mints",
+                "facts": [{"subject": "room/42", "predicate": "opensTo", "object": {"kind": "node", "value": "room/43"}}]}"#,
         );
         assert_eq!(assert_agrees(&commit).unwrap_err(), vec!["opensTo".to_string()]);
     }
@@ -197,11 +181,8 @@ commit mints {
     #[test]
     fn rdf_type_never_needs_declaring() {
         let commit = first_commit(
-            r#"
-commit mints {
-  room/42 a Room
-}
-"#,
+            r#"{"verb": "mints",
+                "facts": [{"subject": "room/42", "predicate": "a", "object": {"kind": "node", "value": "Room"}}]}"#,
         );
         assert!(assert_agrees(&commit).is_ok());
     }
@@ -212,12 +193,11 @@ commit mints {
     #[test]
     fn multiple_undeclared_reported_in_order() {
         let commit = first_commit(
-            r#"
-commit mints {
-  room/42 opensTo room/43
-  room/42 dampness 0.4
-}
-"#,
+            r#"{"verb": "mints",
+                "facts": [
+                    {"subject": "room/42", "predicate": "opensTo", "object": {"kind": "node", "value": "room/43"}},
+                    {"subject": "room/42", "predicate": "dampness", "object": {"kind": "number", "value": "0.4"}}
+                ]}"#,
         );
         assert_eq!(
             assert_agrees(&commit).unwrap_err(),
@@ -225,34 +205,43 @@ commit mints {
         );
     }
 
+    /// JSON authoring never produces an explicit `CommitItem::Produces`
+    /// (bare facts are the sole JSON shape -- see `from_json`'s own doc
+    /// comment), so this checks the Datalog path still generalizes to
+    /// that AST shape directly, built by hand.
     #[test]
     fn undeclared_inside_explicit_produces_block_is_still_an_error() {
-        let commit = first_commit(
-            r#"
-commit mints {
-  produces {
-    room/42 opensTo room/43
-  }
-}
-"#,
-        );
+        let commit = ast::CommitStmt {
+            predicate_verb: "mints".to_string(),
+            items: vec![ast::CommitItem::Produces(ast::ProducesBlock {
+                facts: vec![ast::FactStmt {
+                    subject: ast::NodeRef {
+                        segments: vec!["room".to_string(), "42".to_string()],
+                        span: ast::Span::new(""),
+                    },
+                    predicate: ast::PredicateRef::Ident("opensTo".to_string()),
+                    value: ast::Value::Node(ast::NodeRef {
+                        segments: vec!["room".to_string(), "43".to_string()],
+                        span: ast::Span::new(""),
+                    }),
+                    span: ast::Span::new(""),
+                }],
+                span: ast::Span::new(""),
+            })],
+            span: ast::Span::new(""),
+        };
         assert_eq!(assert_agrees(&commit).unwrap_err(), vec!["opensTo".to_string()]);
     }
 
     #[test]
     fn consumes_only_commit_is_never_checked() {
         let commit = first_commit(
-            r#"
-commit becomes {
-  consumes {
-    fact at://did:plc:aaaa1111/org.jason-edelman.writtenworld.commit/xyz789
-      (cid: bafyabcxyz) {
-      subject: room/42
-      predicate: locked
-    }
-  }
-}
-"#,
+            r#"{"verb": "becomes", "consumes": [
+                {"kind": "fact",
+                 "commit": {"uri": "at://did:plc:aaaa1111/org.jason-edelman.writtenworld.commit/xyz789", "cid": "bafyabcxyz"},
+                 "subject": "room/42",
+                 "predicate": "locked"}
+            ]}"#,
         );
         assert!(assert_agrees(&commit).is_ok());
     }

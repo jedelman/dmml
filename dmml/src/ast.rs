@@ -1,16 +1,30 @@
-//! AST for DMML (Desiring-Machine Markup Language), matching the EBNF
-//! grammar in `SPEC.md` section 10 ("Formal grammar (EBNF)") exactly.
-//! `machine`'s body is kept as an opaque, balanced-brace token span at
-//! THIS layer (see `MachineStmt`) -- not because #50 Tier 2 is still
-//! unsettled (it isn't; see `MACHINE_SPEC.md`), but because its own
-//! grammar is parsed as a deliberate second pass
-//! (`crate::machine::parse_machine_body`) over that raw string, rather
-//! than folded into this top-level recursive-descent parser.
+//! AST for DMML (Desiring-Machine Markup Language). Built directly from
+//! JSON authoring input (`crate::from_json`) -- there is no text grammar
+//! and no text parser; a hand-written DMML source language was retired
+//! (see `from_json`'s own doc comment) once JSON became the only real
+//! authoring surface, since nothing hand-writes DMML source text anymore
+//! and JSON is what a tool-calling agent actually produces. `MachineStmt`
+//! carries its states/transitions as real structured data for the same
+//! reason -- there is no longer a raw balanced-brace body to keep opaque
+//! or a second parsing pass to defer to; `MACHINE_SPEC.md` still governs
+//! the *semantics* of states/transitions/guards/effects, just not their
+//! surface syntax.
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// A JSON Pointer (RFC 6901) into the authoring request payload this AST
+/// node was built from -- e.g. `/facts/2/predicate`. Stands in for the
+/// byte-range-into-source-text `Span` this crate used before the DSL's
+/// text parser was retired: same job (let an error point at where in the
+/// original request a problem came from), different coordinate space,
+/// since there is no source text anymore to take a byte range into.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Span {
-    pub start: usize,
-    pub end: usize,
+    pub pointer: String,
+}
+
+impl Span {
+    pub fn new(pointer: impl Into<String>) -> Self {
+        Span { pointer: pointer.into() }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -158,14 +172,13 @@ pub struct ReferenceStmt {
     pub span: Span,
 }
 
-/// Grammar-reserved, not specified. A parser implementing this grammar
-/// accepts the production, consumes a balanced-brace block, and does not
-/// attempt to give the interior any structure -- see the grammar's own
-/// note. `body` is the raw source text between (not including) the
-/// braces, exactly as written.
+/// A desiring-machine declaration: the node it's attached to, plus its
+/// states and transitions per `MACHINE_SPEC.md`. Structured data directly
+/// from JSON authoring input -- no opaque body, no second parsing pass.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MachineStmt {
     pub node: NodeRef,
-    pub body: String,
+    pub states: Vec<crate::machine::StateDecl>,
+    pub transitions: Vec<crate::machine::TransitionDecl>,
     pub span: Span,
 }

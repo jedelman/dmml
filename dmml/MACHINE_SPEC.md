@@ -20,6 +20,26 @@ This spec adds one refinement beyond those three, decided while drafting
 this file: **no OR/ONE-OF combinator either.** See "No disjunction"
 below.
 
+**Surface syntax correction (post-DSL-retirement):** "The grammar" and
+"Wiring into the toolchain" below describe a hand-written text grammar
+(`transition t { guard: EXISTS(...) ... }`) and a `parse_machine_body`/
+`parse_all_machines` text parser that no longer exist -- DMML's text
+authoring language was retired once JSON became the sole authoring
+surface (see `dmml::from_json`'s own doc comment for why). Every
+semantic rule below (guard/effect/pattern shape, firing, evaluation) is
+still exactly correct and still what `crate::machine`'s types and
+`crate::from_json::machine_stmt_from_input` implement; only the concrete
+syntax and the two renamed/removed functions are stale. `parse_all_
+machines` is now the infallible `crate::machine::all_machines(doc)`
+(no parse step left to fail on -- a `MachineStmt` already carries
+validated structural data by the time it's in the AST); there is no
+replacement for `parse_machine_body` since machine bodies are never text
+in the first place anymore. Left uncorrected below rather than rewritten,
+since the *semantics* worked examples are still accurate teaching
+material for what a JSON `MachineInput` needs to produce -- read every
+`transition t { ... }` block as "the same content, however JSON spells
+it," not as syntax to reproduce literally.
+
 ## The grammar
 
 ```ebnf

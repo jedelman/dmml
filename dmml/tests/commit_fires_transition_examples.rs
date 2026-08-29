@@ -3,9 +3,10 @@
 //! the effects-matching half `may_fire` alone can't answer (see that
 //! function's own doc comment for why the two are distinct questions).
 
+use dmml::from_json::machine_from_json;
 use dmml::interpret::Materialized;
 use dmml::lower::{ConsumeRef, FactRef, LoweredCommit, StrongRef, Triple, TripleValue};
-use dmml::machine::{commit_fires_transition, Effect, EvalContext, FiresTransitionError};
+use dmml::machine::{commit_fires_transition, Effect, EvalContext, FiresTransitionError, MachineBody};
 
 fn fact(subject: &str, predicate: &str, object: TripleValue) -> Triple {
     Triple {
@@ -52,18 +53,31 @@ fn world_before_unlocked() -> Materialized {
     Materialized::from_commits(&[commit])
 }
 
-const DOC_SRC: &str = "
-machine edge/12 {
-  state locked
-  state unlocked
+const DOC_JSON: &str = r#"{
+    "node": "edge/12",
+    "states": [{"ident": "locked"}, {"ident": "unlocked"}],
+    "transitions": [
+        {
+            "ident": "unlock",
+            "from": "locked",
+            "to": "unlocked",
+            "guards": [
+                {"exists": {
+                    "anchor": {"kind": "node", "value": "player"},
+                    "hops": [{"predicate": "holds", "term": {"kind": "node", "value": "key/7"}}]
+                }}
+            ]
+        }
+    ]
+}"#;
 
-  transition unlock {
-    from: locked
-    to: unlocked
-    guard: EXISTS(player holds key/7)
-  }
+fn edge_12_body() -> MachineBody {
+    let stmt = machine_from_json(DOC_JSON).expect("machine JSON should build");
+    MachineBody {
+        states: stmt.states,
+        transitions: stmt.transitions,
+    }
 }
-";
 
 fn edge_12_ctx() -> EvalContext {
     EvalContext {
@@ -96,12 +110,10 @@ fn fact_ref_retracting_locked(object: Option<TripleValue>) -> FactRef {
 
 #[test]
 fn guard_not_satisfied_when_state_is_not_locked() {
-    let doc = dmml::parse(DOC_SRC).expect("should parse");
-    let map = dmml::machine::parse_all_machines(&doc).expect("machine body should parse");
-    let body = map.get("edge/12").expect("keyed by \"edge/12\"");
+    let body = edge_12_body();
 
     let result = commit_fires_transition(
-        body,
+        &body,
         "unlock",
         &edge_12_ctx(),
         &world_before_unlocked(),
@@ -113,9 +125,7 @@ fn guard_not_satisfied_when_state_is_not_locked() {
 
 #[test]
 fn correct_candidate_matches_both_effects() {
-    let doc = dmml::parse(DOC_SRC).expect("should parse");
-    let map = dmml::machine::parse_all_machines(&doc).expect("machine body should parse");
-    let body = map.get("edge/12").expect("keyed by \"edge/12\"");
+    let body = edge_12_body();
 
     let candidate = LoweredCommit {
         predicate_verb: "becomes".to_string(),
@@ -125,16 +135,14 @@ fn correct_candidate_matches_both_effects() {
         responds_to: None,
     };
 
-    let result = commit_fires_transition(body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
+    let result = commit_fires_transition(&body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
 
     assert_eq!(result, Ok(()));
 }
 
 #[test]
 fn missing_assert_is_reported() {
-    let doc = dmml::parse(DOC_SRC).expect("should parse");
-    let map = dmml::machine::parse_all_machines(&doc).expect("machine body should parse");
-    let body = map.get("edge/12").expect("keyed by \"edge/12\"");
+    let body = edge_12_body();
 
     let candidate = LoweredCommit {
         predicate_verb: "becomes".to_string(),
@@ -144,7 +152,7 @@ fn missing_assert_is_reported() {
         responds_to: None,
     };
 
-    let result = commit_fires_transition(body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
+    let result = commit_fires_transition(&body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
 
     assert_eq!(
         result,
@@ -156,9 +164,7 @@ fn missing_assert_is_reported() {
 
 #[test]
 fn wildcard_retract_still_satisfies_the_effect() {
-    let doc = dmml::parse(DOC_SRC).expect("should parse");
-    let map = dmml::machine::parse_all_machines(&doc).expect("machine body should parse");
-    let body = map.get("edge/12").expect("keyed by \"edge/12\"");
+    let body = edge_12_body();
 
     let candidate = LoweredCommit {
         predicate_verb: "becomes".to_string(),
@@ -168,7 +174,7 @@ fn wildcard_retract_still_satisfies_the_effect() {
         responds_to: None,
     };
 
-    let result = commit_fires_transition(body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
+    let result = commit_fires_transition(&body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
 
     assert_eq!(result, Ok(()));
 }
@@ -179,9 +185,7 @@ fn wildcard_retract_still_satisfies_the_effect() {
 /// so rejected rather than assumed).
 #[test]
 fn strong_consume_never_satisfies_a_retract_effect() {
-    let doc = dmml::parse(DOC_SRC).expect("should parse");
-    let map = dmml::machine::parse_all_machines(&doc).expect("machine body should parse");
-    let body = map.get("edge/12").expect("keyed by \"edge/12\"");
+    let body = edge_12_body();
 
     let candidate = LoweredCommit {
         predicate_verb: "becomes".to_string(),
@@ -194,7 +198,7 @@ fn strong_consume_never_satisfies_a_retract_effect() {
         responds_to: None,
     };
 
-    let result = commit_fires_transition(body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
+    let result = commit_fires_transition(&body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
 
     assert_eq!(
         result,
@@ -206,12 +210,10 @@ fn strong_consume_never_satisfies_a_retract_effect() {
 
 #[test]
 fn unknown_transition_ident() {
-    let doc = dmml::parse(DOC_SRC).expect("should parse");
-    let map = dmml::machine::parse_all_machines(&doc).expect("machine body should parse");
-    let body = map.get("edge/12").expect("keyed by \"edge/12\"");
+    let body = edge_12_body();
 
     let result = commit_fires_transition(
-        body,
+        &body,
         "openSesame",
         &edge_12_ctx(),
         &world_before(),
