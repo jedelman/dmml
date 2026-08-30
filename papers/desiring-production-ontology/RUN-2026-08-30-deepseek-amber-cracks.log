@@ -1,0 +1,50 @@
+Shared world socket server listening on 127.0.0.1:37115
+
+########## TICK 1 (179s left) ##########
+
+[tick 1] alpha (deepseek/deepseek-v4-flash-0731): saw 1 new commit(s), outcome=invalid_batch, appended 0 commit(s)
+    error: Json(Error("EOF while parsing a string", line: 1, column: 2624))
+[tick 1] beta (deepseek/deepseek-v4-flash-0731): saw 1 new commit(s), outcome=invalid_batch, appended 0 commit(s)
+    error: Json(Error("invalid type: map, expected a sequence", line: 2, column: 12))
+[tick 1] gamma (deepseek/deepseek-v4-flash-0731): saw 1 new commit(s), outcome=ok, appended 1 commit(s)
+[tick 1] delta (deepseek/deepseek-v4-flash-0731): saw 2 new commit(s), outcome=invalid_batch, appended 0 commit(s)
+    error: Json(Error("EOF while parsing a string", line: 1, column: 1892))
+
+########## TICK 2 (110s left) ##########
+
+[tick 2] alpha (deepseek/deepseek-v4-flash-0731): saw 1 new commit(s), outcome=ok, appended 1 commit(s)
+[tick 2] beta (deepseek/deepseek-v4-flash-0731): saw 2 new commit(s), outcome=ok, appended 1 commit(s)
+[tick 2] gamma (deepseek/deepseek-v4-flash-0731): saw 2 new commit(s), outcome=invalid_batch, appended 0 commit(s)
+    error: Json(Error("EOF while parsing a string", line: 1, column: 2291))
+[tick 2] delta (deepseek/deepseek-v4-flash-0731): saw 2 new commit(s), outcome=ok, appended 1 commit(s)
+
+########## TICK 3 (53s left) ##########
+
+[tick 3] alpha (deepseek/deepseek-v4-flash-0731): saw 2 new commit(s), outcome=invalid_batch, appended 0 commit(s)
+    error: Json(Error("EOF while parsing a string", line: 1, column: 2340))
+[tick 3] beta (deepseek/deepseek-v4-flash-0731): saw 1 new commit(s), outcome=invalid_batch, appended 0 commit(s)
+    error: Json(Error("EOF while parsing a string", line: 1, column: 2458))
+[tick 3] gamma (deepseek/deepseek-v4-flash-0731): saw 1 new commit(s), outcome=ok, appended 1 commit(s)
+[tick 3] delta (deepseek/deepseek-v4-flash-0731): saw 1 new commit(s), outcome=invalid_batch, appended 0 commit(s)
+    error: Json(Error("EOF while parsing a string", line: 6, column: 2329))
+
+########## Final vocabulary ##########
+
+  aches_for (attribute), used 1 time(s)
+  decides (attribute), used 1 time(s)
+  feels (attribute), used 1 time(s)
+  follows (attribute), used 1 time(s)
+  glimmers (attribute), used 3 time(s)
+  hears (attribute), used 1 time(s)
+  listens_for (attribute), used 2 time(s)
+  remembers (attribute), used 1 time(s)
+  smells (attribute), used 1 time(s)
+  wonders (attribute), used 1 time(s)
+  yearns_for (attribute), used 1 time(s)
+
+########## Full-log integrity check ##########
+
+Server holds 6 commits total (including the seed).
+Materialized 26 distinct (subject, predicate) triples from the server's own log.
+
+Transcript written to transcript.jsonl (ran 3 tick(s) across 4 agents).
