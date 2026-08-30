@@ -73,7 +73,7 @@ pub fn reachable_from(commits: &[IdentifiedCommit], root_cid: &str) -> Vec<Ident
 
     runtime.extend([Root(sym.intern(root_cid))]);
     for c in commits {
-        if let Some(parent) = &c.commit.responds_to {
+        if let Some(parent) = c.commit.refs.get("respondsTo").and_then(|v| v.first()) {
             runtime.extend([RespondsTo(sym.intern(&c.cid), sym.intern(&parent.cid))]);
         }
     }
@@ -98,6 +98,16 @@ mod tests {
     use crate::lower::{LoweredCommit, StrongRef};
 
     fn commit(cid: &str, responds_to: Option<&str>) -> IdentifiedCommit {
+        let mut refs = std::collections::HashMap::new();
+        if let Some(r) = responds_to {
+            refs.insert(
+                "respondsTo".to_string(),
+                vec![StrongRef {
+                    uri: format!("at://did:example:test/x/{r}"),
+                    cid: r.to_string(),
+                }],
+            );
+        }
         IdentifiedCommit {
             uri: format!("at://did:example:test/x/{cid}"),
             cid: cid.to_string(),
@@ -105,11 +115,7 @@ mod tests {
                 predicate_verb: "becomes".to_string(),
                 consumes: vec![],
                 produces: vec![],
-                via: None,
-                responds_to: responds_to.map(|r| StrongRef {
-                    uri: format!("at://did:example:test/x/{r}"),
-                    cid: r.to_string(),
-                }),
+                refs,
             },
         }
     }

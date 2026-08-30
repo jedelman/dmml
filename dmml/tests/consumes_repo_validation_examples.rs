@@ -14,8 +14,7 @@ fn empty_commit(consumes: Vec<ConsumeRef>) -> LoweredCommit {
         predicate_verb: "becomes".to_string(),
         consumes,
         produces: vec![],
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     }
 }
 

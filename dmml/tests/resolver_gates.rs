@@ -1,8 +1,13 @@
-//! Truth-table tests for the five gate functions in `dmml::resolver`,
-//! each a direct transcription of a Thermite contract that certified L3
-//! (see thermite-contracts/*.th). These tests don't re-prove anything --
-//! Forge already did that -- they pin that the Rust transcription didn't
-//! drift from what was proven.
+//! Truth-table tests for the five gate functions in `dmml::resolver`.
+//! Four (`resolves`, `factref_matches`, `cross_repo_commit_valid`,
+//! `commit_valid_despite_dangling_factref`) are each a direct
+//! transcription of a Thermite contract that certified L3 (see
+//! thermite-contracts/*.th) -- these tests don't re-prove anything, Forge
+//! already did that, they pin that the Rust transcription didn't drift
+//! from what was proven. `commit_is_valid` is the fifth and is NOT one of
+//! those right now -- see its own doc comment in `resolver.rs` for why;
+//! its test below is ordinary truth-table coverage of real (not proven)
+//! Rust, same as any other function in this crate.
 
 use dmml::resolver::{
     commit_is_valid, commit_valid_despite_dangling_factref, cross_repo_commit_valid,
@@ -18,13 +23,11 @@ fn resolves_ignores_foreign_repo_accepted() {
 }
 
 #[test]
-fn commit_is_valid_ignores_inert_fields() {
-    for via in [false, true] {
-        for responds_to in [false, true] {
-            assert!(commit_is_valid(true, via, responds_to));
-            assert!(!commit_is_valid(false, via, responds_to));
-        }
-    }
+fn commit_is_valid_requires_both_consumes_and_requires_to_be_valid() {
+    assert!(commit_is_valid(true, true));
+    assert!(!commit_is_valid(true, false));
+    assert!(!commit_is_valid(false, true));
+    assert!(!commit_is_valid(false, false));
 }
 
 #[test]

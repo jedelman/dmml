@@ -8,19 +8,21 @@
 
 use crate::ast;
 use serde::Serialize;
+use std::collections::HashMap;
 
-/// One `commit { ... }` block, lowered. Mirrors `engine::graph::Commit`'s
-/// field shape (`consumes`/`produces`/`predicate`/`via`/`responds_to`),
-/// but self-contained -- `produces` is a flat `Vec<Triple>` here rather
-/// than serialized N-Quads text, since dmml has no N-Quads writer of its
-/// own and doesn't need one to be a useful reference lowering.
+/// One `commit { ... }` block, lowered. `produces` is a flat `Vec<Triple>`
+/// here rather than serialized N-Quads text, since dmml has no N-Quads
+/// writer of its own and doesn't need one to be a useful reference
+/// lowering. `refs` replaces the old separate `via`/`responds_to` fields
+/// -- see `ast::CommitStmt.refs`'s own doc comment for why every role is
+/// a list keyed by an open role name rather than two dedicated
+/// `Option<StrongRef>` fields.
 #[derive(Debug, Clone, PartialEq)]
 pub struct LoweredCommit {
     pub predicate_verb: String,
     pub consumes: Vec<ConsumeRef>,
     pub produces: Vec<Triple>,
-    pub via: Option<StrongRef>,
-    pub responds_to: Option<StrongRef>,
+    pub refs: HashMap<String, Vec<StrongRef>>,
 }
 
 /// `Serialize` derived directly (not a parallel `Wire*` struct, unlike
@@ -99,8 +101,6 @@ fn lower_strong_ref(sr: &ast::StrongRef) -> StrongRef {
 pub fn lower_commit(commit: &ast::CommitStmt) -> LoweredCommit {
     let mut produces = Vec::new();
     let mut consumes = Vec::new();
-    let mut via = None;
-    let mut responds_to = None;
 
     for item in &commit.items {
         match item {
@@ -148,21 +148,20 @@ pub fn lower_commit(commit: &ast::CommitStmt) -> LoweredCommit {
                     }
                 }
             }
-            ast::CommitItem::Via(sr) => {
-                via = Some(lower_strong_ref(sr));
-            }
-            ast::CommitItem::RespondsTo(sr) => {
-                responds_to = Some(lower_strong_ref(sr));
-            }
         }
     }
+
+    let refs = commit
+        .refs
+        .iter()
+        .map(|(role, targets)| (role.clone(), targets.iter().map(lower_strong_ref).collect()))
+        .collect();
 
     LoweredCommit {
         predicate_verb: commit.predicate_verb.clone(),
         consumes,
         produces,
-        via,
-        responds_to,
+        refs,
     }
 }
 

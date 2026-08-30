@@ -29,8 +29,7 @@ fn world() -> Materialized {
             fact("room/1", "hasEdge", node("edge/12")),
             fact("edge/12", "connectsTo", node("room/2")),
         ],
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     };
     Materialized::from_commits(&[commit])
 }

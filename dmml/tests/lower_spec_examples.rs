@@ -2,20 +2,19 @@
 //! LOWERING_SPEC.md's three worked examples -- these expected values
 //! were written into the spec BEFORE the implementation was dispatched
 //! to Kimi, and are transcribed here unchanged from the spec document,
-//! not derived from reading the implementation. A 4th test (multiple
-//! `via` clauses) checks the last-wins tie-break rule the spec states
-//! but didn't work a full example for.
+//! not derived from reading the implementation.
 //!
-//! The first three examples go through `from_json::commit_from_json`,
-//! same as real content. The 4th (`repeated_via_last_one_wins`) builds
-//! `ast::CommitStmt` by hand: JSON authoring's `CommitInput` only has a
-//! single `via` field (one `via` per commit is the only shape an agent
-//! can actually produce), but `lower_commit`'s last-wins behavior over
-//! multiple `CommitItem::Via` entries is still real AST-level behavior
-//! worth pinning directly, the same way `validate_spec_examples.rs`
-//! builds its explicit-`produces`-block case straight against the AST.
+//! `via`/`respondsTo` used to be two dedicated `Option<StrongRef>`
+//! fields on `LoweredCommit`, with a "last one wins" rule for repeated
+//! items. They're now two roles inside the single, open `refs:
+//! HashMap<String, Vec<StrongRef>>` map (see `ast::CommitStmt.refs`'s
+//! own doc comment) -- every role is a real list, so "last wins" isn't
+//! a rule that exists anymore: repeating a role just means more than
+//! one entry under it, kept in order, not collapsed. The 4th test below
+//! (`multiple_refs_under_one_role_are_all_kept_in_order`) replaces the
+//! old last-wins test with that actual current behavior.
 
-use dmml::ast::{self, CommitItem, Span, StrongRef as AstStrongRef};
+use dmml::ast::{self, Span};
 use dmml::from_json::commit_from_json;
 use dmml::lower::{lower_commit, ConsumeRef, FactRef, LoweredCommit, StrongRef, Triple, TripleValue};
 
@@ -71,8 +70,7 @@ fn example_1_declare_then_assert_mint() {
                     object: TripleValue::Number("0.4".to_string()),
                 },
             ],
-            via: None,
-            responds_to: None,
+            refs: std::collections::HashMap::new(),
         }
     );
 }
@@ -109,8 +107,7 @@ fn example_2_consumes_and_produces_becomes() {
                 predicate: "locked".to_string(),
                 object: TripleValue::Boolean(false),
             }],
-            via: None,
-            responds_to: None,
+            refs: std::collections::HashMap::new(),
         }
     );
 }
@@ -119,32 +116,34 @@ fn example_2_consumes_and_produces_becomes() {
 fn example_3_via_and_responds_to_grants() {
     let json = r#"{
         "verb": "grants",
-        "via": {"uri": "at://did:plc:abc/org.foo.bar/rkey1", "cid": "bafyxyz1"},
-        "respondsTo": {"uri": "at://did:plc:def/org.foo.bar/rkey2", "cid": "bafyxyz2"}
+        "refs": {
+            "via": [{"uri": "at://did:plc:abc/org.foo.bar/rkey1", "cid": "bafyxyz1"}],
+            "respondsTo": [{"uri": "at://did:plc:def/org.foo.bar/rkey2", "cid": "bafyxyz2"}]
+        }
     }"#;
     let lowered = lower_json(json);
     assert_eq!(lowered.predicate_verb, "grants");
     assert_eq!(lowered.produces, vec![]);
     assert_eq!(
-        lowered.via,
-        Some(StrongRef {
+        lowered.refs.get("via"),
+        Some(&vec![StrongRef {
             uri: "at://did:plc:abc/org.foo.bar/rkey1".to_string(),
             cid: "bafyxyz1".to_string(),
-        })
+        }])
     );
     assert_eq!(
-        lowered.responds_to,
-        Some(StrongRef {
+        lowered.refs.get("respondsTo"),
+        Some(&vec![StrongRef {
             uri: "at://did:plc:def/org.foo.bar/rkey2".to_string(),
             cid: "bafyxyz2".to_string(),
-        })
+        }])
     );
 }
 
 #[test]
-fn repeated_via_last_one_wins() {
-    fn via(uri: &str, cid: &str) -> CommitItem {
-        CommitItem::Via(AstStrongRef {
+fn multiple_refs_under_one_role_are_all_kept_in_order() {
+    fn strong_ref(uri: &str, cid: &str) -> ast::StrongRef {
+        ast::StrongRef {
             uri: ast::AtUri {
                 raw: uri.to_string(),
                 did: uri.split('/').nth(2).unwrap().to_string(),
@@ -153,24 +152,39 @@ fn repeated_via_last_one_wins() {
             },
             cid: cid.to_string(),
             span: Span::new(""),
-        })
+        }
     }
+
+    let mut refs = std::collections::HashMap::new();
+    refs.insert(
+        "via".to_string(),
+        vec![
+            strong_ref("at://did:plc:aaa/org.foo.bar/first", "bafyfirst"),
+            strong_ref("at://did:plc:bbb/org.foo.bar/second", "bafysecond"),
+        ],
+    );
 
     let commit = ast::CommitStmt {
         predicate_verb: "grants".to_string(),
-        items: vec![
-            via("at://did:plc:aaa/org.foo.bar/first", "bafyfirst"),
-            via("at://did:plc:bbb/org.foo.bar/second", "bafysecond"),
-        ],
+        items: vec![],
+        refs,
         span: Span::new(""),
     };
 
     let lowered = lower_commit(&commit);
     assert_eq!(
-        lowered.via,
-        Some(StrongRef {
-            uri: "at://did:plc:bbb/org.foo.bar/second".to_string(),
-            cid: "bafysecond".to_string(),
-        })
+        lowered.refs.get("via"),
+        Some(&vec![
+            StrongRef {
+                uri: "at://did:plc:aaa/org.foo.bar/first".to_string(),
+                cid: "bafyfirst".to_string(),
+            },
+            StrongRef {
+                uri: "at://did:plc:bbb/org.foo.bar/second".to_string(),
+                cid: "bafysecond".to_string(),
+            },
+        ]),
+        "both entries under the same role must survive lowering, in order -- \
+         there is no last-wins collapsing anymore now that every role is a real list"
     );
 }

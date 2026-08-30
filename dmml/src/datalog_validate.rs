@@ -228,6 +228,7 @@ mod tests {
                 }],
                 span: ast::Span::new(""),
             })],
+            refs: std::collections::HashMap::new(),
             span: ast::Span::new(""),
         };
         assert_eq!(assert_agrees(&commit).unwrap_err(), vec!["opensTo".to_string()]);

@@ -110,13 +110,25 @@ fn wire_consume_ref(r: &ConsumeRef) -> WireConsumeRef<'_> {
 /// PDS's computed CID for "the same" logical commit.
 pub fn compute_cid(commit: &LoweredCommit, created_at: &str) -> Cid {
     let produces_text = render_produces(&commit.produces);
+    // `via`/`respondsTo` used to be `LoweredCommit`'s own dedicated
+    // `Option<StrongRef>` fields; they're now roles inside `commit.refs`'s
+    // open map (see `ast::CommitStmt.refs`'s own doc comment) alongside
+    // the newer `requires` role. The real atproto wire record
+    // (`org.jason-edelman.writtenworld.commit`) this module targets only
+    // has slots for a single `via`/`respondsTo` each -- that hasn't
+    // changed here, only where the value comes from -- so this takes the
+    // first entry under each role. `requires` has no wire slot in that
+    // record shape at all yet; giving it one is real, separate follow-up
+    // work in written-world's own atproto lexicon, not invented here.
+    let via = commit.refs.get("via").and_then(|v| v.first());
+    let responds_to = commit.refs.get("respondsTo").and_then(|v| v.first());
     let wire = WireCommit {
         type_: COMMIT_NSID,
         consumes: commit.consumes.iter().map(wire_consume_ref).collect(),
         produces: &produces_text,
         predicate: &commit.predicate_verb,
-        via: commit.via.as_ref().map(WireStrongRef::from),
-        responds_to: commit.responds_to.as_ref().map(WireStrongRef::from),
+        via: via.map(WireStrongRef::from),
+        responds_to: responds_to.map(WireStrongRef::from),
         created_at,
     };
 

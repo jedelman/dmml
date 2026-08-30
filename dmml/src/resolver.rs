@@ -7,11 +7,14 @@
 //! Two different kinds of assurance below, and this module is honest
 //! about which is which:
 //!
-//! - The five standalone gate functions (`resolves`, `commit_is_valid`,
-//!   `factref_matches`, `cross_repo_commit_valid`,
-//!   `commit_valid_despite_dangling_factref`) are direct, traceable
-//!   transcriptions of Thermite contracts that certified L3 (a real Verus
-//!   proof) -- see each function's doc comment for which `.th` file.
+//! - Four of five standalone gate functions (`resolves`, `factref_matches`,
+//!   `cross_repo_commit_valid`, `commit_valid_despite_dangling_factref`)
+//!   are direct, traceable transcriptions of Thermite contracts that
+//!   certified L3 (a real Verus proof) -- see each function's doc comment
+//!   for which `.th` file. The fifth, `commit_is_valid`, is NOT currently
+//!   one of them -- see its own doc comment for why (a deliberate,
+//!   on-the-record break of the formal-verification boundary, pending a
+//!   full cryptographic re-derivation of this resolver).
 //! - `WorldState`'s fold operations (`assert_fact`/`retract_fact`/
 //!   `apply_combined_commit`) implement the same invariants the
 //!   atomicity contract (`retract_assert_atomicity.th`) proved for a
@@ -94,16 +97,37 @@ pub fn resolves(commit_in_own_log: bool, _foreign_repo_accepted: bool) -> bool {
     commit_in_own_log
 }
 
-/// Field inertness (`field_inertness_independence.th`, L3-certified):
-/// validity depends only on `consumes_are_valid`, never on `via_present`
-/// or `responds_to_present` -- SPEC.md SS10's field-inertness rule
-/// applied to the two fields it names as inert.
-pub fn commit_is_valid(
-    consumes_are_valid: bool,
-    _via_present: bool,
-    _responds_to_present: bool,
-) -> bool {
-    consumes_are_valid
+/// **FORMAL-VERIFICATION BOUNDARY BROKEN HERE, DELIBERATELY, 2026-08-29.**
+/// This function used to be a direct, unmodified transcription of
+/// `field_inertness_independence.th` (L3-certified, Verus-proven):
+/// `commit_is_valid(consumes_are_valid, _via_present, _responds_to_present)
+/// -> consumes_are_valid`, proving validity depends on neither `via` nor
+/// `respondsTo` being present. That proof is now stale, not just
+/// superseded in spirit: `via`/`respondsTo` stopped being their own
+/// dedicated fields at all (collapsed into `ast::CommitStmt.refs`'s open
+/// role map alongside the new `requires` role -- see that field's own doc
+/// comment), and this function has been hand-edited, outside Thermite/
+/// Verus, to add a real, non-inert dependency on `requires_are_valid` --
+/// exactly the kind of change every other doc comment in this file warns
+/// against making casually. Done anyway, explicitly, on the record: a
+/// full cryptographic re-derivation of this resolver is planned this
+/// week, at which point this function's contract needs re-proving from
+/// scratch regardless, so preserving the old proof's pristine text here
+/// in the meantime bought nothing but a false sense of assurance. Until
+/// that re-derivation lands, treat this function as ordinary
+/// (well-tested, `resolver_gates.rs` covers it) but NOT formally verified
+/// Rust, unlike its four siblings below, which are untouched and still
+/// are.
+///
+/// `requires_are_valid` should be `true` only if every `StrongRef` under
+/// the commit's `refs["requires"]` role actually resolves -- this
+/// function itself never does that resolution (no history/store access
+/// at this layer, same reason `consumes_are_valid` is a precomputed bool
+/// here rather than a lookup); a caller with real access to a commit
+/// history computes it and passes the result in, same calling convention
+/// every other gate in this module already uses.
+pub fn commit_is_valid(consumes_are_valid: bool, requires_are_valid: bool) -> bool {
+    consumes_are_valid && requires_are_valid
 }
 
 /// FactRef wildcard matching (`factref_wildcard_matching.th`,

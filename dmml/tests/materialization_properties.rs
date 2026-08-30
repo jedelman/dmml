@@ -21,8 +21,7 @@ fn commit_with(triples: Vec<(String, String, String)>) -> LoweredCommit {
                 object: TripleValue::Node(object),
             })
             .collect(),
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     }
 }
 

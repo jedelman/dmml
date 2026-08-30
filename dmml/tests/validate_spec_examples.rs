@@ -126,6 +126,7 @@ fn undeclared_predicate_inside_explicit_produces_block_is_still_an_error() {
                 span: Span::new(""),
             }),
         ],
+        refs: std::collections::HashMap::new(),
         span: Span::new(""),
     };
 

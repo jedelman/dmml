@@ -7,6 +7,16 @@ use dmml::interpret::{ancestors_of, IdentifiedCommit};
 use dmml::lower::{LoweredCommit, StrongRef};
 
 fn commit(cid: &str, responds_to: Option<&str>) -> IdentifiedCommit {
+    let mut refs = std::collections::HashMap::new();
+    if let Some(cid) = responds_to {
+        refs.insert(
+            "respondsTo".to_string(),
+            vec![StrongRef {
+                uri: format!("at://did:plc:test/x/{cid}"),
+                cid: cid.to_string(),
+            }],
+        );
+    }
     IdentifiedCommit {
         uri: format!("at://did:plc:test/x/{cid}"),
         cid: cid.to_string(),
@@ -14,11 +24,7 @@ fn commit(cid: &str, responds_to: Option<&str>) -> IdentifiedCommit {
             predicate_verb: "mints".to_string(),
             consumes: vec![],
             produces: vec![],
-            via: None,
-            responds_to: responds_to.map(|cid| StrongRef {
-                uri: format!("at://did:plc:test/x/{cid}"),
-                cid: cid.to_string(),
-            }),
+            refs,
         },
     }
 }

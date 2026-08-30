@@ -249,9 +249,12 @@ pub struct CommitInput {
     pub facts: Vec<FactInput>,
     #[serde(default)]
     pub consumes: Vec<ConsumeEntryInput>,
-    pub via: Option<StrongRefInput>,
-    #[serde(rename = "respondsTo")]
-    pub responds_to: Option<StrongRefInput>,
+    /// Role-tagged commit-level references -- e.g. `{"via": [...],
+    /// "respondsTo": [...], "requires": [...]}`. See `ast::CommitStmt.
+    /// refs`'s own doc comment: every role is a list, keyed by an open
+    /// role name, so a new role needs no schema change here.
+    #[serde(default)]
+    pub refs: std::collections::HashMap<String, Vec<StrongRefInput>>,
 }
 
 /// Builds an `ast::CommitStmt` directly from a `CommitInput` -- no source
@@ -264,12 +267,8 @@ pub struct CommitInput {
 /// to allow.
 pub fn commit_stmt_from_input(input: &CommitInput) -> Result<ast::CommitStmt, FromJsonError> {
     check_ident("/verb", &input.verb)?;
-    if input.facts.is_empty()
-        && input.consumes.is_empty()
-        && input.via.is_none()
-        && input.responds_to.is_none()
-    {
-        return Err(invalid("", "commit has no facts, consumes, via, or respondsTo"));
+    if input.facts.is_empty() && input.consumes.is_empty() && input.refs.values().all(|v| v.is_empty()) {
+        return Err(invalid("", "commit has no facts, consumes, or refs"));
     }
 
     let mut items = Vec::new();
@@ -347,16 +346,19 @@ pub fn commit_stmt_from_input(input: &CommitInput) -> Result<ast::CommitStmt, Fr
         }));
     }
 
-    if let Some(via) = &input.via {
-        items.push(ast::CommitItem::Via(strong_ref("/via", via)?));
-    }
-    if let Some(responds_to) = &input.responds_to {
-        items.push(ast::CommitItem::RespondsTo(strong_ref("/respondsTo", responds_to)?));
+    let mut refs = std::collections::HashMap::new();
+    for (role, targets) in &input.refs {
+        let mut lowered_targets = Vec::new();
+        for (i, target) in targets.iter().enumerate() {
+            lowered_targets.push(strong_ref(&format!("/refs/{role}/{i}"), target)?);
+        }
+        refs.insert(role.clone(), lowered_targets);
     }
 
     Ok(ast::CommitStmt {
         predicate_verb: input.verb.clone(),
         items,
+        refs,
         span: ast::Span::new(""),
     })
 }
@@ -922,15 +924,22 @@ mod tests {
                 {"kind": "fact", "commit": {"uri": "at://did:plc:aaaa1111/org.example.commit/2", "cid": "bafy2"},
                  "subject": "room/42", "predicate": "locked", "object": {"kind": "boolean", "value": true}}
             ],
-            "via": {"uri": "at://did:plc:aaaa1111/org.example.commit/3", "cid": "bafy3"},
-            "respondsTo": {"uri": "at://did:plc:aaaa1111/org.example.commit/4", "cid": "bafy4"}
+            "refs": {
+                "via": [{"uri": "at://did:plc:aaaa1111/org.example.commit/3", "cid": "bafy3"}],
+                "respondsTo": [{"uri": "at://did:plc:aaaa1111/org.example.commit/4", "cid": "bafy4"}],
+                "requires": [
+                    {"uri": "at://did:plc:aaaa1111/org.example.commit/5", "cid": "bafy5"},
+                    {"uri": "at://did:plc:aaaa1111/org.example.commit/6", "cid": "bafy6"}
+                ]
+            }
         }"#;
 
         let commit = commit_from_json(json).expect("should build");
         let has_consumes = commit.items.iter().any(|i| matches!(i, ast::CommitItem::Consumes(_)));
-        let has_via = commit.items.iter().any(|i| matches!(i, ast::CommitItem::Via(_)));
-        let has_responds_to = commit.items.iter().any(|i| matches!(i, ast::CommitItem::RespondsTo(_)));
-        assert!(has_consumes && has_via && has_responds_to);
+        assert!(has_consumes);
+        assert_eq!(commit.refs.get("via").map(Vec::len), Some(1));
+        assert_eq!(commit.refs.get("respondsTo").map(Vec::len), Some(1));
+        assert_eq!(commit.refs.get("requires").map(Vec::len), Some(2));
     }
 
     #[test]

@@ -30,8 +30,7 @@ fn world_before() -> Materialized {
             fact("edge/12", "state", node("locked")),
             fact("player", "holds", node("key/7")),
         ],
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     };
     Materialized::from_commits(&[commit])
 }
@@ -47,8 +46,7 @@ fn world_before_unlocked() -> Materialized {
             fact("edge/12", "state", node("unlocked")),
             fact("player", "holds", node("key/7")),
         ],
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     };
     Materialized::from_commits(&[commit])
 }
@@ -91,8 +89,7 @@ fn empty_candidate() -> LoweredCommit {
         predicate_verb: "becomes".to_string(),
         consumes: vec![],
         produces: vec![],
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     }
 }
 
@@ -131,8 +128,7 @@ fn correct_candidate_matches_both_effects() {
         predicate_verb: "becomes".to_string(),
         consumes: vec![ConsumeRef::Fact(fact_ref_retracting_locked(Some(node("locked"))))],
         produces: vec![fact("edge/12", "state", node("unlocked"))],
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     };
 
     let result = commit_fires_transition(&body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
@@ -148,8 +144,7 @@ fn missing_assert_is_reported() {
         predicate_verb: "becomes".to_string(),
         consumes: vec![ConsumeRef::Fact(fact_ref_retracting_locked(Some(node("locked"))))],
         produces: vec![],
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     };
 
     let result = commit_fires_transition(&body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
@@ -170,8 +165,7 @@ fn wildcard_retract_still_satisfies_the_effect() {
         predicate_verb: "becomes".to_string(),
         consumes: vec![ConsumeRef::Fact(fact_ref_retracting_locked(None))],
         produces: vec![fact("edge/12", "state", node("unlocked"))],
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     };
 
     let result = commit_fires_transition(&body, "unlock", &edge_12_ctx(), &world_before(), &candidate);
@@ -194,8 +188,7 @@ fn strong_consume_never_satisfies_a_retract_effect() {
             cid: "bafyExample".to_string(),
         })],
         produces: vec![fact("edge/12", "state", node("unlocked"))],
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     };
 
     let result = commit_fires_transition(&body, "unlock", &edge_12_ctx(), &world_before(), &candidate);

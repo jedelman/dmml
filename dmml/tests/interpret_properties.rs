@@ -26,8 +26,7 @@ fn gen_commit() -> impl Strategy<Value = LoweredCommit> {
         predicate_verb: "mints".to_string(),
         consumes: vec![],
         produces,
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     })
 }
 

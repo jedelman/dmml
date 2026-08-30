@@ -45,6 +45,17 @@ pub struct CommitStmt {
     /// never validated against a closed enum, per the grammar's own note.
     pub predicate_verb: String,
     pub items: Vec<CommitItem>,
+    /// Role-tagged commit-level references, replacing the old separate
+    /// `Via`/`RespondsTo` `CommitItem` variants: an open (not closed-enum)
+    /// role name -- e.g. `"via"`, `"respondsTo"`, `"requires"` -- to a
+    /// list of `StrongRef`s under that role. Every role is a list, even
+    /// ones conventionally read as single-valued (`via`/`respondsTo`):
+    /// whether a role means "at most one" or "any number" is a
+    /// validation-time rule for whoever checks that role, not a
+    /// difference in JSON/AST shape. This is what makes adding a new
+    /// role (`requires` today, whatever comes after it) free at this
+    /// layer -- no new field, no new variant, just a new key.
+    pub refs: std::collections::HashMap<String, Vec<StrongRef>>,
     pub span: Span,
 }
 
@@ -61,8 +72,6 @@ pub enum CommitItem {
     Fact(FactStmt),
     Produces(ProducesBlock),
     Consumes(ConsumesBlock),
-    Via(StrongRef),
-    RespondsTo(StrongRef),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

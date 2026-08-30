@@ -79,6 +79,7 @@ proptest! {
         let commit = CommitStmt {
             predicate_verb: "mints".to_string(),
             items: items.iter().map(to_ast_item).collect(),
+            refs: std::collections::HashMap::new(),
             span: dummy_span(),
         };
 

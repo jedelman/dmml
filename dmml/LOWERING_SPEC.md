@@ -8,10 +8,22 @@ comment).
 ## Target shape
 
 `LoweredCommit { predicate_verb, consumes: Vec<ConsumeRef>, produces:
-Vec<Triple>, via: Option<StrongRef>, responds_to: Option<StrongRef> }` —
-see `dmml/src/lower.rs` for the exact types. Self-contained: `produces`
-is a flat `Vec<Triple>`, not serialized N-Quads text, since dmml has no
+Vec<Triple>, refs: HashMap<String, Vec<StrongRef>> }` — see
+`dmml/src/lower.rs` for the exact types. Self-contained: `produces` is a
+flat `Vec<Triple>`, not serialized N-Quads text, since dmml has no
 N-Quads writer of its own.
+
+`refs` replaced two dedicated `via: Option<StrongRef>`/`responds_to:
+Option<StrongRef>` fields (2026-08-29): every commit-level reference is
+now a role-tagged entry in one open map (`"via"`, `"respondsTo"`,
+`"requires"`, ... — see `ast::CommitStmt.refs`'s own doc comment for why
+every role is a real `Vec`, never a single last-wins value). `requires`
+is the newest role: a list of commits this one depends on, checked by
+`interpret::requires_are_valid` against a real history (not by
+`lower_commit` itself, which has no history to check against) and folded
+into `resolver::commit_is_valid`'s validity result — see that function's
+own doc comment for the deliberate, on-the-record break of its prior
+formal-verification status this required.
 
 ## Rules
 
@@ -48,13 +60,15 @@ N-Quads writer of its own.
      `ConsumeRef::Fact(FactRef { commit: <rule 5 on fc.commit>, subject:
      <rule 2 on fc.subject>, predicate: fc.predicate, object:
      fc.object.map(<rule 4>) })`.
-   - `Via(sr)` → `via = Some(<rule 5>)`. Last one wins if more than one
-     `via` item appears in the same commit (the grammar's `commit_item`
-     loop doesn't itself forbid repetition, even though only one is
-     semantically meaningful).
-   - `RespondsTo(sr)` → `responds_to = Some(<rule 5>)`, same last-wins
-     rule.
-9. A bare `Declare`/`Fact` item and a `Produces` block's facts are NOT
+9. `commit.refs` (a `HashMap<String, Vec<ast::StrongRef>>`, populated
+   directly by `from_json` rather than walked out of `commit.items` --
+   see `ast::CommitStmt.refs`'s own doc comment) lowers role-by-role:
+   each `(role, targets)` entry becomes `(role.clone(), targets.iter().
+   map(<rule 5>).collect())` in the output `refs` map. Every entry under
+   a role is kept, in order -- there is no last-wins collapsing anymore,
+   since a role is a real list now, not a single value a repeated item
+   could overwrite.
+10. A bare `Declare`/`Fact` item and a `Produces` block's facts are NOT
    distinguished in the output — both contribute to the SAME flat
    `produces`, in the exact order encountered walking `commit.items`.
    This is `SPEC.md`'s "sugar for implicit produces block" rule, made
@@ -86,8 +100,7 @@ LoweredCommit {
         Triple { subject: "room/42".to_string(), predicate: "opensTo".to_string(), object: TripleValue::Node("room/43".to_string()) },
         Triple { subject: "room/42".to_string(), predicate: "dampness".to_string(), object: TripleValue::Number("0.4".to_string()) },
     ],
-    via: None,
-    responds_to: None,
+    refs: HashMap::new(),
 }
 ```
 
@@ -122,17 +135,22 @@ LoweredCommit {
     produces: vec![
         Triple { subject: "room/42".to_string(), predicate: "locked".to_string(), object: TripleValue::Boolean(false) },
     ],
-    via: None,
-    responds_to: None,
+    refs: HashMap::new(),
 }
 ```
 
-### 3. via / respondsTo (grants)
+### 3. via / respondsTo / requires (grants)
 
-```dmml
-commit grants {
-  via at://did:plc:abc/org.foo.bar/rkey1 (cid: bafyxyz1)
-  respondsTo at://did:plc:def/org.foo.bar/rkey2 (cid: bafyxyz2)
+JSON authoring shape (`CommitInput.refs`, not `commit_item`s -- see rule 9):
+
+```json
+{
+  "verb": "grants",
+  "refs": {
+    "via": [{"uri": "at://did:plc:abc/org.foo.bar/rkey1", "cid": "bafyxyz1"}],
+    "respondsTo": [{"uri": "at://did:plc:def/org.foo.bar/rkey2", "cid": "bafyxyz2"}],
+    "requires": [{"uri": "at://did:plc:ghi/org.foo.bar/rkey3", "cid": "bafyxyz3"}]
+  }
 }
 ```
 
@@ -141,8 +159,11 @@ LoweredCommit {
     predicate_verb: "grants".to_string(),
     consumes: vec![],
     produces: vec![],
-    via: Some(StrongRef { uri: "at://did:plc:abc/org.foo.bar/rkey1".to_string(), cid: "bafyxyz1".to_string() }),
-    responds_to: Some(StrongRef { uri: "at://did:plc:def/org.foo.bar/rkey2".to_string(), cid: "bafyxyz2".to_string() }),
+    refs: HashMap::from([
+        ("via".to_string(), vec![StrongRef { uri: "at://did:plc:abc/org.foo.bar/rkey1".to_string(), cid: "bafyxyz1".to_string() }]),
+        ("respondsTo".to_string(), vec![StrongRef { uri: "at://did:plc:def/org.foo.bar/rkey2".to_string(), cid: "bafyxyz2".to_string() }]),
+        ("requires".to_string(), vec![StrongRef { uri: "at://did:plc:ghi/org.foo.bar/rkey3".to_string(), cid: "bafyxyz3".to_string() }]),
+    ]),
 }
 ```
 

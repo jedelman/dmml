@@ -19,8 +19,7 @@ fn commit(triples: &[(&str, &str, TripleValue)]) -> LoweredCommit {
                 object: v.clone(),
             })
             .collect(),
-        via: None,
-        responds_to: None,
+        refs: std::collections::HashMap::new(),
     }
 }
 

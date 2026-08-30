@@ -243,8 +243,7 @@ mod tests {
                 fact("room/1", "hasEdge", node("edge/12")),
                 fact("edge/12", "connectsTo", node("room/2")),
             ],
-            via: None,
-            responds_to: None,
+            refs: std::collections::HashMap::new(),
         };
         Materialized::from_commits(&[commit])
     }
@@ -360,8 +359,7 @@ mod tests {
             predicate_verb: "becomes".to_string(),
             consumes: vec![],
             produces: vec![fact("room/1", "dampness", TripleValue::Number("0.4".to_string()))],
-            via: None,
-            responds_to: None,
+            refs: std::collections::HashMap::new(),
         };
         let world = Materialized::from_commits(&[commit]);
 
@@ -401,8 +399,7 @@ mod tests {
                 fact("a", "left", node("b")),
                 fact("a", "right", node("c")), // ?x binds to "b" then "c" -- different values
             ],
-            via: None,
-            responds_to: None,
+            refs: std::collections::HashMap::new(),
         };
         let world = Materialized::from_commits(&[commit]);
 

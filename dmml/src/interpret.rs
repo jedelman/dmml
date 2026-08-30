@@ -216,7 +216,7 @@ pub fn ancestors_of(commits: &[IdentifiedCommit], at_cid: &str) -> Vec<Identifie
             break;
         }
         result.push((*commit).clone());
-        match commit.commit.responds_to.as_ref() {
+        match commit.commit.refs.get("respondsTo").and_then(|v| v.first()) {
             Some(r) => current_cid = &r.cid,
             None => break,
         }
@@ -258,6 +258,26 @@ pub fn ancestors_of(commits: &[IdentifiedCommit], at_cid: &str) -> Vec<Identifie
 /// outside its own module doc references.
 pub fn reachable_from(commits: &[IdentifiedCommit], root_cid: &str) -> Vec<IdentifiedCommit> {
     crate::datalog_reachability::reachable_from(commits, root_cid)
+}
+
+/// The `requires_are_valid` input `resolver::commit_is_valid`'s own doc
+/// comment names as a caller's job: whether every `StrongRef` under
+/// `commit.refs["requires"]` actually resolves to a real commit somewhere
+/// in `history`. A commit with no `requires` role at all vacuously
+/// satisfies this (nothing to check), matching how an empty `consumes`
+/// list is likewise never a validity problem elsewhere in this crate.
+/// Resolution here means "present by `(uri, cid)`" -- the same identity
+/// `apply_consume` above already uses to find a `ConsumeRef`'s target,
+/// not a stronger claim about the required commit's own content being
+/// well-formed (that commit's own validity was, or will be, checked when
+/// IT was resolved).
+pub fn requires_are_valid(history: &[IdentifiedCommit], commit: &LoweredCommit) -> bool {
+    let Some(required) = commit.refs.get("requires") else {
+        return true;
+    };
+    required
+        .iter()
+        .all(|r| history.iter().any(|c| c.uri == r.uri && c.cid == r.cid))
 }
 
 /// Applies one `ConsumeRef` against the running fold state, per
