@@ -27,6 +27,57 @@
 //! standing rule -- the content below is real, parsed, and checked
 //! against `dmml::machine::commit_fires_transition` before any further
 //! Rust-shaped design happens on top of it.
+//!
+//! ## Exercising params (added same session)
+//!
+//! Every transition above only ever acts on its own machine node
+//! (`ctx.self_node`) -- `MACHINE_SPEC.md`'s `$param` machinery
+//! (`PatternTerm::Param`, `ctx.params`) was declared but never actually
+//! exercised. `sense/vision` gains a fourth transition, `look_at`,
+//! taking one param (`target`) and guarded by `EXISTS($target --state-->
+//! ?anyState)` -- you can only look AT something that's a real, already-
+//! established machine in the world, not an arbitrary name. This is
+//! where "refs are the targets of the machines" becomes concrete:
+//! `target` is a real node the agent names, checked against the world,
+//! not a fact the agent is free to assert about nothing.
+//!
+//! **A second real gap surfaced while building this one**: the natural
+//! first guard to reach for was `EXISTS($target --a--> ?kind)` -- "does
+//! the target have any type at all" -- using the same `a` shorthand fact
+//! authoring gets for `rdf:type`. It doesn't work: `check_ident` (which
+//! validates every pattern-hop predicate) rejects the literal string
+//! `"rdf:type"` outright (a colon isn't a valid ident character), and
+//! unlike fact authoring, nothing translates the `a` shorthand into
+//! `rdf:type` for a guard's hop predicate -- so **a guard cannot express
+//! "does this node have a type" at all in the current grammar**, only
+//! fact assertion can use `a`. Worked around here by guarding on `state`
+//! instead (every node with a machine has one), but that only works
+//! because the target happens to be a machine -- checking "is this an
+//! established thing" for an arbitrary non-machine node has no clean
+//! guard expression today. Real follow-up work, not patched here.
+//!
+//! **Real, undecided design gap surfaced by building this**:
+//! `MACHINE_SPEC.md`'s own "Wiring into the toolchain" section documents
+//! how to check whether a transition MAY fire, but never specifies how a
+//! commit's JSON actually COMMUNICATES its param bindings -- `ctx.params`
+//! is built by whatever caller has "the commit firing the transition" in
+//! hand, and nothing in `from_json`/`ast` carries a bindings map today.
+//! This example adopts one concrete, honest convention, not an
+//! established spec decision: a parameterized transition's firing commit
+//! asserts an ordinary self-declared fact `(self_node, "<paramName>",
+//! Node(value))` in its own `produces`, and the caller (here,
+//! `extract_param`) reads it back out to build `ctx.params` before
+//! calling `commit_fires_transition`. Real follow-up work if this holds
+//! up: decide whether that belongs in `MACHINE_SPEC.md` as the actual
+//! answer, or whether params should ride in `refs` instead (a role named
+//! after the param, holding a `StrongRef` to the target's OWN minting
+//! commit rather than the bare node name) -- `refs` already exists and
+//! is open-ended per this session's earlier `via`/`respondsTo`/`requires`
+//! work, but resolving a `StrongRef` back to "which node did that commit
+//! mint" needs the caller to have that commit's content in hand too, the
+//! same indirection problem noted in `commit_fires_transition`'s own doc
+//! comment about `ConsumeRef::Strong` and `Retract`. Left open here,
+//! flagged rather than silently decided.
 
 use dmml::from_json::update_from_json;
 use dmml::interpret::Materialized;
@@ -61,7 +112,11 @@ fn seed_json() -> String {
           "states": [{{"ident": "idle"}}, {{"ident": "looking"}}],
           "transitions": [
             {{"ident": "look", "from": "idle", "to": "looking"}},
-            {{"ident": "rest_eyes", "from": "looking", "to": "idle"}}
+            {{"ident": "rest_eyes", "from": "looking", "to": "idle"}},
+            {{"ident": "look_at", "params": ["target"], "guards": [
+              {{"exists": {{"anchor": {{"kind": "param", "value": "target"}},
+                "hops": [{{"predicate": "state", "term": {{"kind": "var", "value": "anyState"}}}}]}}}}
+            ]}}
           ]
         }},
         {{
@@ -154,6 +209,22 @@ fn try_fire(
     }
 }
 
+/// This example's own convention (see the file header doc comment for
+/// the honest "not an established spec decision" caveat): reads a
+/// parameterized transition's bound value back out of the firing
+/// commit's own `produces`, as an ordinary `(self_node, param_name,
+/// Node(value))` fact.
+fn extract_param(commit: &LoweredCommit, self_node: &str, param_name: &str) -> Option<String> {
+    commit.produces.iter().find_map(|t| {
+        if t.subject == self_node && t.predicate == param_name {
+            if let TripleValue::Node(v) = &t.object {
+                return Some(v.clone());
+            }
+        }
+        None
+    })
+}
+
 fn print_world(world: &Materialized) {
     let mut rows: Vec<(&str, &str, &TripleValue)> = world.iter().collect();
     rows.sort_by(|a, b| (a.0, a.1).cmp(&(b.0, b.1)));
@@ -241,6 +312,78 @@ fn main() {
     println!("\n########## Turn 4: touch ##########\n");
     try_fire("turn 4", &machines, &world_before_touch, "sense/touch", "touch", &touch_commit);
     history.push(touch_commit);
+
+    // --- Turn 5: look_at($target) -- the params-exercising transition.
+    // No state change (guard-only), so the firing commit just asserts
+    // (sense/vision, "target", Node(<value>)) plus whatever descriptive
+    // content the act of looking-at actually reveals. The caller (this
+    // example) reads the "target" fact back out of the commit to build
+    // ctx.params, per the convention this file's header doc comment
+    // adopts. ---
+    println!("\n########## Turn 5: look_at(Valinor) ##########\n");
+    let look_at_valinor_json = r#"{
+      "update": [{"commits": [{
+        "verb": "look_at",
+        "declares": [{"kind": "attribute", "name": "target"}, {"kind": "attribute", "name": "sees"}],
+        "facts": [
+          {"subject": "sense/vision", "predicate": "target", "object": {"kind": "node", "value": "Valinor"}},
+          {"subject": "sense/vision", "predicate": "sees", "object": {"kind": "str", "value": "the mountain's whole shape at last, ridge to ridge"}}
+        ]
+      }]}]
+    }"#;
+    let look_at_update = update_from_json(look_at_valinor_json).expect("look_at JSON is valid DMML");
+    let look_at_commit = lower_commit(&look_at_update.batches[0].commits[0]);
+    let world_before_look_at = Materialized::from_commits(&history);
+
+    let target = extract_param(&look_at_commit, "sense/vision", "target").expect("target param present");
+    println!("  (extracted param: target = {target:?})");
+    let ctx = EvalContext {
+        self_node: "sense/vision".to_string(),
+        params: HashMap::from([("target".to_string(), target)]),
+    };
+    match machine::commit_fires_transition(
+        machines.get("sense/vision").unwrap(),
+        "look_at",
+        &ctx,
+        &world_before_look_at,
+        &look_at_commit,
+    ) {
+        Ok(()) => println!("  [OK]     turn 5: 'look_at' targeting Valinor fired legitimately (Valinor is a real, minted Place)."),
+        Err(e) => println!("  [BLOCKED] turn 5: 'look_at' rejected: {e:?}"),
+    }
+    history.push(look_at_commit);
+
+    // --- Negative control: look_at a target that was never minted --
+    // the guard (EXISTS($target --a--> ?anything)) should reject this,
+    // proving the param path is actually checked against the world, not
+    // just accepted because a value was supplied. ---
+    println!("\n########## Negative control: look_at(a name nothing ever minted) ##########\n");
+    let look_at_nowhere_json = r#"{
+      "update": [{"commits": [{
+        "verb": "look_at",
+        "declares": [{"kind": "attribute", "name": "target"}],
+        "facts": [
+          {"subject": "sense/vision", "predicate": "target", "object": {"kind": "node", "value": "nowhere"}}
+        ]
+      }]}]
+    }"#;
+    let look_at_nowhere_update = update_from_json(look_at_nowhere_json).expect("look_at JSON is valid DMML");
+    let look_at_nowhere_commit = lower_commit(&look_at_nowhere_update.batches[0].commits[0]);
+    let nowhere_target = extract_param(&look_at_nowhere_commit, "sense/vision", "target").expect("target param present");
+    let nowhere_ctx = EvalContext {
+        self_node: "sense/vision".to_string(),
+        params: HashMap::from([("target".to_string(), nowhere_target)]),
+    };
+    match machine::commit_fires_transition(
+        machines.get("sense/vision").unwrap(),
+        "look_at",
+        &nowhere_ctx,
+        &Materialized::from_commits(&history),
+        &look_at_nowhere_commit,
+    ) {
+        Ok(()) => println!("  [OK]     negative control: 'look_at(nowhere)' fired -- THIS WOULD BE A BUG."),
+        Err(e) => println!("  [BLOCKED] negative control: 'look_at(nowhere)' correctly rejected: {e:?}"),
+    }
 
     println!("\n########## Final world state ##########\n");
     let final_world = Materialized::from_commits(&history);
