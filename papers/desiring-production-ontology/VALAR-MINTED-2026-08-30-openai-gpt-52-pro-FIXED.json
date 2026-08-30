@@ -1,0 +1,155 @@
+{
+  "update": [
+    {
+      "commits": [],
+      "machines": [
+        {
+          "node": "Valinor/kiln",
+          "states": [
+            {
+              "ident": "unbuilt_kiln"
+            },
+            {
+              "ident": "built_kiln"
+            }
+          ],
+          "transitions": [
+            {
+              "ident": "build_kiln",
+              "params": [
+                "brick_source",
+                "mortar_source"
+              ],
+              "from": "unbuilt_kiln",
+              "to": "built_kiln",
+              "guards": [
+                {
+                  "exists": {
+                    "anchor": {
+                      "kind": "param",
+                      "value": "brick_source"
+                    },
+                    "hops": [
+                      {
+                        "predicate": "state",
+                        "term": {
+                          "kind": "node",
+                          "value": "brick"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "exists": {
+                    "anchor": {
+                      "kind": "param",
+                      "value": "mortar_source"
+                    },
+                    "hops": [
+                      {
+                        "predicate": "state",
+                        "term": {
+                          "kind": "node",
+                          "value": "mixed"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "node": "Valinor/pottery",
+          "states": [
+            {
+              "ident": "raw_pottery"
+            },
+            {
+              "ident": "shaped_pottery"
+            },
+            {
+              "ident": "fired_pottery"
+            }
+          ],
+          "transitions": [
+            {
+              "ident": "shape_pottery",
+              "params": [
+                "clay_source",
+                "water_source"
+              ],
+              "from": "raw_pottery",
+              "to": "shaped_pottery",
+              "guards": [
+                {
+                  "exists": {
+                    "anchor": {
+                      "kind": "param",
+                      "value": "clay_source"
+                    },
+                    "hops": [
+                      {
+                        "predicate": "state",
+                        "term": {
+                          "kind": "node",
+                          "value": "clay"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "exists": {
+                    "anchor": {
+                      "kind": "param",
+                      "value": "water_source"
+                    },
+                    "hops": [
+                      {
+                        "predicate": "state",
+                        "term": {
+                          "kind": "node",
+                          "value": "flowing"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ident": "fire_pottery",
+              "params": [
+                "kiln_source"
+              ],
+              "from": "shaped_pottery",
+              "to": "fired_pottery",
+              "guards": [
+                {
+                  "exists": {
+                    "anchor": {
+                      "kind": "param",
+                      "value": "kiln_source"
+                    },
+                    "hops": [
+                      {
+                        "predicate": "state",
+                        "term": {
+                          "kind": "node",
+                          "value": "built_kiln"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

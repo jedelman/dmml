@@ -1,0 +1,1 @@
+{"update": [{"machines": [{"node": "Valinor/lamp", "states": [{"ident": "unlit"}, {"ident": "dark_lit"}, {"ident": "crystal_lit"}], "transitions": [{"ident": "darken_glass", "params": ["glass_source"], "to": "dark_lit"}, {"ident": "set_crystal", "params": ["crystal_source"], "to": "crystal_lit"}, {"ident": "light_crystal", "params": ["crystal_source"], "to": "crystal_lit"}]}]}]}

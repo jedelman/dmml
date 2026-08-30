@@ -28,7 +28,7 @@ import time
 import urllib.request
 
 API_KEY = os.environ["OPENROUTER_API_KEY"]
-MODEL = "deepseek/deepseek-v4-flash-0731"
+MODEL = "openai/gpt-5.2-pro"
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "real_schema.json")
 
 WORLD_SO_FAR = """The world (Valinor) as it stands, machine by machine:
@@ -102,6 +102,17 @@ DMML machine grammar, exactly:
 - Every ident: letters/digits/underscore only, NEVER a hyphen. node_ref:
   slash-separated segments of the same.
 
+CRITICAL: whatever precondition you reason your way to -- "this should
+require the wall and roof," "this should need flowing water," anything
+of that shape -- MUST become an actual "guards" entry in the JSON
+transition, not just something you considered. A transition with no
+guards, no from+to pair, and no effects is REJECTED outright by the
+validator (`has_content` check) -- and a transition with a from+to but
+no guard means anyone can fire it with zero preconditions, which is
+almost never what your own reasoning will have concluded you want. If
+you found yourself thinking "this needs X to be true first," that
+thought is not finished until it is a guard clause in the JSON.
+
 Respond with ONLY the raw JSON object matching the schema below. Leave
 "commits" as an empty array -- you are minting machinery, not facts.
 No prose, no markdown fences, no explanation outside the JSON itself."""
@@ -110,12 +121,13 @@ No prose, no markdown fences, no explanation outside the JSON itself."""
 def call_model(prompt, schema):
     body = {
         "model": MODEL,
-        "max_tokens": 3000,
+        "max_tokens": 24000,
         "messages": [{"role": "user", "content": prompt}],
         "response_format": {
             "type": "json_schema",
             "json_schema": {"name": "update", "strict": False, "schema": schema},
         },
+        "include_reasoning": True,
         # Deliberately NOT setting reasoning: {"enabled": false} here --
         # this is the one call in this session's whole harness lineage
         # meant to think, not react.
@@ -135,7 +147,8 @@ def call_model(prompt, schema):
             content = msg.get("content")
             reasoning = msg.get("reasoning_content") or msg.get("reasoning")
             if not content:
-                raise RuntimeError(f"empty content (reasoning present: {bool(reasoning)})")
+                rlen = len(reasoning) if reasoning else 0
+                raise RuntimeError(f"empty content (reasoning present: {bool(reasoning)}, reasoning length: {rlen} chars)")
             return content, reasoning
         except Exception as e:
             print(f"  attempt {attempt} failed: {e}", file=sys.stderr)
@@ -154,7 +167,8 @@ def main():
         print("=== (truncated if longer) ===\n")
 
     cleaned = content.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-    out_path = os.path.join(os.path.dirname(__file__), "VALAR-MINTED-2026-08-30.json")
+    model_tag = MODEL.replace("/", "-").replace(".", "")
+    out_path = os.path.join(os.path.dirname(__file__), f"VALAR-MINTED-2026-08-30-{model_tag}.json")
     with open(out_path, "w") as f:
         f.write(cleaned)
     print(f"Wrote {out_path}\n")
