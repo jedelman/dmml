@@ -1,0 +1,565 @@
+{
+  "properties": {
+    "update": {
+      "items": {
+        "properties": {
+          "commits": {
+            "items": {
+              "properties": {
+                "consumes": {
+                  "items": {
+                    "oneOf": [
+                      {
+                        "properties": {
+                          "cid": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "strong"
+                          },
+                          "uri": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "uri",
+                          "cid"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "allOf": [
+                          {
+                            "properties": {
+                              "kind": {
+                                "const": "fact"
+                              }
+                            },
+                            "required": [
+                              "kind"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "properties": {
+                              "commit": {
+                                "properties": {
+                                  "cid": {
+                                    "type": "string"
+                                  },
+                                  "uri": {
+                                    "description": "at://did/nsid/rkey",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "uri",
+                                  "cid"
+                                ],
+                                "type": "object"
+                              },
+                              "object": {
+                                "oneOf": [
+                                  {
+                                    "properties": {
+                                      "kind": {
+                                        "const": "node"
+                                      },
+                                      "value": {
+                                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "value"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  {
+                                    "properties": {
+                                      "kind": {
+                                        "const": "str"
+                                      },
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "value"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  {
+                                    "properties": {
+                                      "kind": {
+                                        "const": "number"
+                                      },
+                                      "value": {
+                                        "description": "numeric string",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "value"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  {
+                                    "properties": {
+                                      "kind": {
+                                        "const": "boolean"
+                                      },
+                                      "value": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "value"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
+                              },
+                              "predicate": {
+                                "type": "string"
+                              },
+                              "subject": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "commit",
+                              "subject",
+                              "predicate"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "type": "array"
+                },
+                "declares": {
+                  "items": {
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "relation",
+                          "attribute"
+                        ],
+                        "type": "string"
+                      },
+                      "name": {
+                        "description": "letters/digits/underscore only, NO HYPHENS",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "name"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "facts": {
+                  "items": {
+                    "properties": {
+                      "object": {
+                        "oneOf": [
+                          {
+                            "properties": {
+                              "kind": {
+                                "const": "node"
+                              },
+                              "value": {
+                                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "value"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "properties": {
+                              "kind": {
+                                "const": "str"
+                              },
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "value"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "properties": {
+                              "kind": {
+                                "const": "number"
+                              },
+                              "value": {
+                                "description": "numeric string",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "value"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "properties": {
+                              "kind": {
+                                "const": "boolean"
+                              },
+                              "value": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "value"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      },
+                      "predicate": {
+                        "description": "ident, or 'a' for rdf:type -- letters/digits/underscore only, NO HYPHENS",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                        "type": "string"
+                      },
+                      "subject": {
+                        "description": "node_ref, e.g. room/1 -- letters/digits/underscore only, NO HYPHENS",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "subject",
+                      "predicate",
+                      "object"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "refs": {
+                  "additionalProperties": {
+                    "items": {
+                      "properties": {
+                        "cid": {
+                          "type": "string"
+                        },
+                        "uri": {
+                          "description": "at://did/nsid/rkey",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "uri",
+                        "cid"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "description": "role name (e.g. via, respondsTo, requires) -> list of StrongRef",
+                  "type": "object"
+                },
+                "verb": {
+                  "description": "open vocabulary, e.g. mints, becomes, grants -- a SINGLE ident: letters/digits/underscore only, NO HYPHENS, NEVER a sentence or a chain of reasoning",
+                  "maxLength": 24,
+                  "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verb"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "machines": {
+            "items": {
+              "properties": {
+                "node": {
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$",
+                  "type": "string"
+                },
+                "states": {
+                  "items": {
+                    "properties": {
+                      "ident": {
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "ident"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "transitions": {
+                  "items": {
+                    "properties": {
+                      "effects": {
+                        "items": {
+                          "oneOf": [
+                            {
+                              "properties": {
+                                "ident": {
+                                  "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "assert"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "ident"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "properties": {
+                                "ident": {
+                                  "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "const": "retract"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "ident"
+                              ],
+                              "type": "object"
+                            }
+                          ]
+                        },
+                        "type": "array"
+                      },
+                      "from": {
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                        "type": "string"
+                      },
+                      "guards": {
+                        "items": {
+                          "properties": {
+                            "exists": {
+                              "properties": {
+                                "anchor": {
+                                  "oneOf": [
+                                    {
+                                      "properties": {
+                                        "kind": {
+                                          "const": "self"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    {
+                                      "properties": {
+                                        "kind": {
+                                          "const": "param"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "value"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    {
+                                      "properties": {
+                                        "kind": {
+                                          "const": "var"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "value"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    {
+                                      "properties": {
+                                        "kind": {
+                                          "const": "node"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "value"
+                                      ],
+                                      "type": "object"
+                                    }
+                                  ]
+                                },
+                                "hops": {
+                                  "items": {
+                                    "properties": {
+                                      "predicate": {
+                                        "type": "string"
+                                      },
+                                      "term": {
+                                        "oneOf": [
+                                          {
+                                            "properties": {
+                                              "kind": {
+                                                "const": "self"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "properties": {
+                                              "kind": {
+                                                "const": "param"
+                                              },
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "value"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "properties": {
+                                              "kind": {
+                                                "const": "var"
+                                              },
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "value"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "properties": {
+                                              "kind": {
+                                                "const": "node"
+                                              },
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "value"
+                                            ],
+                                            "type": "object"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "predicate",
+                                      "term"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": "array"
+                                }
+                              },
+                              "required": [
+                                "anchor",
+                                "hops"
+                              ],
+                              "type": "object"
+                            },
+                            "negated": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "exists"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "ident": {
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                        "type": "string"
+                      },
+                      "params": {
+                        "items": {
+                          "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "to": {
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "ident"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "node"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "update"
+  ],
+  "type": "object"
+}
