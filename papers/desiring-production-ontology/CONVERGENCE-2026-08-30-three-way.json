@@ -1,0 +1,17 @@
+{
+  "dmml": {
+    "mean_to_seed": 0.7351313233375549,
+    "mean_consecutive": 0.7859050035476685,
+    "mean_pairwise": 0.7532538831233978
+  },
+  "baseline_uninstructed": {
+    "mean_to_seed": 0.6156728029251098,
+    "mean_consecutive": 0.6674288034439086,
+    "mean_pairwise": 0.6634523272514343
+  },
+  "baseline_reuse_instructed": {
+    "mean_to_seed": 0.7376027822494506,
+    "mean_consecutive": 0.7940701961517334,
+    "mean_pairwise": 0.7470769286155701
+  }
+}

@@ -117,22 +117,75 @@ find, or resolve anything the facts don't themselves claim. The five
 paragraphs are the five successful commits; nothing is added between or
 after them, and no failed commit's content appears anywhere above.
 
+## Convergence measurement — done, and it came back negative
+
+Built and run same-day. Method: embed each condition's per-turn text
+with a real local model (`BAAI/bge-small-en-v1.5` via `fastembed`, no
+API key, nothing leaves the machine) and compute cosine similarity —
+mean similarity of each turn to the seed image, mean similarity between
+consecutive turns, and mean pairwise similarity across all non-seed
+turns. Three conditions, all `deepseek/deepseek-v4-flash-0731`, same
+seed image, same 5-turn speaker order (gamma, alpha, beta, delta,
+gamma):
+
+1. **DMML** — the real run above, per-turn text = that commit's fact
+   values, joined.
+2. **Baseline, uninstructed** (`baseline_run.py` →
+   `BASELINE-2026-08-30-amber-cracks.json`) — same task as plain
+   collaborative-fiction continuation, no DMML grammar, no reuse
+   instruction.
+3. **Baseline, reuse-instructed** (`baseline_reuse_run.py` →
+   `BASELINE-REUSE-2026-08-30-amber-cracks.json`) — identical to (2)
+   except the prompt also carries the DMML prompt's own explicit "reuse
+   existing vocabulary/imagery" instruction — the control for the
+   confound the first comparison had.
+
+Results (`CONVERGENCE-2026-08-30-three-way.json`):
+
+| condition | to seed | consecutive | pairwise |
+|---|---|---|---|
+| DMML (facts) | 0.735 | 0.786 | 0.753 |
+| Baseline, uninstructed | 0.616 | 0.667 | 0.664 |
+| Baseline, reuse-instructed | **0.738** | **0.794** | 0.747 |
+
+**Finding: the reuse-instructed baseline matches or slightly exceeds
+DMML on every metric.** The first comparison's apparent DMML advantage
+was the confound — DMML's prompt already told agents to reuse existing
+vocabulary, and the first baseline didn't. Once free text gets the same
+instruction, it converges just as much, sometimes marginally more, with
+no grammar, no declared predicates, no fact digest at all. On this
+measure, under this sample, **DMML's structure is not shown to add
+convergence beyond what an equivalent prompt instruction already
+produces in plain prose.**
+
+This is a real, disclosed null result on a narrow claim (lexical/imagery
+overlap under embedding similarity), not a refutation of `DRAFT.md`
+Section 4/5's broader auto-recombinant argument, which is about
+commits building *structurally* on prior commits (Nyx's synthesis
+citing specific prior facts), not about vocabulary echo under embedding
+distance. The two are different claims and this measurement only
+speaks to the second. If this line of inquiry is cited anywhere, it
+should be cited as a negative result on convergence-under-instruction,
+not folded in as evidence for DMML's structural distinctiveness.
+
+Real caveats, stated plainly: n=5 turns per condition, one run per
+condition (no repeated trials, so no variance estimate), one embedding
+model, and DMML's fact-value text is shorter/terser per turn than the
+baselines' full sentences, which the metric doesn't control for.
+
 ## Open next steps (not started)
 
-- **Convergence measurement.** Embed each thought/attribute string
-  (`sentence-transformers` or an OpenAI/OpenRouter embeddings endpoint)
-  and compute pairwise cosine similarity across agents/ticks — the
-  hypothesis to test is whether later facts (beta's, delta's, gamma's
-  tick-3) sit measurably closer in embedding space to gamma's tick-1
-  seed image than to each other's *un*-related content would predict by
-  chance. Needs a null/baseline (e.g. embeddings of facts from unrelated
-  runs, or of randomly shuffled predicate/value pairs) to mean anything
-  quantitatively — a raw similarity number alone proves nothing. Not yet
-  built.
-- **Charts for the paper.** Once real embedding numbers exist: a
-  similarity-over-time or similarity-matrix figure showing convergence
-  strengthening (or not) tick over tick. Depends entirely on the above.
-- **Fold into `DRAFT.md`.** Once the measurement exists, this becomes a
-  second real grounding example alongside (or replacing) the retired
-  `pantheon.rs`/Benjamin examples — via the `materialization-editor`
-  agent, from checked facts, same as Section 5's existing paragraph.
+- **A repeated-trials version.** Several runs per condition to get a
+  variance estimate before treating any of these numbers as more than
+  suggestive — right now n=1 per condition.
+- **Charts for the paper.** A grouped bar chart (the three-way table
+  above) or a per-turn similarity-over-time line chart across all three
+  conditions. Not built yet.
+- **Fold into `DRAFT.md`.** If this result holds up under repeated
+  trials, it belongs in Section 5's "open critical debts" register
+  (alongside the paper's own existing self-critique about Section 5's
+  convergence claim not surviving its own evidentiary standard) rather
+  than as a positive grounding example — it would need honest framing
+  as "we tested whether DMML's structure specifically drives
+  convergence, controlled for the confound, and it didn't hold up,"
+  not softened into something it isn't.
