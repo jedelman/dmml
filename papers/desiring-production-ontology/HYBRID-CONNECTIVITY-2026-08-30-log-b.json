@@ -1,0 +1,21 @@
+{
+  "total_nodes": 3,
+  "total_edges": 2,
+  "structural_connectivity": 1.0,
+  "edges": [
+    {
+      "citer": 1,
+      "cited": 0,
+      "weight": 0.7134489417076111
+    },
+    {
+      "citer": 2,
+      "cited": 1,
+      "weight": 0.8796902298927307
+    }
+  ],
+  "mean_edge_weight": 0.7965695858001709,
+  "baseline_mean_nonedge_similarity": 0.6405016183853149,
+  "n_baseline_pairs": 1,
+  "validated_fraction": 1.0
+}

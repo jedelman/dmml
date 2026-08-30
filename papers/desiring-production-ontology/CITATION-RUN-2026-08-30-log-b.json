@@ -1,0 +1,55 @@
+[
+  {
+    "index": 0,
+    "cid": "socket-cid-0",
+    "author": "author:seed",
+    "commit": {
+      "consumes": [],
+      "produces": "<x:room/hub> <x:a> <x:Room> .\n<x:player> <x:inRoom> <x:room/hub> .",
+      "predicate": "mints",
+      "via": null,
+      "responds_to": null,
+      "created_at": "2026-08-29T00:00:00Z"
+    }
+  },
+  {
+    "index": 1,
+    "cid": "socket-cid-1",
+    "author": "author:beta",
+    "commit": {
+      "consumes": [
+        {
+          "Strong": {
+            "uri": "at://did:example:socket/world.shared/commit0",
+            "cid": "socket-cid-0"
+          }
+        }
+      ],
+      "produces": "<x:connects> <x:rdf:type> <x:Relation> .\n<x:glows_with> <x:rdf:type> <x:Attribute> .\n<x:room/hub> <x:connects> <x:room/antechamber> .\n<x:room/antechamber> <x:rdf:type> <x:Room> .\n<x:room/antechamber> <x:glows_with> \"faint amber light\" .\n<x:thought_beta_1> <x:listens_for> \"the hum behind the antechamber wall\" .",
+      "predicate": "adds",
+      "via": null,
+      "responds_to": null,
+      "created_at": "2026-08-29T00:00:01Z"
+    }
+  },
+  {
+    "index": 2,
+    "cid": "socket-cid-2",
+    "author": "author:alpha",
+    "commit": {
+      "consumes": [
+        {
+          "Strong": {
+            "uri": "at://did:example:socket/world.shared/commit1",
+            "cid": "socket-cid-1"
+          }
+        }
+      ],
+      "produces": "<x:listens_for> <x:rdf:type> <x:Attribute> .\n<x:glows_with> <x:rdf:type> <x:Attribute> .\n<x:thought_alpha_2> <x:listens_for> \"the hum behind the antechamber wall\" .\n<x:thought_alpha_2> <x:glows_with> \"curiosity at the amber light\" .\n<x:room/antechamber> <x:glows_with> \"faint amber light\" .",
+      "predicate": "listen_for_hum",
+      "via": null,
+      "responds_to": null,
+      "created_at": "2026-08-29T00:00:02Z"
+    }
+  }
+]
