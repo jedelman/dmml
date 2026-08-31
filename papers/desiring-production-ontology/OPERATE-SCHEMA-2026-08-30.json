@@ -1,0 +1,349 @@
+{
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor"
+        },
+        "transition": {
+          "const": "raise"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor"
+        },
+        "transition": {
+          "const": "uplift"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/quarry"
+        },
+        "transition": {
+          "const": "quarry"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/quarry"
+        },
+        "transition": {
+          "const": "grind"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/quarry"
+        },
+        "transition": {
+          "const": "wet"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/quarry"
+        },
+        "transition": {
+          "const": "fire"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/streambed"
+        },
+        "transition": {
+          "const": "wash"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/spring"
+        },
+        "transition": {
+          "const": "well_up"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/mortar"
+        },
+        "transition": {
+          "const": "mix"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "sand_source": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$"
+            },
+            "water_source": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$"
+            }
+          },
+          "required": [
+            "sand_source",
+            "water_source"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/wall"
+        },
+        "transition": {
+          "const": "build"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "brick_source": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$"
+            },
+            "mortar_source": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$"
+            }
+          },
+          "required": [
+            "brick_source",
+            "mortar_source"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/forest"
+        },
+        "transition": {
+          "const": "gather"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/forest"
+        },
+        "transition": {
+          "const": "overgather"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/carpentry"
+        },
+        "transition": {
+          "const": "make_frame"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/roof"
+        },
+        "transition": {
+          "const": "add_roof"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "wall_source": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$"
+            },
+            "frame_source": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$"
+            }
+          },
+          "required": [
+            "wall_source",
+            "frame_source"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/house"
+        },
+        "transition": {
+          "const": "construct_house"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

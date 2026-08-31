@@ -4,6 +4,21 @@
 grounding material, same discipline as `GROUNDING-2026-08-30-amber-
 cracks.md`.**
 
+## The thesis this grounds (Jason, 2026-08-30, stated as the actual
+## paper thesis -- record verbatim, don't paraphrase away the force of it)
+
+> "prose is not what we want, structure is. no logic should live in
+> prose - it's decorative. it should live in the structure."
+
+Round 4 below is the concrete, checkable proof of exactly this claim on
+a real task: the SAME model, at the SAME reasoning effort, moved from
+0/5 convergence to 1/1 one-shot convergence purely by relocating one
+piece of logic (`has_content`) out of prose (a prompt warning, a
+validator error message) and into the schema's own structure (a real
+`anyOf` of required-shaped branches). Nothing about the model changed.
+Nothing about the reasoning effort changed. Only where the constraint
+*lived* changed. That is the thesis, demonstrated, not just argued.
+
 ## The task
 
 `valar_mint.py` dispatches a distinct "Vala" agent -- reasoning left on
