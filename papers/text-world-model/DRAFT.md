@@ -4,7 +4,7 @@
 
 ## Abstract
 
-"World model" names two structurally different things that happen to share a name. In the machine-learning literature since Ha and Schmidhuber (2018), a world model is a learned, continuous, largely opaque latent dynamics function a policy or generator rolls forward — recent systems in this lineage (Google DeepMind's Genie line) generate real-time, promptable, action-controllable video. In DMML, a world model is an explicit, discrete, symbolic graph of triples plus declared rules for how they change. Neither side is simply better: DMML can inspect, verify provenance for, and compose its own state in ways a learned latent model's own literature identifies as open problems, not solved ones; a learned world model can generate a photorealistic, temporally consistent scene that DMML cannot produce at all. We argue the interesting relationship is compositional, not competitive — a symbolic world model supplying structure a video world model could render — and mark that claim as speculative throughout, not a result. Closing the paper: DMML's discrete representational commitment is itself one stratum in a nested stack, not a single freestanding layer, serving as substratum for the commit graph built on top of it in the sense this paper's companion piece argues; a continuous latent representation starts a different stack, not a less-coded one — neither is closer to some raw, unrepresented world.
+"World model" names two structurally different things that happen to share a name. In the machine-learning literature since Ha and Schmidhuber (2018), a world model is a learned, continuous, largely opaque latent dynamics function a policy or generator rolls forward — recent systems in this lineage (Google DeepMind's Genie line) generate real-time, promptable, action-controllable video. In DMML, a world model is an explicit, discrete, symbolic graph of triples plus declared rules for how they change. Neither side is simply better: DMML can inspect, verify provenance for, and compose its own state in ways a learned latent model's own literature identifies as open problems, not solved ones; a learned world model can generate a photorealistic, temporally consistent scene that DMML cannot produce at all. We argue the interesting relationship is compositional, not competitive — a symbolic world model supplying structure a video world model could render — and mark that claim as speculative throughout, not a result. Closing the paper: DMML's discrete representational commitment is itself one stratum in a nested stack, not a single freestanding layer, serving as substratum for the commit graph built on top of it in the sense this paper's companion piece argues; a continuous latent representation starts a different stack, not a less-coded one — neither is closer to some raw, unrepresented world. Two worked case studies ground the structural argument in real dispatched-model runs rather than inspection alone: multi-agent citation reliability over a fixed graph, and — newly — schema-conformance reliability under real multi-agent concurrency over a *live*, changing one, where the guarantee has to hold operationally, not just be checkable after the fact.
 
 ## 1. What "world model" means in the ML literature
 
@@ -515,6 +515,146 @@ let the citation-degradation, rupture/reconciliation, and
 embodiment/shamanism/cyberpunk/sovereignty/machines findings above be
 checked against still more source material rather than asserted from a
 handful of runs.
+
+## 9. A second worked case study: schema-conformance under real multi-agent concurrency, situated against the literature
+
+Section 8's case study measured *content*-reliability (citation drop rate) in a
+multi-agent debate over a fixed, unchanging graph. This section reports a
+different, complementary case study over `dmml-runtime`'s operate tier: not
+whether a model's *argument* is grounded, but whether a model can reliably
+choose and correctly express one legal action from a real, live, symbolic
+world's current state — DMML's discreteness (Section 4) put under direct
+multi-agent LLM control rather than only inspected structurally. Every
+number below is from real dispatched-model runs logged in this repository's
+`papers/desiring-production-ontology/VALAR-EVAL-2026-08-30.md` and
+`LIT-REVIEW-2026-08-31.md`, not projected.
+
+**The setup.** A small house-building world (ten machine-nodes, fifteen
+declared transitions, real guards including one negated, permanent-dead-end
+trap) is exposed to a dispatched model as a `oneOf`/`anyOf` JSON Schema —
+one branch per currently-legal `(node, transition, params)` triple, computed
+live each turn via `dmml::machine::may_fire`, not a fixed menu. Structural
+correctness here is directly checkable, the same way Sections 3 and 8
+already establish for citation: a chosen action either matches a real,
+offered branch or it doesn't, and if chosen it is fired for real against
+`dmml::machine::commit_fires_transition`, the same primitive every other
+example in this project's runtime uses.
+
+**A single agent, alone, in a self-consistent evolving world: reliable.**
+Across five independent full playthroughs (`deepseek-v4-flash-0731`, one
+agent, ~15 turns each, state changing only from that agent's own prior
+actions), every single dispatched turn produced a schema-conformant,
+engine-legal choice — no exceptions. This confirms Sections 2 and 4's
+structural argument operationally, not just by inspection: a closed,
+`may_fire`-computed action space is something a model can reliably select
+from when nothing else is changing the world underneath it.
+
+**Introducing genuine multi-agent concurrency reopens the gap, sharply.**
+Four models racing against one shared world, each in its own unsynchronized
+loop (`could-not-form-commit`, the schema-parseable rate, is the primary
+measure): the baseline concurrent condition failed to produce a
+schema-conformant, parseable response on 68.6% of 306 real attempts — a
+result triangulated, not asserted, against two further controlled
+conditions run specifically to isolate the cause. Sustained concurrent
+request *volume* alone, tested with the world frozen static (no state
+change at all, same four models, same duration), stayed near-ceiling
+(deepseek 100%, `glm-4.7-flash` 92%) — ruling out API-load effects.
+Single-agent operation against a *genuinely evolving* world (Section
+above) was also clean. What differs in the one failing condition and only
+that condition: state that can change between when an agent queries and
+when its chosen action lands, for reasons that agent did not cause and
+could not predict — formally, once concurrency is introduced, this
+project's operate tier is a multi-agent partially-observable environment,
+and "stale history may mislead agents in partially observable
+environments" is exactly the documented POMDP-literature finding this
+triangulation independently reproduces.<sup>[ASK in the Dark,
+arXiv:2607.02686, verified 2026-08-31 via live fetch]</sup> The tool-use
+literature names the identical mechanism directly, not as an analogy: "Stale
+Conflicts: another process modifies state between the agent's observation
+and its action execution" is one of four named non-atomic tool-call failure
+modes in recent work on LLM agent reliability.<sup>[Verified Tool Calls
+Improve LLM Agent Reliability Under Non-Atomic Failures, arXiv:2608.02645,
+verified 2026-08-31]</sup>
+
+**What fixes it, and what doesn't, is itself the finding.** Rewording the
+framing text around the schema — negated versus purely affirmative
+phrasing — moved the rate by less than three points, flat within noise
+(68.6% to 71.3%). Real-time drift attribution (a `dmml::interpret::diverges`
+call surfacing exactly what changed and why since an agent's last look,
+computed and rendered as structured data, never narrated prose) made the
+rate *worse* (79%). Stripping all framing to a bare, maximally minimal
+menu — closer structural fidelity, less prose — regressed further still
+(73-75%). What did work: a real mutual-exclusion lock held across an
+agent's entire query-decide-act cycle, not merely around the final commit
+step, cut the failure rate roughly in half on its own (51.1%, zero new
+information given to any agent) and further still combined with drift
+attribution (37.5%). The pattern across all of this: structural fixes that
+change what is *possible* (can the world move mid-decision at all) worked;
+prose-shaped fixes that change what a model is *told* about the possibility
+did not, or made it worse. This matches, and empirically extends, this
+paper and its companion's own account of DMML's `declare`/`consumes`/
+`produces` grammar generally — the guarantee has to live in what the
+structure permits, not in what an agent is informed of — applied here to
+operational reliability under concurrency rather than only to the citation
+grammar Section 3 already establishes it for.
+
+**A real qualification to that same account, not smoothed past.** Removing
+prose framing entirely was not cost-free, and this project's own finding
+here converges with independent work rather than standing alone: forcing
+structured output measurably degrades reasoning performance versus
+unconstrained natural-language generation, particularly on tasks requiring
+intermediate steps.<sup>[Let Me Speak Freely? A Study on the Impact of
+Format Restrictions on Performance of Large Language Models,
+arXiv:2408.02442, verified 2026-08-31]</sup> The corollary for this
+project's own thesis: structure should hold the *constraint* (this section's
+own mutex result, and Section 3's `consumes`/`produces` guarantee, both
+support that), but prose still appears to do real cognitive work in getting
+a model to engage with the constraint correctly in the first place, and is
+not free to strip away, even when the schema itself is unchanged either
+way.
+
+**Constrained-decoding enforcement is itself provider-dependent, a further,
+distinct finding.** With `strict: true` set identically, one provider route
+(`deepseek`) respected `const`-tagged schema branches reliably across every
+round tested; a different provider route (Google's for two `gemini`
+variants) returned JSON violating declared `const`/`type` constraints
+outright, non-deterministically, across repeated identical calls —
+confirmed directly, not inferred from aggregate failure rates. This is
+consistent with, though sharper than, published benchmarking of
+constrained-decoding compliance across backends.<sup>[JSONSchemaBench: A
+Rigorous Benchmark of Structured Outputs for Language Models,
+arXiv:2501.10868, verified 2026-08-31]</sup> A schema's guarantee is only as
+real as the specific enforcement path serving it — a caveat this section's
+own "structure over prose" argument needs to carry explicitly, not assume
+away as a deployment detail.
+
+**Multi-agent shared-world mediation.** The server holding this project's
+shared world state (`episode_arena.rs`) checks every proposed action from
+every agent against the same real interpreter, regardless of which model
+proposed it — architecturally the same role DeepMind's Concordia framework
+assigns to its "Game Master," "responsible for simulating the environment
+where the agents interact"<sup>[Generative agent-based modeling with
+actions grounded in physical, social, or digital space using Concordia,
+arXiv:2312.03664, verified 2026-08-31]</sup> — implemented here as a
+deterministic interpreter rather than a further LLM-mediated narrator,
+consistent with this paper's own emphasis (Section 3) on `consumes`-checked
+dependency as a structural guarantee rather than a trusted claim.
+
+**What this section does not establish.** The house-world used here is
+small and finite — its content chain is exhaustible by real multi-agent
+traffic in well under two minutes of continuous play, confirmed directly
+when an automated search process run against it hit exactly this dead end
+partway through evaluation. Whether the mutex result generalizes to a
+larger, effectively open-ended world, and whether the several concrete,
+literature-suggested alternatives named above (optimistic verify-before-
+retry in place of the mutex's pessimistic lock;<sup>[arXiv:2608.02645]</sup>
+decoupling deliberation from schema-formatting into two separate calls;
+self-consistency majority voting over independent samples for exactly the
+small, discrete, mutually-comparable answer space this operate tier already
+is<sup>[Self-Consistency Improves Chain of Thought Reasoning in Language
+Models, Wang, Wei, Schuurmans, Le, Chi, Narang, Chowdhery, and Zhou,
+arXiv:2203.11171, verified 2026-08-31]</sup>) actually outperform it, are
+named as concrete open experiments, not claimed as results.
 
 ---
 

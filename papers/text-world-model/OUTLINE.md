@@ -9,6 +9,20 @@ newer than Genie 3, reproducibility literature) — read `DRAFT.md` for
 the paper's actual current argument and exactly what's still open, not
 this outline. Not for citation yet either way.**
 
+**2026-08-31 addition**: a new Section 9, folding in
+`../desiring-production-ontology/VALAR-EVAL-2026-08-30.md` (Rounds
+4-18's real operate-tier dispatch results) and
+`../desiring-production-ontology/LIT-REVIEW-2026-08-31.md` (real,
+live-verified citations against that thread) as a second worked case
+study, parallel to Section 8's citation-reliability study but measuring
+schema-conformance reliability under real multi-agent concurrency
+instead of argument-grounding reliability over a static graph. Jason's
+own call, when asked whether this material warranted a third paper or
+belonged in an existing one: fold into this paper's scope, since it's
+already ML/cognitive-science-adjacent and Section 8 already established
+the "worked case study with real dispatched-model failure modes"
+pattern this material fits directly.
+
 ## Thesis
 
 "World model" in the ML literature (learned latent dynamics a policy
