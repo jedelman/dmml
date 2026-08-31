@@ -715,28 +715,78 @@ the collapse-producing run, does not reproduce the collapse for the
 models where the collapse was cleanest and best-documented.** Ruled-out
 list is now five: negation, framing-paragraph content, intro length,
 state/param complexity, and concurrent request volume/sustained load.
-What's left, and now the only remaining candidate: the growing "Actions
-taken so far" history block the real client appends per-agent, turn by
-turn -- and/or the world being genuinely live and mutating (as opposed
-to merely described that way, which Round 11's follow-up already
-ruled out) in combination with that growing history. Neither has been
-isolated yet; both were absent from every test run so far in Rounds
-11-12.
+
+**Correction, caught immediately on the next round rather than left
+standing**: this section originally named "the growing 'Actions taken
+so far' history block the real client appends per-agent" as the
+remaining untested candidate. That was wrong, and checked before
+anything was built on it -- `episode_arena_client.py`'s `agent_loop`
+(re-read directly, not assumed) never accumulates or passes any
+history to `build_prompt` at all; every dispatch in Rounds 9, 10, and
+12 alike was already a single fresh, stateless request with no memory
+of prior turns. That history-block language only ever existed in the
+older, single-agent `episode_test.py` (Round 6), a different script
+entirely. There was nothing to "clean."
+
+## Round 13 (2026-08-31): the moving target, triangulated from data already in hand
+
+Jason, on hearing concurrency was ruled out: "yep, maybe it's the
+moving target. what if we cleaned their context?" The context-cleaning
+question is what surfaced the Round 12 correction above -- there was no
+context to clean. But "moving target" turns out to be exactly right,
+made precise rather than vague, by comparing three conditions already
+run and logged, no new dispatch needed:
+
+| Condition | deepseek conformance |
+|---|---|
+| Single-agent, real live evolving world, state changes only from its own actions (Rounds 6 & 8: `episode_driver.rs`/`episode_swarm.py`, two independent full 15-turn runs) | 30/30 = 100% |
+| Multi-agent, real live evolving world, state can change from OTHER agents' unpredictable concurrent commits (Round 9: real `episode_arena` run) | 8/50 = 16% |
+| Multi-agent dispatch structure and volume, but a FROZEN, never-changing world (Round 12) | 20/20 = 100% |
+
+This triangulates precisely, ruling out two coarser versions of "moving
+target" along the way: it is not merely that the world changes over
+time (row 1 -- deepseek handles a real, live, self-caused evolution
+perfectly, across two separate full playthroughs) and it is not merely
+concurrent dispatch pressure without real stakes (row 3, Round 12). The
+actual driver, narrowed by elimination to the one condition present in
+row 2 and absent from rows 1 and 3: **state that can change between
+when an agent queries and when its action lands, for reasons the
+querying agent did not cause and cannot predict or attribute.** A
+model reasoning about "the world I just saw" is reasoning about
+something that may already be a different world by the time its commit
+arrives, through no action of its own -- and unlike simply being TOLD
+this might happen (Round 11's `full_intro` condition tested that
+framing alone, isolated from real multi-agent unpredictability, and it
+stayed at 100%), actually being subject to it seems to be what erodes
+schema-conformance, not knowing about the possibility in the abstract.
+
+This is a different, sharper claim than "concurrency" or "history," and
+it reframes what Round 9's collapse actually was: not a prompt-
+engineering problem (Rounds 10-11 already showed prompt text isn't the
+lever) and not an infrastructure-load problem (Round 12), but something
+closer to genuine multi-agent unpredictability itself taxing a small
+model's ability to stay inside a structural fence -- plausibly because
+the model is implicitly reasoning about a snapshot it can no longer
+fully trust, even though nothing in the prompt asks it to reason about
+trust at all.
 
 ## Open follow-up, not done here
 
-- The precise next isolation test: reconnect to a real, live
-  `episode_arena` (so the world genuinely changes commit to commit, not
-  just described as changeable) but WITHOUT ever appending a growing
-  history block to the prompt -- every call framed as if it were the
-  agent's first turn, regardless of how many real turns it's actually
-  taken. If conformance collapses there, it's the live-mutating-world
-  condition itself, not the history block. If it stays high, re-add
-  the growing history block on top of the frozen state from this round
-  to isolate that variable cleanly on its own.
-- Only once the real variable is confirmed does re-running the GA
-  against it become worthwhile -- optimizing prompt text is pointless
-  if the actual driver isn't prompt text at all.
+- This triangulation used existing data, not a new controlled run built
+  to test it directly -- run the precise version once: single deepseek
+  agent querying a real, live `episode_arena` while OTHER (non-
+  dispatched, scripted) agents fire real, unpredictable commits into
+  the same world concurrently, isolating "I am not the only cause of
+  change here" from every other variable already ruled out.
+- If the finding holds, it suggests a possible mitigation worth testing
+  on its own terms rather than assumed to work: have the arena report
+  not just current state but a short, structured note on what changed
+  and why since the querying agent's last look (attribution, not just a
+  fresh snapshot) -- opposite of "clean their context," closer to
+  "give it slightly more, but structured, not narrated."
+- Only once a fix is actually tested against this precise mechanism
+  does re-running the GA become worthwhile -- optimizing prompt text
+  was never the lever; this round makes clearer why not.
 - Route the 56 arena-protocol-errors (right shape, wrong value type)
   through the same real engine error path as a normal FAIL rather than
   a raw parse rejection, so "reached the engine but was malformed" and
