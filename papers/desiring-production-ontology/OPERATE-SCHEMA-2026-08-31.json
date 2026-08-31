@@ -1,0 +1,104 @@
+{
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor"
+        },
+        "transition": {
+          "const": "raise"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/carpentry"
+        },
+        "transition": {
+          "const": "make_frame"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/forest"
+        },
+        "transition": {
+          "const": "gather"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/spring"
+        },
+        "transition": {
+          "const": "well_up"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Valinor/streambed"
+        },
+        "transition": {
+          "const": "wash"
+        },
+        "params": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "node",
+        "transition",
+        "params"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

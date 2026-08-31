@@ -18,11 +18,29 @@ own declared params as required fields. There is no "pick from this
 list" instruction because there doesn't need to be one; the union type
 IS the list.
 
-Snapshot used: right after the seed commit (before anything has fired).
-Several transitions are legitimately available with no unmet
-preconditions: `raise` (Valinor), `wash` (streambed), `well_up`
-(spring), `gather` (forest) -- none has a guard beyond its own implicit
-from-state, all real, structurally distinct choices.
+Revised 2026-08-31 (Jason: "can valid actions be computed automatically
+or do you have to do them by hand every time?"): the first version of
+this script hand-transcribed a static CATALOG of all 15 declared
+transitions from valinor_house.rs's source -- structurally valid, but
+not *currently fireable*. That gap was real: the first live run against
+that static catalog picked `Valinor/quarry :: quarry`, a real, well-
+formed transition that is nonetheless illegal right now because
+Valinor hasn't been raised to mountains yet -- `commit_fires_transition`
+correctly rejected it with GuardNotSatisfied. Structural validity and
+runtime/guard legality are different properties; the old schema only
+enforced the first.
+
+This version replaces CATALOG with the live output of
+`dmml/examples/available_actions.rs`, which calls the real
+`dmml::machine::may_fire` against the actual seed-state world for every
+declared transition (exhaustively trying every candidate node against
+every param slot for parameterized ones) and returns only the subset
+that is truly fireable right now. The schema built from that output is
+narrower than before -- illegal actions aren't just discouraged by
+prompt text, they're unrepresentable, because the JSON literally doesn't
+have a branch for them. This is the same "structure, not prose" thesis
+as Round 4, applied one level deeper: not just "is this shape well-
+formed" but "is this action legal in the world as it stands right now."
 
 Uses reasoning DISABLED (the original fast/cheap acting-agent
 condition from earlier this session) -- operate is supposed to be the
@@ -40,26 +58,25 @@ MODEL = "deepseek/deepseek-v4-flash-0731"
 IDENT_PATTERN = "^[A-Za-z][A-Za-z0-9_]*$"
 NODE_REF_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$"
 
-# The real catalog, transcribed from valinor_house.rs's own seed world --
-# every (node, transition, params) triple that actually exists. This IS
-# the legal action space; nothing outside this list is representable.
-CATALOG = [
-    ("Valinor", "raise", []),
-    ("Valinor", "uplift", []),
-    ("Valinor/quarry", "quarry", []),
-    ("Valinor/quarry", "grind", []),
-    ("Valinor/quarry", "wet", []),
-    ("Valinor/quarry", "fire", []),
-    ("Valinor/streambed", "wash", []),
-    ("Valinor/spring", "well_up", []),
-    ("Valinor/mortar", "mix", ["sand_source", "water_source"]),
-    ("Valinor/wall", "build", ["brick_source", "mortar_source"]),
-    ("Valinor/forest", "gather", []),
-    ("Valinor/forest", "overgather", []),
-    ("Valinor/carpentry", "make_frame", []),
-    ("Valinor/roof", "add_roof", ["wall_source", "frame_source"]),
-    ("Valinor/house", "construct_house", []),
-]
+DMML_REPO = "/home/user/dmml"
+
+
+def compute_available_actions():
+    """Ask the real interpreter, not a hand-typed list, which (node,
+    transition, params) triples actually fire right now against the
+    live seed world -- `dmml::machine::may_fire` under the hood."""
+    result = subprocess.run(
+        ["cargo", "run", "-p", "dmml", "--example", "available_actions"],
+        cwd=DMML_REPO,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"available_actions failed:\n{result.stderr[-2000:]}")
+    # stdout is the pretty-printed JSON array; stderr carries the
+    # human-readable summary line, so parse stdout only.
+    return json.loads(result.stdout)
+
 
 WORLD_SNAPSHOT = """The current, real state of the world (nothing has happened yet -- this
 is the seed):
@@ -78,25 +95,27 @@ is the seed):
 PROMPT = f"""{WORLD_SNAPSHOT}
 
 Choose ONE action to take right now. Respond with only the JSON object
-matching the schema -- the schema itself defines every action that
-actually exists in this world; there is nothing to choose beyond what
-it already enumerates."""
+matching the schema -- the schema itself defines every action that is
+actually legal in this world right now; there is nothing to choose
+beyond what it already enumerates."""
 
 
-def build_schema():
+def build_schema(available_actions):
     branches = []
-    for node, transition, params in CATALOG:
+    for action in available_actions:
+        node, transition, params = action["node"], action["transition"], action["params"]
+        param_names = sorted(params.keys()) if params else []
         props = {
             "node": {"const": node},
             "transition": {"const": transition},
         }
         required = ["node", "transition"]
-        if params:
-            param_props = {p: {"type": "string", "pattern": NODE_REF_PATTERN} for p in params}
+        if param_names:
+            param_props = {p: {"type": "string", "pattern": NODE_REF_PATTERN} for p in param_names}
             props["params"] = {
                 "type": "object",
                 "properties": param_props,
-                "required": params,
+                "required": param_names,
                 "additionalProperties": False,
             }
             required.append("params")
@@ -140,10 +159,14 @@ def call_model(prompt, schema):
 
 
 def main():
-    schema = build_schema()
-    schema_path = os.path.join(os.path.dirname(__file__), "OPERATE-SCHEMA-2026-08-30.json")
+    print("Computing live legal-action catalog via dmml::machine::may_fire...", file=sys.stderr)
+    available_actions = compute_available_actions()
+    print(f"{len(available_actions)} currently-legal action(s) found.\n", file=sys.stderr)
+
+    schema = build_schema(available_actions)
+    schema_path = os.path.join(os.path.dirname(__file__), "OPERATE-SCHEMA-2026-08-31.json")
     json.dump(schema, open(schema_path, "w"), indent=2)
-    print(f"Schema: {len(CATALOG)} branches, {len(json.dumps(schema))} chars\n")
+    print(f"Schema: {len(available_actions)} branches, {len(json.dumps(schema))} chars\n")
 
     raw = call_model(PROMPT, schema)
     cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
@@ -153,11 +176,11 @@ def main():
     action = json.loads(cleaned)
     node, transition, params = action["node"], action["transition"], action.get("params") or {}
 
-    catalog_match = any(c[0] == node and c[1] == transition for c in CATALOG)
-    print(f"\nStructurally valid (in the real catalog): {catalog_match}")
+    catalog_match = any(a["node"] == node and a["transition"] == transition for a in available_actions)
+    print(f"\nStructurally valid (currently-legal per may_fire): {catalog_match}")
     print(f"Chosen: {node} :: {transition}({params})")
 
-    out_path = os.path.join(os.path.dirname(__file__), "OPERATE-CHOICE-2026-08-30.json")
+    out_path = os.path.join(os.path.dirname(__file__), "OPERATE-CHOICE-2026-08-31.json")
     json.dump(action, open(out_path, "w"), indent=2)
 
     print("\n=== Firing it for real against dmml::machine::commit_fires_transition ===\n")

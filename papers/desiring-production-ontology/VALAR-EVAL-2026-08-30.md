@@ -192,12 +192,63 @@ about hand-firing by Claude/Rust code, not yet about a cheap dispatched
 model choosing among transitions on its own; that specific test hasn't
 been run.
 
+## Round 5 (2026-08-31): the operate tier, tested for real, then closed
+
+The first real OPERATE-tier run (`valar_operate_test.py`, deepseek,
+reasoning disabled) used a schema built from a hand-typed `CATALOG` --
+all 15 transitions declared in `valinor_house.rs`'s source, i.e.
+structurally-valid-but-not-necessarily-fireable actions. The model
+picked `Valinor/quarry :: quarry`, a real, well-formed transition --
+and `commit_fires_transition` correctly rejected it: `GuardNotSatisfied`
+(Valinor hasn't been raised to `mountains` yet). Structural validity and
+runtime/guard legality are different properties; a schema built from
+the static catalog only enforces the first.
+
+Jason's question in response: "can valid actions be computed
+automatically or do you have to do them by hand every time?" Answer:
+automatically -- `dmml::machine::may_fire` already exists specifically
+to answer "can this fire right now" and had simply never been used to
+*enumerate*. Built `dmml/examples/available_actions.rs`: for every
+declared transition across every machine, for param-less transitions
+call `may_fire` directly; for parameterized ones, try the full Cartesian
+product of every known node against every param slot and keep whatever
+passes. Exhaustive, not heuristic -- small at this world's scale (10
+nodes, at most 2 params). Run against the seed world: 5 of 15 declared
+transitions are actually legal right now (`raise`, `wash`, `well_up`,
+`gather`, and -- correctly, easy to miss by hand -- `make_frame`, whose
+only guard is a negated condition on the forest that's trivially
+satisfied while it's still `full`).
+
+Rewired `valar_operate_test.py` to build its `oneOf` schema from this
+computed output instead of the static `CATALOG`. Same model, same
+disabled reasoning, same prompt shape. Result: model picked
+`Valinor/carpentry :: make_frame`, and this time `commit_fires_transition`
+returned **PASS** -- a real, legitimate action, on the first try, no
+hand correction. The fix wasn't a better model or a better prompt; it
+was narrowing the schema itself to exactly what's true right now, so an
+illegal choice isn't discouraged, it's unrepresentable. Same thesis as
+Round 4, one layer deeper: structural validity was already solved,
+*runtime* legality needed the same treatment, and got it the same way.
+
+This is also the concrete shape of "how we should be surfacing the
+world for agents" (Jason's own framing on seeing this result): the
+schema an agent is handed should never be wider than the real, current
+set of legal moves -- computed fresh from live world state via the
+actual interpreter, not maintained by hand as a static list that will
+silently drift out of sync with the world the moment anything fires.
+
 ## Open follow-up, not done here
 
-- Test whether a dispatched model can reliably OPERATE these bounded
-  machines (pick a transition, cite params) via structured output --
-  the "operate: reliable" half of Jason's framing is a plausible,
-  well-motivated hypothesis, not yet directly tested.
+- Repeat the operate-tier test after some transitions have actually
+  fired (a non-seed snapshot), to confirm the dynamic schema stays
+  correctly narrow as the legal-action set changes shape -- including
+  the case where a parameterized transition (`mix`, `build`, `add_roof`)
+  becomes legal and the schema has to enumerate real param bindings, not
+  just param-less branches (the seed state never exercised that path,
+  since none of the 5 legal seed actions take params).
+- Test the same dynamic-schema approach against GLM-5.3 and gpt-5.2-pro,
+  not just deepseek -- only one model has been tried at either the
+  static or dynamic operate-tier schema so far.
 - Test the strict/structural schema against GLM-5.3 and gpt-5.2-pro too
   -- Round 4 only tested deepseek; unknown whether the same structural
   fix helps or is unnecessary for models that already showed better
