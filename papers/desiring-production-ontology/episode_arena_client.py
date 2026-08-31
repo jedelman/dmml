@@ -70,6 +70,12 @@ import urllib.error
 API_KEY = os.environ["OPENROUTER_API_KEY"]
 ARENA_PORT = 7880
 DURATION_SECONDS = 90
+# Round 16: isolate mutex alone from Round 15's mutex+drift combination
+# -- the server still computes real drift server-side (harmless, and
+# keeps the code path exercised), this just stops surfacing it to the
+# model, so the only variable left versus Round 9's baseline is the
+# full-cycle mutex.
+INCLUDE_DRIFT_IN_PROMPT = False
 DMML_REPO = "/home/user/dmml"
 NODE_REF_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$"
 
@@ -106,7 +112,7 @@ def format_state(state):
 
 
 def format_drift(changes):
-    if not changes:
+    if not changes or not INCLUDE_DRIFT_IN_PROMPT:
         return ""
     lines = []
     for c in changes:
@@ -272,7 +278,7 @@ async def main():
     server.wait(timeout=10)
 
     out_dir = os.path.dirname(__file__)
-    log_path = os.path.join(out_dir, "EPISODE-ARENA-2026-08-31-round15-mutex-turns.json")
+    log_path = os.path.join(out_dir, "EPISODE-ARENA-2026-08-31-round16-mutex-alone.json")
     json.dump(log, open(log_path, "w"), indent=2)
 
     landed = [e for e in log if e.get("fire_result") == "PASS"]

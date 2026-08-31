@@ -891,16 +891,75 @@ value type -- `params` sent as a bare string again) -- Round 8's
 original schema-portability finding for these two models, unaffected
 by turn-taking, still there underneath the improvement.
 
+## Round 16 (2026-08-31): the mechanism question, and mutex isolated from drift
+
+Jason, in one message: "isolate mutex alone, rerun without drift" plus
+a sharper conceptual question -- "how is changing during reasoning
+communicated to the agent?"
+
+**The mechanism question first, because it shaped what the isolation
+run actually needed to measure.** It isn't literally communicated
+during reasoning at all -- there is no live channel into a single
+forward pass; a model generates against a prompt already frozen at
+query time, and nothing streams into it mid-generation. That mechanism
+cleanly explains a *legality* failure (the world moved, the guard no
+longer holds, `commit_fires_transition` rejects it) but does not
+obviously explain a *parseability* failure (`could_not_form_commit`),
+since whether JSON parses correctly is fixed at generation time,
+unaffected by anything that happens after generation starts. The best
+account on offer: under free concurrency, several other agents can each
+complete a full query-decide-act cycle in the gap between one agent's
+own two looks, so successive snapshots can land on combinations no
+single coherent turn order would ever produce -- several different
+agents' half-finished intentions overlapped into one state, not a
+smooth progression. The mutex doesn't give the agent awareness of
+anything; it bounds how much the world can move per gap, changing the
+*distribution of snapshots* the model ever has to reason about, not
+what it's told.
+
+**The isolation run confirms this reading directly, with no
+narration added at all.** `INCLUDE_DRIFT_IN_PROMPT = False` -- the
+server still computes real drift internally (harmless, keeps the code
+exercised) but the client never surfaces it; the mutex alone is the
+only thing distinguishing this run from Round 9's baseline.
+
+| Condition | could-not-form-commit |
+|---|---|
+| Round 9: no mutex, no drift (baseline) | 68.6% (210/306) |
+| Round 16: mutex alone, no drift | **51.1% (23/45)** |
+| Round 15: mutex + drift | 37.5% (12/32) |
+
+Mutex alone is a real, substantial improvement on its own -- about 17.5
+points off baseline -- with the model given zero new information, no
+attribution, nothing narrated or computed and shown to it. This is
+strong support for the distribution-of-snapshots account over any
+account requiring the model to be "informed" of anything: the only
+variable that changed was which state combinations it happened to see,
+never what it was told about them. Adding drift attribution on top
+(Round 15) improves further, to 37.5% -- the two interventions appear
+to be doing distinct, complementary work rather than one subsuming the
+other, though with n=32-45 per condition this reads as a real trend
+worth taking seriously, not yet a settled ratio.
+
+Per-model, mutex-alone: `deepseek` 6/12 (50%), `glm-4.7-flash` 5/11
+(45%), `gemini-2.5-flash-lite` 6/11 (55%), `gemini-3.1-flash-lite` 6/11
+(55%) -- all four models improved from their respective baselines, and
+the swarm collaboratively finished the full house again in this run
+too (`Valinor/house: built` in the final state), the second time a
+mutex-based run has produced a complete, unplanned collaborative build.
+
 ## Open follow-up, not done here
 
-- Isolate the confound named above directly: rerun Round 15 with drift
-  attribution disabled (revert to a bare state snapshot, mutex still
-  held across the full cycle) to find out whether the mutex alone
-  accounts for the drop, or whether mutex and drift are doing this
-  together in a way neither did alone.
-- Repeat Round 15 at a longer duration or across multiple runs to
-  firm up the n=8-per-model result before treating 37.5% as more than
-  a strong first signal.
+- Repeat Rounds 15 and 16 at longer duration or across multiple runs
+  to firm up n=32-45-sized samples before treating the specific gap
+  between mutex-alone and mutex+drift as more than a real, promising
+  trend.
+- Test whether the distribution-of-snapshots account predicts
+  anything further: does could-not-form-commit correlate, turn by
+  turn, with how many OTHER agents' commits landed between this
+  agent's own two most recent looks (a direct "burstiness" measure)?
+  If it does, that's real, quantitative support for the account above,
+  not just a plausible story fit to two data points.
 - Distinguish (a) from (b) above directly: rerun Round 12's frozen-
   world isolation test, but with a FAKE, hardcoded non-empty drift
   block prepended to the identical prompt (no real second agent, no
