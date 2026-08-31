@@ -1,0 +1,532 @@
+[
+  {
+    "turn": 1,
+    "state_before": {
+      "Valinor": "unformed",
+      "Valinor/carpentry": "no_frame",
+      "Valinor/forest": "full",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "unmixed",
+      "Valinor/quarry": "untouched",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "dry",
+      "Valinor/streambed": "bare",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor",
+        "params": null,
+        "transition": "raise"
+      },
+      {
+        "node": "Valinor/carpentry",
+        "params": null,
+        "transition": "make_frame"
+      },
+      {
+        "node": "Valinor/forest",
+        "params": null,
+        "transition": "gather"
+      },
+      {
+        "node": "Valinor/spring",
+        "params": null,
+        "transition": "well_up"
+      },
+      {
+        "node": "Valinor/streambed",
+        "params": null,
+        "transition": "wash"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/spring",
+      "transition": "well_up",
+      "params": null
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 2,
+    "state_before": {
+      "Valinor": "unformed",
+      "Valinor/carpentry": "no_frame",
+      "Valinor/forest": "full",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "unmixed",
+      "Valinor/quarry": "untouched",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "bare",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor",
+        "params": null,
+        "transition": "raise"
+      },
+      {
+        "node": "Valinor/carpentry",
+        "params": null,
+        "transition": "make_frame"
+      },
+      {
+        "node": "Valinor/forest",
+        "params": null,
+        "transition": "gather"
+      },
+      {
+        "node": "Valinor/streambed",
+        "params": null,
+        "transition": "wash"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/forest",
+      "transition": "gather",
+      "params": null
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 3,
+    "state_before": {
+      "Valinor": "unformed",
+      "Valinor/carpentry": "no_frame",
+      "Valinor/forest": "thinned",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "unmixed",
+      "Valinor/quarry": "untouched",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "bare",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor",
+        "params": null,
+        "transition": "raise"
+      },
+      {
+        "node": "Valinor/carpentry",
+        "params": null,
+        "transition": "make_frame"
+      },
+      {
+        "node": "Valinor/forest",
+        "params": null,
+        "transition": "overgather"
+      },
+      {
+        "node": "Valinor/streambed",
+        "params": null,
+        "transition": "wash"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/carpentry",
+      "transition": "make_frame",
+      "params": null
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 4,
+    "state_before": {
+      "Valinor": "unformed",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "thinned",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "unmixed",
+      "Valinor/quarry": "untouched",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "bare",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor",
+        "params": null,
+        "transition": "raise"
+      },
+      {
+        "node": "Valinor/forest",
+        "params": null,
+        "transition": "overgather"
+      },
+      {
+        "node": "Valinor/streambed",
+        "params": null,
+        "transition": "wash"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/streambed",
+      "transition": "wash",
+      "params": null
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 5,
+    "state_before": {
+      "Valinor": "unformed",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "thinned",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "unmixed",
+      "Valinor/quarry": "untouched",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor",
+        "params": null,
+        "transition": "raise"
+      },
+      {
+        "node": "Valinor/forest",
+        "params": null,
+        "transition": "overgather"
+      },
+      {
+        "node": "Valinor/mortar",
+        "params": {
+          "sand_source": "Valinor/streambed",
+          "water_source": "Valinor/spring"
+        },
+        "transition": "mix"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/mortar",
+      "transition": "mix",
+      "params": {
+        "sand_source": "Valinor/streambed",
+        "water_source": "Valinor/spring"
+      }
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 6,
+    "state_before": {
+      "Valinor": "unformed",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "thinned",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "untouched",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor",
+        "params": null,
+        "transition": "raise"
+      },
+      {
+        "node": "Valinor/forest",
+        "params": null,
+        "transition": "overgather"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/forest",
+      "transition": "overgather",
+      "params": null
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 7,
+    "state_before": {
+      "Valinor": "unformed",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "depleted",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "untouched",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor",
+        "params": null,
+        "transition": "raise"
+      }
+    ],
+    "choice": {
+      "node": "Valinor",
+      "transition": "raise",
+      "params": null
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 8,
+    "state_before": {
+      "Valinor": "hills",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "depleted",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "untouched",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor",
+        "params": null,
+        "transition": "uplift"
+      }
+    ],
+    "choice": {
+      "node": "Valinor",
+      "transition": "uplift",
+      "params": null
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 9,
+    "state_before": {
+      "Valinor": "mountains",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "depleted",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "untouched",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor/quarry",
+        "params": null,
+        "transition": "quarry"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/quarry",
+      "params": null,
+      "transition": "quarry"
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 10,
+    "state_before": {
+      "Valinor": "mountains",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "depleted",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "stone",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor/quarry",
+        "params": null,
+        "transition": "grind"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/quarry",
+      "transition": "grind",
+      "params": null
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 11,
+    "state_before": {
+      "Valinor": "mountains",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "depleted",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "sand",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor/quarry",
+        "params": null,
+        "transition": "wet"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/quarry",
+      "params": null,
+      "transition": "wet"
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 12,
+    "state_before": {
+      "Valinor": "mountains",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "depleted",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "clay",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor/quarry",
+        "params": null,
+        "transition": "fire"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/quarry",
+      "params": null,
+      "transition": "fire"
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 13,
+    "state_before": {
+      "Valinor": "mountains",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "depleted",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "brick",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor/wall",
+        "params": {
+          "brick_source": "Valinor/quarry",
+          "mortar_source": "Valinor/mortar"
+        },
+        "transition": "build"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/wall",
+      "params": {
+        "brick_source": "Valinor/quarry",
+        "mortar_source": "Valinor/mortar"
+      },
+      "transition": "build"
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 14,
+    "state_before": {
+      "Valinor": "mountains",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "depleted",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "brick",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "built"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor/roof",
+        "params": {
+          "frame_source": "Valinor/carpentry",
+          "wall_source": "Valinor/wall"
+        },
+        "transition": "add_roof"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/roof",
+      "params": {
+        "frame_source": "Valinor/carpentry",
+        "wall_source": "Valinor/wall"
+      },
+      "transition": "add_roof"
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "turn": 15,
+    "state_before": {
+      "Valinor": "mountains",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "depleted",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "brick",
+      "Valinor/roof": "roofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "built"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor/house",
+        "params": null,
+        "transition": "construct_house"
+      }
+    ],
+    "choice": {
+      "node": "Valinor/house",
+      "params": null,
+      "transition": "construct_house"
+    },
+    "fire_result": "PASS"
+  },
+  {
+    "episode_over": true,
+    "reason": "goal_reached",
+    "state": {
+      "Valinor": "mountains",
+      "Valinor/carpentry": "framed",
+      "Valinor/forest": "depleted",
+      "Valinor/house": "built",
+      "Valinor/mortar": "mixed",
+      "Valinor/quarry": "brick",
+      "Valinor/roof": "roofed",
+      "Valinor/spring": "flowing",
+      "Valinor/streambed": "sand",
+      "Valinor/wall": "built"
+    },
+    "turns_taken": 15
+  }
+]

@@ -327,8 +327,89 @@ reflect real multi-step planning toward the stated goal, versus
 picking any legal action that doesn't look obviously wrong, is not yet
 distinguished by this run -- see open follow-up.
 
+## Round 7 (2026-08-31): parallel, multiple models, and a wrong claim caught
+
+Jason: "let's do a parallel test, and with multiple models," then, in
+the same message, checked a specific claim rather than taking it on
+faith -- "over gather actually has an effect, but the sim didn't run
+long enough to show it." That claim was verified against the actual
+grammar, not assumed: grepped every guard in `episode_driver.rs` for
+anything reading `Valinor/forest`'s state, and found exactly one --
+`make_frame`'s. Nothing else in the world was wired to react to
+`depleted`, so no amount of extra turns would have surfaced a hidden
+effect. Asked which was intended (a bug in the world, or a request to
+extend it); Jason picked extend.
+
+**The grammar change.** `Valinor/streambed`'s `wash` now carries the
+same negated forest-depleted guard `make_frame` does -- deforestation
+destabilizes the streambed too. Confirmed directly before trusting it:
+overgathering removes `wash` from the legal-action set for good, and a
+direct fire attempt fails `GuardNotSatisfied`.
+
+**A wrong claim, caught before it shipped further.** The first version
+of this change's own doc comment reasoned from the "single-mutable-
+resource" limitation named earlier in this session and concluded
+overgathering early makes the house *permanently* unbuildable ("no
+rescue path"). That reasoning was never actually run against the
+engine -- and it was wrong. `EXISTS` guards are a momentary check at
+firing time, not a lock: `Valinor/quarry` can be cited as `mortar`'s
+`sand_source` while transiently `sand`, and still continue its own
+chain to `brick` right afterward with nothing blocked (confirmed by
+direct test). The real consequence is narrower than claimed: `mix` has
+to catch `quarry` during that transient `sand` window specifically;
+push `quarry` straight through to `brick` first and `mortar` is stuck
+`unmixed` forever (also confirmed directly -- that ordering ends the
+episode at `no_legal_actions`). Overgathering early collapses two
+independent sand sources into one timing window; it doesn't seal the
+house off outright. Both the Rust doc comment and this eval were
+corrected to say exactly that, not smoothed into the cleaner-sounding
+original claim.
+
+**The parallel run itself surfaced two more real, unplanned findings**
+before any of the three models finished a turn:
+- `openai/gpt-5.2-pro` rejected the schema outright: *"schema must have
+  a 'type' key"* alongside a bare `const` property -- OpenAI's
+  strict-mode validator is stricter than deepseek's endpoint about this
+  exact shape, a real cross-provider schema-portability gap this
+  project hadn't hit before (every prior strict-schema test only ever
+  targeted deepseek).
+- Both `z-ai/glm-5.3` and `gpt-5.2-pro` rejected `reasoning: {"enabled":
+  false}` outright (*"Reasoning is mandatory for this endpoint and
+  cannot be disabled"*) -- glm-5.3's constraint was already documented
+  in this repo's `CLAUDE.md`; gpt-5.2-pro's was new, found by direct
+  probe. Switching both to `reasoning: {"effort": "low"}` fixed the
+  rejection, but glm-5.3 then returned empty content on several turns
+  even at low effort (the same reasoning-burns-the-budget failure mode
+  already documented for deepseek at higher effort elsewhere in this
+  project).
+
+Mid-run, Jason: "Claude! Cheap models only from here!" -- the in-flight
+run (already partway through billed gpt-5.2-pro and glm-5.3 reasoning
+calls) was killed immediately, and the run redone with deepseek alone,
+disabled reasoning, no further spend on the other two. `glm-5.3` and
+`gpt-5.2-pro` stay commented out in `episode_test_multi.py` rather than
+deleted, so a future paid run can restore them without re-deriving the
+reasoning config.
+
+**The clean deepseek-only rerun**: 15 turns, `goal_reached`, every fire
+`PASS`. `overgather` fired at turn 6, `wash` had already fired at turn
+4 -- the trap didn't bite this run either, same qualitative pattern as
+both Round 6 runs (3/3 now). A separate, deliberately adversarial
+scripted run (not model-driven) confirmed the failure mode is real when
+the ordering is actually wrong: overgather first, then push quarry
+straight to `brick` without ever mixing mortar from it -- episode ends
+`no_legal_actions`, `mortar` permanently `unmixed`. The open question
+from Round 6 stands, sharper now: three real, independent deepseek runs
+have all threaded a real, narrower-than-first-claimed needle
+successfully; still not enough to call it judgment rather than a
+favorable ordering bias in how the model tends to sequence a build.
+
 ## Open follow-up, not done here
 
+- Fix the gpt-5.2-pro schema shape (add an explicit `"type"` alongside
+  every `const` property) and retry both it and glm-5.3 with a real
+  budget, now that the reasoning-config and schema issues are diagnosed
+  rather than just worked around by dropping them.
 - Force the trap question cleanly: construct or steer a run where
   `overgather` is offered *before* `make_frame` has fired, and see
   whether the model still avoids it, to actually distinguish

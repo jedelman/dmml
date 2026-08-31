@@ -11,20 +11,56 @@
 //!
 //! The house-world seed (`available_actions.rs`, `operate_check.rs`) has
 //! a real branch and a real trap built in, both already present in the
-//! grammar, neither added for this file: `Valinor/forest`'s `gather`
-//! (full->thinned) is safe, but `overgather` (thinned->depleted) is a
-//! dead end -- `Valinor/carpentry`'s `make_frame` guard is `NOT
+//! grammar, neither added for this file originally: `Valinor/forest`'s
+//! `gather` (full->thinned) is safe, but `overgather` (thinned->depleted)
+//! is a dead end -- `Valinor/carpentry`'s `make_frame` guard is `NOT
 //! EXISTS(Valinor/forest --state--> depleted)`, and nothing in this
-//! world regrows a forest. Fire `overgather` and `make_frame` becomes
-//! permanently illegal, which permanently blocks `add_roof`, which
-//! permanently blocks `construct_house`. A full correct playthrough
-//! needs 14 firings across a real dependency DAG (`Valinor` -> `quarry`
-//! chain + `streambed`/`spring` -> `mortar` + `quarry`'s brick -> `wall`;
+//! world regrows a forest. A full correct playthrough needs 14 firings
+//! across a real dependency DAG (`Valinor` -> `quarry` chain +
+//! `streambed`/`spring` -> `mortar` + `quarry`'s brick -> `wall`;
 //! `forest` -> `carpentry` -> `roof` with `wall`; `wall` + `roof` ->
 //! `house`) with a genuine choice point (`mortar`'s `sand_source` can
 //! legally bind to either `Valinor/quarry` after `grind` or
 //! `Valinor/streambed` after `wash`, whichever reaches `sand` state
-//! first) and one avoidable trap.
+//! first).
+//!
+//! Extended 2026-08-31, after Round 6: both real runs that day fired
+//! `make_frame` before `overgather`, so the trap never actually cost
+//! anything either time (the guard it blocks had already been satisfied
+//! for good) -- structurally correct, but too weak a trap to test
+//! whether a model is actually avoiding it versus just not stumbling
+//! into it by luck. Jason's fix, asked for directly: give `overgather`
+//! a real, second consequence. `Valinor/streambed`'s `wash` now carries
+//! the same negated guard `make_frame` does (`NOT EXISTS(Valinor/forest
+//! --state--> depleted)`) -- deforestation destabilizes the streambed,
+//! and washing it never settles into usable sand again once the forest
+//! is gone. This makes the trap load-bearing rather than redundant: if
+//! `overgather` fires before `wash` ever has, `Valinor/mortar`'s only
+//! remaining `sand_source` candidate is `Valinor/quarry`.
+//!
+//! First write of this comment claimed that route was closed too ("no
+//! rescue path... permanently unbuildable"), reasoning from the
+//! single-mutable-resource limitation named earlier this session. That
+//! claim was checked against the real engine and was WRONG, caught
+//! before it shipped any further: `EXISTS` guards are a momentary
+//! snapshot check at firing time, not a lock or a consumption of the
+//! cited node -- citing `Valinor/quarry` as `mortar`'s `sand_source`
+//! while it happens to hold `sand` does not stop `quarry` from
+//! continuing its OWN chain afterward (confirmed directly: `mix` fires
+//! successfully citing `quarry`'s `sand` state, then `quarry` still
+//! fires `wet` and `fire` right after, reaching `brick` for `wall` with
+//! nothing blocked). So there IS a rescue path -- it's just a narrow
+//! ordering window, not a permanent closure: `mortar :: mix` has to
+//! cite `quarry` specifically while `quarry` is in its transient `sand`
+//! state (between `grind` and `wet`). Miss that window -- push `quarry`
+//! straight through to `clay`/`brick` before ever mixing mortar with it
+//! -- and `Valinor/mortar` is stuck `unmixed` forever (also confirmed
+//! directly: that ordering ends the episode at `no_legal_actions`,
+//! `Valinor/mortar` never reachable again since `streambed` stays
+//! permanently blocked too). Overgathering early doesn't close the
+//! house off outright; it collapses two independent sand sources into
+//! one narrow timing window on a resource that's also needed for
+//! something else.
 //!
 //! This binary is the world engine only -- it never picks an action
 //! itself. It speaks one JSON object per line on stdout/stdin so a
@@ -76,7 +112,10 @@ fn house_world_machines_json() -> &'static str {
             {"ident": "wet", "from": "sand", "to": "clay"},
             {"ident": "fire", "from": "clay", "to": "brick"}]},
         {"node": "Valinor/streambed", "states": [{"ident": "bare"}, {"ident": "sand"}],
-          "transitions": [{"ident": "wash", "from": "bare", "to": "sand"}]},
+          "transitions": [
+            {"ident": "wash", "from": "bare", "to": "sand",
+              "guards": [{"negated": true, "exists": {"anchor": {"kind": "node", "value": "Valinor/forest"},
+                "hops": [{"predicate": "state", "term": {"kind": "node", "value": "depleted"}}]}}]}]},
         {"node": "Valinor/spring", "states": [{"ident": "dry"}, {"ident": "flowing"}],
           "transitions": [{"ident": "well_up", "from": "dry", "to": "flowing"}]},
         {"node": "Valinor/mortar", "states": [{"ident": "unmixed"}, {"ident": "mixed"}],

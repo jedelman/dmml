@@ -1,0 +1,13 @@
+{
+  "deepseek/deepseek-v4-flash-0731": {
+    "model": "deepseek/deepseek-v4-flash-0731",
+    "reason": "goal_reached",
+    "turns_taken": 15,
+    "overgather_taken": true,
+    "overgather_turn": 6,
+    "wash_taken": true,
+    "wash_turn": 4,
+    "overgather_before_wash": false,
+    "goal_reached": true
+  }
+}
