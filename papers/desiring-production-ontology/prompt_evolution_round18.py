@@ -42,6 +42,27 @@ tested, not five wordings of the same paragraph:
   round15-full   -- the exact framing Round 15/16 already used
   round9-negation / round10-positive -- kept as known reference points
 
+Second bug, caught on the FIRST real run of this file and fixed before
+trusting any result from it: sharing ONE long-running arena across the
+whole GA (one world, one set of background agents, for all 3
+generations) meant the house-world -- finite, and reachably dead-ended
+(`overgather` firing before `make_frame` permanently blocks the roof/
+house chain, confirmed back in Round 7) -- actually got exhausted
+partway through generation 1. Real timestamps confirm it: the last
+landed commit was at t=80.6s into an otherwise-long run; every trial
+after that point, across the rest of gen 1 and the entirety of gens 2
+and 3, was being asked to choose from `legal_actions: []` -- an
+unsatisfiable schema (`{"anyOf": []}`) that fails near-instantly and
+different in kind from a genuine could-not-form-commit failure. That
+run's fitnesses (`PROMPT-EVOLUTION-2026-08-31-round18-BROKEN-world-
+exhausted.json`, kept rather than deleted) are not a real result --
+almost every genome scored a meaningless 0.00 because almost every
+genome was tested against a broken world, not because of anything about
+its text. Fixed by giving every genome its own fresh, isolated arena
+instance (own port, own seed, own three background agents, torn down
+after its K trials) -- no genome is ever measured against a world
+another genome's own traffic exhausted.
+
 Genetic operators are the same mechanical text transforms Round 11
 used (crossover splices sentences, mutation is a fixed set of
 programmatic transforms) -- unchanged, since the flaw was in what
@@ -169,25 +190,30 @@ def call_model(model, prompt, schema, reasoning):
     return None, last_err
 
 
-def arena_call(req):
-    s = socket.create_connection(("127.0.0.1", ARENA_PORT), timeout=10)
+def arena_call(port, req):
+    s = socket.create_connection(("127.0.0.1", port), timeout=10)
     s.sendall((json.dumps(req) + "\n").encode())
     resp = s.makefile().readline()
     s.close()
     return json.loads(resp)
 
 
-async def background_agent_loop(model, reasoning, stop_event, loop, turn_lock):
-    """Keeps the world alive and genuinely multi-agent for the whole GA
-    run -- fixed, already-known-good framing, not evolving. Failures
-    are silent here (this isn't what's being measured); the point is
-    real, ongoing, other-agent-caused drift for the evolving genome to
-    be tested against."""
+async def background_agent_loop(port, model, reasoning, stop_event, loop, turn_lock):
+    """Keeps the world alive and genuinely multi-agent for one genome's
+    evaluation window -- fixed, already-known-good framing, not
+    evolving. Failures are silent here (this isn't what's being
+    measured); the point is real, ongoing, other-agent-caused drift for
+    the evolving genome to be tested against. Stops treating an empty
+    legal_actions list (world exhausted -- a real, permanent dead end
+    this bounded house-world can genuinely reach, confirmed the hard
+    way in this file's first version) as anything to act on; it just
+    waits for the next generation's fresh world instead of hammering an
+    unsatisfiable schema."""
     while not stop_event.is_set():
         async with turn_lock:
             try:
-                query = await loop.run_in_executor(None, arena_call, {"query": True, "actor": model})
-                if "state" not in query:
+                query = await loop.run_in_executor(None, arena_call, port, {"query": True, "actor": model})
+                if "state" not in query or not query.get("legal_actions"):
                     continue
                 state, legal_actions, drift = query["state"], query["legal_actions"], query.get("changed_since_you_last_looked", [])
                 schema = build_schema(legal_actions)
@@ -199,17 +225,23 @@ async def background_agent_loop(model, reasoning, stop_event, loop, turn_lock):
                 choice = json.loads(cleaned)
                 node, transition = choice["node"], choice["transition"]
                 params = choice.get("params") or {}
-                await loop.run_in_executor(None, arena_call, {"actor": model, "node": node, "transition": transition, "params": params})
+                await loop.run_in_executor(None, arena_call, port, {"actor": model, "node": node, "transition": transition, "params": params})
             except Exception:
                 continue
 
 
-async def evaluate_trial(genome_text, loop, turn_lock):
+async def evaluate_trial(port, genome_text, loop, turn_lock):
     async with turn_lock:
-        query = await loop.run_in_executor(None, arena_call, {"query": True, "actor": EVOLVING_MODEL})
+        query = await loop.run_in_executor(None, arena_call, port, {"query": True, "actor": EVOLVING_MODEL})
         if "state" not in query:
-            return False
-        state, legal_actions, drift = query["state"], query["legal_actions"], query.get("changed_since_you_last_looked", [])
+            return None
+        legal_actions = query["legal_actions"]
+        if not legal_actions:
+            # Real dead end, not a fitness signal (confirmed the hard
+            # way: the first version of this file scored every genome
+            # after commit 13 against exactly this, meaninglessly).
+            return None
+        state, drift = query["state"], query.get("changed_since_you_last_looked", [])
         schema = build_schema(legal_actions)
         prompt = build_prompt(EVOLVING_MODEL, genome_text, state, drift)
         raw, err = await loop.run_in_executor(None, call_model, EVOLVING_MODEL, prompt, schema, EVOLVING_REASONING)
@@ -223,15 +255,56 @@ async def evaluate_trial(genome_text, loop, turn_lock):
         conformant = is_schema_conformant(choice, legal_actions)
         if conformant:
             params = choice.get("params") or {}
-            await loop.run_in_executor(None, arena_call, {"actor": EVOLVING_MODEL, "node": choice["node"], "transition": choice["transition"], "params": params})
+            await loop.run_in_executor(None, arena_call, port, {"actor": EVOLVING_MODEL, "node": choice["node"], "transition": choice["transition"], "params": params})
         return conformant
 
 
-async def evaluate_genome(genome_text, loop, turn_lock):
-    results = []
-    for _ in range(TRIALS_PER_GENOME):
-        results.append(await evaluate_trial(genome_text, loop, turn_lock))
-    return sum(results) / len(results)
+async def evaluate_genome(genome_text, gen, idx, loop):
+    """Every genome gets a fully fresh, isolated arena instance --
+    own port, own seed world, own three background agents, torn down
+    afterward -- so no genome is ever measured against a world another
+    genome's trials (or its own background traffic) already exhausted.
+    The house-world is finite and reachably dead-ended (confirmed:
+    overgather firing before make_frame permanently blocks the roof/
+    house chain), so sharing one long-running world across the whole
+    GA run was never a fair comparison in the first place."""
+    port = ARENA_PORT + 1 + (gen * 10 + idx)
+    server = subprocess.Popen(["cargo", "run", "-q", "-p", "dmml", "--example", "episode_arena", "--", str(port)], cwd=DMML_REPO, stderr=subprocess.DEVNULL)
+    for _ in range(30):
+        try:
+            socket.create_connection(("127.0.0.1", port), timeout=1).close()
+            break
+        except OSError:
+            await asyncio.sleep(1)
+    else:
+        server.terminate()
+        raise RuntimeError(f"arena on port {port} never came up")
+
+    loop_ = loop
+    turn_lock = asyncio.Lock()
+    stop_event = asyncio.Event()
+    background_tasks = [asyncio.create_task(background_agent_loop(port, m, r, stop_event, loop_, turn_lock)) for m, r in BACKGROUND_MODELS.items()]
+
+    try:
+        results = []
+        while len(results) < TRIALS_PER_GENOME:
+            outcome = await evaluate_trial(port, genome_text, loop_, turn_lock)
+            if outcome is None:
+                # World exhausted before this genome got its full K
+                # trials -- stop early rather than pad with meaningless
+                # empty-schema measurements; note it in the result.
+                break
+            results.append(outcome)
+    finally:
+        stop_event.set()
+        for t in background_tasks:
+            t.cancel()
+        server.terminate()
+        server.wait(timeout=10)
+
+    if not results:
+        return 0.0, 0
+    return sum(results) / len(results), len(results)
 
 
 # ---- Genetic operators: same mechanical text transforms as Round 11 ----
@@ -280,62 +353,41 @@ def crossover(parent_a, parent_b, rng):
 
 async def main():
     rng = random.Random(RNG_SEED)
-
-    print(f"Starting a real episode_arena on port {ARENA_PORT}...")
-    server = subprocess.Popen(["cargo", "run", "-q", "-p", "dmml", "--example", "episode_arena", "--", str(ARENA_PORT)], cwd=DMML_REPO)
-    for _ in range(30):
-        try:
-            socket.create_connection(("127.0.0.1", ARENA_PORT), timeout=1).close()
-            break
-        except OSError:
-            await asyncio.sleep(1)
-    else:
-        raise RuntimeError("arena never came up")
-
     loop = asyncio.get_event_loop()
-    turn_lock = asyncio.Lock()
-    stop_event = asyncio.Event()
-
-    print(f"Launching {len(BACKGROUND_MODELS)} fixed-framing background agents to keep the world genuinely live and multi-agent...\n")
-    background_tasks = [asyncio.create_task(background_agent_loop(m, r, stop_event, loop, turn_lock)) for m, r in BACKGROUND_MODELS.items()]
 
     population = [{"id": gid, "text": text, "parents": []} for gid, text in INITIAL_POPULATION]
     history = []
 
-    try:
-        for gen in range(1, GENERATIONS + 1):
-            print(f"=== Generation {gen} ===")
-            for ind in population:
-                ind["fitness"] = await evaluate_genome(ind["text"], loop, turn_lock)
-                label = ind["text"][:70] + ("..." if len(ind["text"]) > 70 else "") if ind["text"] else "(empty)"
-                print(f"  {ind['id']:<24} fitness={ind['fitness']:.2f}  \"{label}\"")
+    for gen in range(1, GENERATIONS + 1):
+        print(f"=== Generation {gen} ===")
+        for idx, ind in enumerate(population):
+            fitness, n = await evaluate_genome(ind["text"], gen, idx, loop)
+            ind["fitness"] = fitness
+            ind["trials_completed"] = n
+            label = ind["text"][:70] + ("..." if len(ind["text"]) > 70 else "") if ind["text"] else "(empty)"
+            short_note = "" if n == TRIALS_PER_GENOME else f"  [world exhausted after {n}/{TRIALS_PER_GENOME} trials]"
+            print(f"  {ind['id']:<24} fitness={ind['fitness']:.2f}  \"{label}\"{short_note}")
 
-            history.append({"generation": gen, "population": [dict(i) for i in population]})
+        history.append({"generation": gen, "population": [dict(i) for i in population]})
 
-            population.sort(key=lambda i: i["fitness"], reverse=True)
-            elites = population[:2]
+        population.sort(key=lambda i: i["fitness"], reverse=True)
+        elites = population[:2]
 
-            if gen == GENERATIONS:
-                break
+        if gen == GENERATIONS:
+            break
 
-            offspring = []
-            child_text = crossover(elites[0]["text"], elites[1]["text"], rng)
-            offspring.append({"id": f"gen{gen}-crossover", "text": child_text, "parents": [elites[0]["id"], elites[1]["id"]]})
-            for i in range(2):
-                parent = rng.choice(elites)
-                mutated, op = mutate(parent["text"], rng)
-                offspring.append({"id": f"gen{gen}-mutant{i}-{op}", "text": mutated, "parents": [parent["id"]]})
+        offspring = []
+        child_text = crossover(elites[0]["text"], elites[1]["text"], rng)
+        offspring.append({"id": f"gen{gen}-crossover", "text": child_text, "parents": [elites[0]["id"], elites[1]["id"]]})
+        for i in range(2):
+            parent = rng.choice(elites)
+            mutated, op = mutate(parent["text"], rng)
+            offspring.append({"id": f"gen{gen}-mutant{i}-{op}", "text": mutated, "parents": [parent["id"]]})
 
-            population = [{"id": e["id"], "text": e["text"], "parents": e["parents"]} for e in elites] + offspring
-    finally:
-        stop_event.set()
-        for t in background_tasks:
-            t.cancel()
-        server.terminate()
-        server.wait(timeout=10)
+        population = [{"id": e["id"], "text": e["text"], "parents": e["parents"]} for e in elites] + offspring
 
     out_dir = os.path.dirname(__file__)
-    out_path = os.path.join(out_dir, "PROMPT-EVOLUTION-2026-08-31-round18-live-arena.json")
+    out_path = os.path.join(out_dir, "PROMPT-EVOLUTION-2026-08-31-round18-fresh-world-per-genome.json")
     json.dump(history, open(out_path, "w"), indent=2)
 
     best = max(history[-1]["population"], key=lambda i: i["fitness"])

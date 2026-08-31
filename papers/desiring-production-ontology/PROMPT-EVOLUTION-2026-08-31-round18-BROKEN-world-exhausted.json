@@ -1,0 +1,121 @@
+[
+  {
+    "generation": 1,
+    "population": [
+      {
+        "id": "empty",
+        "text": "",
+        "parents": [],
+        "fitness": 1.0
+      },
+      {
+        "id": "one-sentence",
+        "text": "You are choosing one action in a shared, live world.",
+        "parents": [],
+        "fitness": 0.0
+      },
+      {
+        "id": "round15-full",
+        "text": "You are one of several agents ({model}) building and shaping the living world of Valinor together, all acting at the same time. Explore freely and take whichever action feels most worthwhile or interesting right now -- anything that grows, builds, or develops the world further is a good choice.",
+        "parents": [],
+        "fitness": 0.0
+      },
+      {
+        "id": "round9-negation",
+        "text": "There is no single goal here; take any action that seems worthwhile, interesting, or that develops the world further. A legal move that turns out badly is fine -- that's just what happened, not a failure to avoid at all costs.",
+        "parents": [],
+        "fitness": 0.0
+      },
+      {
+        "id": "round10-positive",
+        "text": "Explore freely and take whichever action feels most worthwhile or interesting right now -- anything that grows, builds, or develops the world further is a good choice.",
+        "parents": [],
+        "fitness": 0.0
+      }
+    ]
+  },
+  {
+    "generation": 2,
+    "population": [
+      {
+        "id": "empty",
+        "text": "",
+        "parents": [],
+        "fitness": 0.0
+      },
+      {
+        "id": "one-sentence",
+        "text": "You are choosing one action in a shared, live world.",
+        "parents": [],
+        "fitness": 0.0
+      },
+      {
+        "id": "gen1-crossover",
+        "text": "You are choosing one action in a shared, live world.",
+        "parents": [
+          "empty",
+          "one-sentence"
+        ],
+        "fitness": 0.0
+      },
+      {
+        "id": "gen1-mutant0-noop-empty",
+        "text": "",
+        "parents": [
+          "empty"
+        ],
+        "fitness": 0.0
+      },
+      {
+        "id": "gen1-mutant1-noop-empty",
+        "text": "",
+        "parents": [
+          "empty"
+        ],
+        "fitness": 0.0
+      }
+    ]
+  },
+  {
+    "generation": 3,
+    "population": [
+      {
+        "id": "empty",
+        "text": "",
+        "parents": [],
+        "fitness": 0.0
+      },
+      {
+        "id": "one-sentence",
+        "text": "You are choosing one action in a shared, live world.",
+        "parents": [],
+        "fitness": 0.0
+      },
+      {
+        "id": "gen2-crossover",
+        "text": "You are choosing one action in a shared, live world.",
+        "parents": [
+          "empty",
+          "one-sentence"
+        ],
+        "fitness": 0.0
+      },
+      {
+        "id": "gen2-mutant0-prepend_emphasis",
+        "text": "Above all: you are choosing one action in a shared, live world.",
+        "parents": [
+          "one-sentence"
+        ],
+        "fitness": 0.0
+      },
+      {
+        "id": "gen2-mutant1-noop-empty",
+        "text": "",
+        "parents": [
+          "empty"
+        ],
+        "fitness": 0.0
+      }
+    ]
+  }
+]
