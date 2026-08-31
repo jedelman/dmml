@@ -62,6 +62,13 @@ pub struct CrossRepoConsume {
     pub foreign_did: String,
 }
 
+/// Best-effort: recognizes atproto's own `at://did/...` shape when a URI
+/// happens to have it, but this check does not require every `uri` to be
+/// an AT-URI (`ast::StrongRef.uri` is substrate-opaque; see its doc
+/// comment). A non-AT-URI substrate reference simply returns `None` here
+/// and the caller treats it as `"<unparseable>"` -- a same-repo check
+/// that can't determine the author fails closed (flags it as foreign),
+/// never silently assumes same-repo.
 fn did_of_at_uri(at_uri: &str) -> Option<&str> {
     let rest = at_uri.strip_prefix("at://")?;
     let segment = rest.split('/').next()?;

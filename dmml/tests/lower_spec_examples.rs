@@ -144,12 +144,7 @@ fn example_3_via_and_responds_to_grants() {
 fn multiple_refs_under_one_role_are_all_kept_in_order() {
     fn strong_ref(uri: &str, cid: &str) -> ast::StrongRef {
         ast::StrongRef {
-            uri: ast::AtUri {
-                raw: uri.to_string(),
-                did: uri.split('/').nth(2).unwrap().to_string(),
-                nsid: uri.split('/').nth(3).unwrap().to_string(),
-                rkey: uri.split('/').nth(4).unwrap().to_string(),
-            },
+            uri: uri.to_string(),
             cid: cid.to_string(),
             span: Span::new(""),
         }

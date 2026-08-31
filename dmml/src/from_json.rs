@@ -133,26 +133,14 @@ fn predicate_ref(pointer: &str, value: &str) -> Result<ast::PredicateRef, FromJs
     }
 }
 
-/// `"at://" , did , "/" , nsid , "/" , rkey` -- atproto's own AT-URI
-/// syntax. Requires exactly three non-empty slash-delimited segments
-/// after the `at://` prefix.
-fn at_uri(pointer: &str, raw: &str) -> Result<ast::AtUri, FromJsonError> {
-    let rest = raw
-        .strip_prefix("at://")
-        .ok_or_else(|| invalid(pointer, format!("{raw:?} is missing the at:// prefix")))?;
-    let parts: Vec<&str> = rest.split('/').collect();
-    if parts.len() != 3 || parts.iter().any(|p| p.is_empty()) {
-        return Err(invalid(
-            pointer,
-            format!("{raw:?} must be at://did/nsid/rkey, found {} segment(s)", parts.len()),
-        ));
+/// A `StrongRef`/`FactConsume` target URI: opaque, substrate-chosen,
+/// only required to be non-empty. No `at://` (or any other) scheme is
+/// assumed here -- see `ast::StrongRef`'s own doc comment for why.
+fn strong_ref_uri(pointer: &str, raw: &str) -> Result<String, FromJsonError> {
+    if raw.is_empty() {
+        return Err(invalid(pointer, "uri must not be empty".to_string()));
     }
-    Ok(ast::AtUri {
-        raw: raw.to_string(),
-        did: parts[0].to_string(),
-        nsid: parts[1].to_string(),
-        rkey: parts[2].to_string(),
-    })
+    Ok(raw.to_string())
 }
 
 // ---------------------------------------------------------------------
@@ -167,7 +155,7 @@ pub struct StrongRefInput {
 
 fn strong_ref(pointer: &str, input: &StrongRefInput) -> Result<ast::StrongRef, FromJsonError> {
     Ok(ast::StrongRef {
-        uri: at_uri(&format!("{pointer}/uri"), &input.uri)?,
+        uri: strong_ref_uri(&format!("{pointer}/uri"), &input.uri)?,
         cid: input.cid.clone(),
         span: ast::Span::new(pointer),
     })

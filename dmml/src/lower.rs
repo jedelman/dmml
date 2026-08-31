@@ -87,7 +87,7 @@ fn lower_value(v: &ast::Value) -> TripleValue {
 
 fn lower_strong_ref(sr: &ast::StrongRef) -> StrongRef {
     StrongRef {
-        uri: sr.uri.raw.clone(),
+        uri: sr.uri.clone(),
         cid: sr.cid.clone(),
     }
 }
@@ -176,7 +176,7 @@ pub fn lower_reference(reference: &ast::ReferenceStmt) -> Vec<Triple> {
                 Triple {
                     subject: subject.clone(),
                     predicate: "foreignUri".to_string(),
-                    object: TripleValue::Str(reference.target.uri.raw.clone()),
+                    object: TripleValue::Str(reference.target.uri.clone()),
                 },
                 Triple {
                     subject,

@@ -154,24 +154,18 @@ pub struct FactConsume {
     pub span: Span,
 }
 
+/// `uri` is an opaque, substrate-chosen identifier for another commit --
+/// an atproto AT-URI (`at://did/nsid/rkey`), a git commit ref, an S3
+/// object key, whatever the substrate that recorded it uses. This crate
+/// never parses or validates its shape; only that it's a non-empty
+/// string (`check_ident`-free by design -- a URI is not an identifier
+/// this grammar names, it's an opaque citation). See `identity.rs`'s
+/// module doc comment for why nothing substrate-specific belongs here.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StrongRef {
-    pub uri: AtUri,
+    pub uri: String,
     pub cid: String,
     pub span: Span,
-}
-
-/// `"at://" , did , "/" , nsid , "/" , rkey` -- atproto's own AT-URI
-/// syntax, reused verbatim, not reinvented here. Stored as the raw text
-/// plus its three parsed segments; the grammar does not validate DID/NSID/
-/// rkey shape beyond "non-empty, slash-delimited" -- that's atproto's own
-/// concern, not DMML's.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AtUri {
-    pub raw: String,
-    pub did: String,
-    pub nsid: String,
-    pub rkey: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
