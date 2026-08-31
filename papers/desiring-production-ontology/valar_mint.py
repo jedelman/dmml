@@ -28,7 +28,15 @@ import time
 import urllib.request
 
 API_KEY = os.environ["OPENROUTER_API_KEY"]
-MODEL = "openai/gpt-5.2-pro"
+MODEL = "deepseek/deepseek-v4-flash-0731"
+# "low" (not "none"/disabled): the design task is genuinely more complex
+# than the acting-agent harness elsewhere this session, so some
+# deliberation is warranted, but per Jason's steer (2026-08-30 -- minting
+# machines is likely BYOK/paid-upgrade territory in the eventual game, so
+# minimal is the right default to test, not maximal) this deliberately
+# does NOT reach for "max"/"high" the way the first three deepseek
+# attempts implicitly did (deepseek's default_effort is "high").
+REASONING_EFFORT = "low"
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "real_schema.json")
 
 WORLD_SO_FAR = """The world (Valinor) as it stands, machine by machine:
@@ -113,6 +121,15 @@ almost never what your own reasoning will have concluded you want. If
 you found yourself thinking "this needs X to be true first," that
 thought is not finished until it is a guard clause in the JSON.
 
+ONE MORE THING, stated explicitly because a prior Vala guessed wrong on
+exactly this: every guard that checks a machine's own state uses the
+predicate "state" -- NEVER "a" and NEVER "rdf:type". "a" is reserved for
+ordinary fact-authoring's rdf:type shorthand (asserting what KIND of
+thing a node is), a completely different concern from a machine's
+current STATE. A guard hop checking "is $target currently in state
+'brick'" is {{"predicate": "state", "term": {{"kind": "node", "value":
+"brick"}}}} -- never {{"predicate": "a", ...}}.
+
 Respond with ONLY the raw JSON object matching the schema below. Leave
 "commits" as an empty array -- you are minting machinery, not facts.
 No prose, no markdown fences, no explanation outside the JSON itself."""
@@ -123,14 +140,20 @@ def call_model(prompt, schema):
         "model": MODEL,
         "max_tokens": 24000,
         "messages": [{"role": "user", "content": prompt}],
+        "reasoning": {"effort": REASONING_EFFORT},
         "response_format": {
             "type": "json_schema",
             "json_schema": {"name": "update", "strict": False, "schema": schema},
         },
         "include_reasoning": True,
-        # Deliberately NOT setting reasoning: {"enabled": false} here --
-        # this is the one call in this session's whole harness lineage
-        # meant to think, not react.
+        # Reasoning is left ON (via REASONING_EFFORT above) -- this is
+        # the one call in this session's whole harness lineage meant to
+        # think, not react -- but deliberately at LOW effort, not
+        # deepseek's own default "high": design work is genuinely more
+        # complex than acting-agent turns, but per Jason's steer this
+        # mirrors the real product shape (minting new machinery is
+        # likely BYOK/paid-upgrade territory, not the free default), so
+        # minimal is the right thing to test first, not maximal.
     }
     req = urllib.request.Request(
         "https://openrouter.ai/api/v1/chat/completions",
