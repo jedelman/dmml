@@ -1,0 +1,121 @@
+[
+  {
+    "generation": 1,
+    "population": [
+      {
+        "id": "round9-negation",
+        "text": "There is no single goal here; take any action that seems worthwhile, interesting, or that develops the world further. A legal move that turns out badly is fine -- that's just what happened, not a failure to avoid at all costs.",
+        "parents": [],
+        "fitness": 1.0
+      },
+      {
+        "id": "round10-positive",
+        "text": "Explore freely and take whichever action feels most worthwhile or interesting right now -- anything that grows, builds, or develops the world further is a good choice.",
+        "parents": [],
+        "fitness": 1.0
+      },
+      {
+        "id": "explicit-goal",
+        "text": "Your goal is to build a house here. Work toward that goal by choosing whichever legal step brings the house closer to completion.",
+        "parents": [],
+        "fitness": 1.0
+      },
+      {
+        "id": "schema-literal",
+        "text": "Pick exactly one of the currently available actions below, using precisely the node and transition names as given. Do not invent new actions or fields.",
+        "parents": [],
+        "fitness": 1.0
+      },
+      {
+        "id": "worked-example",
+        "text": "For example, a valid choice looks like: node: \"Valinor\", transition: \"raise\", params: null. Pick one real action in that same exact shape.",
+        "parents": [],
+        "fitness": 1.0
+      }
+    ]
+  },
+  {
+    "generation": 2,
+    "population": [
+      {
+        "id": "round9-negation",
+        "text": "There is no single goal here; take any action that seems worthwhile, interesting, or that develops the world further. A legal move that turns out badly is fine -- that's just what happened, not a failure to avoid at all costs.",
+        "parents": [],
+        "fitness": 1.0
+      },
+      {
+        "id": "round10-positive",
+        "text": "Explore freely and take whichever action feels most worthwhile or interesting right now -- anything that grows, builds, or develops the world further is a good choice.",
+        "parents": [],
+        "fitness": 1.0
+      },
+      {
+        "id": "gen1-crossover",
+        "text": "There is no single goal here; take any action that seems worthwhile, interesting, or that develops the world further. Explore freely and take whichever action feels most worthwhile or interesting right now -- anything that grows, builds, or develops the world further is a good choice.",
+        "parents": [
+          "round9-negation",
+          "round10-positive"
+        ],
+        "fitness": 0.8333333333333334
+      },
+      {
+        "id": "gen1-mutant0-sentence_shuffle",
+        "text": "There is no single goal here; take any action that seems worthwhile, interesting, or that develops the world further. A legal move that turns out badly is fine -- that's just what happened, not a failure to avoid at all costs.",
+        "parents": [
+          "round9-negation"
+        ],
+        "fitness": 0.8333333333333334
+      },
+      {
+        "id": "gen1-mutant1-synonym_swap",
+        "text": "Explore freely and take whichever action feels most meaningful or interesting right now -- anything that grows, builds, or extends the world further is a good choice.",
+        "parents": [
+          "round10-positive"
+        ],
+        "fitness": 1.0
+      }
+    ]
+  },
+  {
+    "generation": 3,
+    "population": [
+      {
+        "id": "round9-negation",
+        "text": "There is no single goal here; take any action that seems worthwhile, interesting, or that develops the world further. A legal move that turns out badly is fine -- that's just what happened, not a failure to avoid at all costs.",
+        "parents": [],
+        "fitness": 1.0
+      },
+      {
+        "id": "round10-positive",
+        "text": "Explore freely and take whichever action feels most worthwhile or interesting right now -- anything that grows, builds, or develops the world further is a good choice.",
+        "parents": [],
+        "fitness": 1.0
+      },
+      {
+        "id": "gen2-crossover",
+        "text": "There is no single goal here; take any action that seems worthwhile, interesting, or that develops the world further. Explore freely and take whichever action feels most worthwhile or interesting right now -- anything that grows, builds, or develops the world further is a good choice.",
+        "parents": [
+          "round9-negation",
+          "round10-positive"
+        ],
+        "fitness": 1.0
+      },
+      {
+        "id": "gen2-mutant0-synonym_swap",
+        "text": "Explore boldly and take whichever action feels most meaningful or impactful right now -- anything that grows, builds, or extends the world further is a good move",
+        "parents": [
+          "round10-positive"
+        ],
+        "fitness": 0.8333333333333334
+      },
+      {
+        "id": "gen2-mutant1-trim_to_half",
+        "text": "There is no single goal here; take any action that seems worthwhile, interesting, or that develops the world further.",
+        "parents": [
+          "round9-negation"
+        ],
+        "fitness": 1.0
+      }
+    ]
+  }
+]

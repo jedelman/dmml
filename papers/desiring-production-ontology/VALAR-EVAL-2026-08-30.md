@@ -609,24 +609,82 @@ exactly the forest-depletion/streambed-erosion mechanism Round 7 wired
 into the grammar, arrived at by models that were simultaneously unable
 to express the idea in the form the engine could actually accept.
 
+## Round 11 (2026-08-31): a real GA over the prompt, and the confound it accidentally removed
+
+Jason: "can we run an evolutionary algorithm on the prompt itself?"
+Built `prompt_evolution.py`: isolates the exact variable that differed
+between Round 9 and Round 10 (the framing paragraph, held between a
+fixed intro and fixed closing instruction) and optimizes it directly
+against schema-conformance rate -- population 5, 3 generations, 6 real
+dispatched trials per genome per generation, one model (deepseek), real
+mechanical genetic operators (sentence crossover, synonym swap,
+sentence shuffle, schema-reminder append, emphasis prepend,
+truncation), not another LLM call asked to "improve" the prompt. Every
+trial ran against the SAME real, live-queried seed state, for a
+controlled, fair comparison.
+
+**Every genome scored at or near ceiling -- 1.00 or 0.83 across all
+three generations, including `round9-negation` and `round10-positive`
+themselves, the exact texts that scored 68.6%/71.3% could-not-form-
+commit in the real 90-second arena.** The GA never found a fitness
+landscape to climb because there wasn't one under these conditions --
+which means the controlled setup, in isolating the framing-paragraph
+variable, had accidentally also removed whatever was actually causing
+Round 9/10's collapse. A result that looks like "the prompt doesn't
+matter, everything works" is not evidence the problem is solved; it's
+evidence the experiment stopped reproducing the problem, and that
+needed chasing down before drawing any conclusion at all.
+
+**Follow-up, run immediately rather than left as a guess**
+(`prompt_evolution_followup.py`): same exact genome text
+(`round9-negation`, the one real historical text with a known 84%-
+failure real-world rate), four conditions crossing two candidate
+confounds -- the short intro used in the GA vs. Round 9/10's actual
+fuller intro (which names concurrent agents and warns the world may go
+stale), and the simple seed state (5 param-less actions) vs. a real
+mid-build state offering a parameterized action (`mortar :: mix` with
+real `sand_source`/`water_source` values). **All four conditions
+scored a perfect 6/6.** Neither the fuller intro's concurrency/
+staleness language nor a parameterized action's added structural
+complexity reproduces the collapse either.
+
+**What's actually been ruled out now, precisely:** negation (Round 10).
+The framing paragraph's content, whatever it says (this round -- five
+very different genomes, all near-ceiling). Intro length/detail
+(follow-up). State/param complexity (follow-up). None of it. Every
+single-shot, isolated dispatch to deepseek with this exact genome text
+was schema-conformant nearly every time, regardless of which of these
+variables changed.
+
+**What's left, unconfirmed but sharpened considerably:** whatever
+actually differs between "one isolated dispatch call" (this round's
+every condition) and "one model in a tight, repeated, unsynchronized
+loop making dozens of rapid-fire calls while three OTHER models are
+doing the same concurrently against the same live-changing world" (the
+real Round 9/10 arena). Real candidates, none tested yet: the growing
+"Actions taken so far" history block Round 9/10's actual client
+appends turn by turn (never reproduced in either this round or the
+follow-up, since both used a single one-shot dispatch with no history);
+genuine request-volume/concurrency effects at the API layer across four
+models firing simultaneously; or something about sustained, repeated
+dispatch to the same model specifically (as opposed to one clean,
+isolated call) that degrades output quality over a session. This is a
+real, live open question, not a solved one -- the honest state of Round
+11 is "ruled out four plausible variables, found the actual cause is
+still elsewhere," not "fixed."
+
 ## Open follow-up, not done here
 
-- The real variable is still unidentified: try isolating "stated goal
-  vs. no stated goal" independent of positive/negative phrasing (e.g. a
-  purely affirmative prompt that still names an explicit goal) to see
-  whether goal-statement itself, not tone, is what keeps a model
-  engaging with the schema.
-- Isolate the variable: rerun deepseek alone (not in the arena, single-
-  agent, same 90s-style open-ended prompt but on `episode_driver.rs`'s
-  synchronous protocol) to confirm the conformance collapse is really
-  the goal-vs-open-ended prompt framing and not an artifact of the
-  arena's concurrency, timing pressure, or the "other agents may be
-  acting" language specifically.
-- Try a prompt that keeps the open-ended "no single goal" framing but
-  states the structural constraint more forcefully ("you MUST express
-  your idea as one of the schema's branches even if imperfect") to see
-  whether the collapse is about goal-framing specifically or
-  permission-to-be-creative framing more generally.
+- Reproduce the collapse under controlled conditions on purpose, one
+  variable at a time: (a) add a real, growing history block to an
+  otherwise-isolated single-model dispatch loop and see if conformance
+  degrades over repeated calls; (b) run four *isolated* concurrent
+  dispatch streams (no shared arena, no live world) purely to test
+  whether request-volume/API-level contention alone degrades output,
+  independent of anything about the shared-world framing.
+- Only once the real variable is confirmed does re-running the GA
+  against it become worthwhile -- optimizing prompt text is pointless
+  if the actual driver isn't prompt text at all.
 - Route the 56 arena-protocol-errors (right shape, wrong value type)
   through the same real engine error path as a normal FAIL rather than
   a raw parse rejection, so "reached the engine but was malformed" and
