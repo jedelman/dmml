@@ -1,0 +1,455 @@
+[
+  {
+    "t": 1788181752.756336,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "submitted",
+    "node": "Valinor/forest",
+    "transition": "gather",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 2
+  },
+  {
+    "t": 1788181753.8979783,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor",
+    "transition": "raise",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 3
+  },
+  {
+    "t": 1788181754.635787,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/spring",
+    "transition": "well_up",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 4
+  },
+  {
+    "t": 1788181755.4867804,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/carpentry",
+    "transition": "make_frame",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 5
+  },
+  {
+    "t": 1788181758.189606,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "submitted",
+    "node": "Valinor",
+    "transition": "uplift",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 6
+  },
+  {
+    "t": 1788181759.1528444,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/streambed",
+    "transition": "wash",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 7
+  },
+  {
+    "t": 1788181759.9322212,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/mortar",
+    "transition": "mix",
+    "params": {
+      "sand_source": "Valinor/streambed",
+      "water_source": "Valinor/spring"
+    },
+    "fire_result": "PASS",
+    "commit_index": 8
+  },
+  {
+    "t": 1788181761.3700604,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/forest",
+    "transition": "overgather",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 9
+  },
+  {
+    "t": 1788181764.934888,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "submitted",
+    "node": "Valinor/quarry",
+    "transition": "quarry",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 10
+  },
+  {
+    "t": 1788181773.1511781,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/quarry",
+    "transition": "grind",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 11
+  },
+  {
+    "t": 1788181773.9122097,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/quarry",
+    "transition": "wet",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 12
+  },
+  {
+    "t": 1788181774.8221695,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/quarry",
+    "transition": "fire",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 13
+  },
+  {
+    "t": 1788181777.272433,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "submitted",
+    "node": "Valinor/wall",
+    "transition": "build",
+    "params": {
+      "brick_source": "Valinor/quarry",
+      "mortar_source": "Valinor/mortar"
+    },
+    "fire_result": "PASS",
+    "commit_index": 14
+  },
+  {
+    "t": 1788181778.434487,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/roof",
+    "transition": "add_roof",
+    "params": {
+      "frame_source": "Valinor/carpentry",
+      "wall_source": "Valinor/wall"
+    },
+    "fire_result": "PASS",
+    "commit_index": 15
+  },
+  {
+    "t": 1788181779.1842108,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/house",
+    "transition": "construct_house",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 16
+  },
+  {
+    "t": 1788181780.1165056,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"none\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181781.952746,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"build\",\n  \"location\": \"Valinor/house\",\n  \"materials\": [\"Valinor/wall\", \"Valinor/roof\"]\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181783.2968655,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"build wall\",\n  \"desc\": \"Valinor/wall: built\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181784.0553591,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"response\": \"The Valinor/house has been changed from unbuilt to built. No actions are available at this time.\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181785.042056,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"none\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181786.0551922,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\":\"noop\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181787.5767112,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"view\",\n  \"target\": \"Valinor\",\n  \"description\": \"Take in the magnificent view of Valinor. The mountains are majestic, and there is a fresh spring, a streambed with sand, and various built structures like walls and a house.\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181788.3970373,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181789.702026,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"none\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181790.6171901,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"wait\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181791.7900321,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"World/Valinor/forest\",\n  \"attributes\": {\n    \"state\": \"replant\"\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181792.4519432,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"Wait\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181793.8667295,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"none\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181794.7859845,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181796.3941302,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"world:Valinor/carpentry\": \"sharpen\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181797.1033008,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"Valinor/carpentry\", \"state\": \"framed\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181798.0445414,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"none\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181799.0907404,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"name\": \"no_action\", \"parameters\": {}}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181800.1347742,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"step\": 1,\n  \"action\": \"travel\",\n  \"target\": \"Valinor/forest\",\n  \"details\": \"While the forest is in a depleted state, exploring it is a necessary first step to scout for any remaining rare resources or timber.\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181800.8634894,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/streambed\",\n  \"state\": \"sand\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181801.8090158,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"none\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181802.9759178,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"name\": \"no_action\", \"arguments\": {}}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181821.9073238,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"world_valinor_state\": \"mountains\",\n  \"world_valinor_carpentry_state\": \"framed\",\n  \"world_valinor_forest_state\": \"depleted\",\n  \"world_valinor_house_state\": \"built\",\n  \"world_valinor_mortar_state\": \"mixed\",\n  \"world_valinor_quarry_state\": \"brick\",\n  \"world_valinor_roof_state\": \"roofed\",\n  \"world_valinor_spring_state\": \"flowing\",\n  \"world_valinor_streambed_state\": \"sand\",\n  \"world_valinor_wall_state\": \"built\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181822.8031414,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"Valinor/wall\", \"state\": \"built\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181823.9092963,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"none\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181824.9831207,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"name\": \"look\", \"arguments\": {}}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181825.8296807,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"Build\",\n  \"params\": {\n    \"target\": \"Valinor/wall\"\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181826.5328944,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"depleted\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181827.664772,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"none\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181828.9440885,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"type\": \"json_schema\", \"json_schema\": {\"name\": \"action\", \"schema\": {\"anyOf\": []}, \"strict\": true}}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181829.6333394,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"World/Valinor/forest\",\n  \"state\": \"restored\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181830.2894237,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"Action\": \"null\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181831.3630838,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"none\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181832.4359226,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"No valid action to choose\"}\n\n\nI cannot choose an action because the list of actions is empty.",
+    "detail": "Extra data: line 4 column 1 (char 42)"
+  },
+  {
+    "t": 1788181833.9465227,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"type\": \"use\",\n  \"target_id\": \"Valinor/forest\",\n  \"attributes\": {\n    \"reagent_ids\": [\n      \"Valinor/spring\"\n    ],\n    \"cost\": {\n      \"stone\": 1\n    }\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181834.7761137,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry\",\n  \"state\": \"framed\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181835.8454437,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"none\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181837.4325676,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"type\":\"json_schema\",\"json_schema\":{\"name\":\"action\",\"schema\":{\"anyOf\":[]},\"strict\":true}}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181862.6606426,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"label\": \"move_boat\",\n  \"input\": {\n    \"destinations\": [\n      \"Valinor/carpentry\",\n      \"Valinor/house\",\n      \"Valinor/forest\",\n      \"Valinor/mortar\",\n      \"Valinor/quarry\",\n      \"Valinor/roof\",\n      \"Valinor/spring\",\n      \"Valinor/streambed\",\n      \"Valinor/wall\"\n    ],\n    \"item\": \"boat\"\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181863.471657,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry\",\n  \"state\": \"framed\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181864.742732,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"none\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788181865.8560421,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"\"}",
+    "detail": "'node'"
+  }
+]

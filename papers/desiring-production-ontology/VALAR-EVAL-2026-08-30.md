@@ -948,8 +948,70 @@ the swarm collaboratively finished the full house again in this run
 too (`Valinor/house: built` in the final state), the second time a
 mutex-based run has produced a complete, unplanned collaborative build.
 
+## Round 17 (2026-08-31): minimal-menu prompt, and a mid-run correction
+
+Jason: "how much can we strip down the instructions? I'd like to have
+it be as minimal as 'here's the world, here are your available
+actions, which one do you choose?'... recombination of parameters
+should be hard! it's basically lisp?" -- the model shouldn't just be
+choosing among enumerated `node`/`transition` pairs, it should be
+selecting a whole pre-formed literal action, params included, the way
+a Lisp reader selects one form from a quoted list rather than building
+one from a grammar of parts.
+
+**First pass**, built and run before catching a live correction:
+`build_schema` locked every `params` value to `const` (not just
+pattern-matched, closing a real gap -- a model could previously satisfy
+the regex with SOME valid-looking node reference that wasn't the one
+actually offered for that specific action, a genuine recombination
+seam). `build_prompt` was rewritten to the literal minimal shape asked
+for: a `World:` block, an `Actions:` block listing each legal action as
+one exact JSON literal to copy, then "Which one do you choose?" --
+every sentence of Round 9/10/14's framing, permission, and encouragement
+language gone. Run against the mutex+drift condition (Round 15's best):
+**75.4% could-not-form-commit (46/61)** -- worse than baseline, wiping
+out nearly all of the mutex's gain.
+
+**Mid-run correction, caught and acted on immediately**: Jason --
+"shouldn't\*\*" -- clarifying he'd meant recombination *shouldn't* be
+hard, the opposite of the first pass's reading. Reverted `params` back
+to pattern-matched (not `const`-locked); `node`/`transition` stayed
+`const` as they always were. Reran the identical minimal-menu prompt
+with only that one schema change: **73.7% could-not-form-commit
+(42/57)** -- essentially unchanged from the const-locked version (75.4%
+vs. 73.7%, well within noise for these sample sizes).
+
+**What this actually isolates**: the params const-vs-pattern question
+barely moved the number either way. The real driver of the regression
+is the stripped prompt itself -- removing the framing/permission
+language that Rounds 9 through 16 all carried, even though the schema
+mechanism (the actual enforcement layer) was unchanged or, in the first
+pass, tightened. This is a genuinely uncomfortable data point for the
+"structure, not prose" thesis taken too literally: a maximally bare,
+purely structural presentation -- state, menu, question, nothing else
+-- performed WORSE than every mutex-based run that kept some framing
+prose around it, even though that framing prose carries no enforced
+constraint at all. Prose that does no enforcement work still appears to
+do real, measurable *engagement* work -- something in "you are one of
+several agents... explore freely" seems to orient a small model toward
+actually using the schema, in a way a bare menu does not.
+
+This sits alongside Round 11's earlier finding (prompt WORDING doesn't
+move the number -- negation vs. positive framing was flat) without
+contradicting it: Round 11 varied *how* a stated frame was worded;
+Round 17 removes the frame's *presence* entirely. Together they suggest
+the lever isn't tone, and isn't length either (Round 17's menu block is
+comparable in size to prior rounds' state block) -- it may specifically
+be having ANY situating sentence at all before the raw data, independent
+of what it says.
+
 ## Open follow-up, not done here
 
+- Isolate presence-of-framing from its specific content directly: rerun
+  the minimal-menu prompt with exactly ONE neutral situating sentence
+  restored (e.g. "You are choosing one action in a shared world.") to
+  test whether any framing at all recovers most of the gap, or whether
+  it takes something closer to Round 9-16's fuller paragraph.
 - Repeat Rounds 15 and 16 at longer duration or across multiple runs
   to firm up n=32-45-sized samples before treating the specific gap
   between mutex-alone and mutex+drift as more than a real, promising

@@ -70,15 +70,12 @@ import urllib.error
 API_KEY = os.environ["OPENROUTER_API_KEY"]
 ARENA_PORT = 7880
 DURATION_SECONDS = 90
-# Round 16: isolate mutex alone from Round 15's mutex+drift combination
-# -- the server still computes real drift server-side (harmless, and
-# keeps the code path exercised), this just stops surfacing it to the
-# model, so the only variable left versus Round 9's baseline is the
-# full-cycle mutex.
-INCLUDE_DRIFT_IN_PROMPT = False
+# Round 16 isolated mutex alone (False) from mutex+drift (True, Round
+# 15's best result: 37.5% could-not-form-commit). Round 17 combines the
+# best-known levers -- mutex, drift, AND the stripped-menu prompt below
+# -- so it's back on.
+INCLUDE_DRIFT_IN_PROMPT = True
 DMML_REPO = "/home/user/dmml"
-NODE_REF_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$"
-
 # Same cheap roster as Round 8's swarm, same reasoning configs (probed
 # live that round, not re-derived here).
 MODELS = {
@@ -89,7 +86,18 @@ MODELS = {
 }
 
 
+NODE_REF_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9_.]*(/[A-Za-z0-9][A-Za-z0-9_.]*)*$"
+
+
 def build_schema(legal_actions):
+    # Round 17, first pass: briefly const-locked every params value to
+    # the exact offered value (not just pattern-matched), reasoning from
+    # "recombination of parameters should be hard." Jason corrected this
+    # mid-run: he meant recombination SHOULDN'T be hard -- reverted back
+    # to pattern-matching params (a model can supply any node reference
+    # matching the shape, not just the literal value this exact legal
+    # action happened to offer). node/transition stay const-locked, as
+    # they always were; only params reverts.
     branches = []
     for action in legal_actions:
         node, transition, params = action["node"], action["transition"], action["params"]
@@ -122,6 +130,13 @@ def format_drift(changes):
     return "Changed since you last looked (not caused by you):\n" + "\n".join(lines) + "\n\n"
 
 
+def format_menu(legal_actions):
+    lines = []
+    for a in legal_actions:
+        lines.append("  " + json.dumps({"node": a["node"], "transition": a["transition"], "params": a["params"]}))
+    return "\n".join(lines)
+
+
 def build_prompt(model, state, legal_actions, drift):
     # Round 10 revision (2026-08-31): Round 9's prompt was negation-heavy
     # ("there is no single goal", "may already be stale", "not a failure
@@ -137,18 +152,27 @@ def build_prompt(model, state, legal_actions, drift):
     # module docstring) rendered as plain subject/before/after lines --
     # never folded into a narrated sentence, per the same "structure,
     # not prose" discipline this whole project applies everywhere else.
-    return f"""You are one of several agents ({model}) building and shaping the
-living world of Valinor together, all acting at the same time. Explore
-freely and take whichever action feels most worthwhile or interesting
-right now -- anything that grows, builds, or develops the world further
-is a good choice.
-
-{format_drift(drift)}Current world state:
+    #
+    # Round 17 rewrite (2026-08-31): Jason -- "I'd like to have it be as
+    # minimal as 'here's the world, here are your available actions,
+    # which one do you choose?' and the agent basically copies and
+    # pastes from the menu?" Every sentence of framing, permission, and
+    # encouragement from Rounds 9/10/14 is gone. The menu is now spelled
+    # out literally, one exact JSON object per legal action -- the same
+    # objects `build_schema`'s branches encode, now also visible as
+    # plain text the model can copy verbatim rather than assemble from
+    # a schema it may not attend to closely. `build_schema`'s params
+    # stay pattern-matched, not const-locked (Jason's correction:
+    # recombination shouldn't be hard) -- copying the menu literally is
+    # offered as the easy path, not enforced as the only path.
+    return f"""{format_drift(drift)}World:
 {format_state(state)}
 
-Choose ONE action, and respond with only the JSON object matching the
-schema -- it lists every action that's live and available to you right
-now."""
+Actions:
+{format_menu(legal_actions)}
+
+Which one do you choose? Respond with the JSON object exactly as shown
+for your chosen action."""
 
 
 def call_model(model, prompt, schema, reasoning):
@@ -278,7 +302,7 @@ async def main():
     server.wait(timeout=10)
 
     out_dir = os.path.dirname(__file__)
-    log_path = os.path.join(out_dir, "EPISODE-ARENA-2026-08-31-round16-mutex-alone.json")
+    log_path = os.path.join(out_dir, "EPISODE-ARENA-2026-08-31-round17b-minimal-menu-flexible-params.json")
     json.dump(log, open(log_path, "w"), indent=2)
 
     landed = [e for e in log if e.get("fire_result") == "PASS"]
