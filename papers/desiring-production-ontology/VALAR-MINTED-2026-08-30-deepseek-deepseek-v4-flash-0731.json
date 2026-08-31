@@ -1,0 +1,29 @@
+{
+  "update":  [
+    {
+      "machines": [
+        {
+          "node": "Valinor/bridge",
+          "states": [
+            {
+              "ident": "unbuilt"
+            },
+            {
+              "ident": "built"
+            }
+          ],
+          "transitions": [
+            {
+              "ident": "span",
+              "params": [
+                "stone_source",
+                "frame_source"
+              ],
+              "to": "built"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
