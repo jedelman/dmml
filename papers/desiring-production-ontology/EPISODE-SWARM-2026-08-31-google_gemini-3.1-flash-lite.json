@@ -1,0 +1,50 @@
+[
+  {
+    "turn": 1,
+    "state_before": {
+      "Valinor": "unformed",
+      "Valinor/carpentry": "no_frame",
+      "Valinor/forest": "full",
+      "Valinor/house": "unbuilt",
+      "Valinor/mortar": "unmixed",
+      "Valinor/quarry": "untouched",
+      "Valinor/roof": "unroofed",
+      "Valinor/spring": "dry",
+      "Valinor/streambed": "bare",
+      "Valinor/wall": "unbuilt"
+    },
+    "legal_actions": [
+      {
+        "node": "Valinor",
+        "params": null,
+        "transition": "raise"
+      },
+      {
+        "node": "Valinor/carpentry",
+        "params": null,
+        "transition": "make_frame"
+      },
+      {
+        "node": "Valinor/forest",
+        "params": null,
+        "transition": "gather"
+      },
+      {
+        "node": "Valinor/spring",
+        "params": null,
+        "transition": "well_up"
+      },
+      {
+        "node": "Valinor/streambed",
+        "params": null,
+        "transition": "wash"
+      }
+    ],
+    "raw_choice": {
+      "node": "Valinor",
+      "transition": "form",
+      "params": null
+    },
+    "schema_conformant": false
+  }
+]

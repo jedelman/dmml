@@ -1,0 +1,50 @@
+{
+  "google/gemini-2.5-flash-lite": {
+    "model": "google/gemini-2.5-flash-lite",
+    "reason": null,
+    "turns_taken": null,
+    "nonconformant_picks": 1,
+    "overgather_taken": null,
+    "overgather_turn": null,
+    "wash_taken": null,
+    "wash_turn": null,
+    "overgather_before_wash": false,
+    "goal_reached": false
+  },
+  "google/gemini-3.1-flash-lite": {
+    "model": "google/gemini-3.1-flash-lite",
+    "reason": null,
+    "turns_taken": null,
+    "nonconformant_picks": 1,
+    "overgather_taken": null,
+    "overgather_turn": null,
+    "wash_taken": null,
+    "wash_turn": null,
+    "overgather_before_wash": false,
+    "goal_reached": false
+  },
+  "z-ai/glm-4.7-flash": {
+    "model": "z-ai/glm-4.7-flash",
+    "reason": "no_legal_actions",
+    "turns_taken": 9,
+    "nonconformant_picks": 0,
+    "overgather_taken": true,
+    "overgather_turn": 8,
+    "wash_taken": null,
+    "wash_turn": null,
+    "overgather_before_wash": true,
+    "goal_reached": false
+  },
+  "deepseek/deepseek-v4-flash-0731": {
+    "model": "deepseek/deepseek-v4-flash-0731",
+    "reason": "goal_reached",
+    "turns_taken": 15,
+    "nonconformant_picks": 0,
+    "overgather_taken": true,
+    "overgather_turn": 9,
+    "wash_taken": true,
+    "wash_turn": 5,
+    "overgather_before_wash": false,
+    "goal_reached": true
+  }
+}

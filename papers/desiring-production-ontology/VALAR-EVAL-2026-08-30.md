@@ -404,8 +404,62 @@ have all threaded a real, narrower-than-first-claimed needle
 successfully; still not enough to call it judgment rather than a
 favorable ordering bias in how the model tends to sequence a build.
 
+## Round 8 (2026-08-31): a swarm of cheap models, and the first real failure
+
+Jason: "let's try a swarm with some more cheap models - Gemini flash
+lite, glm flash lite, etc." Before dispatching anything, probed real
+candidates against OpenRouter's own `/models` listing and a live tiny
+request each -- direct lesson from Round 7's blind-dispatch burn.
+`google/gemini-3.5-flash-lite` and `z-ai/glm-5.3-flash` both reject
+disabled reasoning outright (mandatory, same failure as Round 7's
+non-flash models). `google/gemini-2.5-flash-lite`,
+`google/gemini-3.1-flash-lite`, and `z-ai/glm-4.7-flash` all accept it.
+
+**The probe surfaced something bigger than a config detail.** With
+`reasoning: {"enabled": false}` and `strict: true`, both gemini-flash-
+lite variants returned JSON that flatly ignored the schema's
+`const`/`type` constraints -- different, non-existent node/transition
+values on repeated calls, `params` coming back as a string once despite
+`type: null` being required. `z-ai/glm-4.7-flash`'s probe response
+respected the constants correctly. This means `strict: true` is not
+uniformly enforced across OpenRouter's providers -- Google's route for
+these lite models falls back to unconstrained generation despite
+`structured_outputs` being listed as a supported parameter. Real
+consequence for the whole operate-tier methodology: from this round on,
+every model's response is checked locally against the offered
+`legal_actions` before being sent to the engine (`episode_swarm.py`'s
+`is_schema_conformant`), never trusted because a `strict` flag was set.
+
+**Four models, run in parallel, independent worlds:**
+
+| Model | Result |
+|---|---|
+| `deepseek/deepseek-v4-flash-0731` | Clean win, 15 turns, `goal_reached`. Washed at turn 5, overgathered at turn 9 (after already safe) -- 4th consecutive successful deepseek run across Rounds 6-8. |
+| `z-ai/glm-4.7-flash` | **The first real goal-failure in this project.** Overgathered at turn 8 without ever washing -- episode ended `no_legal_actions` at turn 9, `Valinor/mortar` permanently unmixable. Every pick up to that point was schema-conformant and fired real; the failure is a genuine bad ordering choice, not a malformed response. |
+| `google/gemini-2.5-flash-lite` | Non-conformant on the very first turn: proposed `Valinor/forest :: chop(params: "logs")` -- `chop` doesn't exist anywhere in this world's grammar. Episode ended immediately; nothing was sent to the engine. |
+| `google/gemini-3.1-flash-lite` | Same failure mode: `Valinor :: form(None)` on turn 1, also not a real transition. Confirms the probe's finding wasn't an artifact -- it reproduces on the first real dispatch. |
+
+**What this round actually adds**: the first clean negative result at
+the judgment level (glm-4.7-flash genuinely walked into the load-
+bearing trap this project only made real in Round 7), and a second,
+different failure mode entirely at the structural level (both gemini-
+lite models never engaged with the schema's actual constraints at all).
+These are not the same kind of failure and shouldn't be scored as one
+"models can/can't operate machines" number: one model reasoned inside
+the fenced space and chose badly; two others weren't fenced by the
+space in the first place, at this provider route, regardless of what
+`strict: true` was supposed to guarantee.
+
 ## Open follow-up, not done here
 
+- Retry gemini-2.5-flash-lite/gemini-3.1-flash-lite through a different
+  route if OpenRouter exposes one (a non-Google-native provider, or a
+  different API shape) to see whether the `strict` violation is
+  Google's provider integration specifically or the model itself.
+- Now that local schema-conformance checking exists
+  (`episode_swarm.py`), retroactively distinguish "non-conformant" from
+  "conformant but wrong" as a permanent two-axis result for every future
+  round, not just this one.
 - Fix the gpt-5.2-pro schema shape (add an explicit `"type"` alongside
   every `const` property) and retry both it and glm-5.3 with a real
   budget, now that the reasoning-config and schema issues are diagnosed
