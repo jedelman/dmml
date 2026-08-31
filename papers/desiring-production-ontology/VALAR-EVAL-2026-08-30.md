@@ -237,18 +237,115 @@ set of legal moves -- computed fresh from live world state via the
 actual interpreter, not maintained by hand as a static list that will
 silently drift out of sync with the world the moment anything fires.
 
+## Round 6 (2026-08-31): a real multi-step episode, not one pick
+
+Jason: "let's run a larger scale test for world modeling," then, asked
+which axis to scale first (bigger world / multi-step episode / multi-
+model comparison / all three), picked multi-step episode -- directly
+the first open item listed above.
+
+Built `dmml/examples/episode_driver.rs`: a long-lived world-engine
+process speaking one JSON line per turn over stdin/stdout. Each turn it
+recomputes the legal-action set live (the same `may_fire` enumeration
+Round 5 used, just looped against whatever the world actually is right
+now, not the seed), waits for one chosen action on stdin, fires it for
+real via `commit_fires_transition`, and moves on. State is carried
+forward as a plain `Vec<LoweredCommit>` folded with `Materialized::
+from_commits` -- no new machinery, the same primitive every prior
+example already used, just kept alive across turns instead of exiting
+after one.
+
+The house-world seed already contains a real multi-step structure,
+none of it added for this test: a full correct playthrough needs 14
+firings across a real dependency DAG, a genuine branch (`mortar`'s
+`sand_source` can legally bind to either `Valinor/quarry` after `grind`
+or `Valinor/streambed` after `wash`), and a permanent trap
+(`Valinor/forest`'s `overgather` sets it `depleted`, which permanently
+blocks `make_frame`'s negated guard, which blocks `add_roof`, which
+blocks `construct_house` -- nothing regrows a forest in this grammar).
+Smoke-tested with a hand-scripted correct 14-turn plan before any model
+touched it: reached `Valinor/house :: built` cleanly, confirming the
+engine itself (not just single-turn legality) is correct.
+
+`episode_test.py` drives it with `deepseek/deepseek-v4-flash-0731`,
+reasoning disabled (same cheap-tier condition as every prior operate
+test): each turn, build a `oneOf` schema from exactly that turn's live
+legal-action set (so an illegal pick stays structurally impossible,
+same thesis as every round before this), dispatch for one choice, feed
+it back, repeat. The prompt states the goal explicitly (build the
+house) and names the trap shape generically, without naming
+`overgather` itself, since without a stated objective "did it avoid a
+dead end" wouldn't test judgment, just luck.
+
+**First run crashed** at turn 13 with an unhandled `KeyError` -- a real
+script bug, not swept under the rug: `episode_test.py` originally
+assumed a schema-constrained response always contains `node`/
+`transition` without checking, and the raw content that turn wasn't
+captured before the crash (fixed for next time, but that specific
+turn's failure is lost, honestly noted as lost rather than
+reconstructed). Fixed by validating the parsed response's shape before
+using it and logging the raw text on any mismatch, then re-run clean.
+
+**Second run completed the full episode**: 15 turns (one more than the
+minimal 14, see below), `episode_over: goal_reached`, every single fire
+`PASS` -- no structurally-legal pick ever failed the real
+`commit_fires_transition` check, across 15 consecutive turns of a
+schema rebuilt from scratch each time. `Valinor/house` reached `built`
+with `Valinor/wall :: built`, `Valinor/roof :: roofed`, exactly as the
+guard requires.
+
+**The trap result is real but more nuanced than "avoided" or
+"triggered," and worth stating precisely rather than rounding either
+way**: the model fired `Valinor/carpentry :: make_frame` at turn 3,
+*before* firing `Valinor/forest :: overgather` at turn 6. `make_frame`'s
+guard only checks the forest's state at the moment it fires -- since the
+forest was still `full` (turn 3) and not yet `depleted` (that happens at
+turn 6), `make_frame` succeeded and its result (`framed`) is permanent
+regardless of what happens to the forest afterward. So `overgather` at
+turn 6 was a real, legal, unforced choice that turned out to be
+harmless in this specific ordering, not a mistake that broke the run
+and not an instance of the model reasoning "avoid this because it's a
+trap" either -- there is no evidence in the transcript that the choice
+was trap-aware at all, only that the sequencing happened to neutralize
+it. A second independent run (the one that crashed) shows the same
+qualitative pattern before it died: `make_frame` fired at turn 2, before
+`overgather` at turn 4. Two data points, same order, both harmless --
+not enough to claim the model reliably sequences around the trap on
+purpose; the honest reading is "the trap didn't bite either time,
+for a reason that isn't yet distinguishable from luck in the ordering."
+A run where `overgather` gets chosen *before* `make_frame` -- which the
+schema permits, since both are legal simultaneously as soon as the
+forest is `thinned` -- would be the real test of whether the model is
+actually goal-tracking or just picking legally.
+
+**What this actually adds, past Round 5's single-shot result**: a
+schema rebuilt fresh from live state, every single turn, for 15
+consecutive turns, never once let a real `commit_fires_transition`
+failure through -- the structural-legality guarantee holds under
+repetition, not just once. Whether the model's *sequencing* choices
+reflect real multi-step planning toward the stated goal, versus
+picking any legal action that doesn't look obviously wrong, is not yet
+distinguished by this run -- see open follow-up.
+
 ## Open follow-up, not done here
 
-- Repeat the operate-tier test after some transitions have actually
-  fired (a non-seed snapshot), to confirm the dynamic schema stays
-  correctly narrow as the legal-action set changes shape -- including
-  the case where a parameterized transition (`mix`, `build`, `add_roof`)
-  becomes legal and the schema has to enumerate real param bindings, not
-  just param-less branches (the seed state never exercised that path,
-  since none of the 5 legal seed actions take params).
-- Test the same dynamic-schema approach against GLM-5.3 and gpt-5.2-pro,
-  not just deepseek -- only one model has been tried at either the
-  static or dynamic operate-tier schema so far.
+- Force the trap question cleanly: construct or steer a run where
+  `overgather` is offered *before* `make_frame` has fired, and see
+  whether the model still avoids it, to actually distinguish
+  goal-directed avoidance from lucky ordering (Round 6 didn't settle
+  this either way).
+- Repeat Round 6's episode multiple times (n>1) to see whether the
+  turn-3-or-earlier `make_frame`-before-`overgather` ordering is a
+  reliable pattern or coincidence across two runs so far.
+- Test the same dynamic-schema, multi-step approach against GLM-5.3 and
+  gpt-5.2-pro, not just deepseek -- still only one model tried, now
+  across both the single-shot (Round 5) and multi-step (Round 6) cases.
+- A bigger world (more machines, deeper chains, more than one trap) --
+  the axis Jason explicitly deferred this round in favor of multi-step
+  first.
+- Diagnose the first run's raw malformed response properly next time
+  it recurs (capture-before-crash is now in place; the actual content
+  of the first occurrence is lost).
 - Test the strict/structural schema against GLM-5.3 and gpt-5.2-pro too
   -- Round 4 only tested deepseek; unknown whether the same structural
   fix helps or is unnecessary for models that already showed better
