@@ -1067,7 +1067,42 @@ either exhausting a finite world (bug two) or needing an hour-long
 session per genome to reach that complexity from a cold seed (bug
 three's actual cost).
 
+## Lit review (2026-08-31): checking this thread against real academic/industry work
+
+Jason: "do a lit review, see if the academics have anything to say about
+it." Full writeup in `LIT-REVIEW-2026-08-31.md`, real citations fetched
+live, not recalled. Headline: nothing here contradicts this thread's own
+findings, and one connection sharpens the project's own thesis in a way
+worth carrying into the paper directly. Round 13's triangulated mechanism
+("state changing for reasons the querying agent didn't cause or predict")
+has an almost verbatim match in the tool-reliability literature -- ["Verified
+Tool Calls Improve LLM Agent Reliability Under Non-Atomic
+Failures"](https://arxiv.org/html/2608.02645v1) names "Stale Conflicts:
+another process modifies state between the agent's observation and its
+action execution" as one of four non-atomic failure modes, and proposes a
+different fix than Round 15's mutex -- optimistic "verify-before-retry"
+instead of pessimistic locking -- worth testing head to head, not assumed
+inferior just because it's untried here. More importantly: ["Let Me Speak
+Freely?"](https://arxiv.org/pdf/2408.02442) independently confirms Round
+17's finding that stripping prose framing entirely (not just changing its
+wording) hurts, quantified elsewhere as forcing JSON degrading reasoning
+accuracy 10-15% -- a real, citable qualification to this paper's own
+"structure, not prose" thesis: structure should hold the *constraint*,
+but prose still appears to do real *cognitive* work getting a model to
+that constraint correctly, and isn't free to remove. Round 18's own
+diagnosis (fresh-and-short GA sessions never reach the hard-case regime
+where genomes would differentiate) turns out to be a named best practice
+in the automated-prompt-optimization literature, not just an ad hoc
+observation.
+
 ## Open follow-up, not done here
+
+- From the lit review: test verify-before-retry (query real state
+  immediately before committing, retry only if verification shows the
+  prior attempt didn't land) as an alternative to Round 15's mutex --
+  optimistic concurrency instead of pessimistic locking, with a real
+  throughput/correctness tradeoff to actually measure against the
+  mutex's own numbers, not assumed either way.
 
 - The concrete fix for bug three, not yet built or confirmed: seed each
   genome's fresh arena not from the pristine seed state but from a
