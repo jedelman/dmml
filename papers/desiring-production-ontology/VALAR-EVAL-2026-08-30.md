@@ -1103,6 +1103,16 @@ observation.
   optimistic concurrency instead of pessimistic locking, with a real
   throughput/correctness tradeoff to actually measure against the
   mutex's own numbers, not assumed either way.
+- From the lit review's second pass: test two-stage extraction (reason
+  freely in one unconstrained call, format into strict schema in a
+  second cheap one) against Round 15's mutex-only numbers -- named as a
+  standard pattern for exactly the coupling problem Round 4/14 and
+  Round 17 each hit separately, not yet tried here.
+- From the same pass: test self-consistency majority voting (sample
+  N=3-5 per turn, vote among schema-conformant answers only) on the two
+  gemini-lite models specifically -- their near-zero isolated
+  conformance makes them the clearest test of whether the technique's
+  own stated sweet spot (small, constrained answer spaces) applies here.
 
 - The concrete fix for bug three, not yet built or confirmed: seed each
   genome's fresh arena not from the pristine seed state but from a
