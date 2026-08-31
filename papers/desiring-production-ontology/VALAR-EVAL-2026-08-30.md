@@ -1005,8 +1005,78 @@ comparable in size to prior rounds' state block) -- it may specifically
 be having ANY situating sentence at all before the raw data, independent
 of what it says.
 
+## Round 18 (2026-08-31): "YES. evolve the prompt." -- two real bugs, no valid signal yet
+
+Jason: "YES. evolve the prompt." The immediate next question was
+whether Round 11's original GA (`prompt_evolution.py`) was even
+trustworthy to build on. Checked directly before reusing it: its own
+logged generation-1 fitnesses were 1.00 across all five genuinely
+different candidates -- zero variance, nothing for selection to have
+ever acted on, because that GA scored every genome against an isolated
+single-call, frozen-state harness Round 12 later proved sits at
+near-ceiling for any prompt at all. It wasn't a working search; it was
+running in a condition with no fitness gradient.
+
+Built `prompt_evolution_round18.py` to fix that: fitness measured
+inside a real `episode_arena` session, three background agents running
+Round 15/16's known-good fixed framing to keep the world genuinely
+live and multi-agent, deepseek's framing text the one thing that
+evolves, scored over K=6 real mutex-protected turns per genome.
+
+**First real run found a second bug, caught before trusting the
+result.** One long-running arena was shared across the whole GA.
+Real timestamps show the last commit landed at t=80.6s into a much
+longer run -- `overgather` fired before `make_frame`, the same
+permanent dead end named in Round 7, and every trial after that point
+(the rest of generation 1, all of generations 2 and 3) was being asked
+to choose from `legal_actions: []`, an unsatisfiable schema that fails
+near-instantly. Almost every genome scored a meaningless 0.00 because
+almost every genome was tested against a broken world, not because of
+its text. That result is kept as `PROMPT-EVOLUTION-2026-08-31-round18-
+BROKEN-world-exhausted.json`, not deleted, as an honest record.
+
+Fixed by giving every genome its own fresh, isolated arena instance --
+own port, own seed, own three background agents, torn down after its K
+trials.
+
+**That fix surfaced a third, subtler problem.** Rerun clean: every
+genome scored near-ceiling, 0.83-1.00, including `empty` -- the exact
+genome that regressed to ~75% could-not-form-commit in Round 17's real
+90-second sessions. The two results contradict each other, and the
+contradiction is diagnostic, not a reversal of Round 17's finding.
+Making every genome's evaluation start fresh and stay short (K=6 real
+trials, no exhaustion) also means it never runs long enough to reach
+the complex, many-turns-deep, multiple-other-agents'-interleaved-
+history states that Round 15-17's full sessions actually spent most of
+their 90 seconds inside. A pristine seed world a few turns in is easy
+for every framing to handle regardless of content -- which is exactly
+why Round 12's isolated frozen-state test also stayed near-ceiling.
+Fixing world-exhaustion by keeping sessions short traded away the very
+difficulty regime the search was supposed to be conducted in.
+
+**Net for this round: two real, sequential methodology bugs found and
+fixed honestly, and still no trustworthy fitness signal to select
+on.** This isn't being reported as a disappointing footnote --
+correctly measuring this effect automatically has turned out to be
+genuinely hard in its own right, harder than running the manual A/B
+tests (Rounds 9-17) that actually found every real result in this
+thread so far. The GA's operators and infrastructure are sound; what's
+still missing is a way to evaluate a candidate genome against
+conditions comparably complex to where the real collapse lives, without
+either exhausting a finite world (bug two) or needing an hour-long
+session per genome to reach that complexity from a cold seed (bug
+three's actual cost).
+
 ## Open follow-up, not done here
 
+- The concrete fix for bug three, not yet built or confirmed: seed each
+  genome's fresh arena not from the pristine seed state but from a
+  mid-build snapshot (e.g. replay a fixed sequence of ~8-10 known-good
+  commits before starting the clock on the genome's own K trials),
+  landing every evaluation in a state complexity closer to where Round
+  9/15-17's real differentiation actually showed up, without needing a
+  long session to get there and without the fresh world exhausting
+  before the genome's trials complete.
 - Isolate presence-of-framing from its specific content directly: rerun
   the minimal-menu prompt with exactly ONE neutral situating sentence
   restored (e.g. "You are choosing one action in a shared world.") to
