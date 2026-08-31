@@ -229,6 +229,95 @@ evaluation from a mid-build snapshot instead of the pristine start -- is
 exactly this best practice applied: manufacture hard-case coverage
 deliberately rather than hoping a short session reaches it.
 
+## 8. Two-stage extraction: reason freely, then format separately
+
+**Not yet tried in this project.** Every dispatch so far (Rounds 4-18)
+asked one model call to do both jobs at once -- decide what to do AND
+emit it in the exact schema shape -- under `strict: true` in the same
+call. Section 3 above already found, via "Let Me Speak Freely?," that
+this coupling has a real cost.
+
+**Literature**: this is a named, standard pattern, not a novel proposal
+-- decouple deliberation from formatting into two sequential calls.
+"The two-stage extraction pattern is motivated by empirical evidence
+that strictly enforcing rigid output formats can degrade reasoning
+performance... the model first performs [the reasoning] in free-form
+text. A second LLM call then transforms this unstructured output into
+the desired JSON format... adds one extra forward pass but works
+reliably" (survey of structured-extraction pipelines, e.g. TimeTox and
+similar clinical/legal extraction systems built exactly this way).
+
+**Directly testable against this project's own numbers**: dispatch
+the operate-tier decision in two calls -- (1) an unconstrained,
+reasoning-enabled call that just answers "what do you want to do and
+why" in free text against the real legal-action menu, (2) a second,
+cheap, `strict: true` call that does nothing but extract that stated
+intent into the exact schema shape, given the first call's answer as
+context. This should, by the literature's own claim, avoid BOTH Round
+4/14's reasoning-budget-exhaustion failure (reasoning has its own full
+budget, not one shared with formatting) and Round 17's minimal-prompt
+regression (the model gets real space to reason before ever touching
+the schema) -- worth a real A/B against Round 15's mutex-only numbers,
+not assumed to stack additively with it.
+
+## 9. Idempotency keys for concurrent writes
+
+**Our design** (`episode_arena.rs`): the mutex is the only defense
+against a stale or duplicate write landing twice; there's no
+deduplication of a genuinely repeated request (e.g. a client that
+retries after a dropped response).
+
+**Literature**: idempotency keys are the standard distributed-systems
+answer to exactly this -- "client-supplied identifiers that scope a
+request to a single logical operation... the naive check-then-act
+pattern has a race condition where two concurrent requests with the
+same key can both pass the existence check; every production
+idempotency implementation should use atomic reservation or an
+equivalent" (survey of idempotency patterns in distributed systems).
+AWS's own guidance, cited in the same material, explicitly extends this
+to agentic systems: "polling agents that claim tasks, emit
+notifications, or trigger tool calls need dedupe keys and idempotent
+claim protocols just as much as payment APIs do."
+
+**Relevant, not yet a gap this project has actually hit**: the mutex
+already prevents the specific race episode_arena.rs was built to
+prevent (two proposals racing for the same guard). An idempotency key
+would matter for a different, not-yet-tested failure mode -- a client
+that times out waiting for a response and retries the identical
+proposal, which the mutex alone doesn't protect against (it would
+simply serialize the retry as a second, later, distinct attempt). Worth
+naming as a real gap for a production version of this design, not
+claimed as something Rounds 9-17 actually suffered from.
+
+## 10. Self-consistency: majority vote over independent samples
+
+**Not yet tried in this project.** Every operate-tier dispatch so far
+has been one sample per turn, taken at face value.
+
+**Literature**: [Wang et al.'s self-consistency
+method](https://www.emergentmind.com/topics/self-consistency-sampling)
+(the foundational technique, 2022) samples multiple independent
+reasoning paths for the same question and takes the majority answer,
+on the reasoning that "while any single chain might be incorrect,
+aggregating multiple solutions can correct errors" -- real, large
+accuracy gains on constrained-answer-space benchmarks (GSM8K +17.9%,
+SVAMP +11.0%). Its own stated limitation matters here: "self-
+consistency works well when outputs are relatively constrained (e.g.,
+numerical or factual answers), but is less applicable to open-ended
+generation, where answers cannot be easily compared for voting."
+
+**This project's operate-tier action space is exactly the constrained
+case the technique is suited to** -- a small, discrete, exactly-
+comparable set of legal actions, not open-ended text. A directly
+testable idea for the noisiest models (`gemini-2.5/3.1-flash-lite`,
+near-zero conformance in isolation): sample N=3-5 responses per turn
+instead of one, take the majority vote among schema-conformant answers
+(discard non-conformant samples entirely, vote only among the ones
+that parsed), and see whether this recovers meaningful conformance from
+models otherwise unable to produce a single reliable sample. Real cost
+tradeoff to weigh honestly, not assumed free: N calls per turn instead
+of one, for models that are cheap per-call but not free.
+
 ## What this review actually changes
 
 Nothing in this thread's own empirical findings is contradicted by any of
@@ -236,7 +325,7 @@ the above -- every citation either confirms a mechanism this project found
 independently (sections 1, 2, 5, 7) or sharpens a real tension the project's
 own thesis needs to carry forward honestly (section 3, the most important
 one: format-forcing has a real cognitive cost, not just an enforcement
-benefit). Two concrete, not-yet-run experiments this review surfaces
+benefit). Five concrete, not-yet-run experiments this review surfaces
 directly, worth naming as open follow-up in `VALAR-EVAL-2026-08-30.md`
 rather than just here:
 
@@ -246,3 +335,15 @@ rather than just here:
 2. **Mid-build-snapshot seeding for the GA** (section 7) -- already named
    in Round 18's own follow-up, now with a citable best-practice grounding
    for why it should work, not just a guess.
+3. **Two-stage extraction** (section 8) -- reason freely first in an
+   unconstrained call, then a second cheap `strict: true` call formats
+   that stated intent into the exact schema, decoupling the two costs
+   Round 4/14 and Round 17 each hit separately.
+4. **Idempotency keys** (section 9) -- a real gap for a production
+   version of `episode_arena.rs`'s design, distinct from what the mutex
+   already covers, not yet a failure mode this project has actually hit.
+5. **Self-consistency majority voting** (section 10) -- sample N times
+   per turn, vote among schema-conformant answers only, specifically
+   for the noisiest models (`gemini-2.5/3.1-flash-lite`) whose action
+   space is exactly the small, constrained-answer case the technique
+   was shown to help most.
