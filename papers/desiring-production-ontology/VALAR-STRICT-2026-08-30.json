@@ -1,0 +1,30 @@
+{
+  "update": [
+    {
+      "machines": [
+        {
+          "node": "Valinor/house",
+          "states": [
+            { "ident": "unbuilt" },
+            { "ident": "built" }
+          ],
+          "transitions": [
+            {
+              "effects": [],
+              "from": "unbuilt",
+              "guards": [
+                { "exists": { "anchor": { "kind": "node", "value": "Valinor/wall" } , "hops": [ { "predicate": "state", "term": { "kind": "node", "value": "built" } } ] } ,
+                  "negated": false },
+                { "exists": { "anchor": { "kind": "node", "value": "Valinor/roof" } , "hops": [ { "predicate": "state", "term": { "kind": "node", "value": "roofed" } } ] } ,
+                  "negated": false }
+              ],
+              "ident": "construct_house",
+              "params": []
+            , "to": "built"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

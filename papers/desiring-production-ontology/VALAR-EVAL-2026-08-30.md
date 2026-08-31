@@ -63,32 +63,130 @@ mortar, shape pottery from clay + water, fire it in the built kiln, plus
 a negative control (firing pottery before the kiln exists) correctly
 blocked.
 
+## Round 2: the predicate fix, alone, did not close the gap
+
+Fixed `valar_mint.py`'s prompt to state the guard-predicate convention
+explicitly ("guards check `state`, never `a`/rdf:type") and re-ran
+`deepseek/deepseek-v4-flash-0731` at `reasoning: {"effort": "low"}`
+(Jason's framing: minting machines is likely BYOK/paid-upgrade territory
+in the eventual game, so testing minimal effort is the right default,
+not maximal). Result: `Valinor/bridge`, one transition, `{"to": "built"}`
+-- **zero guards**, the exact same `has_content` failure as the very
+first attempt. The reasoning trace this time was genuinely accurate: it
+correctly worked out that effects only touch a machine's own state and
+that guards, not consumption/retraction, are DMML's real cross-resource
+gating mechanism -- then emitted JSON for a *different*, less-developed
+idea than what it had just reasoned through, with no guards at all. The
+predicate ambiguity was never the real blocker.
+
+## Round 3: does a real feedback loop fix it? No -- and the failure mode is diagnostic
+
+Jason's hypothesis: "I'm wondering if an agentic loop -- sandboxed
+filesystem, with multiple tool calls for fixes and refinement -- is
+required for this task. a single typo can sink it." Built
+`valar_mint_loop.py`: same model, same low effort, but each round runs
+the REAL validator against the candidate and feeds the exact error back
+for up to 5 rounds -- no hand correction anywhere.
+
+It did not converge in 5 rounds, and the way it failed is the actual
+finding. Round 1: `Valinor/furnace`, `{"to": "hot"}`, no `from`. Round 2:
+reasoning *correctly diagnoses the exact fix* ("the transition likely
+needs a from state... 'cold'") -- then emits **byte-for-byte identical
+JSON to round 1**. Round 3: reasoning is now fully explicit and correct
+("add `from: cold`... let's produce the corrected JSON") -- outputs
+**the identical broken JSON a third time**, verbatim. Round 4: abandons
+the furnace for a new idea (`Valinor/fountain`) and makes the identical
+category of mistake fresh, as if the prior three rounds never happened.
+Round 5: reasoning states the fix outright ("from: unbuilt, to: built...
+let's produce the JSON") immediately followed by JSON that still omits
+`from`.
+
+Five rounds, five explicit correct diagnoses in reasoning, zero landing
+in the output -- with two of the five producing content byte-identical
+to a prior, already-rejected attempt despite materially different
+reasoning text. That specific pattern (identical output despite
+different reasoning) is the diagnostic part: it reads like the
+JSON-schema-constrained generation pass isn't actually conditioning on
+the corrective feedback in the conversation, at least at this reasoning
+effort. More loop iterations were not going to fix this on their own.
+
+## Round 4: make the constraint structural, not prose -- one-shot success
+
+Jason's reframing after the loop result: the deeper problem might be
+that `has_content` only ever lived as PROSE (a validator error message,
+a prompt warning) while the JSON Schema itself let a transition
+satisfying none of guard/from+to/effect validate anyway. "Can we tighten
+our tool schema to be enough for the model to one shot it? all
+constraints should be structural."
+
+Built `valar_mint_strict.py`: `TransitionInput` restructured as an
+`anyOf` of three required-shaped branches (guard-bearing, from+to-
+bearing, effect-bearing) instead of one object where every field is
+independently optional -- a transition satisfying none of the three is
+now something the schema itself cannot represent, not just something
+prohibited by prose. Paired with real `strict: true` (confirmed
+supported for this model via `structured_outputs`), `additionalProperties:
+false` and nullable-but-required fields throughout (the OpenAI/
+OpenRouter strict-schema convention), and the schema narrowed to only
+what the Vala needs (no `commits`/`refs`/`consumes` surface it never
+uses).
+
+Same model. Same low reasoning effort. **First attempt, no loop, no
+retry: valid.** `Valinor/house`, gated on two real cross-node guards
+(`Valinor/wall` must be `built`, `Valinor/roof` must be `roofed`) --
+correct `state` predicate throughout, fixed-node anchors, a genuinely
+sensible design that completes the production chain `house.rs` builds
+toward but never gave its own dedicated machine. Wired into
+`dmml/examples/valinor_house.rs`: fires the whole chain end to end
+through a constructed house, with a negative control (constructing
+before the roof is on) correctly blocked. Never touched by hand.
+
+0/5 convergence with prose-only constraints and explicit per-round error
+feedback, on the exact same model and effort level. 1/1 one-shot
+convergence once the identical constraint became structurally
+unrepresentable. That is about as clean a confirmation as a single
+comparison gets.
+
 ## What this actually answers
 
 Jason's framing after seeing the GLM result: **"I think this an actual
-model quality question!"** -- and the corrected GPT-5.2-Pro result
-confirms it, cleanly. The bounded-operation tier (`valinor.rs`/
-`door.rs`/`quarry.rs`/`wall.rs`/`house.rs`) is reliable across every
-model tried so far -- five hand-designed examples, every guard, every
-negative control, fired correctly on the first real run every time. The
-bounded-*design* tier (inventing new machinery from scratch, grounded in
-an existing world) is not a fixed capability ceiling for LLMs in
-general -- it's a real quality gradient. Two cheap/fast models
-(deepseek-flash, glm-5.3) failed at the level of design itself across
-four attempts; one flagship model succeeded at the level of design and
-only fumbled two shallow, fixable surface details, one of which
-(`update`-as-array) is a real schema-adherence question independent of
-design quality, and the other (`a` vs `state`) is at least half this
-harness's own prompt's fault for not saying so.
+model quality question!"** -- true, but not the whole story. The
+corrected GPT-5.2-Pro result showed model quality matters a great deal
+(a flagship model's design was substantively correct where cheap models'
+weren't). But Round 4 shows the SAME cheap model, at the SAME low
+effort, closes the entire gap once the schema itself enforces what used
+to be prose -- meaning at least part of what looked like a "model
+quality" ceiling was actually a "how the constraint is encoded" ceiling.
+Jason's later framing captures both halves at once: *"models can operate
+machines but not create them... it's an orders of reasoning problem...
+models can generate good code but not good data."* `has_content` is
+exactly a piece of semantic structure that JSON-as-data has no way to
+express without deliberate schema engineering (the `anyOf`-of-branches
+trick), while a real grammar (DMML's own retired text DSL, or any
+code-shaped syntax) could make it a parse-time fact for free. Round 4
+is one data point that schema engineering alone can close a real chunk
+of that gap even without reaching for a different authoring surface
+entirely -- worth weighing against the code-vs-data hypothesis, not
+a refutation of it.
+
+The bounded-operation tier (`valinor.rs`/`door.rs`/`quarry.rs`/
+`wall.rs`/`house.rs`) is reliable across every model tried so far --
+five hand-designed examples, every guard, every negative control, fired
+correctly on the first real run every time -- but note this claim is
+about hand-firing by Claude/Rust code, not yet about a cheap dispatched
+model choosing among transitions on its own; that specific test hasn't
+been run.
 
 ## Open follow-up, not done here
 
-- Fix `valar_mint.py`'s `WORLD_SO_FAR`/`VALA_PROMPT` to state the guard-
-  predicate convention explicitly ("guards check the `state` predicate,
-  never `a`/rdf:type") and re-test whether that alone closes the gap for
-  the cheaper models too, or whether the deeper design-quality gap
-  (deepseek's/GLM's failure to encode any real guard at all) persists
-  independent of that fix.
+- Test whether a dispatched model can reliably OPERATE these bounded
+  machines (pick a transition, cite params) via structured output --
+  the "operate: reliable" half of Jason's framing is a plausible,
+  well-motivated hypothesis, not yet directly tested.
+- Test the strict/structural schema against GLM-5.3 and gpt-5.2-pro too
+  -- Round 4 only tested deepseek; unknown whether the same structural
+  fix helps or is unnecessary for models that already showed better
+  design judgment.
 - A real eval needs more than n=1 per model -- everything here is a
   single attempt per model (deepseek got three attempts, but each after
   a prompt/parameter change, not a repeated trial of the same
