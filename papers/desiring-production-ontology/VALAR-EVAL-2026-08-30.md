@@ -673,15 +673,67 @@ real, live open question, not a solved one -- the honest state of Round
 11 is "ruled out four plausible variables, found the actual cause is
 still elsewhere," not "fixed."
 
+## Round 12 (2026-08-31): concurrency, tested directly and ruled out
+
+Jason: "let's see if we can reproduce the collapse. is it the
+concurrency?" Built `concurrency_isolation_test.py`: the exact
+structural shape of the real arena run (same four models, same 90-
+second window, each in its own unsynchronized asyncio loop, dispatched
+concurrently) but with everything else stripped to the isolated
+single-shot condition Round 11 already tested clean -- a FROZEN static
+seed state (never changes, no `episode_arena` connection at all) and
+no history block (every call is independent, as if it were the agent's
+first turn, every time). If conformance collapses here anyway, sustained
+concurrent request volume is the driver. If it stays near-ceiling,
+concurrency is ruled out too.
+
+**For the cleanest case, it's ruled out.** `deepseek` scored 20/20 =
+100% conformant under real 90-second, four-model concurrent dispatch
+pressure -- identical to its isolated single-shot rate in Round 11, and
+nowhere near its real-arena rate (Round 9: only 8 of 50 attempts even
+parsed with a `node`/`transition` at all, i.e. ~16%). `glm-4.7-flash`
+scored 35/38 = 92%, also far above its real-arena rate (~15-24%
+conformant across Rounds 9-10). Neither model's conformance degraded
+over the 90-second window either -- the 15-second time-bucket breakdown
+shows no fatigue/volume trend for the models that were mostly
+conformant to begin with, ruling out a "degrades under sustained load"
+version of the concurrency hypothesis too, not just a "concurrency
+itself" version.
+
+`gemini-2.5-flash-lite` and `gemini-3.1-flash-lite` both scored 0%
+here, out of 118 and 88 attempts respectively -- but this doesn't
+implicate concurrency either. It's consistent with Round 8's original
+finding that these two models' `strict: true` enforcement is broken at
+the provider level, independent of condition; a truly exact-match
+schema check was never run against them in isolation before this round
+to confirm the baseline is this low, but nothing here suggests
+concurrency is what's driving it rather than the same enforcement gap
+Round 8 already found.
+
+**Net: concurrency, tested directly with the real structural shape of
+the collapse-producing run, does not reproduce the collapse for the
+models where the collapse was cleanest and best-documented.** Ruled-out
+list is now five: negation, framing-paragraph content, intro length,
+state/param complexity, and concurrent request volume/sustained load.
+What's left, and now the only remaining candidate: the growing "Actions
+taken so far" history block the real client appends per-agent, turn by
+turn -- and/or the world being genuinely live and mutating (as opposed
+to merely described that way, which Round 11's follow-up already
+ruled out) in combination with that growing history. Neither has been
+isolated yet; both were absent from every test run so far in Rounds
+11-12.
+
 ## Open follow-up, not done here
 
-- Reproduce the collapse under controlled conditions on purpose, one
-  variable at a time: (a) add a real, growing history block to an
-  otherwise-isolated single-model dispatch loop and see if conformance
-  degrades over repeated calls; (b) run four *isolated* concurrent
-  dispatch streams (no shared arena, no live world) purely to test
-  whether request-volume/API-level contention alone degrades output,
-  independent of anything about the shared-world framing.
+- The precise next isolation test: reconnect to a real, live
+  `episode_arena` (so the world genuinely changes commit to commit, not
+  just described as changeable) but WITHOUT ever appending a growing
+  history block to the prompt -- every call framed as if it were the
+  agent's first turn, regardless of how many real turns it's actually
+  taken. If conformance collapses there, it's the live-mutating-world
+  condition itself, not the history block. If it stays high, re-add
+  the growing history block on top of the frozen state from this round
+  to isolate that variable cleanly on its own.
 - Only once the real variable is confirmed does re-running the GA
   against it become worthwhile -- optimizing prompt text is pointless
   if the actual driver isn't prompt text at all.
