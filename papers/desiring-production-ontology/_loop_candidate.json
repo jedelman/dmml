@@ -1,0 +1,22 @@
+{
+  "update": [
+    {
+      "machines": [
+        {
+          "node": "Valinor/fountain",
+          "states": [
+            {"ident": "unbuilt"},
+            {"ident": "built"}
+          ],
+          "transitions": [
+            {
+              "ident": "construct",
+              "params": [],
+              "to": "built"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
