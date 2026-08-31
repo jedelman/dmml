@@ -29,6 +29,20 @@ Runs for a fixed wall-clock duration, not a fixed step count -- this is
 open-ended by design (no goal is stated in the prompt), so bounding by
 turns doesn't mean anything here the way it did in the earlier,
 goal-directed rounds.
+
+Extended 2026-08-31, Round 14: Round 13 triangulated the schema-
+conformance collapse down to state changing for reasons the querying
+agent didn't cause and couldn't predict (not concurrency, not mere
+evolution over time -- both ruled out separately). The mitigation named
+there, "give it slightly more, but structured, not narrated," is now
+real: `episode_arena.rs` tracks each actor's own last-seen snapshot
+server-side and returns `changed_since_you_last_looked` on every query,
+computed via the actual `dmml::interpret::diverges` primitive (already
+proven in `drift_machine.rs`), not a bare fresh snapshot and not a
+prose warning that the world might have moved. This client now sends
+`actor` on every query (previously only `Act` requests carried it) and
+renders that drift block into the prompt, compactly, as data -- a list
+of `subject: before -> after` lines, never narrated into a sentence.
 """
 import asyncio
 import json
@@ -78,7 +92,18 @@ def format_state(state):
     return "\n".join(f"  {node:<20} state: {value}" for node, value in sorted(state.items()))
 
 
-def build_prompt(model, state, legal_actions):
+def format_drift(changes):
+    if not changes:
+        return ""
+    lines = []
+    for c in changes:
+        before = c["before"]["Node"] if c["before"] else "(none)"
+        after = c["after"]["Node"] if c["after"] else "(retracted)"
+        lines.append(f"  {c['subject']}: {before} -> {after}")
+    return "Changed since you last looked (not caused by you):\n" + "\n".join(lines) + "\n\n"
+
+
+def build_prompt(model, state, legal_actions, drift):
     # Round 10 revision (2026-08-31): Round 9's prompt was negation-heavy
     # ("there is no single goal", "may already be stale", "not a failure
     # to avoid", "may no longer be legal", "not an error"). Jason's
@@ -88,13 +113,18 @@ def build_prompt(model, state, legal_actions):
     # nothing about staleness/failure/error mentioned at all -- the
     # schema and the engine already handle a stale or bad pick correctly
     # on their own, so the prompt doesn't need to warn about it.
+    #
+    # Round 14 addition: `drift` is real, computed structured data (see
+    # module docstring) rendered as plain subject/before/after lines --
+    # never folded into a narrated sentence, per the same "structure,
+    # not prose" discipline this whole project applies everywhere else.
     return f"""You are one of several agents ({model}) building and shaping the
 living world of Valinor together, all acting at the same time. Explore
 freely and take whichever action feels most worthwhile or interesting
 right now -- anything that grows, builds, or develops the world further
 is a good choice.
 
-Current world state:
+{format_drift(drift)}Current world state:
 {format_state(state)}
 
 Choose ONE action, and respond with only the JSON object matching the
@@ -142,14 +172,14 @@ async def agent_loop(model, reasoning, stop_event, log, loop):
     attempts = 0
     while not stop_event.is_set():
         attempts += 1
-        query = await loop.run_in_executor(None, arena_call, {"query": True})
+        query = await loop.run_in_executor(None, arena_call, {"query": True, "actor": model})
         if "state" not in query:
             print(f"  [{model}] ARENA PROTOCOL ERROR on query: {query!r}", file=sys.stderr)
             continue
-        state, legal_actions = query["state"], query["legal_actions"]
+        state, legal_actions, drift = query["state"], query["legal_actions"], query.get("changed_since_you_last_looked", [])
 
         schema = build_schema(legal_actions)
-        prompt = build_prompt(model, state, legal_actions)
+        prompt = build_prompt(model, state, legal_actions, drift)
         raw, err = await loop.run_in_executor(None, call_model, model, prompt, schema, reasoning)
 
         if err:
@@ -215,12 +245,12 @@ async def main():
 
     await asyncio.gather(timer(), *tasks)
 
-    final = await loop.run_in_executor(None, arena_call, {"query": True})
+    final = await loop.run_in_executor(None, arena_call, {"query": True, "actor": "__final_summary__"})
     server.terminate()
     server.wait(timeout=10)
 
     out_dir = os.path.dirname(__file__)
-    log_path = os.path.join(out_dir, "EPISODE-ARENA-2026-08-31-round10-positive-prompt.json")
+    log_path = os.path.join(out_dir, "EPISODE-ARENA-2026-08-31-round14-drift-attribution.json")
     json.dump(log, open(log_path, "w"), indent=2)
 
     landed = [e for e in log if e.get("fire_result") == "PASS"]

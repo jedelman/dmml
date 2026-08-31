@@ -46,8 +46,33 @@
 //! Usage: `cargo run -p dmml --example episode_arena -- [port]`
 //! (defaults to 7878).
 
+//! Extended 2026-08-31, Round 14: Round 13 triangulated the operate-
+//! swarm's conformance collapse down to one real driver -- state
+//! changing for reasons the querying agent didn't cause and couldn't
+//! predict, not mere concurrency or mere evolution over time -- and
+//! named "give it slightly more, but structured, not narrated" (drift
+//! attribution instead of a bare fresh snapshot) as the mitigation
+//! worth testing rather than assuming. Jason's own reminder made the
+//! primitive obvious: `dmml::interpret::diverges` already exists,
+//! already proven (`dmml/examples/drift_machine.rs`, CLAUDE.md's
+//! "DMML first" section) -- exactly the "what changed between two
+//! materialized snapshots" comparison this needed, not a new ad hoc
+//! diff.
+//!
+//! The server now tracks each actor's own last-seen `Materialized`
+//! snapshot (`Arc<Mutex<HashMap<String, Materialized>>>`, keyed by the
+//! `actor` string every request already carries). On `Query`, before
+//! updating that actor's record to the current world, it calls
+//! `diverges(&previous, &current)` and returns the result as
+//! `changed_since_you_last_looked` -- a real, computed answer to
+//! "what happened since I last looked that I didn't cause myself,"
+//! not a narrated warning that the world *might* have changed (which
+//! Round 11 already showed doesn't move the number on its own). An
+//! actor's first-ever query reports no drift (nothing to compare
+//! against yet), not a flood of "everything just appeared."
+
 use dmml::from_json::update_from_json;
-use dmml::interpret::Materialized;
+use dmml::interpret::{diverges, Materialized};
 use dmml::lower::{ConsumeRef, FactRef, LoweredCommit, StrongRef, Triple, TripleValue};
 use dmml::machine::{self, EvalContext, MachineBody};
 use serde::{Deserialize, Serialize};
@@ -147,7 +172,7 @@ struct AvailableAction {
 #[derive(Deserialize)]
 #[serde(untagged)]
 enum Request {
-    Query { query: bool },
+    Query { query: bool, actor: String },
     Act { actor: String, node: String, transition: String, #[serde(default)] params: Option<HashMap<String, String>> },
 }
 
@@ -237,7 +262,13 @@ fn now_ms() -> u128 {
     SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis()
 }
 
-fn handle_connection(stream: TcpStream, machines: Arc<HashMap<String, MachineBody>>, history: Arc<Mutex<Vec<LoweredCommit>>>, commit_log: Arc<Mutex<Vec<serde_json::Value>>>) {
+fn handle_connection(
+    stream: TcpStream,
+    machines: Arc<HashMap<String, MachineBody>>,
+    history: Arc<Mutex<Vec<LoweredCommit>>>,
+    commit_log: Arc<Mutex<Vec<serde_json::Value>>>,
+    last_seen: Arc<Mutex<HashMap<String, Materialized>>>,
+) {
     let mut reader = BufReader::new(stream.try_clone().expect("clone stream"));
     let mut line = String::new();
     if reader.read_line(&mut line).unwrap_or(0) == 0 {
@@ -254,14 +285,41 @@ fn handle_connection(stream: TcpStream, machines: Arc<HashMap<String, MachineBod
     };
 
     match req {
-        Request::Query { .. } => {
+        Request::Query { actor, .. } => {
             let hist = history.lock().unwrap();
             let world = Materialized::from_commits(&hist);
             let actions = legal_actions(&machines, &world);
+            let hist_len = hist.len();
+            drop(hist);
+
+            // Structured drift attribution (Round 14): what changed
+            // since THIS actor last looked, computed via the real
+            // dmml::interpret::diverges primitive -- not a narrated
+            // warning that the world might have moved, an actual
+            // diff. First-ever query for an actor has nothing to
+            // compare against, so it reports no drift rather than
+            // flooding with "everything just appeared."
+            let mut seen = last_seen.lock().unwrap();
+            let changes: Vec<serde_json::Value> = match seen.get(&actor) {
+                Some(previous) => diverges(previous, &world)
+                    .into_iter()
+                    .map(|d| serde_json::json!({
+                        "subject": d.subject,
+                        "predicate": d.predicate,
+                        "before": d.before,
+                        "after": d.after,
+                    }))
+                    .collect(),
+                None => Vec::new(),
+            };
+            seen.insert(actor, world.clone());
+            drop(seen);
+
             let resp = serde_json::json!({
                 "state": state_snapshot(&world),
                 "legal_actions": actions,
-                "history_len": hist.len(),
+                "history_len": hist_len,
+                "changed_since_you_last_looked": changes,
             });
             let _ = writeln!(stream, "{}", resp);
         }
@@ -331,6 +389,7 @@ fn main() {
     };
     let history = Arc::new(Mutex::new(vec![seed_commit]));
     let commit_log: Arc<Mutex<Vec<serde_json::Value>>> = Arc::new(Mutex::new(Vec::new()));
+    let last_seen: Arc<Mutex<HashMap<String, Materialized>>> = Arc::new(Mutex::new(HashMap::new()));
 
     let listener = TcpListener::bind(("127.0.0.1", port)).expect("bind arena port");
     eprintln!("episode_arena listening on 127.0.0.1:{port}");
@@ -340,6 +399,7 @@ fn main() {
         let machines = Arc::clone(&machines);
         let history = Arc::clone(&history);
         let commit_log = Arc::clone(&commit_log);
-        std::thread::spawn(move || handle_connection(stream, machines, history, commit_log));
+        let last_seen = Arc::clone(&last_seen);
+        std::thread::spawn(move || handle_connection(stream, machines, history, commit_log, last_seen));
     }
 }

@@ -1,0 +1,1766 @@
+[
+  {
+    "t": 1788180405.1741452,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/carpentry",
+      "transition": "build_frame",
+      "params": "null"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180405.4058602,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/quarry",
+      "transition": "excavate",
+      "params": "stone"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180405.6241293,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor",
+    "transition": "raise",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 2
+  },
+  {
+    "t": 1788180405.8928392,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/quarry",
+      "transition": "quarry",
+      "params": "stone"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180406.4208088,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor",
+    "transition": "uplift",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 3
+  },
+  {
+    "t": 1788180406.8286371,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/forest",
+      "transition": "harvest",
+      "params": "logs"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180407.6208239,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "build_wall",
+      "params": "stone"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180407.7873547,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/carpentry",
+    "transition": "make_frame",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 4
+  },
+  {
+    "t": 1788180408.4544797,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "build_wall",
+      "params": "Valinor/quarry"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180409.0195458,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/quarry",
+    "transition": "quarry",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 5
+  },
+  {
+    "t": 1788180409.226804,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "submitted",
+    "node": "Valinor",
+    "transition": "raise",
+    "params": {},
+    "fire_result": "FAIL: GuardNotSatisfied",
+    "commit_index": 5
+  },
+  {
+    "t": 1788180409.3976002,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "build",
+      "params": "walls"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180410.1492999,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "build",
+      "params": "Valinor/wall"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180410.3508136,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/quarry",
+    "transition": "grind",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 6
+  },
+  {
+    "t": 1788180410.9053671,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "build_walls",
+      "params": "Valinor/wall"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180411.3659725,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/quarry",
+    "transition": "wet",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 7
+  },
+  {
+    "t": 1788180411.6336944,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "build wall",
+      "params": "sand"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180412.3100522,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/mortar",
+      "transition": "mix",
+      "params": "clay"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180412.3892994,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/quarry",
+    "transition": "fire",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 8
+  },
+  {
+    "t": 1788180413.1502938,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "build_wall",
+      "params": "stone"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180413.273321,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/forest",
+    "transition": "gather",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 9
+  },
+  {
+    "t": 1788180413.9479678,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "build",
+      "params": "Valinor/quarry"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180414.4927542,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/streambed",
+    "transition": "wash",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 10
+  },
+  {
+    "t": 1788180414.702339,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"node\": \"Valinor/house\",\n  \"transition\": \"build\",\n  \"params",
+    "detail": "Unterminated string starting at: line 4 column 3 (char 56)"
+  },
+  {
+    "t": 1788180415.6033585,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/forest",
+    "transition": "overgather",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 11
+  },
+  {
+    "t": 1788180415.6153078,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "build",
+      "params": "stone"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180416.4389327,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/spring",
+    "transition": "well_up",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 12
+  },
+  {
+    "t": 1788180416.5156925,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/quarry",
+      "transition": "excavate",
+      "params": "stone"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180416.5218887,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/spring",
+    "transition": "fill",
+    "params": {},
+    "fire_result": "FAIL: 'Valinor/spring' has no transition 'fill'",
+    "commit_index": 12
+  },
+  {
+    "t": 1788180417.4807856,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/mortar",
+    "transition": "mix",
+    "params": {
+      "sand_source": "Valinor/streambed",
+      "water_source": "Valinor/spring"
+    },
+    "fire_result": "PASS",
+    "commit_index": 13
+  },
+  {
+    "t": 1788180417.555892,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/mortar",
+    "transition": "mix",
+    "params": {
+      "sand_source": "Valinor/streambed",
+      "water_source": "Valinor/spring"
+    },
+    "fire_result": "FAIL: GuardNotSatisfied",
+    "commit_index": 13
+  },
+  {
+    "t": 1788180417.625842,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/mortar",
+    "transition": "mix",
+    "params": {
+      "sand_source": "Valinor/streambed",
+      "water_source": "Valinor/spring"
+    },
+    "fire_result": "FAIL: GuardNotSatisfied",
+    "commit_index": 13
+  },
+  {
+    "t": 1788180418.4099255,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/wall",
+    "transition": "build",
+    "params": {
+      "brick_source": "Valinor/quarry",
+      "mortar_source": "Valinor/mortar"
+    },
+    "fire_result": "PASS",
+    "commit_index": 14
+  },
+  {
+    "t": 1788180418.876853,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/wall",
+    "transition": "build",
+    "params": {
+      "brick_source": "Valinor/quarry",
+      "mortar_source": "Valinor/mortar"
+    },
+    "fire_result": "FAIL: GuardNotSatisfied",
+    "commit_index": 14
+  },
+  {
+    "t": 1788180419.2341123,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/house",
+    "transition": "build",
+    "params": {
+      "frame_source": "Valinor/carpentry",
+      "wall_source": "Valinor/wall"
+    },
+    "fire_result": "FAIL: 'Valinor/house' has no transition 'build'",
+    "commit_index": 14
+  },
+  {
+    "t": 1788180419.5323617,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/wall",
+    "transition": "build",
+    "params": {
+      "brick_source": "Valinor/quarry",
+      "mortar_source": "Valinor/mortar"
+    },
+    "fire_result": "FAIL: GuardNotSatisfied",
+    "commit_index": 14
+  },
+  {
+    "t": 1788180419.9078932,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/house",
+    "transition": "build",
+    "params": {
+      "frame_source": "Valinor/carpentry",
+      "wall_source": "Valinor/wall"
+    },
+    "fire_result": "FAIL: 'Valinor/house' has no transition 'build'",
+    "commit_index": 14
+  },
+  {
+    "t": 1788180420.339641,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/house",
+    "transition": "construct",
+    "params": {
+      "frame_source": "Valinor/carpentry",
+      "wall_source": "Valinor/wall"
+    },
+    "fire_result": "FAIL: 'Valinor/house' has no transition 'construct'",
+    "commit_index": 14
+  },
+  {
+    "t": 1788180420.6999717,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/roof",
+    "transition": "build",
+    "params": {
+      "frame_source": "Valinor/carpentry",
+      "wall_source": "Valinor/wall"
+    },
+    "fire_result": "FAIL: 'Valinor/roof' has no transition 'build'",
+    "commit_index": 14
+  },
+  {
+    "t": 1788180420.874288,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/roof",
+    "transition": "add_roof",
+    "params": {
+      "frame_source": "Valinor/carpentry",
+      "wall_source": "Valinor/wall"
+    },
+    "fire_result": "PASS",
+    "commit_index": 15
+  },
+  {
+    "t": 1788180421.233911,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/house",
+    "transition": "construct",
+    "params": {
+      "frame_source": "Valinor/carpentry",
+      "wall_source": "Valinor/wall"
+    },
+    "fire_result": "FAIL: 'Valinor/house' has no transition 'construct'",
+    "commit_index": 15
+  },
+  {
+    "t": 1788180421.5284257,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "submitted",
+    "node": "Valinor/house",
+    "transition": "build_roof",
+    "params": {
+      "frame_source": "Valinor/carpentry",
+      "wall_source": "Valinor/wall"
+    },
+    "fire_result": "FAIL: 'Valinor/house' has no transition 'build_roof'",
+    "commit_index": 15
+  },
+  {
+    "t": 1788180422.066356,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "assemble",
+      "params": "using mortar and brick"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180422.247963,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "submitted",
+    "node": "Valinor/house",
+    "transition": "construct_house",
+    "params": {},
+    "fire_result": "PASS",
+    "commit_index": 16
+  },
+  {
+    "t": 1788180422.3465943,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/carpentry",
+      "transition": "add_roof",
+      "params": "Valinor/roof"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180423.3484478,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "arena_protocol_error",
+    "sent": {
+      "node": "Valinor/house",
+      "transition": "construct",
+      "params": "mortar,brick"
+    },
+    "got": {
+      "error": "bad request: data did not match any variant of untagged enum Request"
+    }
+  },
+  {
+    "t": 1788180423.387587,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/house:add_chimney\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180424.0197127,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"work\",\n  \"subject\": \"Valinor/house\",\n  \"target\": \"Valinor/roof\",\n  \"method\": \"thatch\",\n  \"tool\": {\n    \"name\": \"sedge grass\",\n    \"quantity\": 50\n  },\n  \"description\": \"Thatching the roof to protect the home from the remaining weather, using the dried sedge grass from the surrounding areas.\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180424.238406,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"Valinor/carpentry\", \"state\": \"adding_details\"},\n  {\"action\": \"Valinor/forest\", \"state\": \"replanting\"},\n  {\"action\": \"Valinor/mortar\", \"state\": \"applying\"},\n  {\"action\": \"Valinor/roof\", \"state\": \"inspecting\"},\n  {\"action\": \"Valinor/streambed\", \"state\": \"clearing\"}\n]",
+    "detail": "list indices must be integers or slices, not str"
+  },
+  {
+    "t": 1788180424.2467966,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/house:furnish\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180424.9936042,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180425.4295266,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180425.901247,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"valinor/house\",\n  \"output\": \"The rain is coming down harder, hammering against the thatch of the newly completed roof. While the house is structurally sound and the wall is built, the sand-filled streambed cannot handle the deluge. Water is overflowing its banks and rushing dangerously close to the house's wooden doorstep.\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180426.0123143,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"Valinor/carpentry\", \"state\": \"assembled\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180426.6498237,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180426.8556101,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest: plant\",\n  \"action_description\": \"Plant new trees in the forest, replenishing it for future use.\",\n  \"next_world_state\": \"Valinor/forest: growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180427.3010767,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"Valinor/carpentry\",\n  \"parameters\": {\n    \"location\": \"Valinor/house\",\n    \"action\": \"insert plank between upright studs of wall to reinforce it\"\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180427.5173714,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180427.6727867,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"action_description\": \"continue to grow the forest\",\n  \"state\": \"growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180428.4915307,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"action_description\": \"The forest is depleted. It needs to be regrown.\",\n  \"state\": \"regrown\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180428.8920228,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180429.2615526,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180430.071014,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanted\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180430.2502632,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\",\n  \"Valinor/carpentry\": \"finished\",\n  \"Valinor/quarry\": \"exhausted\",\n  \"Valinor/streambed\": \"cleared\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180430.3845048,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"actions\": [\n    {\n      \"action\": \"Investigate Valinor/carpentry framed\",\n      \"description\": \"Inspect the framed structure in the carpentry state. Determine if it can be assembled or if further shaping is needed.\"\n    },\n    {\n      \"action\": \"Refine Valinor/forest depleted\",\n      \"description\": \"Try to heal or replenish the depleted forest to provide future raw materials.\"\n    },\n    {\n      \"action\": \"Mix Valinor/mortar mixed\",\n      \"description\": \"Use the mixed mortar to begin sealing the walls of the house, integrating the built structure with the foundation.\"\n    },\n    {\n      \"action\": \"Construct Valinor/roof roofed\",\n      \"description\": \"Take the roof material (bricks from the quarry) and add the final layer to the framed carpentry structure to provide shelter.\"\n    }\n  ]\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180430.7376738,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180431.548329,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"Valinor/forest\": \"replanting\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180431.8258355,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"reforest\",\n  \"location\": \"Valinor/forest\",\n  \"description\": \"Planting saplings throughout the depleted forest to restore its life and beauty.\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180432.5524735,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180432.933618,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180433.5703192,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180434.0273504,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry\",\n  \"state\": \"add_detail\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180434.7916534,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanted\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180434.9322267,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180435.182485,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"gather_carpentry_materials\",\n  \"details\": {\n    \"action_type\": \"resource_gathering\",\n    \"target\": \"forest\",\n    \"purpose\": \"Replenish the depleted forest by cutting down trees to build more wooden structures, bridges, and furniture.\"\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180436.0427432,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"continue\", \"reason\": \"The house is built, the walls are built, the roof is roofed, the carpentry is framed, the mortar is mixed, and the quarry has brick. The forest is depleted, however, and the streambed is sand. I should focus on replenishing the forest and perhaps work on the streambed next.\"},\n  {\"action\": \"gather\", \"item\": \"wood\", \"reason\": \"The forest is depleted, and I will need wood to continue building and developing Valinor.\"},\n  {\"action\": \"gather\", \"item\": \"sand\", \"reason\": \"The streambed is currently sand, and I will need sand to mix mortar for further construction.\"}\n]",
+    "detail": "list indices must be integers or slices, not str"
+  },
+  {
+    "t": 1788180436.2045338,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"Valinor/forest\": \"replanting\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180436.988264,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"Valinor/forest\", \"state\": \"growing\"},\n  {\"action\": \"Valinor/carpentry\", \"state\": \"building\"},\n  {\"action\": \"Valinor/streambed\", \"state\": \"paved\"},\n  {\"action\": \"Valinor/spring\", \"state\": \"diverted\"}\n]",
+    "detail": "list indices must be integers or slices, not str"
+  },
+  {
+    "t": 1788180437.1747704,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanted\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180437.7228386,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"Valinor/river_banks\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180437.8775957,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry\",\n  \"state\": \"add_details\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180438.0858924,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180438.7111301,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry\",\n  \"state\": \"add window\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180439.2412624,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "submitted",
+    "node": "Valinor/spring",
+    "transition": "well_up",
+    "params": {},
+    "fire_result": "FAIL: GuardNotSatisfied",
+    "commit_index": 16
+  },
+  {
+    "t": 1788180439.2952168,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180439.5895796,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"Valinor/forest\", \"state\": \"regrowing\"},\n  {\"action\": \"Valinor/carpentry\", \"state\": \"detailing\"},\n  {\"action\": \"Valinor/house\", \"state\": \"interior\"},\n  {\"action\": \"Valinor/spring\", \"state\": \"channeling\"},\n  {\"action\": \"Valinor/streambed\", \"state\": \"paved\"}\n]",
+    "detail": "list indices must be integers or slices, not str"
+  },
+  {
+    "t": 1788180440.3503335,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"Valinor/forest\": \"replanting\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180440.391721,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry/add_rafters\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180440.9694104,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"agent_id\": \"z-ai/glm-4.7-flash\",\n  \"action\": {\n    \"type\": \"action\",\n    \"target\": \"Valinor/forest\",\n    \"description\": \"Scout the depleted forest area to identify potential saplings or protected zones for regeneration.\"\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180441.410181,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"Valinor/forest\", \"state\": \"regrowing\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180442.2785344,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"explore\", \"location\": \"Valinor/forest\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180442.496716,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180443.1428478,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"Valinor/forest/grow\", \"description\": \"grow",
+    "detail": "Unterminated string starting at: line 2 column 52 (char 53)"
+  },
+  {
+    "t": 1788180443.9246118,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"Valinor/forest\", \"state\": \"regrowing\"},\n  {\"action\": \"Valinor/carpentry\", \"state\": \"building\"},\n  {\"action\": \"Valinor/streambed\", \"state\": \"cleared\"}\n]",
+    "detail": "list indices must be integers or slices, not str"
+  },
+  {
+    "t": 1788180444.601628,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180445.320373,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"Valinor/carpentry\", \"state\": \"build\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180446.0410616,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180446.7364652,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180447.3959937,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180447.6021914,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"choices\": [\n    {\n      \"agent\": \"z-ai/glm-4.7-flash\",\n      \"action\": \"shape_the_world\",\n      \"context\": \"The world of Valinor is beginning to take shape with its landscape defined by mountains, a spring, and a streambed. A structure has been built, and some of its key parts, like the framing, mortar, and walls, are in place. The roof is now on. The immediate needs are to transition from the raw construction stage to the finishing touches that make the house a home, utilizing the materials available. The forest is depleted, but the local spring is flowing, providing a ready water source. I will take action to interlock the top walls of the house, applying the mixed mortar, and then bring the water from the spring into the house to support the ongoing work.\",\n      \"name\": \"Finish the House Structure\",\n      \"desc\": \"Apply mixed mortar to the top of the house walls to lock them together.\"\n    },\n    {\n      \"agent\": \"z-ai/glm-4.7-flash\",\n      \"action\": \"build_the_world\",\n      \"context\": \"The world of Valinor is beginning to take shape with its landscape defined by mountains, a spring, and a streambed. A structure has been built, and some of its key parts, like the framing, mortar, and walls, are in place. The roof is now on. The immediate needs are to transition from the raw construction stage to the finishing touches that make the house a home, utilizing the materials available. The forest is depleted, but the local spring is flowing, providing a ready water source. I will take action to water the crops and trees, helping to reverse their depleted state and restart the cycle of life.\",\n      \"name\": \"Restart Nature's Cycle\",\n      \"desc\": \"Water the crops and trees to reverse their depleted state.\"\n    },\n    {\n      \"agent\": \"z-ai/glm-4.7-flash\",\n      \"action\": \"shape_the_world\",\n      \"context\": \"The world of Valinor is beginning to take shape with its landscape defined by mountains, a spring, and a streambed. A structure has been built, and some of its key parts, like the framing, mortar, and walls, are in place. The roof is now on. The immediate needs are to transition from the raw construction stage to the finishing touches that make the house a home, utilizing the materials available. The forest is depleted, but the local spring is flowing, providing a ready water source. I will take action to expand the house by building an attached porch.\",\n      \"name\": \"Expand the Dwelling\",\n      \"desc\": \"Build an attached porch to the house, using the nearby streambed sand.\"\n    }\n  ]\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180448.0502124,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"Valinor/forest\": \"replanting\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180448.1382346,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest: grow\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180448.8537421,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180449.4376485,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180449.6783834,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"action_args\": [\n    \"regrow\"\n  ]\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180450.4210281,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry/continue_framing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180450.4620757,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180451.088806,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest/grow\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180451.2042959,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": {\n    \"type\": \"scene_development\",\n    \"subject\": \"Valinor/mountain\",\n    \"target\": \"Valinor/rockpick\",\n    \"description\": \"Begin mining the mountain to gather stone for a workshop wall, further fortifying the new settlement.\"\n  },\n  \"context\": {\n    \"plan\": [\n      {\n        \"task\": \"build_workshop_wall\",\n        \"subject\": \"Valinor/wall\",\n        \"target\": \"Valinor/stoneblock\",\n        \"status\": \"planned\"\n      },\n      {\n        \"task\": \"mine_mountain\",\n        \"subject\": \"Valinor/mountain\",\n        \"target\": \"Valinor/stoneblock\",\n        \"status\": \"active\"\n      }\n    ]\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180451.4360793,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180451.7766275,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180452.20851,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"forest_rejuvenation\",\n  \"details\": {\n    \"resource_type\": \"forest\",\n    \"new_state\": \"regenerating\"\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180452.5294414,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180453.3302987,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180453.5599282,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"plant_trees\",\n  \"target\": \"Valinor/forest\",\n  \"components\": {\n    \"sapling_state\": \"rooted\",\n    \"growth_stimulant\": \"enriched_soil\"\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180454.215743,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanted\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180454.9311273,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry/add_support_beams\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180455.6787384,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180455.719043,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180456.4955738,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180456.640893,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180457.3313084,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"name\": \"explore\", \"target\": \"Valinor/spring\", \"detail\": \"Trace the spring's source up the mountain to find where the water emerges.\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180457.4680893,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{",
+    "detail": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+  },
+  {
+    "t": 1788180457.6148984,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180458.121122,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180459.0088735,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"current_agent\": \"z-ai/glm-4.7-flash\",\n  \"actions\": [\n    {\n      \"id\": \"collect_water\",\n      \"name\": \"Collect water from the spring and streambed\",\n      \"summary\": \"Gather the abundant flow of the spring and the sand-filled streambed to prepare for domestic use.\",\n      \"details\": \"With the spring flowing freely and the streambed filled with sand, use a vessel to collect water from the spring's edge. Then, sift the sand from the streambed to collect water trapped within, using the wooden frame from the carpentry site to aid in the process. This is a vital resource for daily life.\"\n    },\n    {\n      \"id\": \"craft_furniture\",\n      \"name\": \"Craft basic furniture from timber\",\n      \"summary\": \"Utilize the available timber to build essential furniture for the house, such as tables and chairs.\",\n      \"details\": \"With the carpentry process well underway and the house built, use the lumber and joinery techniques to craft sturdy tables and chairs. This will make the newly built home habitable and comfortable for the inhabitants.\"\n    },\n    {\n      \"id\": \"craft_pots\",\n      \"name\": \"Craft pottery from the clay\",\n      \"summary\": \"Use the clay from the carpentry site to craft pottery, enhancing the house's functionality.\",\n      \"details\": \"Using the mixed mortar and the freshly cut timber from the carpentry site, mix with the raw clay. This will allow the creation of durable and useful items like bowls, plates, and storage containers, making the house a fully functional living space.\"\n    },\n    {\n      \"id\": \"prepare_mortar\",\n      \"name\": \"Mix the mortar with sand from the streambed\",\n      \"summary\": \"Combine the mixed mortar with the coarse sand found in the streambed to create a workable concrete.\",\n      \"details\": \"Take the existing mixed mortar from the site and bring it down to the streambed. Mix the mortar with the abundant sand found there to create a smoother, more cohesive material. This new mixture will be ready for use in finalizing the house's construction or reinforcing the walls.\"\n    }\n  ]\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180459.1163843,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180459.2257032,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180459.9811485,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180460.3514082,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"Valinor/forest\": \"replanting\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180460.718764,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180461.5610778,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest/replant\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180461.7711267,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180462.2913208,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180462.8752222,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/reforestation\": \"planting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180463.0353122,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest/replant\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180464.092589,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry\",\n  \"state\": \"frames for doors and windows are ready\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180464.131758,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\",\n  \"Valinor/carpentry\": \"finished\",\n  \"Valinor/mortar\": \"applied\",\n  \"Valinor/quarry\": \"exhausted\",\n  \"Valinor/streambed\": \"landscaped\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180464.8429024,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry\",\n  \"state\": \"walls\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180465.1832395,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"actions\": [\n    {\n      \"what\": \"tile the house\",\n      \"why\": \"The house is finally built and ready for a roof. The mortar is mixed, the wall is sturdy, and the roof is on. Tiling it will make it weatherproof and livable, connecting the \"mortar\" state to the \"roof\" state and moving the world from having a mere shelter to a home. It transforms the newly built structure into a functional living space.\",\n      \"moves\": {\n        \"Valinor/house\": \"tiled\",\n        \"Valinor/mortar\": \"used\"\n      }\n    },\n    {\n      \"what\": \"stabilize the spring\",\n      \"why\": \"The streambed is now sandy and depleting, with a flowing spring nearby. Stabilizing the spring will halt the erosion, changing the \"depleted\" and \"sandy\" states to a more enduring state, improving the overall environmental quality of the region.\",\n      \"moves\": {\n        \"Valinor/depleted\": \"stabilized\",\n        \"Valinor/spring\": \"stabilized\",\n        \"Valinor/streambed\": \"rock\"\n      }\n    },\n    {\n      \"what\": \"plant a forest\",\n      \"why\": \"The forest is depleted, but a carpentry shop has been built and roofed. The restoration of the forest is the logical next step, providing the raw materials for the carpenter to finally go to work, bringing the system to a self-sustaining cycle.\",\n      \"moves\": {\n        \"Valinor/forest\": \"regenerating\",\n        \"Valinor/carpentry\": \"ready\"\n      }\n    },\n    {\n      \"what\": \"stockpile a spring\",\n      \"why\": \"The spring is flowing, and the mortar is mixed for the house. Storing the spring's water will create a renewable water source, complementing the construction efforts and ensuring the house has water, directly utilizing the \"mixed\" and \"flowing\" states.\",\n      \"moves\": {\n        \"Valinor/mortar\": \"stocked\",\n        \"Valinor/spring\": \"stocked\"\n      }\n    },\n    {\n      \"what\": \"construct a plaza\",\n      \"why\": \"The house is built and a river flows nearby. To make the house a true home, there needs to be a communal space or a plaza in front of it. This would be a new addition to the world, enhancing the social and practical utility of the house and connecting it to the \"wall\" and \"spring\".\",\n      \"moves\": {\n        \"Valinor/plaza\": \"constructed\"\n      }\n    }\n  ]\n}\n```",
+    "detail": "Expecting ',' delimiter: line 5 column 190 (char 244)"
+  },
+  {
+    "t": 1788180465.5000896,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest/grow\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180466.5631897,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"Valinor/forest\", \"state\": \"growing\"},\n  {\"action\": \"Valinor/carpentry\", \"state\": \"building\"},\n  {\"action\": \"Valinor/quarry\", \"state\": \"quarrying\"}\n]",
+    "detail": "list indices must be integers or slices, not str"
+  },
+  {
+    "t": 1788180466.5986636,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"move\",\n  \"target\": \"Valinor/forest\",\n  \"description\": \"Walk into the depleted forest to explore its condition and look for any signs of new growth or a need for renewal.\",\n  \"reasoning\": \"The forest state is 'depleted', presenting a key opportunity to explore its current state, potentially bringing it back to life, or at the very least, surveying the damage to inform future ecological actions.\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180467.5369084,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"Valinor/forest\", \"state\": \"growing\"},\n  {\"action\": \"Valinor/spring\", \"state\": \"diverted\"},\n  {\"action\": \"Valinor/streambed\", \"state\": \"paved\"},\n  {\"action\": \"Valinor/carpentry\", \"state\": \"detailed\"},\n  {\"action\": \"Valinor/house\", \"state\": \"furnished\"},\n  {\"action\": \"Valinor/wall\", \"state\": \"reinforced\"}\n]",
+    "detail": "list indices must be integers or slices, not str"
+  },
+  {
+    "t": 1788180468.268992,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180469.185919,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180469.2779152,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"actions\": [\n    {\n      \"id\": \"build-stairs\",\n      \"type\": \"construction\",\n      \"target\": \"Valinor/house\",\n      \"description\": \"Carve stone steps from the main path, leading down to the house's entrance.\"\n    },\n    {\n      \"id\": \"craft-furniture\",\n      \"type\": \"crafting\",\n      \"target\": \"Valinor/carpentry\",\n      \"description\": \"Create tables and stools from the wood stored at the carpentry site.\"\n    },\n    {\n      \"id\": \"make-mattress\",\n      \"type\": \"crafting\",\n      \"target\": \"Valinor/carpentry\",\n      \"description\": \"Weave a bed from reeds gathered near the spring.\"\n    },\n    {\n      \"id\": \"plant-hedge\",\n      \"type\": \"planting\",\n      \"target\": \"Valinor/forest\",\n      \"description\": \"Plant a row of saplings near the house's newly built wall for privacy.\"\n    }\n  ]\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180470.037178,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"Valinor/forest\", \"state\": \"regrowing\"},\n  {\"action\": \"Valinor/carpentry\", \"state\": \"building\"},\n  {\"action\": \"Valinor/streambed\", \"state\": \"cleared\"}\n]",
+    "detail": "list indices must be integers or slices, not str"
+  },
+  {
+    "t": 1788180470.9439032,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/streambed/add_plant\",\n  \"action_description\": \"Add a plant to the streambed.\",\n  \"parameters\": [\n    \"reed\",\n    \"willow\"\n  ]\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180471.5557632,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"actions\": [\n    {\n      \"narrative\": \"You adjust the quality of the soil, enriching the empty patch of land near the newly built house to prepare it for growth.\",\n      \"verb\": \"enrich_soil\",\n      \"object\": null\n    },\n    {\n      \"narrative\": \"A small sapling sprouts in the enriched soil, signaling the start of new life.\",\n      \"verb\": \"plant_sapling\",\n      \"object\": null\n    },\n    {\n      \"narrative\": \"The new tree grows robustly, its roots deepening and its branches reaching towards the sky.\",\n      \"verb\": \"grow_tree\",\n      \"object\": null\n    },\n    {\n      \"narrative\": \"The newly planted sapling grows into a lush young tree, marking the first addition to the forest area.\",\n      \"verb\": \"grow_forest\",\n      \"object\": null\n    }\n  ]\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180471.6610794,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180472.518418,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"Valinor/house/door/build\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180473.2972934,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest: grow\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180473.9725296,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180474.7041886,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"action_type\": \"STATE_CHANGE\",\n  \"args\": [\n    \"growing\"\n  ]\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180475.399062,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180475.850113,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180476.5540397,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"action_args\": [\n    \"replant\"\n  ]\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180476.6237116,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/reforestation\": \"planting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180477.4542348,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"explore\", \"location\": \"Valinor/forest\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180477.740329,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180478.130373,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180478.5846782,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry\",\n  \"state\": \"shingles\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180478.649087,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"explore\",\n  \"location\": \"Valinor/spring\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180478.7935164,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"actions\": [\n    {\n      \"name\": \"sharpen_axe\",\n      \"required_actions\": [\"stone\", \"metal\", \"tool_1\"],\n      \"items\": {\n        \"stone\": \"tool_1\",\n        \"metal\": \"tool_1\",\n        \"tool_1\": \"axe\"\n      },\n      \"consumed_items\": {\n        \"stone\": \"tool_1\",\n        \"metal\": \"tool_1\"\n      },\n      \"resulting_items\": {\n        \"tool_2\": \"axe\"\n      },\n      \"explanation\": \"The axe is blunt. To clear the dead trees from the depleted forest, it must be sharpened, turning the stone and metal into a new, effective tool.\"\n    },\n    {\n      \"name\": \"sharpen_hammer\",\n      \"required_actions\": [\"stone\", \"metal\", \"tool_2\"],\n      \"items\": {\n        \"stone\": \"tool_2\",\n        \"metal\": \"tool_2\",\n        \"tool_2\": \"hammer\"\n      },\n      \"consumed_items\": {\n        \"stone\": \"tool_2\",\n        \"metal\": \"tool_2\"\n      },\n      \"resulting_items\": {\n        \"tool_3\": \"hammer\"\n      },\n      \"explanation\": \"The hammer is blunt and must be sharpened before I can use it for a major construction project.\"\n    },\n    {\n      \"name\": \"bake_brick\",\n      \"required_actions\": [\"clay\", \"wood\", \"fire\"],\n      \"items\": {\n        \"clay\": \"fire\",\n        \"wood\": \"fire\",\n        \"fire\": \"brick\"\n      },\n      \"consumed_items\": {\n        \"clay\": \"fire\",\n        \"wood\": \"fire\"\n      },\n      \"resulting_items\": {\n        \"brick\": \"brick\"\n      },\n      \"explanation\": \"The mixed mortar has to be placed on bricks. To do this properly, I need to fire some clay bricks from the streambed to build a permanent kiln.\"\n    },\n    {\n      \"name\": \"stabilize_stream\",\n      \"required_actions\": [\"stone\", \"wood\", \"streambed\"],\n      \"items\": {\n        \"stone\": \"streambed\",\n        \"wood\": \"streambed\",\n        \"streambed\": \"stabilized\"\n      },\n      \"consumed_items\": {\n        \"stone\": \"streambed\",\n        \"wood\": \"streambed\"\n      },\n      \"resulting_items\": {\n        \"streambed\": \"stabilized\"\n      },\n      \"explanation\": \"With a small amount of stone and wood, I can help stabilize the sandy streambed, preparing it for a more permanent purpose.\"\n    },\n    {\n      \"name\": \"smelt_iron\",\n      \"required_actions\": [\"ore\", \"coal\", \"fire\"],\n      \"items\": {\n        \"ore\": \"fire\",\n        \"coal\": \"fire\",\n        \"fire\": \"iron\"\n      },\n      \"consumed_items\": {\n        \"ore\": \"fire\",\n        \"coal\": \"fire\"\n      },\n      \"resulting_items\": {\n        \"iron\": \"iron\"\n      },\n      \"explanation\": \"I have some coal and iron ore. Using the fire and a clay kiln, I can smelt this into a fresh supply of iron.\"\n    }\n  ]\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180479.338141,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180479.4040928,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"Valinor/forest\": \"replanting\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180479.4439642,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"build\",\n  \"target\": \"Valinor/streambed\",\n  \"tool\": \"shovel\",\n  \"description\": \"Dig a channel from the spring through the streambed to the house, creating a water supply.\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180480.0795684,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180480.122873,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180480.71105,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"description\": \"Plant new trees in the depleted forest to begin regrowth.\",\n  \"action\": \"plant_seedlings\",\n  \"target\": \"Valinor/forest\",\n  \"new_state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180481.0432413,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"actions\": [\n    {\n      \"description\": \"plant trees in the Valinor/forest\",\n      \"state\": \"planting\"\n    },\n    {\n      \"description\": \"carve a well into the Valinor/spring\",\n      \"state\": \"carving\"\n    },\n    {\n      \"description\": \"thicken the roof shingles with clay from the Valinor/mortar\",\n      \"state\": \"thickening\"\n    },\n    {\n      \"description\": \"turn the Valinor/wall into a storage shed for bricks\",\n      \"state\": \"converting\"\n    },\n    {\n      \"description\": \"fill the Valinor/streambed with stones from the Valinor/quarry\",\n      \"state\": \"filling\"\n    }\n  ]\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180481.486252,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"action_description\": \"Valinor/forest state: depleted\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180482.2111025,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\",\n  \"Valinor/carpentry\": \"finished\",\n  \"Valinor/mortar\": \"applied\",\n  \"Valinor/quarry\": \"exhausted\",\n  \"Valinor/streambed\": \"landscaped\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180482.2625709,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180482.558322,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": {\n    \"target\": \"Valinor/forest\",\n    \"verb\": \"replant\",\n    \"resource\": \"seed\",\n    \"world_update\": {\n      \"Valinor/forest\": \"replanting\"\n    }\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180482.9197605,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"explore\", \"location\": \"Valinor/forest\", \"description\": \"The depleted forest shows signs of new growth, with saplings emerging from the stumps and a faint path leading deeper into the woods.\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180483.032323,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180483.0535574,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180483.722971,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180483.7391143,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"build\",\n  \"target\": \"Valinor/streambed\",\n  \"tool\": \"shovel\",\n  \"description\": \"Dig a channel from the spring through the streambed to the house, creating a small irrigation ditch.\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180483.8556912,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"Valinor/forest\": \"replanting\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180484.08546,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"replace_and_expand_forest\",\n  \"details\": {\n    \"target\": \"Valinor/forest\",\n    \"completes\": [\n      \"Valinor/forest\"\n    ],\n    \"new_state\": \"thick\",\n    \"description\": \"Sprouting with life, the forest expands, replenishing the valley with green.\"\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180484.508441,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"Valinor/forest\", \"state\": \"regrowing\"},\n  {\"action\": \"Valinor/carpentry\", \"state\": \"shingled\"},\n  {\"action\": \"Valinor/house\", \"state\": \"furnished\"},\n  {\"action\": \"Valinor/streambed\", \"state\": \"paved\"}\n]",
+    "detail": "list indices must be integers or slices, not str"
+  },
+  {
+    "t": 1788180484.560954,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"explore\", \"location\": \"Valinor/forest\", \"description\": \"Venture into the depleted forest to see what regrowth or hidden remnants might be found.\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180484.6458488,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanted\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180485.2505476,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180485.5842204,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"explore\", \"location\": \"Valinor/forest\", \"description\": \"Venture into the depleted forest to discover what regrowth or hidden remnants remain.\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180485.928122,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/streambed/chisel\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180485.9443388,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/reforestation\": \"planting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180486.383472,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"build\",\n  \"location\": \"Valinor/streambed\",\n  \"resource\": \"Valinor/quarry\",\n  \"details\": \"Lay a stone ford across the streambed to create a crossing point, using bricks from the quarry.\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180486.4389765,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"Build\",\n  \"target\": \"Valinor/house\",\n  \"sub_action\": \"Furnish\",\n  \"description\": \"With the house built and the spring flowing nearby, the foundation is laid for a home. The first step to making it truly livable is to furnish the interior.\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180486.7498586,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"Valinor/forest\": \"replanting\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180486.7652688,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry\",\n  \"state\": \"plank\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180487.1544695,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"build\",\n  \"target\": \"Valinor/streambed\",\n  \"tool\": \"shovel\",\n  \"description\": \"Dig a channel from the spring through the streambed to the house, creating a water supply.\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180487.4916701,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180487.5556726,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180487.9528997,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"explore\", \"location\": \"Valinor/forest\", \"description\": \"The depleted forest shows new green shoots among the stumps, and a narrow animal trail leads deeper into the regrowing undergrowth.\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180488.245932,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest: grow\",\n  \"state\": \"Valinor/forest\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180488.9472604,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry/build_tools\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180489.215877,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"actions\": [\n    {\n      \"id\": \"valinor/investigate_forest\",\n      \"description\": \"Explore the depleted forest for clues or new growth opportunities.\",\n      \"state_changes\": {\n        \"Valinor/forest\": \"explored\",\n        \"Valinor/streambed\": \"wet\"\n      },\n      \"narrative\": \"An agent visits the scorched remnants of the forest. The air is still, carrying the scent of ash. Beneath the charred bark, a single green shoot pushes through the dark soil, small but hopeful.\"\n    },\n    {\n      \"id\": \"valinor/craft_workbench\",\n      \"description\": \"Build a sturdy workbench in the open clearing.\",\n      \"state_changes\": {\n        \"Valinor/clearing\": \"built\"\n      },\n      \"narrative\": \"Using timber from the house frame and rough stones from the quarry, a workbench is raised. It provides a sturdy surface for the mortar and other crafts.\"\n    },\n    {\n      \"id\": \"valinor/repair_fence\",\n      \"description\": \"Repair the fence using mixed mortar and a section of the brick wall.\",\n      \"state_changes\": {\n        \"Valinor/fence\": \"repaired\"\n      },\n      \"narrative\": \"The mortar is applied to the broken sections of the fence, binding the new bricks with the old. The barrier around the house stands tall once more.\"\n    }\n  ]\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180489.2960103,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"explore\",\n  \"location\": \"Valinor/spring\",\n  \"description\": \"Follow the spring's flow downstream to see where it leads and what new features might emerge.\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180489.690373,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"growing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180490.0668669,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"explore\", \"location\": \"Valinor/spring\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180490.2576296,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"Carry water from the spring to the house to replenish the foundation and plan for the final steps.\",\n  \"target\": \"Valinor/mortar\"\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180490.347009,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry/build_roof_trusses\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180491.1543076,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"explore\", \"location\": \"Valinor/forest\", \"description\": \"The depleted forest is now a quiet clearing of stumps and young saplings, with a narrow deer trail leading deeper into the hills.\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180491.4362795,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"action\": \"gather_firewood_from_forest\",\n  \"parameters\": {\n    \"location\": \"Valinor/forest\",\n    \"resources_collected\": {\n      \"Valinor/firewood\": \"collected\",\n      \"Valinor/forest\": \"wooded\"\n    }\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180491.8475912,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "[\n  {\"action\": \"Valinor/carpentry\", \"state\": \"construct roof beams\"},\n  {\"action\": \"Valinor/forest\", \"state\": \"grow trees\"},\n  {\"action\": \"Valinor/house\", \"state\": \"install windows\"},\n  {\"action\": \"Valinor/mortar\", \"state\": \"apply mortar\"},\n  {\"action\": \"Valinor/quarry\", \"state\": \"mine stone\"},\n  {\"action\": \"Valinor/roof\", \"state\": \"lay tiles\"},\n  {\"action\": \"Valinor/spring\", \"state\": \"divert water\"},\n  {\"action\": \"Valinor/streambed\", \"state\": \"line streambed\"},\n  {\"action\": \"Valinor/wall\", \"state\": \"decorate walls\"}\n]",
+    "detail": "list indices must be integers or slices, not str"
+  },
+  {
+    "t": 1788180491.9878294,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"explore\", \"location\": \"Valinor/forest\", \"description\": \"Venture into the depleted forest to see what regrowth or hidden remnants remain.\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180492.5569499,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry/build_rafters\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180493.0441506,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\"action\": \"explore\", \"location\": \"Valinor/forest\", \"description\": \"Venture into the depleted forest to see what regrowth or hidden life remains.\"}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180493.2323496,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/carpentry/add_support\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180493.6534195,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"actions\": {\n    \"build_roof\": {\n      \"name\": \"Place the roofing shingles on top of the house.\",\n      \"icon\": \"\ud83c\udfe0\",\n      \"completion\": \"Valinor/roof state: roofed\"\n    },\n    \"expand_carpentry\": {\n      \"name\": \"Further develop the Valinor/carpentry workshop.\",\n      \"icon\": \"\ud83e\udeb5\",\n      \"completion\": \"Valinor/carpentry state: developed\"\n    },\n    \"gather_firewood\": {\n      \"name\": \"Gather wood from the forest for fuel.\",\n      \"icon\": \"\ud83d\udd25\",\n      \"completion\": \"Valinor/forest state: foraged\"\n    },\n    \"mix_mortar\": {\n      \"name\": \"Mix the remaining Valinor/mortar.\",\n      \"icon\": \"\ud83e\uddf1\",\n      \"completion\": \"Valinor/mortar state: ready\"\n    }\n  }\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180494.0112364,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"build\",\n  \"target\": \"Valinor/well\",\n  \"location\": \"Valinor/spring\",\n  \"materials\": [\"stone\", \"mortar\"],\n  \"description\": \"Construct a well at the spring to make water collection easier and more permanent.\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180494.0996792,
+    "actor": "google/gemini-2.5-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"Valinor/forest\",\n  \"state\": \"regrowing\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180494.6796544,
+    "actor": "deepseek/deepseek-v4-flash-0731",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"action\": \"build\",\n  \"target\": \"Valinor/well\",\n  \"state\": \"dug\"\n}",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180495.7706442,
+    "actor": "z-ai/glm-4.7-flash",
+    "outcome": "could_not_form_commit",
+    "raw": "```json\n{\n  \"available_actions\": [\n    \"Explore Valinor\",\n    \"Explore Valinor/forest\",\n    \"Explore Valinor/raft\",\n    \"Action: Explore the forest\",\n    \"Action: Explore the spring\",\n    \"Action: Look at the streambed\",\n    \"Action: Repair the forest\",\n    \"Action: Build a raft\",\n    \"Action: Improve the road\",\n    \"Action: Build a vineyard\",\n    \"Action: Clear a path to the quarry\",\n    \"Action: Craft a boat\",\n    \"Action: Construct a bridge\",\n    \"Action: Mend the dam\",\n    \"Action: Build a farm\",\n    \"Action: Erect a gate\",\n    \"Action: Create a well\",\n    \"Action: Dig a cellar\",\n    \"Action: Set up a garden\"\n  ]\n}\n```",
+    "detail": "'node'"
+  },
+  {
+    "t": 1788180497.7972698,
+    "actor": "google/gemini-3.1-flash-lite",
+    "outcome": "could_not_form_commit",
+    "raw": "{\n  \"Valinor/forest\": \"replanting\"\n}",
+    "detail": "'node'"
+  }
+]

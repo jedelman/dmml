@@ -770,23 +770,91 @@ the model is implicitly reasoning about a snapshot it can no longer
 fully trust, even though nothing in the prompt asks it to reason about
 trust at all.
 
+## Round 14 (2026-08-31): drift attribution, built and tested -- it doesn't fix it either
+
+Jason: "remember how we built a drift primitive?" -- `dmml::interpret::
+diverges`, already real, already proven (`dmml/examples/drift_machine.rs`,
+CLAUDE.md's "DMML first" section), computing exactly "what differs
+between two materialized snapshots." Round 13 had named this shape of
+fix as the thing worth testing rather than assuming: give a querying
+agent structured attribution of what changed since it last looked, not
+a bare fresh snapshot and not a narrated warning.
+
+Built it for real. `episode_arena.rs` now tracks each actor's own
+last-seen `Materialized` snapshot server-side (`Arc<Mutex<HashMap<
+String, Materialized>>>`, keyed by the `actor` every request already
+carries) and calls `diverges(&previous, &current)` on every `Query`,
+returning the result as `changed_since_you_last_looked` -- real,
+computed data, not guessed. An actor's first-ever query correctly
+reports no drift (nothing to compare against yet); confirmed directly
+before trusting it, with a two-actor manual test: actor A's first look
+is empty, actor B fires `raise`, A's next look shows exactly
+`Valinor: unformed -> hills` attributed to nothing it did, and B's own
+next look shows nothing new (it already knew about its own change).
+`episode_arena_client.py` renders that drift as plain `subject: before
+-> after` lines ahead of the current-state block -- structured, never
+folded into a sentence.
+
+**It did not help. If anything, it was worse.** Same four models, same
+90-second window, same everything else as Round 9: overall could-not-
+form-commit rate was 173/219 = 79%, against Round 9's 68.6% and Round
+10's 71.3%. `deepseek` specifically: 20/22 = 91% could-not-form-commit,
+worse than both its Round 9 (84%) and Round 10 (79%) rates. The sample
+is smaller than prior rounds (adding the per-actor mutex lookup and a
+longer prompt slowed each round-trip enough that fewer total attempts
+fit in the same 90 seconds -- 219 total vs. Round 9's 306), so this
+specific number carries more noise than the earlier rounds' larger
+samples; but there is no reading of it as an improvement, and a script
+bug caught mid-run (the final summary query didn't send the now-
+required `actor` field, fixed on the spot) didn't affect the logged
+per-turn data, only the end-of-run printout.
+
+**A real, well-motivated mitigation, built correctly, tested honestly,
+and it doesn't fix the collapse.** Worth sitting with rather than
+rationalizing: "give it slightly more, but structured" was Round 13's
+best guess at the mechanism, framed carefully to avoid just re-trying
+prose (Round 10 already showed extra prose doesn't help) -- and even a
+real, computed, correctly-attributed structural diff, using an already-
+proven primitive, didn't move the number. Two live possibilities, not
+yet distinguished: (a) the actual driver isn't "the agent lacks
+information about what changed" at all, so no amount of better
+information fixes it -- something else about being one of several
+concurrent actors is what taxes schema-conformance, independent of
+what the agent is told; or (b) the drift block, exactly like the
+"Actions taken so far" block Round 13 first (wrongly) suspected, is
+itself extra prose competing for the model's attention against the
+strict schema, and adding real information in unstructured-adjacent
+form doesn't escape that problem just because the underlying data is
+computed rather than guessed.
+
 ## Open follow-up, not done here
 
-- This triangulation used existing data, not a new controlled run built
-  to test it directly -- run the precise version once: single deepseek
-  agent querying a real, live `episode_arena` while OTHER (non-
-  dispatched, scripted) agents fire real, unpredictable commits into
-  the same world concurrently, isolating "I am not the only cause of
-  change here" from every other variable already ruled out.
-- If the finding holds, it suggests a possible mitigation worth testing
-  on its own terms rather than assumed to work: have the arena report
-  not just current state but a short, structured note on what changed
-  and why since the querying agent's last look (attribution, not just a
-  fresh snapshot) -- opposite of "clean their context," closer to
-  "give it slightly more, but structured, not narrated."
-- Only once a fix is actually tested against this precise mechanism
-  does re-running the GA become worthwhile -- optimizing prompt text
-  was never the lever; this round makes clearer why not.
+- Distinguish (a) from (b) above directly: rerun Round 12's frozen-
+  world isolation test, but with a FAKE, hardcoded non-empty drift
+  block prepended to the identical prompt (no real second agent, no
+  real live arena, just the same-shaped text Round 14 produces). If
+  conformance stays high, the drift text itself isn't the problem and
+  (a) is more likely -- something about genuine multi-agent
+  unpredictability itself, not what's said about it. If conformance
+  drops back toward Round 14's level even against a frozen world, the
+  extra text is competing with the schema regardless of whether it's
+  computed or narrated, and (b) is closer to right.
+- This triangulation (Round 13) used existing data, not a new
+  controlled run built to test it directly -- still worth running once:
+  single deepseek agent querying a real, live `episode_arena` while
+  OTHER (non-dispatched, scripted) agents fire real, unpredictable
+  commits into the same world concurrently, isolating "I am not the
+  only cause of change here" from every other variable already ruled
+  out, independent of whether drift attribution is present.
+- Prompt-length/latency is now itself a confound worth controlling for
+  directly -- Round 14's smaller sample came partly from slower round
+  trips; a fairer A/B needs equal wall-clock attempt counts, not just
+  equal duration.
+- Only once a fix is actually confirmed against the real mechanism does
+  re-running the GA become worthwhile -- optimizing prompt text was
+  never the lever; two real attempts at a structural fix (drift
+  attribution) and zero at prompt wording have worked so far, which is
+  itself informative about where to keep looking.
 - Route the 56 arena-protocol-errors (right shape, wrong value type)
   through the same real engine error path as a normal FAIL rather than
   a raw parse rejection, so "reached the engine but was malformed" and
