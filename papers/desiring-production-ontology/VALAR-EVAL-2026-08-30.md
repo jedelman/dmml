@@ -827,8 +827,80 @@ strict schema, and adding real information in unstructured-adjacent
 form doesn't escape that problem just because the underlying data is
 computed rather than guessed.
 
+## Round 15 (2026-08-31): a real mutex across the whole cycle -- and the number roughly halves
+
+Jason: "maybe a mutex is the correct primitive - they really have to
+take turns?" A sharper proposal than plain round-robin: not a fixed
+rotation, but a real mutual-exclusion lock held across an agent's
+ENTIRE query-decide-act cycle, not just around the arena's existing
+commit step (which was already mutex-protected, but only for the
+instant of firing). While one agent holds it, no other agent can query
+or act at all -- the world genuinely cannot move between when an agent
+looks and when its action lands, by construction, the same guarantee
+Rounds 6 and 8's single-agent runs had for free (nothing else was ever
+acting there) and Round 9's "parallel race" deliberately gave up in
+favor of genuine concurrency.
+
+Implemented as one `asyncio.Lock` in `episode_arena_client.py`, wrapping
+each agent's full query -> dispatch -> submit sequence. Same four
+models, same 90-second window, same drift-attribution mechanism from
+Round 14 left in place (a real confound, named honestly below, not
+hidden).
+
+**Could-not-form-commit dropped to 37.5% (12/32)** -- roughly half of
+every prior round: Round 9's 68.6%, Round 10's 71.3%, Round 14's 79%.
+Strikingly uniform across all four models too -- exactly 3 of 8
+attempts each, including the two gemini-lite models that had shown
+near-total non-conformance in every isolated test so far (Round 12:
+0/118 and 0/88; Round 8's original probe). `deepseek` and `glm-4.7-
+flash` each landed 5 of 8 real commits (62.5%), far above their real-
+arena rates in every prior multi-agent round.
+
+**This is the strongest single result in the whole operate-tier
+thread, and it fits the mechanism Round 13 triangulated precisely**:
+if the driver really is state changing for reasons the querying agent
+didn't cause and couldn't predict, then removing that possibility
+entirely -- not describing it away (Round 11), not attributing it after
+the fact (Round 14), but making it structurally impossible for the
+duration of one agent's reasoning -- is exactly the fix that should
+work. It did.
+
+**Two things kept honest rather than smoothed into a cleaner story:**
+
+1. **Small sample, real tradeoff.** Full serialization is expensive:
+   only 32 total attempts fit in the same 90-second window that gave
+   Round 9 306 attempts (8 per model here vs. up to 120 per model
+   there) -- turn-taking has a real throughput cost, the same way a
+   real mutex always trades concurrency for correctness. n=8 per model
+   is genuinely small; the effect size (roughly halving a rate that's
+   been stable across four other conditions) is large enough to take
+   seriously, but this wants a longer run or repeated trials before
+   being treated as a settled number, not just a striking one.
+2. **This tests "mutex" and "drift attribution" together, not mutex
+   alone.** Round 14's drift-attribution code was left active rather
+   than reverted, so this result cannot yet distinguish "the mutex did
+   it" from "the mutex plus drift did it" -- worth knowing precisely,
+   not assumed, especially since Round 14 showed drift ALONE (without a
+   mutex) made things worse, not better. The clean next step is named
+   below.
+
+`gemini-2.5-flash-lite`'s and `gemini-3.1-flash-lite`'s remaining
+failures also show a residual, different problem the mutex doesn't
+touch: several `arena_protocol_error`s (right top-level shape, wrong
+value type -- `params` sent as a bare string again) -- Round 8's
+original schema-portability finding for these two models, unaffected
+by turn-taking, still there underneath the improvement.
+
 ## Open follow-up, not done here
 
+- Isolate the confound named above directly: rerun Round 15 with drift
+  attribution disabled (revert to a bare state snapshot, mutex still
+  held across the full cycle) to find out whether the mutex alone
+  accounts for the drop, or whether mutex and drift are doing this
+  together in a way neither did alone.
+- Repeat Round 15 at a longer duration or across multiple runs to
+  firm up the n=8-per-model result before treating 37.5% as more than
+  a strong first signal.
 - Distinguish (a) from (b) above directly: rerun Round 12's frozen-
   world isolation test, but with a FAKE, hardcoded non-empty drift
   block prepended to the identical prompt (no real second agent, no

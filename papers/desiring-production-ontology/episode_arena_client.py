@@ -43,6 +43,19 @@ prose warning that the world might have moved. This client now sends
 `actor` on every query (previously only `Act` requests carried it) and
 renders that drift block into the prompt, compactly, as data -- a list
 of `subject: before -> after` lines, never narrated into a sentence.
+Round 14 result: it didn't help (79% could-not-form-commit, worse than
+baseline).
+
+Extended again, Round 15: Jason -- "maybe a mutex is the correct
+primitive - they really have to take turns?" A real mutex
+(`asyncio.Lock`) now wraps each agent's ENTIRE query-decide-act cycle,
+not just the arena's own commit step (which was already
+mutex-protected, but only for the instant of firing). While one agent
+holds the lock, no other agent can query or act -- the world cannot
+move between when an agent looks and when its action lands, by
+construction, the same guarantee Rounds 6/8's single-agent runs had
+for free (nothing else was ever acting there) and Round 9's "parallel
+race" deliberately gave up.
 """
 import asyncio
 import json
@@ -168,51 +181,59 @@ def arena_call(req):
     return json.loads(resp)
 
 
-async def agent_loop(model, reasoning, stop_event, log, loop):
+async def agent_loop(model, reasoning, stop_event, log, loop, turn_lock):
     attempts = 0
     while not stop_event.is_set():
-        attempts += 1
-        query = await loop.run_in_executor(None, arena_call, {"query": True, "actor": model})
-        if "state" not in query:
-            print(f"  [{model}] ARENA PROTOCOL ERROR on query: {query!r}", file=sys.stderr)
-            continue
-        state, legal_actions, drift = query["state"], query["legal_actions"], query.get("changed_since_you_last_looked", [])
+        # Round 15: a real mutex held across the WHOLE query-decide-act
+        # cycle, not just around the commit step (which was already
+        # mutex-protected, but only for the instant of firing). While
+        # this agent holds the lock, no other agent can query or act --
+        # the world genuinely cannot move between when this agent looks
+        # and when its action lands, by construction, not by asking it
+        # to trust a snapshot.
+        async with turn_lock:
+            attempts += 1
+            query = await loop.run_in_executor(None, arena_call, {"query": True, "actor": model})
+            if "state" not in query:
+                print(f"  [{model}] ARENA PROTOCOL ERROR on query: {query!r}", file=sys.stderr)
+                continue
+            state, legal_actions, drift = query["state"], query["legal_actions"], query.get("changed_since_you_last_looked", [])
 
-        schema = build_schema(legal_actions)
-        prompt = build_prompt(model, state, legal_actions, drift)
-        raw, err = await loop.run_in_executor(None, call_model, model, prompt, schema, reasoning)
+            schema = build_schema(legal_actions)
+            prompt = build_prompt(model, state, legal_actions, drift)
+            raw, err = await loop.run_in_executor(None, call_model, model, prompt, schema, reasoning)
 
-        if err:
-            entry = {"t": time.time(), "actor": model, "outcome": "dispatch_error", "detail": err}
+            if err:
+                entry = {"t": time.time(), "actor": model, "outcome": "dispatch_error", "detail": err}
+                log.append(entry)
+                print(f"  [{model}] dispatch error: {err}", file=sys.stderr)
+                continue
+
+            cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+            try:
+                choice = json.loads(cleaned)
+                node, transition = choice["node"], choice["transition"]
+            except Exception as e:
+                entry = {"t": time.time(), "actor": model, "outcome": "could_not_form_commit", "raw": raw, "detail": str(e)}
+                log.append(entry)
+                print(f"  [{model}] COULD NOT FORM A COMMIT: {raw!r} ({e})", file=sys.stderr)
+                continue
+
+            params = choice.get("params") or {}
+            result = await loop.run_in_executor(None, arena_call, {"actor": model, "node": node, "transition": transition, "params": params})
+            if "fire_result" not in result:
+                entry = {"t": time.time(), "actor": model, "outcome": "arena_protocol_error", "sent": {"node": node, "transition": transition, "params": params}, "got": result}
+                log.append(entry)
+                print(f"  [{model}] ARENA PROTOCOL ERROR, sent={{'node':{node!r},'transition':{transition!r},'params':{params!r}}} got={result!r}", file=sys.stderr)
+                continue
+            entry = {
+                "t": time.time(), "actor": model, "outcome": "submitted",
+                "node": node, "transition": transition, "params": params,
+                "fire_result": result["fire_result"], "commit_index": result["commit_index"],
+            }
             log.append(entry)
-            print(f"  [{model}] dispatch error: {err}", file=sys.stderr)
-            continue
-
-        cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-        try:
-            choice = json.loads(cleaned)
-            node, transition = choice["node"], choice["transition"]
-        except Exception as e:
-            entry = {"t": time.time(), "actor": model, "outcome": "could_not_form_commit", "raw": raw, "detail": str(e)}
-            log.append(entry)
-            print(f"  [{model}] COULD NOT FORM A COMMIT: {raw!r} ({e})", file=sys.stderr)
-            continue
-
-        params = choice.get("params") or {}
-        result = await loop.run_in_executor(None, arena_call, {"actor": model, "node": node, "transition": transition, "params": params})
-        if "fire_result" not in result:
-            entry = {"t": time.time(), "actor": model, "outcome": "arena_protocol_error", "sent": {"node": node, "transition": transition, "params": params}, "got": result}
-            log.append(entry)
-            print(f"  [{model}] ARENA PROTOCOL ERROR, sent={{'node':{node!r},'transition':{transition!r},'params':{params!r}}} got={result!r}", file=sys.stderr)
-            continue
-        entry = {
-            "t": time.time(), "actor": model, "outcome": "submitted",
-            "node": node, "transition": transition, "params": params,
-            "fire_result": result["fire_result"], "commit_index": result["commit_index"],
-        }
-        log.append(entry)
-        won = result["fire_result"] == "PASS"
-        print(f"  [{model}] {node} :: {transition}({params}) -> {result['fire_result']}{'  <-- landed' if won else ''}")
+            won = result["fire_result"] == "PASS"
+            print(f"  [{model}] {node} :: {transition}({params}) -> {result['fire_result']}{'  <-- landed' if won else ''}")
 
     return attempts
 
@@ -232,12 +253,13 @@ async def main():
     else:
         raise RuntimeError("episode_arena server never came up")
 
-    print(f"Running {len(MODELS)} agents concurrently for {DURATION_SECONDS}s: {list(MODELS)}\n")
+    print(f"Running {len(MODELS)} agents, taking real turns (mutex-serialized), for {DURATION_SECONDS}s: {list(MODELS)}\n")
     loop = asyncio.get_event_loop()
     stop_event = asyncio.Event()
+    turn_lock = asyncio.Lock()
     log = []
 
-    tasks = [asyncio.create_task(agent_loop(m, r, stop_event, log, loop)) for m, r in MODELS.items()]
+    tasks = [asyncio.create_task(agent_loop(m, r, stop_event, log, loop, turn_lock)) for m, r in MODELS.items()]
 
     async def timer():
         await asyncio.sleep(DURATION_SECONDS)
@@ -250,7 +272,7 @@ async def main():
     server.wait(timeout=10)
 
     out_dir = os.path.dirname(__file__)
-    log_path = os.path.join(out_dir, "EPISODE-ARENA-2026-08-31-round14-drift-attribution.json")
+    log_path = os.path.join(out_dir, "EPISODE-ARENA-2026-08-31-round15-mutex-turns.json")
     json.dump(log, open(log_path, "w"), indent=2)
 
     landed = [e for e in log if e.get("fire_result") == "PASS"]
