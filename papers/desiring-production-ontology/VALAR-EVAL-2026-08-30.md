@@ -450,8 +450,135 @@ the fenced space and chose badly; two others weren't fenced by the
 space in the first place, at this provider route, regardless of what
 `strict: true` was supposed to guarantee.
 
+## Round 9 (2026-08-31): a live shared arena, and prose framing eating structure alive
+
+Jason, on seeing Round 8's first real goal-failure: "models can make
+mistakes in the world! that's okay! it makes the world interesting!
+it's when they can't form commits that we lose their contributions!
+what I'm interested in is having them interact **in the world**, in
+order to **enrich it's complexity unintentionally**." Asked how models
+should share one world, he picked, verbatim: "Parallel race - new
+commits get broadcast" -- not round-robin, not all-propose-one-fires.
+
+**New infrastructure.** `episode_driver.rs`'s synchronous, one-turn-at-
+a-time stdin/stdout protocol can't express genuine concurrency, so this
+is a new binary, `episode_arena.rs`: a tiny `std`-only TCP server
+(no new dependencies), the shared world (`Arc<Mutex<Vec<LoweredCommit>>>`)
+living in the server process, any number of clients connecting
+concurrently. `{"query": true}` returns current state + legal actions;
+`{"actor": ..., "node": ..., "transition": ..., "params": ...}`
+attempts a real commit. The mutex around "check the guard, then apply"
+IS the race's resolution point -- confirmed directly before trusting
+it: two rapid-fire identical proposals (`raise`, `raise` again) landed
+one `PASS` and one `FAIL: GuardNotSatisfied`, the second correctly
+losing to a world that had already moved. `episode_arena_client.py`
+runs N models as independent, unsynchronized asyncio loops -- query,
+dispatch, submit, repeat, no waiting on each other -- for a fixed
+90-second wall-clock window rather than a fixed step count, since
+nothing here is goal-bounded by design.
+
+**Real methodological break from Round 8, on purpose**: this client
+does NOT locally gate a model's proposal against the offered
+`legal_actions` before submitting (Round 8's `is_schema_conformant`).
+Jason's framing is explicit that a legal-but-bad move is real content,
+not noise -- so every parseable proposal goes straight to the arena,
+which is the actual arbiter. Only a response that can't be parsed into
+an action AT ALL is logged and skipped, since there's nothing to submit.
+
+**The result nobody predicted going in: all four models built the
+whole house together, with zero coordination.** 15 real commits landed
+across the 90-second window (out of 306 total attempts across all four
+models), composing into the complete build -- `glm-4.7-flash` fired 8
+of them (`raise`, `uplift`, `quarry`, `grind`, `gather`, `well_up`,
+`wash`, `make_frame`), `deepseek` fired 5 (`overgather` -- harmless
+again, make_frame already secured -- `wet`, `fire`, `add_roof`,
+`construct_house`), and, strikingly, `gemini-3.1-flash-lite` and
+`gemini-2.5-flash-lite` -- the two models that were almost entirely
+unable to stay inside the schema (below) -- each landed exactly ONE
+real, correctly-timed commit: `gemini-3.1-flash-lite`'s single hit was
+`Valinor/mortar :: mix` citing `Valinor/quarry` as `sand_source` while
+quarry happened to be transiently `sand` (commit 8, before `quarry`
+itself later continued on to `wet`/`fire` at commits 12-13) -- the
+exact narrow-window mechanism Round 7 identified by deliberate
+adversarial testing, here discovered organically, unprompted, by a
+model that got almost everything else wrong. `gemini-2.5-flash-lite`'s
+one hit was the `build` that used it. Neither model was told about that
+mechanism or was even reliably inside the schema; each still supplied
+the one piece the whole structure needed at the moment it needed it.
+This is close to a direct, if small, demonstration of what "enrich the
+world unintentionally" was asking for.
+
+**But the real headline finding is a problem, not a success, and it's
+worth stating precisely rather than folding it into the nice story
+above.** Across the whole run: 210 of 306 attempts (69%) were "could
+not form a commit" -- the model wrote free-form, natural-language-
+flavored JSON (`{"action": "build", "location": "Valinor/streambed",
+"object": "bridge", "details": "Construct a simple wooden bridge..."}`,
+`{"action": "explore", "location": "Valinor/forest", "description":
+"Venture into the depleted forest..."}`) that doesn't remotely match
+`{node, transition, params}`, let alone the `const`-tagged branches.
+Another 56 (18%) reached the server but failed even the untagged-enum
+parse there (a value with the right key but the wrong type, e.g.
+`params` as a bare string instead of an object -- the same failure
+mode Round 8's probe caught for gemini-lite specifically). Only 40 of
+306 (13%) were well-formed enough to actually reach
+`commit_fires_transition`; of those, 15 landed.
+
+**This happened to EVERY model, including `deepseek`** -- the one
+model that had been 100% schema-conformant across every prior round
+(Rounds 4 through 8, dozens of real dispatched turns, zero prior
+parse failures of this kind). The only thing that changed between
+Round 8's clean deepseek run and this one is the prompt's framing:
+Round 8 stated an explicit goal ("reach Valinor/house :: built") and
+described the schema as the complete menu; this round explicitly said
+"there is no single goal here; take any action that seems worthwhile,
+interesting, or that develops the world further" (Jason's own
+"unintentionally enrich" framing, translated into the prompt). Nothing
+about the schema itself changed -- same `anyOf` of `const`-tagged,
+`strict: true` branches, same underlying primitive. Given permission to
+be inventive, deepseek mostly stopped trying to fit inside the fence at
+all, proposing real, often plausible-sounding ideas (a bridge over the
+streambed, exploring the depleted forest, a well drawing on spring and
+quarry) that the grammar has no way to represent.
+
+**Why this matters for the paper's actual thesis, stated as sharply as
+the finding deserves**: every earlier round located the operate/design
+boundary as if it were solely a property of the schema's own
+structure -- tighten the schema (Round 4, Round 5) and the gap closes,
+regardless of model or prompt. This round shows that's incomplete.
+Prose framing has real causal power over whether a model even attempts
+to stay inside a structural fence, independent of whether the fence
+itself is well-built. `strict: true` fully determines what's ACCEPTED
+once a model tries to conform -- Round 4 through 8 all confirm that
+half. It does nothing to make a model try, and an open-ended,
+creativity-inviting prompt measurably suppresses that trying, at least
+for deepseek, at least here. "No logic should live in prose, it should
+live in the structure" is a claim about where a constraint's
+*enforcement* lives; it is not a claim that prose has no effect on
+whether the constrained surface gets engaged with in the first place --
+and this round is the first real data point showing prose framing can
+suppress engagement with an unchanged, fully-capable structural fence.
+That's a real complication for the thesis to carry forward, not a
+result to smooth past.
+
 ## Open follow-up, not done here
 
+- Isolate the variable: rerun deepseek alone (not in the arena, single-
+  agent, same 90s-style open-ended prompt but on `episode_driver.rs`'s
+  synchronous protocol) to confirm the conformance collapse is really
+  the goal-vs-open-ended prompt framing and not an artifact of the
+  arena's concurrency, timing pressure, or the "other agents may be
+  acting" language specifically.
+- Try a prompt that keeps the open-ended "no single goal" framing but
+  states the structural constraint more forcefully ("you MUST express
+  your idea as one of the schema's branches even if imperfect") to see
+  whether the collapse is about goal-framing specifically or
+  permission-to-be-creative framing more generally.
+- Route the 56 arena-protocol-errors (right shape, wrong value type)
+  through the same real engine error path as a normal FAIL rather than
+  a raw parse rejection, so "reached the engine but was malformed" and
+  "never reached the engine" are both visible as the same kind of lost
+  contribution in future runs, not split across two buckets.
 - Retry gemini-2.5-flash-lite/gemini-3.1-flash-lite through a different
   route if OpenRouter exposes one (a non-Google-native provider, or a
   different API shape) to see whether the `strict` violation is
