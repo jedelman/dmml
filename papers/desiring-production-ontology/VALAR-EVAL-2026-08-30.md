@@ -561,8 +561,61 @@ suppress engagement with an unchanged, fully-capable structural fence.
 That's a real complication for the thesis to carry forward, not a
 result to smooth past.
 
+## Round 10 (2026-08-31): the negation hypothesis, tested directly -- and it doesn't hold
+
+Jason's read on Round 9's collapse, immediate and specific: "I think
+the 'no' is what's throwing them off! positivity only for these lil
+guys 🤗" -- Round 9's prompt was genuinely negation-heavy ("there is no
+single goal", "may already be stale", "not a failure to avoid at all
+costs", "may no longer be legal", "not an error"), and small/cheap
+models are known to handle negation unreliably.
+
+Rewrote `episode_arena_client.py`'s prompt to state everything
+affirmatively -- no "no," no "not," no mention of staleness, failure,
+or error at all, just "explore freely and take whichever action feels
+most worthwhile or interesting right now." Same four models, same
+90-second window, same unchanged schema mechanism, same arena. Reran
+rather than assuming the fix worked.
+
+**It didn't move the number.** Round 9 (negation-heavy): 210 of 306
+attempts could not even be parsed into an action -- 68.6%. Round 10
+(positive-only): 194 of 272 -- 71.3%. Flat, if anything marginally
+worse, well within what looks like ordinary run-to-run noise rather
+than a real effect in either direction. Per-model rates moved in both
+directions (deepseek improved 84%->79%; `glm-4.7-flash` improved
+85%->76%; both gemini-lite models got worse, 60%->68% and 60%->71%
+respectively) -- not a consistent signal, which is itself informative:
+if negation were the load-bearing variable, removing it should have
+helped broadly, not helped two models and hurt two others.
+
+**The hypothesis is checked and doesn't survive contact with the real
+data.** Negation-heavy phrasing is not what's driving the structural-
+conformance collapse Round 9 found. Something else about open-ended,
+non-goal-directed framing itself -- independent of whether it's phrased
+positively or negatively -- is what pulls a model toward writing free-
+form natural-language JSON instead of matching the schema. Worth
+recording plainly rather than declaring victory on a fix that looked
+plausible and simply didn't work: the "no" was a reasonable hypothesis,
+tested in good faith, and ruled out by the actual numbers.
+
+One genuine, unplanned charm from this run, kept in the log rather than
+edited out: several of the "could not form a commit" proposals under
+positive framing were thematically apt in a way nothing prompted --
+`{"Valinor/forest": "replanting"}`, `"regrowing"`, `"replanted"`,
+repeated across dozens of `gemini-3.1-flash-lite`/`gemini-2.5-flash-
+lite` attempts, and `deepseek` proposing to "line the streambed with
+stones from the quarry... preventing erosion" -- unprompted echoes of
+exactly the forest-depletion/streambed-erosion mechanism Round 7 wired
+into the grammar, arrived at by models that were simultaneously unable
+to express the idea in the form the engine could actually accept.
+
 ## Open follow-up, not done here
 
+- The real variable is still unidentified: try isolating "stated goal
+  vs. no stated goal" independent of positive/negative phrasing (e.g. a
+  purely affirmative prompt that still names an explicit goal) to see
+  whether goal-statement itself, not tone, is what keeps a model
+  engaging with the schema.
 - Isolate the variable: rerun deepseek alone (not in the arena, single-
   agent, same 90s-style open-ended prompt but on `episode_driver.rs`'s
   synchronous protocol) to confirm the conformance collapse is really

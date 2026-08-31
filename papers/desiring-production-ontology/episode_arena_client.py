@@ -79,22 +79,27 @@ def format_state(state):
 
 
 def build_prompt(model, state, legal_actions):
-    return f"""You are one of several agents ({model}) acting concurrently in the
-shared world of Valinor -- other agents may be acting at the same time
-as you, and the world can change between when you read this and when
-your action actually lands. There is no single goal here; take any
-action that seems worthwhile, interesting, or that develops the world
-further. A legal move that turns out badly is fine -- that's just what
-happened, not a failure to avoid at all costs.
+    # Round 10 revision (2026-08-31): Round 9's prompt was negation-heavy
+    # ("there is no single goal", "may already be stale", "not a failure
+    # to avoid", "may no longer be legal", "not an error"). Jason's
+    # direct hypothesis on seeing the 69% could-not-form-commit result:
+    # "I think the 'no' is what's throwing them off! positivity only for
+    # these lil guys." Rewritten to state everything affirmatively, with
+    # nothing about staleness/failure/error mentioned at all -- the
+    # schema and the engine already handle a stale or bad pick correctly
+    # on their own, so the prompt doesn't need to warn about it.
+    return f"""You are one of several agents ({model}) building and shaping the
+living world of Valinor together, all acting at the same time. Explore
+freely and take whichever action feels most worthwhile or interesting
+right now -- anything that grows, builds, or develops the world further
+is a good choice.
 
-Current world state (as of the moment you're reading this -- it may
-already be stale):
+Current world state:
 {format_state(state)}
 
-Choose ONE action. Respond with only the JSON object matching the
-schema -- the schema enumerates every action that was legal the moment
-you queried; by the time it lands, it may no longer be, and that's an
-expected part of acting in a live, shared world, not an error."""
+Choose ONE action, and respond with only the JSON object matching the
+schema -- it lists every action that's live and available to you right
+now."""
 
 
 def call_model(model, prompt, schema, reasoning):
@@ -188,7 +193,14 @@ async def main():
         ["cargo", "run", "-q", "-p", "dmml", "--example", "episode_arena", "--", str(ARENA_PORT)],
         cwd=DMML_REPO,
     )
-    await asyncio.sleep(3)
+    for _ in range(30):
+        try:
+            socket.create_connection(("127.0.0.1", ARENA_PORT), timeout=1).close()
+            break
+        except OSError:
+            await asyncio.sleep(1)
+    else:
+        raise RuntimeError("episode_arena server never came up")
 
     print(f"Running {len(MODELS)} agents concurrently for {DURATION_SECONDS}s: {list(MODELS)}\n")
     loop = asyncio.get_event_loop()
@@ -208,7 +220,7 @@ async def main():
     server.wait(timeout=10)
 
     out_dir = os.path.dirname(__file__)
-    log_path = os.path.join(out_dir, "EPISODE-ARENA-2026-08-31.json")
+    log_path = os.path.join(out_dir, "EPISODE-ARENA-2026-08-31-round10-positive-prompt.json")
     json.dump(log, open(log_path, "w"), indent=2)
 
     landed = [e for e in log if e.get("fire_result") == "PASS"]
