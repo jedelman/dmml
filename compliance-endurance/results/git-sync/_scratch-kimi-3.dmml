@@ -1,0 +1,5 @@
+commit flourishOldroot
+  declare relation witnessedBy
+  weather/ashkarSun . a = Weather
+  weather/ashkarSun . witnessedBy = forest/oldroot
+  forest/oldroot . state = "thriving"

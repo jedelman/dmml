@@ -309,3 +309,5 @@ expecting "commit"
   |           ^^
 unexpected "fo"
 expecting ":
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)

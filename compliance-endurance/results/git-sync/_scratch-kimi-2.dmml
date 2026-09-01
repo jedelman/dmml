@@ -1,0 +1,3 @@
+commit healOldroot
+  forest/oldroot . state = "recovering"
+  npc/bramble . witnessedBy = weather/ashkarRain
