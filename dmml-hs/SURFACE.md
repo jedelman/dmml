@@ -113,11 +113,19 @@ checked to actually agree rather than assumed to.
 
 ## What's NOT done yet — real gaps, not implementation debt to ignore
 
-- **No compliance checkpoint against light models yet.** The JSON
-  checkpoint's whole value was running real, held-out scenarios through
-  real models and scoring against the real parser — this grammar hasn't
-  had that done for it. Until it has, "Haskell-styled text is better for
-  agents" is a hypothesis this doc is built to test, not a finding.
+- ~~No compliance checkpoint against light models yet.~~ **Done,
+  2026-09-01: 15/15 accepted** (`dmml/compliance-surface/`, same three
+  models and the same discipline as the JSON checkpoint — a real oracle,
+  `ComplianceCheckSurface.hs`, calling `parseCommitSurface` directly).
+  Matches the JSON checkpoint's own 15/15 exactly. Doesn't settle
+  "Haskell-styled text is *better* than JSON for agents" (nothing here
+  compares the two head-to-head on the same failure modes) — only that
+  it's not *worse*, on this scenario set, against these three models.
+  One real, checkpoint-scoped-only finding worth carrying forward: since
+  this parser checks shape only (see below), a reply that uses a
+  predicate without declaring it (observed once, Kimi) still scores
+  "accepted" here — that gap won't be visible until self-declaration
+  semantics exist to check against.
 - **No `machine`, `reference`, or batching (`update`) support.** JSON's
   `MachineInput`/`ReferenceInput`/`UpdateInput` have no surface-syntax
   counterpart here at all.
