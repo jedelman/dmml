@@ -201,3 +201,44 @@ unexpected newline
   [glm] corner: 21 node(s), 55 machine-def line(s)
     [glm] attempt 1: accepted (commit)
     [glm] attempt 2: accepted (commit)
+    [glm] attempt 3: accepted (commit)
+    [glm] attempt 4: accepted (commit)
+  [deepseek2] corner: 21 node(s), 64 machine-def line(s)
+    [deepseek2] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-1.dmml: REJECTED
+<surface>:1:11:
+  |
+1 | commit job/rustbreak
+  |           ^^
+unexpected "/r"
+expecting end of line
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+  round 7 totals: valid=12 invalid=2 attempts=14 fail_rate=0.14
+Traceback (most recent call last):
+  File "/home/user/dmml/compliance-endurance/run.py", line 522, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/dmml/compliance-endurance/run.py", line 421, in main
+    kind = classify_file(validate_bin, p)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/dmml/compliance-endurance/run.py", line 140, in classify_file
+    text = Path(path).read_text()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/pathlib.py", line 1058, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/dmml/compliance-endurance/results/_scratch-kimi-1.dmml'
+resumed: 74 adopted file(s), next seq=75, starting at round 7, 3 known contest(s)
+=== endurance test: 4 agents (kimi, deepseek, glm, deepseek2), rounds 7..20, seed=20260901 ===
+starting world: 85 files, 273 lines
+
+--- round 7 ---
+  [kimi] corner: 22 node(s), 139 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] DONE after 2 commit(s)
+  [deepseek] corner: 21 node(s), 132 machine-def line(s)

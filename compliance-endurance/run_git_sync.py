@@ -125,6 +125,8 @@ def full_mesh_sync(repos, validate_bin, divergence_bin, round_no, log):
             if minted:
                 total_contests += len(minted)
                 log(f"    [sync] {a} <- {b}: {len(minted)} contest(s) minted")
+            else:
+                log(f"    [sync] {a} <- {b}: ok, no divergence")
     return total_contests
 
 
@@ -212,7 +214,7 @@ def main():
             log(f"  [{name}] corner: {len(corner_nodes)} node(s), own repo has {len(world_files)} file(s)")
             paths, stats = base.run_agent_round(
                 api_key, agent, corner_text, corner_nodes, machine_text, surface_text,
-                validate_bin, render_bin, world_files, log,
+                validate_bin, render_bin, world_files, log, scratch_dir=RESULTS_DIR,
             )
             round_accepted[name] = paths
             round_stats[name] = stats
@@ -233,7 +235,9 @@ def main():
         # set. Verify it, don't assume it.
         file_sets = {name: {f.name for f in agent_commit_files(r["dir"])} for name, r in repos.items()}
         converged = len(set(map(frozenset, file_sets.values()))) == 1
-        if not converged:
+        if converged:
+            log(f"  converged: all {len(repos)} repos agree, {len(next(iter(file_sets.values())))} file(s) each")
+        else:
             log(f"  WARNING: repos did NOT converge after full mesh sync: "
                 f"{ {n: len(s) for n, s in file_sets.items()} }")
 

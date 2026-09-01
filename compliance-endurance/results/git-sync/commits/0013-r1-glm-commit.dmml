@@ -1,0 +1,9 @@
+commit highkinFlourishes
+  npc/sable :: a Smith
+  npc/sable . role = "bronzeworker of highkin; first apprentice on the ninefathom copper"
+  npc/sable `belongsTo` culture/highkin
+  npc/sable `worksAt` mine/ninefathom
+  npc/sable `apprenticesUnder` path/bronzework
+
+  culture/highkin . state = "flourishing"
+  culture/highkin `tradesWith` culture/riverfolk

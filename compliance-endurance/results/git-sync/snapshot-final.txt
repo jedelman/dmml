@@ -1,0 +1,81 @@
+Declared predicates:
+  relation apprenticesUnder
+  relation belongsTo
+  relation carries
+  attribute depth
+  relation erupts
+  relation fallsOn
+  relation grazesIn
+  relation locatedIn
+  relation masters
+  relation migratesTo
+  attribute purpose
+  attribute role
+  attribute state
+  relation tradesWith
+  relation wardedBy
+  relation witnessedBy
+  relation worksAt
+
+Current facts:
+  culture/highkin . a = Culture
+  culture/highkin . purpose = "settled on ashkar's terraces, kin to the mine and the quarry"
+  culture/highkin . state = "flourishing"
+  culture/highkin . tradesWith = culture/riverfolk
+  culture/riverfolk . a = Culture
+  culture/riverfolk . purpose = "settled along the river below oldroot, kin to the herds they follow"
+  culture/riverfolk . state = "flourishing"
+  culture/riverfolk . tradesWith = culture/highkin
+  forest/oldroot . a = Forest
+  forest/oldroot . purpose = "old-growth woodland at the mountain's foot, where the herds graze"
+  forest/oldroot . state = "oldgrowth"
+  founder/aelin . a = Person
+  founder/aelin . belongsTo = culture/riverfolk
+  founder/morven . a = Person
+  founder/morven . belongsTo = culture/highkin
+  herd/aurochs . a = Herd
+  herd/aurochs . grazesIn = forest/oldroot
+  herd/aurochs . state = "migrating"
+  herd/stagfolk . a = Herd
+  herd/stagfolk . grazesIn = forest/oldroot
+  herd/stagfolk . state = "grazing"
+  herd/stagfolk . wardedBy = npc/keeper
+  item/firstbronze . a = Artifact
+  item/firstbronze . purpose = "first casting of ninefathom copper, a pump-bar already promised to the shaft"
+  item/firstbronze . witnessedBy = npc/keeper
+  lode/copperseam . a = Lode
+  lode/copperseam . locatedIn = mine/ninefathom
+  mine/ninefathom . a = Mine
+  mine/ninefathom . depth = 9
+  mine/ninefathom . locatedIn = mountain/ashkar
+  mine/ninefathom . state = "active"
+  mountain/ashkar . a = Mountain
+  mountain/ashkar . purpose = "the range's tallest peak, a mine and a stonemasons' quarry cut into its flank"
+  mountain/ashkar . state = "dormant"
+  mountain/ashkar . witnessedBy = npc/keeper
+  npc/bren . a = Miner
+  npc/bren . belongsTo = culture/highkin
+  npc/bren . carries = ore/ninefathom
+  npc/bren . role = "first digger of the ninefathom, kin of highkin; sings the fathom-count as the shaft deepens"
+  npc/bren . worksAt = mine/ninefathom
+  npc/keeper . a = Keeper
+  npc/keeper . belongsTo = culture/highkin
+  npc/keeper . role = "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"
+  npc/sable . a = Smith
+  npc/sable . apprenticesUnder = path/bronzework
+  npc/sable . belongsTo = culture/highkin
+  npc/sable . carries = item/firstbronze
+  npc/sable . masters = path/bronzework
+  npc/sable . role = "bronzeworker of highkin; first apprentice on the ninefathom copper"
+  npc/sable . worksAt = mine/ninefathom
+  ore/ninefathom . a = Ore
+  ore/ninefathom . witnessedBy = npc/keeper
+  path/bronzework . a = TechnicalPath
+  path/bronzework . purpose = "smelting ore drawn from ninefathom into worked bronze"
+  path/bronzework . state = "mastered"
+  path/greenlore . a = TechnicalPath
+  path/greenlore . purpose = "reading oldroot's plants for healing and blight-craft"
+  path/greenlore . state = "undiscovered"
+  path/stonemasonry . a = TechnicalPath
+  path/stonemasonry . purpose = "cutting and setting ashkar's own stone"
+  path/stonemasonry . state = "undiscovered"

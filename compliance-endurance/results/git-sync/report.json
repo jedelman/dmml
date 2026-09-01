@@ -1,0 +1,36 @@
+{
+  "rounds_run": 1,
+  "rounds_requested": 1,
+  "thrash_reason": null,
+  "final_file_count": 18,
+  "rounds": [
+    {
+      "round": 1,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 0,
+          "invalid": 2,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 0,
+          "invalid": 2,
+          "no_fence": 0
+        }
+      },
+      "new_contests_minted": 0,
+      "fail_rate": 0.4166666666666667,
+      "converged": true
+    }
+  ]
+}

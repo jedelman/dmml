@@ -54,6 +54,3 @@ expecting end of line
 duplicate (herd/aurochs, grazesIn) within this commit -- the second occurrence wou
   round 1 authoring totals: valid=7 invalid=5 attempts=12 fail_rate=0.42
   full-mesh sync (12 pairwise broker.sh runs)...
-
-=== done: 1 round(s), thrash=None ===
-(workdir /tmp/endurance-git-sync-jdge27es left on disk for inspection)

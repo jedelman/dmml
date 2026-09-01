@@ -1,0 +1,29 @@
+machine herd/stagfolk
+  states
+    grazing
+    migrating
+    culled
+    thriving
+
+  transition migrate(destination)
+    grazing -> migrating
+    guard not self `wardedBy` npc/keeper
+    assert migrating
+    retract grazing
+
+  transition settle(pasture)
+    migrating -> grazing
+    guard self `migratesTo` $pasture
+    assert grazing
+    retract migrating
+
+  transition cull(hunter)
+    grazing -> culled
+    guard $hunter `worksAt` self
+    assert culled
+    retract grazing
+
+  transition recover()
+    culled -> thriving
+    assert thriving
+    retract culled

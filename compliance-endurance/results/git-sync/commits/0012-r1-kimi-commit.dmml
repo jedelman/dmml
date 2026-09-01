@@ -1,0 +1,6 @@
+commit mints
+  declare relation belongsTo
+
+  founder/aelin :: a Person
+  founder/aelin . belongsTo = culture/riverfolk
+  culture/riverfolk . state = "flourishing"

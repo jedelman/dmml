@@ -1,0 +1,4 @@
+commit mints
+  declare relation tradesWith
+
+  culture/riverfolk `tradesWith` culture/highkin

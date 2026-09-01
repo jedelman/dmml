@@ -259,7 +259,16 @@ def machine_defs_for_corner(node_index, corner_nodes):
 # ---- agent round loop ----
 
 def run_agent_round(api_key, agent, corner_text, corner_nodes, machine_defs_text, surface_text,
-                     validate_bin, render_bin, base_files, log):
+                     validate_bin, render_bin, base_files, log, scratch_dir=None):
+    # scratch_dir defaults to the module-level RESULTS_DIR for this
+    # script's own use, but MUST be overridden by any other caller (e.g.
+    # run_git_sync.py, which imports this function) -- two scripts
+    # sharing the same scratch path by accident is a real bug that
+    # happened once: running phase 1 and phase 2 concurrently, both
+    # using identical agent names, had one script delete a scratch file
+    # the other was still reading, crashing phase 1 mid-round after its
+    # real dispatch cost had already been spent.
+    scratch_dir = scratch_dir or RESULTS_DIR
     accepted_paths = []
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT_TEMPLATE.format(
@@ -286,7 +295,7 @@ def run_agent_round(api_key, agent, corner_text, corner_nodes, machine_defs_text
             break
         messages.append({"role": "assistant", "content": reply})
         idx = len(accepted_paths) + n_invalid + 1
-        tmp_path = RESULTS_DIR / f"_scratch-{agent['name']}-{idx}.dmml"
+        tmp_path = scratch_dir / f"_scratch-{agent['name']}-{idx}.dmml"
         tmp_path.write_text(candidate)
         ok, err = validate_file(validate_bin, tmp_path)
         if not ok:

@@ -1,0 +1,6 @@
+commit mints
+  declare relation belongsTo
+
+  founder/morven :: a Person
+  founder/morven . belongsTo = culture/highkin
+  culture/highkin . state = "flourishing"
