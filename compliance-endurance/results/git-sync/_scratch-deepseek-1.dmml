@@ -1,0 +1,3 @@
+commit riverRites
+  culture/riverfolk . state = "syncretized"
+  culture/riverfolk . tradesWith = mine/ninefathom

@@ -1,5 +1,0 @@
-commit foundryCall
-  declare relation worksAt
-
-  npc/cray . worksAt = mine/ninefathom
-  path/bronzework . state = "apprenticed"
