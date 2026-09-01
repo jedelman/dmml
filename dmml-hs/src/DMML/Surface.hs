@@ -9,6 +9,8 @@
 module DMML.Surface
   ( parseCommitSurface
   , commitSurfaceParser
+  , parseMachineSurface
+  , machineSurfaceParser
   ) where
 
 import Control.Monad (void)
@@ -82,12 +84,19 @@ pNodeRefRaw = do
   rest <- takeWhileP Nothing (\c -> isSegPieceChar c || c == '/')
   pure (T.cons c0 rest)
 
-pNodeRefTok :: Parser NodeRef
-pNodeRefTok = lexeme $ do
+-- | The validated raw text of a node reference, before it's split into
+-- 'NodeRef' segments -- shared by 'pNodeRefTok' and 'pPatternTerm'
+-- (whose @Node@ case, per 'DMML.Ast.PatternTerm', carries the raw text
+-- form, not a structured 'NodeRef').
+pNodeRefText :: Parser Text
+pNodeRefText = lexeme $ do
   t <- pNodeRefRaw
   if isValidNodeRef t
-    then pure (NodeRef (T.splitOn "/" t))
+    then pure t
     else fail (show t <> " is not a valid node reference")
+
+pNodeRefTok :: Parser NodeRef
+pNodeRefTok = NodeRef . T.splitOn "/" <$> pNodeRefText
 
 pStringLit :: Parser Text
 pStringLit = lexeme $ do
@@ -234,6 +243,144 @@ pRefsBlock = do
     _ <- symbol "refs"
     pure (L.IndentSome Nothing pure pRefLine)
   pure (Map.fromListWith (++) [(role, [ref]) | (role, ref) <- pairs])
+
+-- ---------------------------------------------------------------------
+-- machine
+-- ---------------------------------------------------------------------
+
+pKeyword :: Text -> Parser ()
+pKeyword kw = lexeme (void (string kw <* notFollowedBy (satisfy isIdentChar)))
+
+-- | @self@, @$param@, a multi-segment node reference (@key\/7@), or a
+-- bare identifier read as a pattern variable. A single-segment bareword
+-- is lexically identical whether meant as a literal one-word node or a
+-- pattern variable -- this surface can't tell them apart, so it always
+-- reads a slash-free bareword as a variable. A real, named limitation
+-- (see SURFACE.md), not a silent wrong answer: write a real multi-
+-- segment node reference if a literal node is what's meant.
+pPatternTerm :: Parser PatternTerm
+pPatternTerm =
+  (TermSelf <$ try (pKeyword "self"))
+    <|> (TermParam <$> try (char '$' *> pIdentRaw <* sc))
+    <|> try (do
+          t <- pNodeRefText
+          if T.any (== '/') t then pure (TermNode t) else fail "not a multi-segment node reference"
+        )
+    <|> (TermVar <$> pIdent)
+
+-- | @anchor \`predicate\` term (\`predicate\` term)*@ -- the same
+-- infix-backtick idiom as an ordinary fact's predicate application,
+-- reused here for a guard's hop chain. At least one hop, per
+-- 'DMML.FromJson.existsExprFromInput's own "a pattern must have at
+-- least one hop" rule.
+pPattern :: Parser Pattern
+pPattern = do
+  anchor <- pPatternTerm
+  hops <- some $ do
+    _ <- symbol "`"
+    p <- pIdentRaw <* sc
+    _ <- symbol "`"
+    t <- pPatternTerm
+    pure PatternHop {hopPredicate = p, hopTerm = t}
+  pure (Pattern anchor hops)
+
+pGuardLine :: Parser GuardClause
+pGuardLine = do
+  sp <- spanHere
+  _ <- symbol "guard"
+  neg <- option False (True <$ symbol "not")
+  pat <- pPattern
+  pure GuardClause {guardNegated = neg, guardExists = ExistsExpr {existsPattern = pat, existsSpan = sp}, guardSpan = sp}
+
+pEffectLine :: Parser Effect
+pEffectLine =
+  (EffectAssert <$> (symbol "assert" *> pIdent))
+    <|> (EffectRetract <$> (symbol "retract" *> pIdent))
+
+-- | @from -> to@ -- a transition's optional state-pair line.
+pFromTo :: Parser (Text, Text)
+pFromTo = try $ do
+  from <- pIdent
+  _ <- symbol "->"
+  to <- pIdent
+  pure (from, to)
+
+data TransitionLine = TLFromTo (Text, Text) | TLGuard GuardClause | TLEffect Effect
+
+pTransitionLine :: Parser TransitionLine
+pTransitionLine =
+  (TLFromTo <$> pFromTo)
+    <|> (TLGuard <$> pGuardLine)
+    <|> (TLEffect <$> pEffectLine)
+
+pParamList :: Parser [Text]
+pParamList = between (symbol "(") (symbol ")") (pIdent `sepBy` symbol ",")
+
+-- | @transition ident(params, ...)@ header, then indented guard/from-to/
+-- effect lines. Same "must have at least one of: a guard, a from+to
+-- pair, or an effect" rule as the JSON front-end's
+-- @machine_stmt_from_input@.
+pTransitionBlock :: Parser TransitionDecl
+pTransitionBlock = do
+  sp <- spanHere
+  (ident, params, ls) <- L.indentBlock scn $ do
+    _ <- symbol "transition"
+    ident <- pIdent
+    params <- pParamList
+    pure (L.IndentMany Nothing (\ls -> pure (ident, params, ls)) pTransitionLine)
+  let fromTos = [ft | TLFromTo ft <- ls]
+      guards = [g | TLGuard g <- ls]
+      effects = [e | TLEffect e <- ls]
+      (from, to) = case fromTos of
+        (ft : _) -> (Just (fst ft), Just (snd ft))
+        [] -> (Nothing, Nothing)
+      hasContent = not (null guards) || (from /= Nothing && to /= Nothing) || not (null effects)
+  if hasContent
+    then
+      pure
+        TransitionDecl
+          { transitionIdent = ident
+          , transitionParams = params
+          , transitionFrom = from
+          , transitionTo = to
+          , transitionGuards = guards
+          , transitionEffects = effects
+          , transitionSpan = sp
+          }
+    else fail "transition must have at least one of: a guard, a from+to pair, or an effect"
+
+pStateLine :: Parser StateDecl
+pStateLine = do
+  sp <- spanHere
+  i <- pIdent
+  pure StateDecl {stateIdent = i, stateSpan = sp}
+
+pStatesBlock :: Parser [StateDecl]
+pStatesBlock = L.indentBlock scn $ do
+  _ <- symbol "states"
+  pure (L.IndentSome Nothing pure pStateLine)
+
+data MachineLine = MLStates [StateDecl] | MLTransition TransitionDecl
+
+pMachineLine :: Parser MachineLine
+pMachineLine =
+  (MLStates <$> pStatesBlock)
+    <|> (MLTransition <$> pTransitionBlock)
+
+machineSurfaceParser :: Parser MachineStmt
+machineSurfaceParser = do
+  sp <- spanHere
+  (node, ls) <- L.nonIndented scn $
+    L.indentBlock scn $ do
+      _ <- symbol "machine"
+      node <- pNodeRefTok
+      pure (L.IndentSome Nothing (\ls -> pure (node, ls)) pMachineLine)
+  let states = concat [s | MLStates s <- ls]
+      transitions = [t | MLTransition t <- ls]
+  pure MachineStmt {machineNode = node, machineStates = states, machineTransitions = transitions, machineSpan = sp}
+
+parseMachineSurface :: Text -> Either (ParseErrorBundle Text Void) MachineStmt
+parseMachineSurface = parse (machineSurfaceParser <* scn <* eof) "<surface>"
 
 -- ---------------------------------------------------------------------
 -- commit
