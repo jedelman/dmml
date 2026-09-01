@@ -1,0 +1,7 @@
+[
+  {
+    "id": "k1-shrine-accepts-incense",
+    "title": "Shrine accepts an incense offering",
+    "task": "Author a single DMML commit recording that the shrine (node shrine/threshold) accepts offerings of incense (node offering/incense) -- a relationship between the shrine and that specific offering. Declare whatever relation predicate you use for this."
+  }
+]

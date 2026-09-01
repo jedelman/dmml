@@ -1,0 +1,17 @@
+commit mints
+  declare relation accepts
+  declare relation witnessedBy
+  declare relation sealedBy
+  declare relation belongsTo
+  declare relation holds
+  declare attribute state
+
+  shrine/threshold :: a Shrine
+  shrine/threshold . state = "dormant"
+  shrine/threshold `accepts` offering/incense
+
+  offering/incense :: a Offering
+  ward/1 :: a Ward
+  circle/elders :: a Circle
+  mandate/1 :: a Mandate
+  circle/elders `holds` mandate/1
