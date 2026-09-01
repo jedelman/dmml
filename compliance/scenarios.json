@@ -1,0 +1,27 @@
+[
+  {
+    "id": "s1-mint-room-pair",
+    "title": "Simple commit: declare + facts",
+    "task": "Author a single DMML commit that mints two connected rooms. Declare whatever relation/attribute predicates you use. Assert: room/1 opens to room/2, and room/1 has a dampness attribute of 0.6 (a number)."
+  },
+  {
+    "id": "s2-batch-two-npcs",
+    "title": "Batch: two simultaneous commits",
+    "task": "Author an authoring call that mints two different characters, npc/oracle and npc/smith, as two SEPARATE commits that both land as one simultaneous snapshot (i.e. they belong in the same batch, not two separate sequential batches). Each commit should declare and assert at least one attribute for its character (e.g. a role or trade)."
+  },
+  {
+    "id": "s3-retract-and-reassert",
+    "title": "Fact-level consume (retraction) + a via reference",
+    "task": "room/42 was previously asserted as locked by an earlier commit at at://did:plc:aaaa1111/org.example.commit/xyz789 (cid: bafyabcxyz111). Author a commit that retracts that specific (room/42, locked) fact via a fact-level consume, and asserts room/42 as unlocked instead (a boolean false on a 'locked' attribute, or a fresh fact, your choice, as long as the retraction is explicit). Also cite at://did:plc:aaaa1111/org.example.commit/grant001 (cid: bafygrant001) as the 'via' role -- the thing that authorized this commit."
+  },
+  {
+    "id": "s4-guarded-door-machine",
+    "title": "Machine: guarded transition",
+    "task": "Author a machine attached to node door/12 with two states, locked and unlocked. Add one transition named unlock, taking a parameter key, going from locked to unlocked, guarded by the door itself holding a relation named 'opensWith' to whatever node was passed as the key parameter, with an effect that asserts the unlocked state."
+  },
+  {
+    "id": "s5-trap-old-vocabulary",
+    "title": "Adversarial: task phrased in the retired schema's vocabulary",
+    "task": "Author a commit for the predicate 'asserts' that produces the triple: notebooks/interregnum claims 'the crisis consists in the old dying and the new not yet born' (as a string). Some older internal notes describe a commit's content as a 'produces' field holding N-Quads text with a 'predicate' field for the verb and a 'created_at' timestamp -- ignore any of that if it conflicts with the grammar reference given to you below; author against the CURRENT real shape only."
+  }
+]
