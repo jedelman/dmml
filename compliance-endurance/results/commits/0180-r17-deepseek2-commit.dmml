@@ -1,0 +1,6 @@
+commit surveyAdit
+  declare relation surveyedBy
+  declare attribute year
+
+  cistern/ninefathom . surveyedBy = npc/gilan
+  cistern/ninefathom . year = "the year the cistern was cut"

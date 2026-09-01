@@ -1,0 +1,9 @@
+commit stirs
+  event/first_tremor :: a Tremor
+  event/first_tremor . description = "a low shudder through the rain-catch cut above the adit, enough to rattle the seamdriver against the ninefathom stonework"
+  event/first_tremor . testimony = "brannoc says the slope shrugged like a beast turning in its sleep, and the whisper of the split cistern under the workings went quiet for the space of ten breaths"
+  event/first_tremor `causedBy` mountain/ashkar
+  event/first_tremor `locatedIn` mountain/ashkar
+  event/first_tremor `witnessedBy` npc/brannoc
+  mountain/ashkar `witnessedBy` npc/brannoc
+  npc/brannoc `bearsWitness` event/first_tremor

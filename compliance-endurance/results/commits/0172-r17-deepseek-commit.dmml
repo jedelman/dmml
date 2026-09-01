@@ -1,0 +1,8 @@
+commit recordPledge
+  declare relation belongsTo
+  declare relation founded
+  declare relation wardedBy
+
+  npc/brannoc . belongsTo = "the keeper's own line"
+  npc/brannoc . founded = contest/cistern_ninefathom_state_1
+  npc/brannoc . wardedBy = lantern/brann

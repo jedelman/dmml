@@ -1,0 +1,17 @@
+machine cistern/ninefathom
+  states
+    intact
+    sealed
+    overflowed
+
+  transition seal(sealer)
+    intact -> sealed
+    guard $sealer `seals` self
+    assert sealed
+    retract intact
+
+  transition overflow(cause)
+    sealed -> overflowed
+    guard self `witnessedBy` npc/keeper
+    assert overflowed
+    retract sealed

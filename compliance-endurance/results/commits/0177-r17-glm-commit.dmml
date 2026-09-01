@@ -1,0 +1,5 @@
+commit the_longrain_overtops
+  rain/longrain :: a Rain
+  rain/longrain . description = "the long grey rain off the high valley, steady through the night after the first tremor, filling every cut the ninefathom folk ever dug"
+  rain/longrain `fallsOn` cistern/ninefathom
+  npc/brannoc `bearsWitness` rain/longrain

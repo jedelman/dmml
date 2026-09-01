@@ -1,0 +1,11 @@
+commit arbitration
+  ruling/ninefathom_split :: a Ruling
+  ruling/ninefathom_split . subject = "pick-right and water-sharing at the ninefathom adit"
+  ruling/ninefathom_split . description = "the split ruled lawful: the cistern stands sealed under brannoc's ward, the crew keeps the seam, and the run-off is shared down at the lowbend"
+  ruling/ninefathom_split . date = "unknown"
+  npc/gilan . role = "arbiter of the ninefathom split"
+  npc/gilan . resolves = contest/cistern_ninefathom_state_1
+  contest/cistern_ninefathom_state_1 . resolvedBy = npc/gilan
+  contest/cistern_ninefathom_state_1 . ratifiedBy = npc/keeper
+  ruling/ninefathom_split . recordedBy = npc/gilan
+  carving/obelisk . records = ruling/ninefathom_split

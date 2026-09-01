@@ -1,0 +1,9 @@
+commit riverSeals
+  declare relation seals
+  declare relation witnessedBy
+  declare attribute state
+  declare relation seals
+
+  npc/gilan . witnessedBy = cistern/ninefathom
+  npc/brannoc . seals = cistern/ninefathom
+  contest/cistern_ninefathom_state_1 . witnessedBy = npc/gilan

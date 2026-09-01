@@ -1,0 +1,16 @@
+machine smith/apprentice
+  states
+    novice
+    journeyman
+    master
+
+  transition advance(apprentice)
+    novice -> journeyman
+    guard $apprentice `worksAt` smith/vesna
+    guard $apprentice `apprenticesUnder` path/stonemasonry
+    assert journeyman
+
+  transition master(apprentice)
+    journeyman -> master
+    guard $apprentice `masters` path/bronzework
+    assert master

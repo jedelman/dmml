@@ -1,0 +1,4 @@
+commit inscribeMarker
+  declare attribute marker
+
+  contest/cistern_ninefathom_state_1 . marker = "a ledger page noting the keeper's seal, split in two"

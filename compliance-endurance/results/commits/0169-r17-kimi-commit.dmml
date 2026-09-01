@@ -1,0 +1,5 @@
+commit mints
+  declare relation settles
+
+  npc/brannoc `settles` contest/cistern_ninefathom_state_1
+  npc/brannoc . state = "resolved"

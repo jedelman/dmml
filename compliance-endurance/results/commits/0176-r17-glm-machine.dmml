@@ -1,0 +1,23 @@
+machine cistern/ninefathom
+  states
+    sealed
+    breached
+    drained
+
+  transition breach(storm)
+    sealed -> breached
+    guard $storm `fallsOn` self
+    assert breached
+    retract sealed
+
+  transition drain(miner)
+    breached -> drained
+    guard $miner `worksAt` mine/ninefathom
+    assert drained
+    retract breached
+
+  transition reseal(warden)
+    drained -> sealed
+    guard self `wardedBy` $warden
+    assert sealed
+    retract drained
