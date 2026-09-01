@@ -91,14 +91,21 @@ def sync_agent_into_canonical(canon, branch, env, log):
     validation and Contest-minting that used to be broker.sh's own
     ~150 lines of hand-rolled orchestration."""
     r = sh("bash", str(HOOK_MERGE_SH), branch, cwd=str(canon), env=env)
-    out, err = r.stdout, r.stderr
-    minted = [l for l in out.splitlines() if l.startswith("DIVERGENCE minted as content:")]
+    # Real bug found running this for real: git routes an invoked
+    # hook's own stdout through to the CALLING process's stderr, not
+    # its stdout -- confirmed directly (post-merge's "DIVERGENCE
+    # minted..." line landed in r.stderr, never r.stdout, even on a
+    # clean, successful merge). Checking stdout alone silently missed
+    # every real mint; a contest was genuinely minted and committed
+    # while the log kept reporting "no divergence." Search both.
+    combined = r.stdout + r.stderr
+    minted = [l for l in combined.splitlines() if l.startswith("DIVERGENCE minted as content:")]
     if r.returncode != 0:
         log(f"    [sync] canonical <- {branch}: REJECTED (exit {r.returncode})\n"
-            f"      stdout:\n{out}\n      stderr:\n{err}")
+            f"      stdout:\n{r.stdout}\n      stderr:\n{r.stderr}")
         return False, 0, set()
     minted_pairs = set()
-    for line in out.splitlines():
+    for line in combined.splitlines():
         m = MINT_SUBJ_PRED_RE.match(line)
         if m:
             minted_pairs.add((m.group(1), m.group(2)))
