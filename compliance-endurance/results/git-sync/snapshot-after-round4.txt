@@ -1,0 +1,111 @@
+Declared predicates:
+  relation apprenticesUnder
+  relation belongsTo
+  relation carries
+  relation erupts
+  relation exhausts
+  relation fallsOn
+  relation grazesIn
+  relation locatedIn
+  relation masters
+  relation migratesTo
+  relation protects
+  attribute purpose
+  relation quarriesAt
+  attribute role
+  attribute state
+  relation tradesWith
+  relation wardedBy
+  relation witnessedBy
+  relation witnessesBy
+  relation worksAt
+  attribute yield
+
+Current facts:
+  culture/highkin . a = Culture
+  culture/highkin . exhausts = mine/ninefathom
+  culture/highkin . purpose = "settled on ashkar's terraces, kin to the mine and the quarry"
+  culture/highkin . state = "flourishing"
+  culture/riverfolk . a = Culture
+  culture/riverfolk . purpose = "settled along the river below oldroot, kin to the herds they follow"
+  culture/riverfolk . state = "syncretized"
+  culture/riverfolk . tradesWith = mine/ninefathom
+  forest/oldroot . a = Forest
+  forest/oldroot . purpose = "old-growth woodland at the mountain's foot, where the herds graze"
+  forest/oldroot . state = "recovering"
+  herd/aurochs . a = Herd
+  herd/aurochs . grazesIn = forest/oldroot
+  herd/aurochs . state = "grazing"
+  herd/stagfolk . a = Herd
+  herd/stagfolk . grazesIn = forest/oldroot
+  herd/stagfolk . migratesTo = forest/tangledheart
+  herd/stagfolk . purpose = "guardian rites, and a slow grazing migration through the root passes"
+  herd/stagfolk . state = "migrating"
+  herd/stagfolk . wardedBy = npc/keeper
+  mine/ninefathom . a = Mine
+  mine/ninefathom . belongsTo = culture/highkin
+  mine/ninefathom . locatedIn = mountain/ashkar
+  mine/ninefathom . purpose = "a deep vein of obsidian and flint; the highkin delve it for trade and tools"
+  mine/ninefathom . state = "exhausted"
+  mine/ninefathom . yield = "bare silver, trace copper"
+  mountain/ashkar . a = Mountain
+  mountain/ashkar . erupts = quake/ashkarsTremor
+  mountain/ashkar . purpose = "the range's tallest peak, a mine and a stonemasons' quarry cut into its flank"
+  mountain/ashkar . state = "dormant"
+  mountain/ashkar . witnessedBy = npc/keeper
+  npc/bramble . a = Person
+  npc/bramble . role = "woodcutter"
+  npc/bramble . worksAt = forest/oldroot
+  npc/cray . a = Person
+  npc/cray . apprenticesUnder = path/bronzework
+  npc/cray . belongsTo = culture/riverfolk
+  npc/cray . role = "trader"
+  npc/cray . worksAt = mine/ninefathom
+  npc/keeper . a = Person
+  npc/keeper . belongsTo = culture/riverfolk
+  npc/keeper . carries = quarry/ashkarTailings
+  npc/keeper . role = "herd-guardian"
+  npc/keeper . witnessedBy = herd/stagfolk
+  npc/keeper . worksAt = forest/tangledheart
+  npc/korvin . a = Person
+  npc/korvin . apprenticesUnder = path/stonemasonry
+  npc/korvin . quarriesAt = quarry/stonemasonsRest
+  npc/korvin . role = "master-mason"
+  npc/riverKeeper . a = Person
+  npc/riverKeeper . belongsTo = culture/riverfolk
+  npc/riverKeeper . guards = herd/stagfolk
+  npc/riverKeeper . protects = herd/stagfolk
+  npc/riverKeeper . role = "keeper of the pass"
+  npc/riverKeeper . witnessedBy = npc/sylva
+  npc/riverKeeper . worksAt = forest/oldroot
+  npc/sylva . a = Person
+  npc/sylva . masters = path/greenlore
+  npc/sylva . role = "forest-steward"
+  npc/sylva . worksAt = forest/oldroot
+  npc/thorn . a = Person
+  npc/thorn . apprenticesUnder = path/stonemasonry
+  npc/thorn . role = "foreman"
+  npc/thorn . worksAt = mine/ninefathom
+  npc/velira . a = Person
+  npc/velira . apprenticesUnder = path/greenlore
+  npc/velira . belongsTo = culture/highkin
+  npc/velira . role = "terrace-founder"
+  npc/velira . worksAt = mine/ninefathom
+  path/bronzework . a = TechnicalPath
+  path/bronzework . purpose = "smelting ore drawn from ninefathom into worked bronze"
+  path/bronzework . state = "mastered"
+  path/greenlore . a = TechnicalPath
+  path/greenlore . purpose = "reading oldroot's plants for healing and blight-craft"
+  path/greenlore . state = "mastered"
+  path/stonemasonry . a = TechnicalPath
+  path/stonemasonry . locatedIn = quarry/stonemasonsRest
+  path/stonemasonry . purpose = "cutting ashkar's stone for terraces and walls"
+  path/stonemasonry . state = "mastered"
+  quarry/ashkarTailings . a = Quarry
+  quarry/ashkarTailings . belongsTo = culture/highkin
+  quarry/ashkarTailings . locatedIn = mountain/ashkar
+  quarry/ashkarTailings . purpose = "flint and obsidian gleaned from ninefathom's spent tailings"
+  quarry/ashkarTailings . yield = "workable flint, shard obsidian"
+  quarry/stonemasonsRest . a = Quarry
+  quarry/stonemasonsRest . locatedIn = mountain/ashkar
+  quarry/stonemasonsRest . purpose = "the first cut, where korvin's kin shaped ashkar's bones"
