@@ -403,3 +403,8 @@ expecting "commit"
 --- round 12 ---
   [kimi] corner: 34 node(s), 106 machine-def line(s)
     [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] DONE after 2 commit(s)
+  [deepseek] corner: 34 node(s), 100 machine-def line(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
