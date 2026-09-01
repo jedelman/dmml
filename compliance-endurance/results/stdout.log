@@ -528,3 +528,4 @@ expecting "commit"
 
 --- round 16 ---
   [kimi] corner: 42 node(s), 91 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
