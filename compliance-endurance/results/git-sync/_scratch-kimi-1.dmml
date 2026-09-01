@@ -1,0 +1,7 @@
+commit riverFounder
+  declare relation belongsTo
+
+  npc/keeperMoss :: a NPC
+  npc/keeperMoss . role = "founder"
+  npc/keeperMoss `belongsTo` culture/riverfolk
+  culture/riverfolk . state = "flourishing"

@@ -1,0 +1,5 @@
+=== git-sync endurance test: 4 agents, up to 20 rounds, full-mesh sync, workdir=/tmp/endurance-git-sync-weyx30ch ===
+
+--- round 1 ---
+  [kimi] corner: 6 node(s), own repo has 11 file(s)
+    [kimi] attempt 1: accepted (commit)

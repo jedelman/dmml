@@ -1,9 +1,0 @@
-commit sableMastersBronze
-  path/bronzework . state = "mastered"
-  npc/sable `masters` path/bronzework
-  npc/keeper `belongsTo` culture/highkin
-
-  item/firstbronze :: a Artifact
-  item/firstbronze . purpose = "first casting of ninefathom copper, a pump-bar already promised to the shaft"
-  npc/sable `carries` item/firstbronze
-  item/firstbronze `witnessedBy` npc/keeper
