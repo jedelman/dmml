@@ -1,0 +1,7 @@
+commit shrine_rites
+  declare relation consults
+  declare relation founded
+
+  npc/brann . consults = npc/keeper
+  contest/cistern_ninefathom_state_1 . founded = npc/brann
+  npc/keeper . founded = npc/brann

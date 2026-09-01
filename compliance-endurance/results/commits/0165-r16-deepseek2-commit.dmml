@@ -1,0 +1,9 @@
+commit record_shrine
+  declare relation leansOn
+  declare attribute carvedBy
+
+  npc/scout . leansOn = lantern/brann
+  contest/cistern_rite . a = Rite
+  contest/cistern_rite . consecrates = cistern/ninefathom
+  contest/cistern_rite . observedBy = npc/keeper
+  contest/cistern_rite . carvedBy = npc/brann

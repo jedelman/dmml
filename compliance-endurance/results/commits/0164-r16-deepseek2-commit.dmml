@@ -1,0 +1,14 @@
+commit honoursTheKeep
+  declare relation bears
+  declare relation commemorates
+  declare relation consecrates
+  declare attribute inscribedWith
+
+  shrine/ashkar :: a Shrine
+  shrine/ashkar . honors = true
+  shrine/ashkar `bears` carving/obelisk
+  carving/obelisk :: a Obelisk
+  carving/obelisk `commemorates` herd/elders
+  shrine/ashkar `consecrates` path/discovery
+  path/discovery `apprenticesUnder` shrine/ashkar
+  shrine/ashkar . inscribedWith = "IN REMEMBRANCE OF THE FIRST CULL"

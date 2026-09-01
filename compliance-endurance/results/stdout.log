@@ -529,3 +529,39 @@ expecting "commit"
 --- round 16 ---
   [kimi] corner: 42 node(s), 91 machine-def line(s)
     [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-kimi-2.dmml: REJECTED
+<surface>:1:1:
+  |
+1 | transition settle()
+  | ^^^^^^
+unexpected "transi"
+expecting "commit"
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+  [deepseek] corner: 42 node(s), 153 machine-def line(s)
+    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-1.dmml: REJECTED
+<surface>:1:14:
+  |
+1 | commit keeper-gathers-shrine-records
+  |              ^^
+unexpected "-g"
+expecting end of line
+    [deepseek] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-2.dmml: REJECTED
+<surface>:2:1:
+  |
+2 | declare relation bears
+  | ^
+incorrect indentation (got 1, should be greater than 1)
+  [glm] corner: 41 node(s), 134 machine-def line(s)
+    [glm] no fenced content, treating as stop
+  [deepseek2] corner: 41 node(s), 87 machine-def line(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+  round 16 totals: valid=7 invalid=3 attempts=11 fail_rate=0.27
+
+--- round 17 ---
+  [kimi] corner: 44 node(s), 86 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
