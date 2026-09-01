@@ -1,7 +1,5 @@
-commit riverFounding
-  declare relation belongsTo
+commit foundryCall
+  declare relation worksAt
 
-  npc/cray . a = Person
-  npc/cray . role = "founder"
-  npc/cray `belongsTo` culture/riverfolk
-  culture/riverfolk . state = "flourishing"
+  npc/cray . worksAt = mine/ninefathom
+  path/bronzework . state = "apprenticed"
