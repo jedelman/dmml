@@ -86,3 +86,49 @@ duplicate (event/f
     [glm] attempt 1: accepted (commit)
     [glm] attempt 2: accepted (commit)
     [glm] attempt 3: accepted (commit)
+    [glm] attempt 4: accepted (machine)
+  [gemini] corner: 13 node(s), 62 machine-def line(s)
+    [gemini] attempt 1: accepted (commit)
+    [gemini] attempt 2: accepted (commit)
+    [gemini] attempt 3: accepted (commit)
+    [gemini] DONE after 3 commit(s)
+  round 3 totals: valid=14 invalid=0 attempts=14 fail_rate=0.00
+
+--- round 4 ---
+  [kimi] corner: 16 node(s), 62 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+  [deepseek] corner: 16 node(s), 58 machine-def line(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (machine)
+  [glm] corner: 15 node(s), 104 machine-def line(s)
+    [glm] no fenced content, treating as stop
+  [gemini] corner: 15 node(s), 138 machine-def line(s)
+    [gemini] attempt 1: accepted (commit)
+    [gemini] attempt 2: accepted (machine)
+    [gemini] attempt 3: accepted (commit)
+    [gemini] DONE after 3 commit(s)
+  round 4 totals: valid=11 invalid=0 attempts=12 fail_rate=0.00
+  CONTEST minted: kimi vs deepseek on cistern/ninefathom . state
+
+--- round 5 ---
+  [kimi] corner: 19 node(s), 69 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+resumed: 52 adopted file(s), next seq=53, starting at round 5, 3 known contest(s)
+=== endurance test: 4 agents (kimi, deepseek, glm, deepseek2), rounds 5..20, seed=20260901 ===
+starting world: 63 files, 222 lines
+
+--- round 5 ---
+  [kimi] corner: 19 node(s), 69 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+  [deepseek] corner: 19 node(s), 91 machine-def line(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] DONE after 1 commit(s)
+  [glm] corner: 18 node(s), 148 machine-def line(s)

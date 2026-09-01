@@ -1,0 +1,10 @@
+commit strikes_copper
+  npc/delver . worksAt = mine/ninefathom
+  npc/delver . role = "first down the ninefathom shaft"
+  mine/ninefathom . state = "active"
+  mine/ninefathom `supplies` goods/ashkar_copper
+  goods/ashkar_copper :: a Good
+  npc/delver `carries` goods/ashkar_copper
+  cistern/ninefathom . purpose = "rain-catch cut above the adit; water to wash the ore, and a standing threat to the workings below"
+  smith/vesna . forgesFor = npc/delver
+  event/bargainfeast . witnessedBy = npc/delver

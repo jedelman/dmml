@@ -1,0 +1,5 @@
+commit bind
+  culture/highkin `tradesWith` culture/riverfolk
+  smith/vesna `belongsTo` culture/highkin
+  npc/delver `belongsTo` culture/highkin
+  cistern/ninefathom `supplies` mine/ninefathom

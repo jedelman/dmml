@@ -1,0 +1,5 @@
+commit consult
+  herbalist/onn `consults` npc/keeper
+  npc/keeper `witnessedBy` culture/riverfolk
+  mountain/ashkar `erupts` event/firstash
+  mine/ninefathom . state = flooded

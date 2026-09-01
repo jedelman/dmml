@@ -1,0 +1,9 @@
+commit mints
+  declare relation fallsOn
+  declare attribute purpose
+  declare attribute state
+
+  event/storm_quench . a = Event
+  event/storm_quench . purpose = "a black rain from the seaward quarter, falling on ashkar's burning crown, the first quenching"
+  event/storm_quench . fallsOn = mountain/ashkar
+  mountain/ashkar . state = "quenched"

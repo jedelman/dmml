@@ -1,0 +1,4 @@
+commit beginBronzework
+  path/bronzework `apprenticesUnder` path/greenlore
+  smith/vesna `carries` cistern/ninefathom
+  path/bronzework . state = "apprenticed"

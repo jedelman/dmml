@@ -1,0 +1,11 @@
+commit settles
+  forest/oldroot :: a Forest
+  mountain/ashkar :: a Mountain
+  forest/oldroot `locatedIn` mountain/ashkar
+
+  herd/aurochs `migratesTo` meadow/highpasture
+  herd/aurochs `pasturedIn` meadow/highpasture
+  herd/aurochs . state = "grazing"
+
+  culture/highkin . state = "flourishing"
+  path/bronzework . state = "mastered"

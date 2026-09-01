@@ -1,0 +1,6 @@
+commit discoverNinefathom
+  declare relation supplies
+
+  npc/delver `worksAt` mine/ninefathom
+  path/bronzework `supplies` mine/ninefathom
+  smith/vesna `forgesFor` npc/keeper

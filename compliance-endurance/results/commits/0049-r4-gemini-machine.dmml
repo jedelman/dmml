@@ -1,0 +1,27 @@
+machine path/greenlore
+  states
+    undiscovered
+    apprenticed
+    mastered
+    lost
+
+  transition discover(seeker)
+    undiscovered -> apprenticed
+    guard $seeker `worksAt` forest/oldroot
+    assert apprenticed
+
+  transition master(scholar)
+    apprenticed -> mastered
+    guard $scholar `apprenticesUnder` self
+    assert mastered
+
+  transition forget()
+    mastered -> lost
+    assert lost
+    retract mastered
+
+  transition rediscover(seeker)
+    lost -> apprenticed
+    guard $seeker `worksAt` forest/oldroot
+    assert apprenticed
+    retract lost

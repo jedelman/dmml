@@ -1,0 +1,10 @@
+commit mints
+  declare relation fallsOn
+  declare attribute state
+
+  mountain/ashkar . state = "erupting"
+  rain/ashkar_quench . a = Rain
+  rain/ashkar_quench . fallsOn = mountain/ashkar
+  event/secondash . a = Event
+  event/secondash . belongsTo = mountain/ashkar
+  event/secondash . witnessedBy = herbalist/onn

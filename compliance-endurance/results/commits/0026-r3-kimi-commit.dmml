@@ -1,0 +1,9 @@
+commit mints
+  declare relation witnessedBy
+  declare attribute purpose
+
+  event/ashkar_rumble . a = Event
+  event/ashkar_rumble . purpose = "the first tremor, felt in ninefathom's deepest gallery, dust falling like snow"
+  event/ashkar_rumble . witnessedBy = npc/keeper
+  event/ashkar_rumble . belongsTo = mountain/ashkar
+  mountain/ashkar . state = "restless"

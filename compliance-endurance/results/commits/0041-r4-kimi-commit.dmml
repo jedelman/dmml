@@ -1,0 +1,11 @@
+commit mints
+  declare relation fallsOn
+  declare relation witnessedBy
+  declare attribute state
+
+  mountain/ashkar . state = "restless"
+  storm/secondash . a = Storm
+  storm/secondash . fallsOn = meadow/highpasture
+  npc/keeper . a = Keeper
+  npc/keeper . witnessedBy = event/ashkar_eruption
+  path/greenlore . state = "mastered"

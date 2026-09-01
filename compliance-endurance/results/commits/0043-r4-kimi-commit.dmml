@@ -1,0 +1,6 @@
+commit mints
+  declare attribute state
+
+  mountain/ashkar . state = "quenched"
+  cistern/ninefathom . state = "split"
+  crew/ninefathom_day . worksAt = mine/ninefathom

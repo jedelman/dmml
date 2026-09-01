@@ -1,0 +1,9 @@
+commit mints
+  declare relation belongsTo
+  declare attribute purpose
+  declare attribute state
+
+  event/ashkar_eruption . a = Event
+  event/ashkar_eruption . purpose = "the mountain splits, ninefathom's cistern cracks, ash falling on oldroot's warded canopy"
+  event/ashkar_eruption . belongsTo = mountain/ashkar
+  mountain/ashkar . state = "erupting"

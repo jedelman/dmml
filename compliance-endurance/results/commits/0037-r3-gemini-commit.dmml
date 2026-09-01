@@ -1,0 +1,7 @@
+commit expand
+  mountain/ashkar :: a Mountain
+  mountain/ashkar . purpose = "volcanic peak towering above the old-growth basin"
+  meadow/highpasture `locatedIn` mountain/ashkar
+  smith/vesna `forgesFor` npc/delver
+  culture/riverfolk `tradesWith` smith/vesna
+  herd/riverkine `migratesTo` meadow/highpasture

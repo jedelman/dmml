@@ -1,0 +1,10 @@
+commit sets_stone
+  npc/brannoc :: a Miner
+  npc/brannoc . belongsTo = culture/highkin
+  npc/brannoc . worksAt = mountain/ashkar
+  npc/brannoc . role = "quarryman come down to mend the split cistern above the adit"
+  npc/brannoc `apprenticesUnder` path/stonemasonry
+  path/stonemasonry . state = "apprenticed"
+  npc/brannoc `supplies` cistern/ninefathom
+  cistern/ninefathom . wardedBy = npc/brannoc
+  smith/vesna . forgesFor = npc/brannoc

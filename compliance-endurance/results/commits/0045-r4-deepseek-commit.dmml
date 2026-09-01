@@ -1,0 +1,7 @@
+commit cistern_rite
+  declare relation honorsPath
+
+  cistern/ninefathom :: a Cistern
+  cistern/ninefathom . state = "consecrated"
+  npc/keeper . honorsPath = path/stonemasonry
+  npc/keeper . appointedBy = culture/riverfolk

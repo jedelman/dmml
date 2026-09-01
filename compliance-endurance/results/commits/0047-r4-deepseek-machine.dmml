@@ -1,0 +1,10 @@
+machine cistern/guardian
+  states
+    watching
+    warding
+    resting
+
+  transition ward(threat)
+    watching -> warding
+    guard self `locatedIn` mountain/ashkar `supplies` mine/ninefathom
+    assert warding

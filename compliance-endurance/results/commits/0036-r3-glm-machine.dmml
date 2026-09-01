@@ -1,0 +1,24 @@
+machine herd/riverkine
+  states
+    grazing
+    driven
+    pastured
+
+  transition drive(herder)
+    grazing -> driven
+    guard $herder `belongsTo` culture/riverfolk
+    assert driven
+    retract grazing
+
+  transition settle(herder)
+    driven -> pastured
+    guard self `migratesTo` $meadow `belongsTo` culture/riverfolk
+    guard $herder `belongsTo` culture/riverfolk
+    assert pastured
+    retract driven
+
+  transition release()
+    pastured -> grazing
+    guard self `pasturedIn` $meadow
+    assert grazing
+    retract pastured

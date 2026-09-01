@@ -1,0 +1,19 @@
+commit raises
+  declare relation disputes
+  declare attribute subject
+  declare attribute predicate
+  declare attribute state
+  declare attribute option1Value
+  declare attribute option2Value
+  declare attribute option1Source
+  declare attribute option2Source
+
+  contest/cistern_ninefathom_state_1 :: a Contest
+  contest/cistern_ninefathom_state_1 . subject = "cistern/ninefathom"
+  contest/cistern_ninefathom_state_1 . predicate = "state"
+  contest/cistern_ninefathom_state_1 . state = "contested"
+  contest/cistern_ninefathom_state_1 . option1Value = "split"
+  contest/cistern_ninefathom_state_1 . option1Source = "kimi"
+  contest/cistern_ninefathom_state_1 . option2Value = "consecrated"
+  contest/cistern_ninefathom_state_1 . option2Source = "deepseek"
+  contest/cistern_ninefathom_state_1 `disputes` cistern/ninefathom

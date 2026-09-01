@@ -1,0 +1,9 @@
+commit mends_the_split
+  npc/brannoc . masters = path/stonemasonry
+  path/stonemasonry . state = "mastered"
+  cistern/ninefathom . state = "mended"
+  goods/ashkar_bronze :: a Good
+  goods/ashkar_bronze . purpose = "cramps and fittings forged from ninefathom copper and tin to bind the cistern's split stone"
+  mine/ninefathom `supplies` goods/ashkar_bronze
+  npc/brannoc `carries` goods/ashkar_bronze
+  event/bargainfeast . witnessedBy = npc/brannoc

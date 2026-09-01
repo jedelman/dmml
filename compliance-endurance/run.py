@@ -45,7 +45,11 @@ AGENTS = [
     {"name": "kimi", "model": "moonshotai/kimi-k2.5", "reasoning_none": True},
     {"name": "deepseek", "model": "deepseek/deepseek-v4-flash-0731", "reasoning_none": True},
     {"name": "glm", "model": "z-ai/glm-5.3-flash", "reasoning_none": False},
-    {"name": "gemini", "model": "google/gemini-3.7-flash", "reasoning_none": False},
+    # gemini-3.7-flash dropped after round 4 (mandatory-reasoning, real
+    # token cost was heavy) -- a second deepseek instance instead of a
+    # second glm-flash, since glm-flash is ALSO mandatory-reasoning
+    # (MODELS.md) and wouldn't have fixed what was actually asked for.
+    {"name": "deepseek2", "model": "deepseek/deepseek-v4-flash-0731", "reasoning_none": True},
 ]
 MAX_TOKENS = 12000
 MAX_ATTEMPTS_PER_AGENT_PER_ROUND = 4  # hard cap, bounds runaway cost/time
@@ -311,10 +315,44 @@ def run_agent_round(api_key, agent, corner_text, corner_nodes, machine_defs_text
     return accepted_paths, {"valid": n_valid, "invalid": n_invalid, "no_fence": n_no_fence}
 
 
+ROUND_TAG_RE = re.compile(r"-r(\d+)-")
+CONTEST_SUBJ_RE = re.compile(r'\. subject = "([^"]+)"')
+CONTEST_PRED_RE = re.compile(r'\. predicate = "([^"]+)"')
+
+
+def load_resume_state(log):
+    """Reconstructs world_files/seq/round_start/contest_history from
+    whatever's already been adopted into results/commits/ by an earlier,
+    now-stopped invocation -- so swapping the agent roster mid-test (or
+    any other interruption) picks up from the real accumulated world
+    instead of silently restarting from the seed and losing rounds
+    already run for real, real dispatch cost already spent."""
+    existing = sorted(COMMITS_DIR.glob("*.dmml"))
+    if not existing:
+        return [SEED_GENESIS] + MACHINE_FILES, 1, 1, []
+    world_files = [SEED_GENESIS] + MACHINE_FILES + existing
+    max_seq = max(int(f.name[:4]) for f in existing)
+    rounds_seen = [int(m.group(1)) for f in existing if (m := ROUND_TAG_RE.search(f.name))]
+    round_start = max(rounds_seen) + 1 if rounds_seen else 1
+    contest_history = []
+    for f in existing:
+        if "-contest-" not in f.name or f.name.endswith(".machine.dmml"):
+            continue
+        text = f.read_text()
+        sm, pm = CONTEST_SUBJ_RE.search(text), CONTEST_PRED_RE.search(text)
+        rm = ROUND_TAG_RE.search(f.name)
+        if sm and pm and rm:
+            contest_history.append((int(rm.group(1)), sm.group(1), pm.group(1)))
+    log(f"resumed: {len(existing)} adopted file(s), next seq={max_seq + 1}, "
+        f"starting at round {round_start}, {len(contest_history)} known contest(s)")
+    return world_files, max_seq + 1, round_start, contest_history
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rounds", type=int, default=20)
     ap.add_argument("--seed", type=int, default=20260901)
+    ap.add_argument("--resume", action="store_true", help="continue from results/commits/ instead of the seed")
     args = ap.parse_args()
 
     api_key = os.environ.get("OPENROUTER_API_KEY")
@@ -326,24 +364,31 @@ def main():
     surface_text = SURFACE_PATH.read_text()
     rng = random.Random(args.seed)
 
-    world_files = [SEED_GENESIS] + MACHINE_FILES
-    seq = 1  # global monotonic sequence for permanently-adopted round output
     round_log = []
-    contest_history = []  # list of (round, subj, pred) for thrash detection
     thrash_reason = None
 
     def log(msg):
         print(msg)
         round_log.append(msg)
 
-    log(f"=== endurance test: {len(AGENTS)} agents, up to {args.rounds} rounds, seed={args.seed} ===")
+    if args.resume:
+        world_files, seq, round_start, contest_history = load_resume_state(log)
+    else:
+        world_files = [SEED_GENESIS] + MACHINE_FILES
+        seq = 1  # global monotonic sequence for permanently-adopted round output
+        round_start = 1
+        contest_history = []  # list of (round, subj, pred) for thrash detection
+
+    log(f"=== endurance test: {len(AGENTS)} agents ({', '.join(a['name'] for a in AGENTS)}), "
+        f"rounds {round_start}..{args.rounds}, seed={args.seed} ===")
     snapshot0 = render_snapshot(render_bin, world_files)
-    (RESULTS_DIR / "snapshot-round0-seed.txt").write_text(snapshot0)
-    log(f"seed world: {len(world_files)} files, {snapshot0.count(chr(10))} lines")
+    if not args.resume:
+        (RESULTS_DIR / "snapshot-round0-seed.txt").write_text(snapshot0)
+    log(f"starting world: {len(world_files)} files, {snapshot0.count(chr(10))} lines")
 
     report_rounds = []
 
-    for round_no in range(1, args.rounds + 1):
+    for round_no in range(round_start, args.rounds + 1):
         log(f"\n--- round {round_no} ---")
         full_snapshot = render_snapshot(render_bin, world_files)
         corners = sample_corners(full_snapshot, len(AGENTS), random.Random(args.seed * 1000 + round_no))
@@ -455,15 +500,20 @@ def main():
     final_snapshot = render_snapshot(render_bin, world_files)
     (RESULTS_DIR / "snapshot-final.txt").write_text(final_snapshot)
 
+    prior_report = {}
+    if args.resume and (RESULTS_DIR / "report.json").exists():
+        prior_report = json.loads((RESULTS_DIR / "report.json").read_text())
+    all_rounds = prior_report.get("rounds", []) + report_rounds
     report = {
-        "rounds_run": len(report_rounds),
+        "rounds_run": len(all_rounds),
         "rounds_requested": args.rounds,
         "thrash_reason": thrash_reason,
         "final_world_file_count": len(world_files),
-        "rounds": report_rounds,
+        "rounds": all_rounds,
     }
     (RESULTS_DIR / "report.json").write_text(json.dumps(report, indent=2))
-    (RESULTS_DIR / "log.txt").write_text("\n".join(round_log))
+    prior_log = (RESULTS_DIR / "log.txt").read_text() if (args.resume and (RESULTS_DIR / "log.txt").exists()) else ""
+    (RESULTS_DIR / "log.txt").write_text(prior_log + ("\n" if prior_log else "") + "\n".join(round_log))
     log(f"\n=== done: {len(report_rounds)} round(s) run, thrash={thrash_reason!r} ===")
     return 0
 

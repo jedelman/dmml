@@ -1,0 +1,7 @@
+commit riverkin_syncretize
+  declare relation appointedBy
+
+  culture/riverfolk . state = "syncretized"
+  path/stonemasonry . purpose = "cutting and setting ashkar's own stone, tempered by riverfolk practice"
+  path/stonemasonry . witnessedBy = culture/riverfolk
+  npc/delver . appointsSkill = path/stonemasonry

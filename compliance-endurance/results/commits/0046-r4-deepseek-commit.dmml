@@ -1,0 +1,5 @@
+commit riverkin_rites
+  declare relation consecrates
+
+  path/stonemasonry . consecrates = goods/riverweave
+  npc/keeper . consults = path/stonemasonry

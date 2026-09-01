@@ -1,0 +1,3 @@
+commit settleStagfolk
+  herd/stagfolk `migratesTo` meadow/highpasture
+  herd/stagfolk . state = "grazing"

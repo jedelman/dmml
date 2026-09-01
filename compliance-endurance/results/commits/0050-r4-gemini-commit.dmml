@@ -1,0 +1,5 @@
+commit teaches
+  herbalist/onn `apprenticesUnder` path/greenlore
+  herbalist/onn `belongsTo` culture/highkin
+  herbalist/onn `consults` npc/brannoc
+  path/greenlore `locatedIn` forest/oldroot

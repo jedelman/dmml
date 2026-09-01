@@ -1,0 +1,11 @@
+commit mints
+  declare relation worksAt
+  declare relation masters
+  declare attribute state
+
+  crew/ninefathom_day . a = Crew
+  crew/ninefathom_day . worksAt = mine/ninefathom
+  cistern/ninefathom . state = "restored"
+  event/ashkar_eruption . witnessedBy = npc/brannoc
+  npc/brannoc . worksAt = mine/ninefathom
+  npc/delver . masters = path/bronzework
