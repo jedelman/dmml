@@ -1,0 +1,13 @@
+commit greenloreMastery
+  declare relation belongsTo
+  declare relation masters
+  declare relation witnessedBy
+  declare attribute purpose
+  declare attribute state
+
+  event/greenmastery :: a Mastery
+  event/greenmastery . belongsTo = path/greenlore
+  event/greenmastery `witnessedBy` npc/keeper
+  event/greenmastery . purpose = "onn walked the whole grazing-round under the settling ash and read the rootwoods' warding whole, apprenticeship passing into mastery"
+  herbalist/onn . masters = path/greenlore
+  path/greenlore . state = "mastered"

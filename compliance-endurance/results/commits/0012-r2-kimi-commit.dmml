@@ -1,0 +1,11 @@
+commit mints
+  declare relation belongsTo
+  declare relation locatedIn
+  declare relation masters
+  declare attribute purpose
+  declare attribute state
+
+  cistern/ninefathom . state = "split"
+  cistern/ninefathom . purpose = "bronze-pumped cistern split by ashkar's eruption, ninefathom flooding again"
+  smith/vesna . a = Smith
+  smith/vesna . purpose = "master of bronzework, the only one who could mend the cistern's seams"

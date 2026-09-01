@@ -1,0 +1,106 @@
+Declared predicates:
+  relation apprenticesUnder
+  relation belongsTo
+  relation carries
+  relation disputes
+  relation erupts
+  relation fallsOn
+  relation grazesIn
+  relation locatedIn
+  relation masters
+  relation migratesTo
+  attribute option1Source
+  attribute option1Value
+  attribute option2Source
+  attribute option2Value
+  attribute predicate
+  attribute purpose
+  attribute role
+  attribute state
+  attribute subject
+  relation tradesWith
+  relation wardedBy
+  relation witnessedBy
+  relation worksAt
+
+Current facts:
+  cistern/ninefathom . a = Cistern
+  cistern/ninefathom . belongsTo = mine/ninefathom
+  cistern/ninefathom . locatedIn = mountain/ashkar
+  cistern/ninefathom . purpose = "bronze-pumped cistern raised to draw the floodwater out of ninefathom"
+  contest/path_greenlore_state_1 . a = Contest
+  contest/path_greenlore_state_1 . disputes = path/greenlore
+  contest/path_greenlore_state_1 . option1Source = "glm"
+  contest/path_greenlore_state_1 . option1Value = "mastered"
+  contest/path_greenlore_state_1 . option2Source = "gemini"
+  contest/path_greenlore_state_1 . option2Value = "undiscovered"
+  contest/path_greenlore_state_1 . predicate = "state"
+  contest/path_greenlore_state_1 . state = "contested"
+  contest/path_greenlore_state_1 . subject = "path/greenlore"
+  culture/highkin . a = Culture
+  culture/highkin . purpose = "settled on ashkar's terraces, kin to the mine and the quarry"
+  culture/highkin . state = "nascent"
+  culture/highkin . tradesWith = culture/riverfolk
+  culture/riverfolk . a = Culture
+  culture/riverfolk . purpose = "settled along the river below oldroot, kin to the herds they follow"
+  culture/riverfolk . state = "nascent"
+  event/firstash . a = Ashfall
+  event/firstash . belongsTo = mountain/ashkar
+  event/firstash . fallsOn = forest/oldroot
+  event/firstash . purpose = "ash and cinder raining over oldroot, the mountain's first warning"
+  event/firstash . witnessedBy = herbalist/onn
+  forest/oldroot . a = Forest
+  forest/oldroot . purpose = "old-growth woodland at the mountain's foot, where the herds graze"
+  forest/oldroot . state = "oldgrowth"
+  hammer/seamdriver . a = Hammer
+  hammer/seamdriver . purpose = "driving the first seam into ninefathom's undug face"
+  herbalist/onn . a = Herbalist
+  herbalist/onn . apprenticesUnder = path/greenlore
+  herbalist/onn . role = "blight-reader of oldroot"
+  herbalist/onn . worksAt = forest/oldroot
+  herd/aurochs . a = Herd
+  herd/aurochs . grazesIn = forest/oldroot
+  herd/aurochs . migratesTo = river/lowbend
+  herd/aurochs . state = "grazing"
+  herd/stagfolk . a = Herd
+  herd/stagfolk . grazesIn = forest/oldroot
+  herd/stagfolk . state = "grazing"
+  herd/stagfolk . wardedBy = npc/keeper
+  mine/ninefathom . a = Mine
+  mine/ninefathom . locatedIn = mountain/ashkar
+  mine/ninefathom . purpose = "deep copper and tin workings carved beneath the mountain"
+  mine/ninefathom . state = "active"
+  mountain/ashkar . a = Mountain
+  mountain/ashkar . erupts = mine/ninefathom
+  mountain/ashkar . purpose = "the range's tallest peak, a mine and a stonemasons' quarry cut into its flank"
+  mountain/ashkar . state = "dormant"
+  mountain/ashkar . witnessedBy = npc/keeper
+  npc/delver . a = Miner
+  npc/delver . apprenticesUnder = path/bronzework
+  npc/delver . belongsTo = culture/highkin
+  npc/delver . worksAt = mine/ninefathom
+  npc/keeper . a = Keeper
+  npc/keeper . belongsTo = culture/riverfolk
+  npc/keeper . role = "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"
+  path/bronzework . a = TechnicalPath
+  path/bronzework . purpose = "smelting ore drawn from ninefathom into worked bronze"
+  path/bronzework . state = "mastered"
+  path/greenlore . a = TechnicalPath
+  path/greenlore . purpose = "lore of tending the rootwoods and warding wild herds"
+  path/stonemasonry . a = TechnicalPath
+  path/stonemasonry . purpose = "cutting and setting ashkar's own stone"
+  path/stonemasonry . state = "undiscovered"
+  river/lowbend . a = River
+  river/lowbend . purpose = "the slow bend below oldroot where the riverfolk follow the herds"
+  smith/vesna . a = Smith
+  smith/vesna . apprenticesUnder = path/bronzework
+  smith/vesna . carries = hammer/seamdriver
+  smith/vesna . masters = path/bronzework
+  smith/vesna . role = "master ore-smith of the ashkar slopes"
+  smith/vesna . tradesWith = herbalist/onn
+  smith/vesna . worksAt = mine/ninefathom
+
+CONTESTED -- not settled, both/all options are live:
+  path/greenlore . state is disputed:
+    - glm asserts "mastered"
+    - gemini asserts "undiscovered"

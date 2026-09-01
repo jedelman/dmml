@@ -1,0 +1,12 @@
+machine forest/oldroot
+  states
+    oldgrowth
+    logged
+    regrown
+    blighted
+
+  transition clear(healer)
+    blighted -> oldgrowth
+    guard $healer `masters` path/greenlore
+    assert oldgrowth
+    retract blighted

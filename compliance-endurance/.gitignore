@@ -1,0 +1,4 @@
+__pycache__/
+results/_scratch-*
+results/_list-*.txt
+results/_pair_contests/

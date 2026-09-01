@@ -1,0 +1,9 @@
+commit mints
+  declare relation belongsTo
+  declare relation fallsOn
+  declare attribute purpose
+  declare attribute state
+
+  mountain/ashkar . state = "erupting"
+  event/firstash . state = "erupting"
+  event/firstash . purpose = "ashkar's throat open now, the old mine sealed by fire and the cistern split"

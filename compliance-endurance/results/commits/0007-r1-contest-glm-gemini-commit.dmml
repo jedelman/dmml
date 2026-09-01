@@ -1,0 +1,19 @@
+commit raises
+  declare relation disputes
+  declare attribute subject
+  declare attribute predicate
+  declare attribute state
+  declare attribute option1Value
+  declare attribute option2Value
+  declare attribute option1Source
+  declare attribute option2Source
+
+  contest/path_greenlore_state_1 :: a Contest
+  contest/path_greenlore_state_1 . subject = "path/greenlore"
+  contest/path_greenlore_state_1 . predicate = "state"
+  contest/path_greenlore_state_1 . state = "contested"
+  contest/path_greenlore_state_1 . option1Value = "mastered"
+  contest/path_greenlore_state_1 . option1Source = "glm"
+  contest/path_greenlore_state_1 . option2Value = "undiscovered"
+  contest/path_greenlore_state_1 . option2Source = "gemini"
+  contest/path_greenlore_state_1 `disputes` path/greenlore

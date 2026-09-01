@@ -1,0 +1,21 @@
+machine mine/ninefathom
+  states
+    undug
+    active
+    depleted
+    flooded
+
+  transition open(miner)
+    undug -> active
+    guard $miner `worksAt` self
+    assert active
+
+  transition exhaust()
+    active -> depleted
+    assert depleted
+    retract active
+
+  transition flood()
+    active -> flooded
+    assert flooded
+    retract active

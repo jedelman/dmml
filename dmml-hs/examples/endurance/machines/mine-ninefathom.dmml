@@ -1,0 +1,28 @@
+machine mine/ninefathom
+  states
+    undug
+    active
+    flooded
+    exhausted
+
+  transition dig(digger)
+    undug -> active
+    guard $digger `worksAt` self
+    assert active
+
+  transition flood()
+    active -> flooded
+    guard mountain/ashkar `erupts` self
+    assert flooded
+    retract active
+
+  transition pump(engineer)
+    flooded -> active
+    guard $engineer `masters` path/bronzework
+    assert active
+    retract flooded
+
+  transition exhaust()
+    active -> exhausted
+    assert exhausted
+    retract active

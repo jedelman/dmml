@@ -1,0 +1,19 @@
+commit riverfolkSyncretize
+  declare relation belongsTo
+  declare relation carries
+  declare relation locatedIn
+  declare relation tradesWith
+  declare relation witnessedBy
+  declare attribute purpose
+  declare attribute state
+
+  goods/riverweave :: a Good
+  goods/riverweave . belongsTo = culture/riverfolk
+  npc/keeper `carries` goods/riverweave
+  event/bargainfeast :: a Syncretism
+  event/bargainfeast . belongsTo = culture/riverfolk
+  event/bargainfeast `locatedIn` forest/oldroot
+  event/bargainfeast `witnessedBy` herbalist/onn
+  event/bargainfeast . purpose = "the highkin came down the terraces with bronze and the riverfolk brought riverkine weave and cheese, and over three nights of barter the two kin found their songs and grammar rhyming"
+  culture/riverfolk `tradesWith` culture/highkin
+  culture/riverfolk . state = "syncretized"

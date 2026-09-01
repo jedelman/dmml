@@ -1,0 +1,4 @@
+commit syncretizes
+  culture/riverfolk `tradesWith` culture/highkin
+  culture/highkin . state = "syncretized"
+  culture/riverfolk . state = "syncretized"

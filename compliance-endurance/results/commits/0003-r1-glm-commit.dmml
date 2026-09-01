@@ -1,0 +1,16 @@
+commit pumphouse
+
+  smith/vesna `apprenticesUnder` path/bronzework
+  path/bronzework . state = "mastered"
+  smith/vesna `masters` path/bronzework
+
+  herbalist/onn `apprenticesUnder` path/greenlore
+  path/greenlore . state = "mastered"
+
+  cistern/ninefathom :: a Cistern
+  cistern/ninefathom . purpose = "bronze-pumped cistern raised to draw the floodwater out of ninefathom"
+  cistern/ninefathom `belongsTo` mine/ninefathom
+  cistern/ninefathom `locatedIn` mountain/ashkar
+
+  mine/ninefathom . state = "active"
+  herd/aurochs . state = "grazing"

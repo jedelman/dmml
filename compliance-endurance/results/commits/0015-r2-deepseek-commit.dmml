@@ -1,0 +1,6 @@
+commit heedKeeper
+  declare relation consults
+
+  herbalist/onn . consults = npc/keeper
+  npc/keeper . purpose = "keeper of the greenlore path, witness to oldroot's cycles"
+  herbalist/onn . role = "herbalist who reads the ash's warning and seeks the keeper's counsel"

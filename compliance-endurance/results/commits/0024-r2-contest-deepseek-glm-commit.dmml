@@ -1,0 +1,19 @@
+commit raises
+  declare relation disputes
+  declare attribute subject
+  declare attribute predicate
+  declare attribute state
+  declare attribute option1Value
+  declare attribute option2Value
+  declare attribute option1Source
+  declare attribute option2Source
+
+  contest/herbalist_onn_role_1 :: a Contest
+  contest/herbalist_onn_role_1 . subject = "herbalist/onn"
+  contest/herbalist_onn_role_1 . predicate = "role"
+  contest/herbalist_onn_role_1 . state = "contested"
+  contest/herbalist_onn_role_1 . option1Value = "herbalist who reads the ash's warning and seeks the keeper's counsel"
+  contest/herbalist_onn_role_1 . option1Source = "deepseek"
+  contest/herbalist_onn_role_1 . option2Value = "founder of the greenlore path"
+  contest/herbalist_onn_role_1 . option2Source = "glm"
+  contest/herbalist_onn_role_1 `disputes` herbalist/onn

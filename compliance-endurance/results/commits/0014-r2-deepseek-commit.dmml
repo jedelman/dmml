@@ -1,0 +1,8 @@
+commit feedHerd
+  declare relation pasturedIn
+
+  herd/stagfolk . pasturedIn = meadow/highpasture
+  herd/aurochs . pasturedIn = meadow/highpasture
+  meadow/highpasture . a = Meadow
+  meadow/highpasture . locatedIn = mountain/ashkar
+  meadow/highpasture . purpose = "high pasture above the treeline, where the herds winter before descending"

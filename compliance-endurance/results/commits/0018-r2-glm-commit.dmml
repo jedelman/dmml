@@ -1,0 +1,15 @@
+commit greenloreDiscovery
+  declare relation belongsTo
+  declare relation locatedIn
+  declare relation witnessedBy
+  declare attribute purpose
+  declare attribute role
+  declare attribute state
+
+  event/greendiscovery :: a Discovery
+  event/greendiscovery . belongsTo = path/greenlore
+  event/greendiscovery `locatedIn` forest/oldroot
+  event/greendiscovery `witnessedBy` herbalist/onn
+  event/greendiscovery . purpose = "the first walking of the root-roads, begun under the first ash when onn followed the herds' grazing ways"
+  herbalist/onn . role = "founder of the greenlore path"
+  path/greenlore . state = "apprenticed"

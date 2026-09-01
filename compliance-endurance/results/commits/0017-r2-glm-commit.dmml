@@ -1,0 +1,13 @@
+commit riverfolkFlourish
+  declare relation belongsTo
+  declare relation grazesIn
+  declare relation worksAt
+  declare attribute state
+  declare attribute role
+
+  npc/keeper . role = "founder of the riverfolk"
+  herd/riverkine :: a Herd
+  herd/riverkine . belongsTo = culture/riverfolk
+  herd/riverkine `grazesIn` forest/oldroot
+  herbalist/onn `worksAt` forest/oldroot
+  culture/riverfolk . state = "flourishing"

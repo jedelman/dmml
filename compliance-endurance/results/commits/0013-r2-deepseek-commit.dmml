@@ -1,0 +1,7 @@
+commit forgeAlliance
+  declare relation forgesFor
+  declare relation supplies
+
+  smith/vesna `forgesFor` npc/keeper
+  smith/vesna `supplies` hammer/seamdriver
+  hammer/seamdriver . purpose = "seamdriver hammer, forged by vesna for the keeper's rites"

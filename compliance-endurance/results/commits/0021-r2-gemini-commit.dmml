@@ -1,0 +1,7 @@
+commit flourishes
+  culture/highkin . state = "flourishing"
+  culture/riverfolk . state = "flourishing"
+  culture/highkin `tradesWith` culture/riverfolk
+  herd/aurochs . state = "migrating"
+  river/lowbend :: a River
+  river/lowbend . purpose = "broad bend of the shallows where aurochs cross"

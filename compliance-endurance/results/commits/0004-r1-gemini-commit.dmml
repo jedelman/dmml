@@ -1,0 +1,6 @@
+commit expands
+  mine/ninefathom :: a Mine
+  mine/ninefathom . purpose = "deep copper and tin workings carved beneath the mountain"
+  npc/delver :: a Miner
+  npc/delver `worksAt` mine/ninefathom
+  npc/delver `apprenticesUnder` path/bronzework

@@ -1,0 +1,17 @@
+commit eruption
+
+  mountain/ashkar `erupts` mine/ninefathom
+  mine/ninefathom . state = "flooded"
+
+  event/firstash :: a Ashfall
+  event/firstash . purpose = "ash and cinder raining over oldroot, the mountain's first warning"
+  event/firstash `belongsTo` mountain/ashkar
+  event/firstash `fallsOn` forest/oldroot
+  event/firstash `witnessedBy` herbalist/onn
+
+  path/greenlore . state = "apprenticed"
+
+  river/lowbend :: a River
+  river/lowbend . purpose = "the slow bend below oldroot where the riverfolk follow the herds"
+  herd/aurochs `migratesTo` river/lowbend
+  herd/aurochs . state = "migrating"

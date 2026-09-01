@@ -1,0 +1,15 @@
+commit prospect
+
+  smith/vesna :: a Smith
+  smith/vesna . role = "master ore-smith of the ashkar slopes"
+  smith/vesna `worksAt` mine/ninefathom
+  smith/vesna `carries` hammer/seamdriver
+  hammer/seamdriver :: a Hammer
+  hammer/seamdriver . purpose = "driving the first seam into ninefathom's undug face"
+  herbalist/onn :: a Herbalist
+  herbalist/onn . role = "blight-reader of oldroot"
+  herbalist/onn `worksAt` forest/oldroot
+  smith/vesna `tradesWith` herbalist/onn
+
+  mine/ninefathom . state = "active"
+  path/bronzework . state = "apprenticed"

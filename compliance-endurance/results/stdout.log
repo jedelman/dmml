@@ -1,0 +1,88 @@
+=== endurance test: 4 agents, up to 20 rounds, seed=20260901 ===
+seed world: 11 files, 53 lines
+
+--- round 1 ---
+  [kimi] corner: 6 node(s), 120 machine-def line(s)
+    [kimi] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-kimi-1.dmml: REJECTED
+<surface>:4:38:
+  |
+4 |   culture/highkin . state = "nascent"
+  |                                      ^
+duplicate (culture/
+    [kimi] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-kimi-2.dmml: REJECTED
+<surface>:3:26:
+  |
+3 |     fact culture/highkin . state = "nascent"
+  |                          ^
+unexpected '.'
+expecting
+  [deepseek] corner: 6 node(s), 85 machine-def line(s)
+    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-1.dmml: REJECTED
+<surface>:12:45:
+   |
+12 |   mountain/ashkar . witnessedBy = npc/keeper
+   |                                            
+    [deepseek] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-2.dmml: REJECTED
+<surface>:1:14:
+  |
+1 | commit ashkar-eruption
+  |              ^^
+unexpected "-e"
+expecting end of line
+  [glm] corner: 5 node(s), 117 machine-def line(s)
+    [glm] attempt 1: accepted (commit)
+    [glm] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-glm-2.dmml: REJECTED
+<surface>:18:37:
+   |
+18 |   herd/aurochs . state = "migrating"
+   |                                     ^
+duplicate (event/f
+    [glm] attempt 3: accepted (commit)
+    [glm] attempt 4: accepted (commit)
+  [gemini] corner: 5 node(s), 88 machine-def line(s)
+    [gemini] attempt 1: accepted (commit)
+    [gemini] attempt 2: accepted (commit)
+    [gemini] attempt 3: accepted (machine)
+    [gemini] DONE after 3 commit(s)
+  round 1 totals: valid=6 invalid=5 attempts=11 fail_rate=0.45
+  CONTEST minted: glm vs gemini on path/greenlore . state
+
+--- round 2 ---
+  [kimi] corner: 10 node(s), 98 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (machine)
+    [kimi] attempt 4: accepted (commit)
+  [deepseek] corner: 10 node(s), 39 machine-def line(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (machine)
+  [glm] corner: 9 node(s), 58 machine-def line(s)
+    [glm] attempt 1: accepted (commit)
+    [glm] attempt 2: accepted (commit)
+    [glm] attempt 3: accepted (commit)
+    [glm] attempt 4: accepted (commit)
+  [gemini] corner: 9 node(s), 142 machine-def line(s)
+    [gemini] attempt 1: accepted (commit)
+    [gemini] attempt 2: accepted (machine)
+    [gemini] attempt 3: accepted (commit)
+    [gemini] DONE after 3 commit(s)
+  round 2 totals: valid=15 invalid=0 attempts=15 fail_rate=0.00
+  CONTEST minted: deepseek vs glm on herbalist/onn . role
+
+--- round 3 ---
+  [kimi] corner: 14 node(s), 38 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] DONE after 3 commit(s)
+  [deepseek] corner: 14 node(s), 155 machine-def line(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+  [glm] corner: 13 node(s), 111 machine-def line(s)
+    [glm] attempt 1: accepted (commit)
+    [glm] attempt 2: accepted (commit)
+    [glm] attempt 3: accepted (commit)

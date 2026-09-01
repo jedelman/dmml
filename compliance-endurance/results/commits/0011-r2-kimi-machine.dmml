@@ -1,0 +1,23 @@
+machine cistern/ninefathom
+  states
+    intact
+    split
+    drained
+    restored
+
+  transition rupture()
+    intact -> split
+    assert split
+    retract intact
+
+  transition drain(crew)
+    split -> drained
+    guard $crew `worksAt` mine/ninefathom
+    assert drained
+    retract split
+
+  transition mend(engineer)
+    drained -> restored
+    guard $engineer `masters` path/bronzework
+    assert restored
+    retract drained

@@ -1,0 +1,8 @@
+commit mints
+  declare relation witnessedBy
+  declare attribute purpose
+  declare attribute state
+
+  event/firstash . state = "restless"
+  mountain/ashkar . state = "restless"
+  mountain/ashkar . purpose = "the range's tallest peak, trembling now, its mine and quarry evacuated"

@@ -1,0 +1,8 @@
+commit expands
+  npc/delver `worksAt` mine/ninefathom
+  npc/delver `belongsTo` culture/highkin
+  npc/keeper `belongsTo` culture/riverfolk
+  path/greenlore :: a TechnicalPath
+  path/greenlore . purpose = "lore of tending the rootwoods and warding wild herds"
+  path/greenlore . state = "undiscovered"
+  culture/highkin `tradesWith` culture/riverfolk
