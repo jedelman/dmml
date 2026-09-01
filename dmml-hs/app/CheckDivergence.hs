@@ -121,7 +121,22 @@ main = do
       peerFiles <- readListFile peerListPath
       mineSnap <- materializeFiles mineFiles
       peerSnap <- materializeFiles peerFiles
-      let overlapKeys = [k | k <- Map.keys (snapshotFacts mineSnap), k `Map.member` snapshotFacts peerSnap]
+      -- A shared (subject, predicate) key is only a real contest if the
+      -- two independently-derived values actually differ -- two agents
+      -- who never saw each other's work converging on the SAME value
+      -- (both independently decide a mine is now "active") is agreement,
+      -- not corruption, and minting a contest for it would itself be
+      -- exactly the kind of false alarm "corruption as content" is
+      -- supposed to avoid. Found for real, not hypothetically: an
+      -- endurance run where 3 of 4 agents independently set the same
+      -- freshly-dug mine to "active" got flagged as three-way disputed
+      -- before this check existed.
+      let overlapKeys =
+            [ k
+            | (k, mv) <- Map.toList (snapshotFacts mineSnap)
+            , Just pv <- [Map.lookup k (snapshotFacts peerSnap)]
+            , mv /= pv
+            ]
       if null overlapKeys
         then putStrLn "no divergence"
         else
