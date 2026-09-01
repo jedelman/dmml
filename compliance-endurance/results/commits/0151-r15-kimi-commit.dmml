@@ -1,0 +1,8 @@
+commit mints
+  record/seal_discrepancy :: a Record
+  record/seal_discrepancy . purpose = "the cistern seals name 'brannock' where 'brannoc' is meant; a scribe's error or a second seal-bearer never found"
+  record/seal_discrepancy . records = cistern/ninefathom
+  record/seal_discrepancy . witnessedBy = smith/vesna
+
+  npc/gilan `appointedBy` contest/cistern_ninefathom_state_1
+  contest/cistern_ninefathom_state_1 . state = "resolved"

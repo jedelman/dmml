@@ -1,0 +1,6 @@
+commit mints
+  declare relation masters
+
+  npc/greenseeker :: a NPC
+  npc/greenseeker . masters = path/greenlore
+  path/bronzework . state = "apprenticed"

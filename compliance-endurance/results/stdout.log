@@ -495,3 +495,36 @@ expecting "::", '.', or '`'
 
 --- round 15 ---
   [kimi] corner: 38 node(s), 129 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (machine)
+    [kimi] attempt 4: accepted (commit)
+  [deepseek] corner: 38 node(s), 157 machine-def line(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (machine)
+    [deepseek] attempt 4: accepted (commit)
+  [glm] corner: 38 node(s), 41 machine-def line(s)
+    [glm] attempt 1: accepted (commit)
+    [glm] attempt 2: accepted (commit)
+    [glm] attempt 3: accepted (commit)
+    [glm] attempt 4: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-glm-4.dmml: REJECTED
+<surface>:10:222:
+   |
+10 |   event/ninefathom_rupture . purpose = "the secondash silted the ninefathom's rain-catch and the 
+  [deepseek2] corner: 37 node(s), 98 machine-def line(s)
+    [deepseek2] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-1.dmml: REJECTED
+<surface>:8:13:
+  |
+8 |   shrine/wh PAGE托马斯 toutes Substitute清新的Hou کردن的一次Too descriptions<｜place▁holder▁no▁620｜>这儿而无 
+    [deepseek2] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-2.dmml: REJECTED
+<surface>:1:1:
+  |
+1 | person/3 `bears` npc/keeper
+  | ^^^^^^
+unexpected "person"
+expecting "commit"
+  round 15 totals: valid=11 invalid=3 attempts=14 fail_rate=0.21
+
+--- round 16 ---
+  [kimi] corner: 42 node(s), 91 machine-def line(s)

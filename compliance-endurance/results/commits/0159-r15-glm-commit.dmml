@@ -1,0 +1,15 @@
+commit drives
+  npc/brannoc `belongsTo` culture/riverfolk
+
+  herd/riverkine :: a Herd
+  herd/riverkine `grazesIn` meadow/ninefathom_bench
+  herd/riverkine `migratesTo` meadow/lowbank
+  herd/riverkine . state = driven
+
+  meadow/lowbank :: a Meadow
+  meadow/lowbank `belongsTo` culture/riverfolk
+
+  event/herd_driven :: a Event
+  event/herd_driven `causedBy` contest/cistern_ninefathom_state_1
+  event/herd_driven `witnessedBy` npc/keeper
+  event/herd_driven . purpose = "with the ninefathom's state split and its mouth reopened, brannoc drives the riverkine off the bench meadow toward the lowbank the folk hold, the drive the first watering taken under gilan's settlement"

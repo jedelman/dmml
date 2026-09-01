@@ -1,0 +1,6 @@
+commit mints
+  npc/ashkar_pilgrim :: a NPC
+  npc/ashkar_pilgrim . purpose = "a pilgrim come down from the quenched mountain seeking counsel on what follows eruption"
+  npc/ashkar_pilgrim `consults` npc/brannoc
+  npc/brannoc . state = "counseled"
+  npc/ashkar_pilgrim `witnessedBy` mountain/ashkar

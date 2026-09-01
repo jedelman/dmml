@@ -1,0 +1,8 @@
+commit seals
+  npc/brannoc . seals = cistern/ninefathom
+  cistern/ninefathom . wardedBy = npc/brannoc
+
+  event/cistern_sealed :: a Event
+  event/cistern_sealed . causedBy = event/secondash
+  event/cistern_sealed . witnessedBy = npc/keeper
+  event/cistern_sealed . purpose = "with the secondash still falling, brannoc stops the ninefathom's mouth so the black rain finds no way into the water, and the keeper bears witness to the sealing"

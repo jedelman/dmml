@@ -1,0 +1,23 @@
+machine cistern/ninefathom
+  states
+    dry
+    flowing
+    loosed
+    drowned
+
+  transition fill()
+    dry -> flowing
+    guard self `supplies` mine/ninefathom
+    assert flowing
+
+  transition loosen(arbitrator)
+    flowing -> loosed
+    guard $arbitrator `seals` self
+    assert loosed
+    retract flowing
+
+  transition flood()
+    loosed -> drowned
+    guard self `causedBy` mine/ninefathom
+    assert drowned
+    retract loosed

@@ -1,0 +1,9 @@
+commit seal_cistern_ratification
+  declare relation ratifiedBy
+  declare relation witnessesSeal
+
+  contest/cistern_ninefathom_state_1 . resolvedBy = npc/gilan
+  contest/cistern_ninefathom_state_1 . ratifiedBy = smith/vesna
+  cistern/ninefathom . witnessedBy = npc/gilan
+  edge/brannoc_seal . bears = cistern/ninefathom
+  smith/vesna . apprenticesUnder = npc/brannoc

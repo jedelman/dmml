@@ -1,0 +1,8 @@
+commit settles
+  herd/riverkine . state = pastured
+  herd/riverkine `pasturedIn` meadow/lowbank
+
+  event/herd_settled :: a Event
+  event/herd_settled `causedBy` contest/cistern_ninefathom_state_1
+  event/herd_settled `witnessedBy` npc/keeper
+  event/herd_settled . purpose = "brannoc settles the riverkine on the lowbank the folk hold, the herd pastured under gilan's split of the ninefathom, lowbank grass for the season"

@@ -1,0 +1,6 @@
+commit firstLessons
+  declare relation recordedBy
+  declare attribute lesson
+
+  event/firstlesson . recordedBy = npc/brannoc
+  event/firstlesson . lesson = "the rootwood's seep taught the masons how to hold water in stone"
