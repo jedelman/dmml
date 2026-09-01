@@ -1,11 +1,10 @@
-commit foundsBronze
-  declare relation worksAt
-  declare relation apprenticesUnder
-  declare relation masters
-  declare attribute purpose
-  declare attribute state
+commit forestRenewal
+  declare relation heals
+  declare attribute depth
 
-  npc/bronzehand :: a Person
-  npc/bronzehand . role = "mine-founder"
-  npc/bronzehand `worksAt` mine/ninefathom
-  path/bronzework . state = "apprenticed"
+  forest/oldroot . state = "regrown"
+  forest/oldroot . rite = "root-binding ceremony"
+  npc/greenhand . heals = forest/oldroot
+  npc/greenhand . craft = "blight-warden"
+  mine/ninefathom . depth = 340
+  mine/ninefathom . locatedIn = mountain/ashkar
