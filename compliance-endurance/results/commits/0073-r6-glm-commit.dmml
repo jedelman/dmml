@@ -1,0 +1,9 @@
+commit erupts
+  event/secondash :: a Ashfall
+  event/secondash . belongsTo = mountain/ashkar
+  event/secondash . purpose = "the second ash: the restless peak opens above the basin and grey snow falls on root-roads and workings alike"
+  mountain/ashkar `erupts` event/secondash
+  mountain/ashkar . state = "erupting"
+  rain/longrain :: a Rain
+  rain/longrain . fallsOn = mountain/ashkar
+  rain/longrain . purpose = "the long rain riding the ash-wind, heavy enough to drown the eruption's glow"

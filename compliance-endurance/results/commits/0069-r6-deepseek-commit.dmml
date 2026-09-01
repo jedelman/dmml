@@ -1,0 +1,7 @@
+commit ashkar_rumble_echo
+  declare relation rumble
+  declare attribute subject
+  declare attribute state
+
+  event/ashkar_rumble . rumble = mountain/ashkar
+  mountain/ashkar . state = "restless"

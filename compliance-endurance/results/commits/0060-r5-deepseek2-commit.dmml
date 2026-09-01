@@ -1,0 +1,9 @@
+commit nines_initiate_resolution
+  declare relation convenes
+  declare relation seals
+
+  crew/ninefathom_day . worksAt = mine/ninefathom
+  contest/cistern_ninefathom_state_1 . state = "contested"
+  contest/cistern_ninefathom_state_1 `disputes` crew/ninefathom_day
+  event/bargainfeast `supplies` crew/ninefathom_day
+  crew/ninefathom_day . appointedBy = nil

@@ -1,0 +1,32 @@
+machine mine/ninefathom
+  states
+    largely_untouched
+    sampled
+    contested
+    worked
+    exhausted
+
+  transition sample(prospector)
+    largely_untouched -> sampled
+    guard $prospector `worksAt` self
+    assert sampled
+    retract largely_untouched
+
+  transition claim(rival)
+    sampled -> contested
+    guard $rival `disputes` self
+    assert contested
+    retract sampled
+
+  transition work(miner)
+    contested -> worked
+    guard $miner `worksAt` self
+    assert worked
+    retract contested
+
+  transition exhaust(miner)
+    worked -> exhausted
+    guard $miner `worksAt` self
+    guard self `supplies` cistern/ninefathom
+    assert exhausted
+    retract worked

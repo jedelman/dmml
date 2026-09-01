@@ -1,0 +1,6 @@
+commit mints
+  declare relation apprenticesUnder
+  declare attribute state
+
+  npc/delver . apprenticesUnder = path/bronzework
+  path/bronzework . state = "mastered"

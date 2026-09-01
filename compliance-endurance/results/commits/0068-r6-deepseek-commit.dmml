@@ -1,0 +1,8 @@
+commit delve
+  declare relation rumble
+  declare attribute subject
+
+  event/ashkar_rumble . belongsTo = mountain/ashkar
+  event/ashkar_rumble . witnessedBy = npc/keeper
+  event/ashkar_rumble . subject = "unrest"
+  mountain/ashkar . rumble = event/ashkar_rumble

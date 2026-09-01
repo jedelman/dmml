@@ -1,0 +1,7 @@
+commit opens
+  mine/ninefathom . state = "active"
+  mine/ninefathom . purpose = "the ninefathom seam under ashkar's flank, opened hard on the cistern's breaking — the dig races the water that ran down into the undug dark"
+  event/firstdig :: a Event
+  event/firstdig . belongsTo = mine/ninefathom
+  event/firstdig . purpose = "crew/ninefathom_day sinks the first adit with the seamdriver in hand, while the split cistern's run-off whispers somewhere below the workings"
+  hammer/seamdriver . locatedIn = mine/ninefathom

@@ -1,0 +1,6 @@
+commit mints
+  declare relation worksAt
+  declare attribute state
+
+  npc/brannoc . worksAt = mine/ninefathom
+  path/bronzework . state = "apprenticed"

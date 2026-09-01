@@ -1,0 +1,7 @@
+commit strikes
+  ore/firstsample :: a Ore
+  ore/firstsample . locatedIn = mine/ninefathom
+  ore/firstsample . purpose = "first ore struck from the ninefathom seam after the mountain grumbled"
+  ore/firstsample . belongsTo = mine/ninefathom
+  npc/skarn . carries = hammer/seamdriver
+  mine/ninefathom . state = "sampled"

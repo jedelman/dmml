@@ -1,0 +1,9 @@
+commit mints
+  declare relation teaches
+  declare attribute resolvedBy
+
+  contest/path_greenlore_state_1 . state = "resolved"
+  contest/path_greenlore_state_1 . resolvedBy = npc/keeper
+  path/greenlore . state = "mastered"
+  npc/keeper `teaches` path/greenlore
+  herbalist/onn `apprenticesUnder` path/greenlore

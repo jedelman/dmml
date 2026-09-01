@@ -1,0 +1,16 @@
+machine npc/brannoc
+  states
+    wary
+    counseled
+    resolved
+
+  transition counsel(seeker)
+    wary -> counseled
+    guard $seeker `consults` self
+    assert counseled
+
+  transition settle()
+    counseled -> resolved
+    guard self `seals` contest/cistern_ninefathom_state_1
+    assert resolved
+    retract counseled

@@ -1,0 +1,10 @@
+commit stirs
+  npc/skarn :: a Npc
+  npc/skarn . belongsTo = culture/highkin
+  npc/skarn . worksAt = mine/ninefathom
+  npc/skarn . apprenticesUnder = npc/brannoc
+
+  event/ashkar_rumble . witnessedBy = npc/skarn
+  mountain/ashkar `rumble` event/ashkar_rumble
+  mountain/ashkar . witnessedBy = npc/skarn
+  mountain/ashkar . state = "restless"

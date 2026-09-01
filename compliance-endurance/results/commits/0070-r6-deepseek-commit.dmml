@@ -1,0 +1,10 @@
+commit seal_keeper_shaft
+  declare relation consecrates
+  declare relation seals
+  declare relation witnessedBy
+
+  event/sealing . a = Sealing
+  event/sealing . consecrates = mountain/ashkar
+  event/sealing . seals = mine/ninefathom
+  event/sealing . witnessedBy = npc/keeper
+  event/sealing . subject = "the ninefathom shaft, sealed against the ash's breath"

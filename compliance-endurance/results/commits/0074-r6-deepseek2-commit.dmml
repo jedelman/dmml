@@ -1,0 +1,10 @@
+commit cistern_resolution
+
+  refs
+    recorder herd/keeper # c-17
+
+  herd/keeper `documents` contest/cistern_ninefathom_state_1
+
+  consumes
+    fact herd/keeper # c-17
+      herd/keeper . assessment

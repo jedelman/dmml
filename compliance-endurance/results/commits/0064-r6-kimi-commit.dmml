@@ -1,0 +1,8 @@
+commit mints
+  declare relation syncretizedWith
+  declare attribute description
+
+  culture/riverfolk . state = "syncretized"
+  culture/riverfolk `syncretizedWith` culture/highkin
+  event/bargainfeast . description = "the highkin came down the terraces with bronze and the riverfolk brought riverkine weave and cheese, and over three nights of barter the two kin found their songs and grammar rhyming; by the third dawn their trade-tokens bore both river-runes and terrace-marks, and the riverfolk were no longer only riverfolk"
+  smith/vesna `tradesWith` culture/highkin

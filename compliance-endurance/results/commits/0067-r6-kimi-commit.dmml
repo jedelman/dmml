@@ -1,0 +1,8 @@
+commit mints
+  declare relation causedBy
+
+  contest/cistern_ninefathom_state_1 . state = "resolved"
+  contest/cistern_ninefathom_state_1 . resolvedBy = crew/ninefathom_day
+  cistern/ninefathom . state = "split"
+  event/firstdig . causedBy = cistern/ninefathom
+  crew/ninefathom_day . worksAt = mine/ninefathom

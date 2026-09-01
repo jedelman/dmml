@@ -1,0 +1,8 @@
+commit ruptures
+  cistern/ninefathom . state = "split"
+  cistern/ninefathom . witnessedBy = smith/vesna
+  event/cisternburst . purpose = "when ashkar split the slope, ninefathom's cistern cracked along its seam and the ninefathom water ran down into the undug dark"
+  event/cisternburst . belongsTo = mine/ninefathom
+  path/bronzework :: a Path
+  path/bronzework . locatedIn = mountain/ashkar
+  smith/vesna . masters = path/bronzework

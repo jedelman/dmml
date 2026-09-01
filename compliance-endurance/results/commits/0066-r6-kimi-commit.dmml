@@ -1,0 +1,10 @@
+commit mints
+  declare relation founded
+  declare attribute year
+
+  contest/herbalist_onn_role_1 . state = "resolved"
+  contest/herbalist_onn_role_1 . resolvedBy = herbalist/onn
+  herbalist/onn . role = "founder of the greenlore path"
+  event/greenmastery . founded = path/greenlore
+  event/greenmastery . witnessedBy = herbalist/onn
+  event/greenmastery . year = "the year of the second ash"

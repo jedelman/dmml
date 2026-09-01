@@ -132,3 +132,72 @@ starting world: 63 files, 222 lines
     [deepseek] attempt 1: accepted (commit)
     [deepseek] DONE after 1 commit(s)
   [glm] corner: 18 node(s), 148 machine-def line(s)
+    [glm] attempt 1: accepted (commit)
+    [glm] attempt 2: accepted (commit)
+    [glm] no fenced content, treating as stop
+  [deepseek2] corner: 18 node(s), 116 machine-def line(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (machine)
+    [deepseek2] attempt 3: accepted (machine)
+    [deepseek2] attempt 4: accepted (machine)
+  round 5 totals: valid=11 invalid=0 attempts=12 fail_rate=0.00
+
+--- round 6 ---
+  [kimi] corner: 20 node(s), 135 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+  [deepseek] corner: 19 node(s), 102 machine-def line(s)
+    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-1.dmml: REJECTED
+<surface>:9:41:
+  |
+9 |   storm/secondash `quenches` smith/vesna
+  |                                         ^
+duplicate
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+  [glm] corner: 19 node(s), 156 machine-def line(s)
+    [glm] attempt 1: accepted (commit)
+    [glm] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-glm-2.dmml: REJECTED
+<surface>:7:38:
+  |
+7 |   mine/ninefathom . state = "sampled"
+  |                                      ^
+duplicate (npc/skarn
+    [glm] attempt 3: accepted (commit)
+    [glm] attempt 4: accepted (commit)
+  [deepseek2] corner: 19 node(s), 94 machine-def line(s)
+    [deepseek2] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-1.dmml: REJECTED
+<surface>:8:13:
+  |
+8 |   documents herd/keeper # c-17
+  |             ^^
+unexpected "he"
+expecting "::", '.', '`', or 
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-3.dmml: REJECTED
+<surface>:7:91:
+  |
+7 |   contest/cistern_ninefathom_state_1 . option2Source = contest/cistern_ninefathom_state_1 . opt
+  round 6 totals: valid=11 invalid=4 attempts=15 fail_rate=0.27
+
+--- round 7 ---
+  [kimi] corner: 22 node(s), 139 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] DONE after 2 commit(s)
+  [deepseek] corner: 21 node(s), 132 machine-def line(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-3.dmml: REJECTED
+<surface>:1:7:
+  |
+1 | commit
+  |       ^
+unexpected newline
+    [deepseek] attempt 4: accepted (commit)
+  [glm] corner: 21 node(s), 55 machine-def line(s)
+    [glm] attempt 1: accepted (commit)
+    [glm] attempt 2: accepted (commit)

@@ -1,0 +1,5 @@
+commit settleAshkar
+  declare relation rumble
+  declare relation erupts
+
+  mountain/ashkar . state = "dormant"
