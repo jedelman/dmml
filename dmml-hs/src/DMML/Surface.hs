@@ -397,6 +397,35 @@ pCommitLine =
     <|> (CLItem <$> pInfixFact)
     <|> (CLItem <$> pDotFact)
 
+-- | A repeated (subject, predicate) pair within one commit's own facts
+-- is never something an author means to do -- the second occurrence
+-- would silently overwrite the first with no signal at all (the exact
+-- rule 'DMML.FromJson.commitStmtFromInput's own duplicate check
+-- enforces on the JSON side; this surface had no equivalent until a
+-- hand-authored genesis file tripped over it for real). Checked here on
+-- the built 'CommitItem' list, one pass, before the commit is accepted.
+predRefText :: PredicateRef -> Text
+predRefText RdfType = "a"
+predRefText (PredIdent t) = t
+
+checkNoDuplicateFacts :: [CommitItem] -> Parser ()
+checkNoDuplicateFacts items = go Map.empty [f | ItemFact f <- items]
+  where
+    go :: Map (Text, Text) Int -> [FactStmt] -> Parser ()
+    go _ [] = pure ()
+    go seen (f : rest) =
+      let key = (T.intercalate "/" (nodeRefSegments (factSubject f)), predRefText (factPredicate f))
+       in case Map.lookup key seen of
+            Just _ ->
+              fail
+                ( "duplicate ("
+                    <> T.unpack (fst key)
+                    <> ", "
+                    <> T.unpack (snd key)
+                    <> ") within this commit -- the second occurrence would silently overwrite the first"
+                )
+            Nothing -> go (Map.insert key (Map.size seen) seen) rest
+
 commitSurfaceParser :: Parser CommitStmt
 commitSurfaceParser = do
   sp <- spanHere
@@ -407,6 +436,7 @@ commitSurfaceParser = do
       pure (L.IndentSome Nothing (\ls -> pure (verb, ls)) pCommitLine)
   let items = [i | CLItem i <- ls]
       refs = Map.unionsWith (++) [m | CLRefs m <- ls]
+  checkNoDuplicateFacts items
   pure CommitStmt {commitVerb = verb, commitItems = items, commitRefs = refs, commitSpan = sp}
 
 parseCommitSurface :: Text -> Either (ParseErrorBundle Text Void) CommitStmt
