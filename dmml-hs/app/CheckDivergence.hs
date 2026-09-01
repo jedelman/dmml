@@ -25,12 +25,8 @@
 -- Both mints are ordinary DMML, parsed and validated the same as any
 -- other content before being written -- dogfooded, not just described.
 --
--- Usage: check-divergence <mine-list-file> <peer-list-file> <known-list-file> <output-dir> <mine-label> <peer-label>
+-- Usage: check-divergence <mine-list-file> <peer-list-file> <output-dir> <mine-label> <peer-label>
 --   Each list file: one .dmml path per line (may be empty).
---   known-list-file: the invoking repo's OWN full commits/*.dmml corpus
---   as it stood before this merge -- used only to skip minting a
---   duplicate Contest for a (subject, predicate) some earlier Contest
---   already covers there (see alreadyContestedPairs below).
 -- Always exits 0 -- divergence is no longer a reason to block a merge,
 -- only a reason to mint a contest. Prints which files (if any) were
 -- written.
@@ -45,7 +41,7 @@ import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
 import DMML.Ast (Value (..), Literal (..), NodeRef (nodeRefSegments))
-import DMML.Materialize (WorldSnapshot (..), applyCommits, emptySnapshot)
+import DMML.Materialize (WorldSnapshot (..), applyCommits)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
 
 readListFile :: FilePath -> IO [FilePath]
@@ -117,17 +113,21 @@ mintContest n (subj, pred_) options = (factCommit, machine)
         ]
 
 -- | Every (subject, predicate) pair some already-materialized
--- @Contest@ node in this history disputes -- resolved or not. Real
--- gap found designing (not yet running) a >2-peer full-mesh sync test:
--- with more than one peer, the SAME raw divergence can be re-discovered
--- by more than one pairwise check within a single sync round (peer C
--- receives both sides of a dispute via two separate merges before
--- either merge's own "new since merge-base" window has advanced past
--- the original two commits), minting a second, redundant Contest for a
--- pair already covered by an earlier one. Passing a repo's own current
--- full history in lets a check skip a key that's already a live or
--- settled Contest topic there, instead of re-litigating it from scratch
--- every time two branches happen to both carry the original raw values.
+-- @Contest@ node in this snapshot disputes -- resolved or not. Real gap
+-- found designing (not yet running) a >2-peer full-mesh sync test: with
+-- more than one peer, the SAME raw divergence can be re-discovered by
+-- more than one pairwise check within a single sync round, minting a
+-- second, redundant Contest for a pair an earlier check already
+-- covered. First attempt at a fix here passed a THIRD "known" file list
+-- (the invoking repo's own full corpus) and checked only that -- wrong,
+-- caught by tracing a real hub-and-spoke sequence by hand before
+-- running it: a repo that hasn't merged anyone yet has an empty known
+-- set, so a still-uninformed receiver on either side of a merge would
+-- still double-mint. The fix that's actually correct: check mineSnap
+-- AND peerSnap themselves -- the exact two snapshots already being
+-- compared for this merge -- since a Contest minted earlier and
+-- already merged into EITHER side necessarily shows up as part of that
+-- side's own "new since merge-base" files, no separate list needed.
 alreadyContestedPairs :: WorldSnapshot -> Map.Map (Text, Text) ()
 alreadyContestedPairs snap = Map.fromList [((s, p), ()) | (s, p) <- catPairs]
   where
@@ -140,14 +140,12 @@ main :: IO ()
 main = do
   args <- getArgs
   case args of
-    [mineListPath, peerListPath, knownListPath, outDir, mineLabel, peerLabel] -> do
+    [mineListPath, peerListPath, outDir, mineLabel, peerLabel] -> do
       mineFiles <- readListFile mineListPath
       peerFiles <- readListFile peerListPath
-      knownFiles <- readListFile knownListPath
       mineSnap <- materializeFiles mineFiles
       peerSnap <- materializeFiles peerFiles
-      knownSnap <- if null knownFiles then pure emptySnapshot else materializeFiles knownFiles
-      let alreadyKnown = alreadyContestedPairs knownSnap
+      let alreadyKnown = Map.union (alreadyContestedPairs mineSnap) (alreadyContestedPairs peerSnap)
       -- A shared (subject, predicate) key is only a real contest if the
       -- two independently-derived values actually differ -- two agents
       -- who never saw each other's work converging on the SAME value
@@ -189,4 +187,4 @@ main = do
                 putStrLn ("  " <> T.unpack subj <> " . " <> T.unpack pred_ <> ": " <> mineLabel <> "=" <> show mv <> " vs " <> peerLabel <> "=" <> show pv)
             )
             (zip [1 :: Int ..] overlapKeys)
-    _ -> putStrLn "usage: check-divergence <mine-list-file> <peer-list-file> <known-list-file> <output-dir> <mine-label> <peer-label>" >> exitFailure
+    _ -> putStrLn "usage: check-divergence <mine-list-file> <peer-list-file> <output-dir> <mine-label> <peer-label>" >> exitFailure
