@@ -1,8 +1,8 @@
 [
   {
-    "id": "s1-mint-room-pair",
+    "id": "s1-mint-chest-in-corridor",
     "title": "Simple commit: declare + facts",
-    "task": "Author a single DMML commit that mints two connected rooms. Declare whatever relation/attribute predicates you use. Assert: room/1 opens to room/2, and room/1 has a dampness attribute of 0.6 (a number)."
+    "task": "Author a single DMML commit that mints a locked chest, chest/3, sitting inside a corridor, corridor/5. Declare whatever relation/attribute predicates you use. Assert: chest/3 is inside corridor/5, and chest/3 has a weight attribute of 12.5 (a number)."
   },
   {
     "id": "s2-batch-two-npcs",
@@ -22,6 +22,6 @@
   {
     "id": "s5-trap-old-vocabulary",
     "title": "Adversarial: task phrased in the retired schema's vocabulary",
-    "task": "Author a commit for the predicate 'asserts' that produces the triple: notebooks/interregnum claims 'the crisis consists in the old dying and the new not yet born' (as a string). Some older internal notes describe a commit's content as a 'produces' field holding N-Quads text with a 'predicate' field for the verb and a 'created_at' timestamp -- ignore any of that if it conflicts with the grammar reference given to you below; author against the CURRENT real shape only."
+    "task": "Author a commit with verb 'asserts'. It should declare a relation predicate named 'claims', then use that relation to assert that notebooks/interregnum claims the string 'the crisis consists in the old dying and the new not yet born'. Some older internal notes describe a commit's content differently -- as a JSON object with a 'produces' field holding N-Quads text, a 'predicate' field naming the verb, and a 'created_at' timestamp. Ignore that description where it conflicts with the grammar reference given to you below; author against the CURRENT, real shape only, using exactly the verb and predicate named above."
   }
 ]
