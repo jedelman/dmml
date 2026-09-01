@@ -311,3 +311,19 @@ unexpected "fo"
 expecting ":
     [kimi] attempt 2: accepted (commit)
     [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] committed 0072-r7-kimi-commit.dmml
+    [kimi] committed 0073-r7-kimi-commit.dmml
+    [kimi] committed 0074-r7-kimi-commit.dmml
+  [deepseek] corner: 13 node(s), own repo has 71 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] DONE after 3 commit(s)
+    [deepseek] committed 0072-r7-deepseek-commit.dmml
+    [deepseek] committed 0073-r7-deepseek-commit.dmml
+    [deepseek] committed 0074-r7-deepseek-commit.dmml
+  [mercury] corner: 13 node(s), own repo has 71 file(s)
+    [mercury] no fenced content, treating as stop
+  [deepseek2] corner: 13 node(s), own repo has 71 file(s)
+    [deepseek2] attempt 1: accepted (commit)

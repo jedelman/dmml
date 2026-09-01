@@ -1,0 +1,9 @@
+commit ashkarAwakens
+  declare relation witnessedBy
+  declare relation erupts
+  declare relation fallsOn
+
+  mountain/ashkar . state = "restless"
+  mountain/ashkar . witnessedBy = npc/keeper
+  weather/ashkarDrought . erupts = mountain/ashkar
+  quarry/stonemasonsRest . locatedIn = mountain/ashkar
