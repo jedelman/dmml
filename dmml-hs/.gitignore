@@ -6,3 +6,4 @@ validate-commit
 compliance-check-surface
 compliance-check-informed
 render-snapshot
+check-divergence
