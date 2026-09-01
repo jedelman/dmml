@@ -72,6 +72,11 @@ its machine definition (if shown), or declare a brand-new machine of your own. S
 what you're shown -- reuse real node names and declared predicates exactly as given; don't invent a \
 new predicate for something already declared.
 
+Identifier rule, easy to get wrong: a commit verb, a predicate name, and each segment of a node \
+reference are all single identifiers -- letters, digits, and underscore ONLY, no hyphens and no \
+spaces. Write `commit riverRites` or `commit river_rites`, never `commit river-rites`; `npc/riverKeeper`, \
+never `npc/river-keeper`. A hyphen anywhere in one of these is a guaranteed parse rejection.
+
 --- YOUR CORNER OF THE WORLD ---
 {corner}
 --- end YOUR CORNER OF THE WORLD ---
