@@ -63,8 +63,20 @@ materializeFiles paths = do
 slug :: Text -> Text
 slug = T.map (\c -> if c == '/' then '_' else c)
 
+-- | A node-valued option is written as a bareword node reference, the
+-- same shape any other node-typed value takes in this grammar
+-- (`<node_ref> . <ident> = <value>`, where `<value>` can itself be a
+-- bareword `<node_ref>`) -- no special-casing needed, `nodeRefSegments`
+-- reassembled with '/' round-trips exactly what the fact's own object
+-- already was. This used to be an unhandled `error` here ("cannot
+-- embed a node-valued option in a contest record yet"), a real,
+-- previously-flagged gap that crashed the whole process the first
+-- time a real run actually hit it (two agents each pointing the same
+-- predicate at a different node, not just a different string) --
+-- exactly the class of divergence this primitive exists to surface,
+-- not to crash on.
 renderValueLiteral :: Value -> Text
-renderValueLiteral (ValueNode n) = error ("cannot embed a node-valued option in a contest record yet: " <> show n)
+renderValueLiteral (ValueNode n) = T.intercalate "/" (nodeRefSegments n)
 renderValueLiteral (ValueLiteral (LitString s)) = "\"" <> s <> "\""
 renderValueLiteral (ValueLiteral (LitNumber n)) = n
 renderValueLiteral (ValueLiteral (LitBoolean b)) = if b then "true" else "false"
