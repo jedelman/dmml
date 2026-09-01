@@ -102,12 +102,25 @@ def adopt_into_repo(repo_dir, agent_name, round_no, accepted_paths, validate_bin
         log(f"    [{agent_name}] committed {final_name}")
 
 
+MINT_SUBJ_PRED_RE = re.compile(r"^  (\S+) \. (\S+): ")
+
+
 def full_mesh_sync(repos, validate_bin, divergence_bin, round_no, log):
     env = dict(os.environ)
     env["DMML_VALIDATOR"] = str(validate_bin)
     env["DMML_DIVERGENCE_CHECK"] = str(divergence_bin)
     names = list(repos.keys())
     total_contests = 0
+    # Only pairs ACTUALLY MINTED this round -- not "every Contest that
+    # currently exists anywhere in the repo," which would re-count an
+    # unresolved contest from an earlier round as freshly contested
+    # again every single round after it (a real bug found running
+    # this: an unresolved round-2 contest still sitting there,
+    # unresolved, in round 3 isn't a NEW divergence, and treating it as
+    # one triggered a false oscillation-thrash stop with only one real
+    # underlying dispute). Parsed straight from broker.sh's own mint
+    # output, same regex phase 1's run.py already uses for this.
+    minted_this_round = set()
     for a in names:
         for b in names:
             if a == b:
@@ -128,9 +141,13 @@ def full_mesh_sync(repos, validate_bin, divergence_bin, round_no, log):
             if minted:
                 total_contests += len(minted)
                 log(f"    [sync] {a} <- {b}: {len(minted)} contest(s) minted")
+                for line in out.splitlines():
+                    m = MINT_SUBJ_PRED_RE.match(line)
+                    if m:
+                        minted_this_round.add((m.group(1), m.group(2)))
             else:
                 log(f"    [sync] {a} <- {b}: ok, no divergence")
-    return total_contests
+    return total_contests, minted_this_round
 
 
 def render_repo_snapshot(render_bin, repo_dir):
@@ -139,25 +156,6 @@ def render_repo_snapshot(render_bin, repo_dir):
     if r.returncode != 0:
         raise RuntimeError(f"render-snapshot failed on {repo_dir}:\n{r.stdout}")
     return r.stdout
-
-
-CONTEST_SUBJ_RE = re.compile(r'\. subject = "([^"]+)"')
-CONTEST_PRED_RE = re.compile(r'\. predicate = "([^"]+)"')
-
-
-def contests_in_repo(repo_dir):
-    """Scans a repo's own commits/ for real Contest fact-commits and
-    returns their (subject, predicate) pairs -- used for the cross-round
-    oscillation thrash check, same signal run.py already tracks."""
-    pairs = []
-    for f in agent_commit_files(repo_dir):
-        text = f.read_text()
-        if "a Contest" not in text:
-            continue
-        sm, pm = CONTEST_SUBJ_RE.search(text), CONTEST_PRED_RE.search(text)
-        if sm and pm:
-            pairs.append((sm.group(1), pm.group(1)))
-    return pairs
 
 
 def main():
@@ -231,7 +229,7 @@ def main():
             f"attempts={total_attempts} fail_rate={fail_rate:.2f}")
 
         log(f"  full-mesh sync ({len(AGENTS) * (len(AGENTS) - 1)} pairwise broker.sh runs)...")
-        new_contests = full_mesh_sync(repos, validate_bin, divergence_bin, round_no, log)
+        new_contests, minted_this_round = full_mesh_sync(repos, validate_bin, divergence_bin, round_no, log)
 
         # Real convergence check -- with a correct dedup fix and full
         # mesh, every repo should end this round with the identical file
@@ -245,9 +243,8 @@ def main():
                 f"{ {n: len(s) for n, s in file_sets.items()} }")
 
         observer_dir = repos[AGENTS[0]["name"]]["dir"]
-        for (s, p) in contests_in_repo(observer_dir):
-            if (round_no, s, p) not in contest_history:
-                contest_history.append((round_no, s, p))
+        for (s, p) in minted_this_round:
+            contest_history.append((round_no, s, p))
 
         repeat_pairs = {}
         for (r, s, p) in contest_history:
