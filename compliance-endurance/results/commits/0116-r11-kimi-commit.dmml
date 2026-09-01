@@ -1,0 +1,10 @@
+commit mints
+  declare relation consults
+  declare relation syncretizedWith
+
+  path/stonemasonry . consults = path/greenlore
+  path/greenlore . syncretizedWith = path/stonemasonry
+  npc/vesna . worksAt = forest/oldroot
+  npc/vesna . honorsPath = path/greenlore
+  meadow/highpasture . locatedIn = mountain/ashkar
+  meadow/highpasture . grazesIn = herd/aurochs

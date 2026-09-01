@@ -1,0 +1,11 @@
+commit mints
+  declare relation teaches
+  declare attribute state
+
+  smith/vesna . state = "journeyman"
+  smith/vesna . worksAt = mine/ninefathom
+  smith/vesna . forgesFor = cistern/ninefathom
+  npc/brannoc . worksAt = mine/ninefathom
+  npc/brannoc . belongsTo = culture/highkin
+  goods/ashkar_copper . surveyedBy = smith/vesna
+  mine/ninefathom . locatedIn = mountain/ashkar

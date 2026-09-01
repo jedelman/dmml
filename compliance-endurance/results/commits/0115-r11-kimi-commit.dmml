@@ -1,0 +1,10 @@
+commit mints
+  declare relation tradesWith
+  declare relation carries
+  declare attribute description
+
+  smith/vesna . tradesWith = npc/brannoc
+  npc/brannoc . carries = goods/ashkar_copper
+  mine/ninefathom . description = "the ninefathom adit, where copper runs green in the seam and the water-table waits to claim the unwary"
+  path/stonemasonry . state = "apprenticed"
+  path/stonemasonry . locatedIn = mountain/ashkar

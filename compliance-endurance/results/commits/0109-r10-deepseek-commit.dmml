@@ -1,0 +1,8 @@
+commit honor_vesna
+  declare relation forgesFor
+  declare relation teaches
+  declare relation wardedBy
+
+  smith/vesna . forgesFor = npc/brannoc
+  npc/brannoc . teaches = smith/vesna
+  cistern/ninefathom . wardedBy = npc/brannoc

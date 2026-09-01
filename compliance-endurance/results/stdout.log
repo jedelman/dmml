@@ -338,3 +338,68 @@ expecting end of line
   [deepseek] corner: 30 node(s), 135 machine-def line(s)
     [deepseek] attempt 1: accepted (commit)
     [deepseek] attempt 2: accepted (machine)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (machine)
+  [glm] corner: 30 node(s), 53 machine-def line(s)
+    [glm] no fenced content, treating as stop
+  [deepseek2] corner: 30 node(s), 102 machine-def line(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-4.dmml: REJECTED
+<surface>:1:7:
+  |
+1 | commit
+  |       ^
+unexpected newline
+  round 10 totals: valid=9 invalid=1 attempts=11 fail_rate=0.09
+
+--- round 11 ---
+  [kimi] corner: 32 node(s), 140 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] DONE after 3 commit(s)
+  [deepseek] corner: 31 node(s), 58 machine-def line(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-2.dmml: REJECTED
+<surface>:1:1:
+  |
+1 | machine herd/stagfolk
+  | ^^^^^^
+unexpected "machin"
+expecting "commit"
+    [deepseek] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-3.dmml: REJECTED
+<surface>:1:12:
+  |
+1 | commit herd/stagfolk_state
+  |            ^^
+unexpected "/s"
+expecting end of line
+  [glm] corner: 31 node(s), 113 machine-def line(s)
+    [glm] attempt 1: accepted (commit)
+    [glm] attempt 2: accepted (machine)
+    [glm] attempt 3: accepted (commit)
+    [glm] attempt 4: accepted (commit)
+  [deepseek2] corner: 31 node(s), 96 machine-def line(s)
+    [deepseek2] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-1.dmml: REJECTED
+<surface>:1:13:
+  |
+1 | commit river-rites
+  |             ^^
+unexpected "-r"
+expecting end of line
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (machine)
+    [deepseek2] attempt 4: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-4.dmml: REJECTED
+<surface>:1:1:
+  |
+1 | machine cistern/ninefathom
+  | ^^^^^^
+unexpected "machin"
+expecting "commit"
+  round 11 totals: valid=10 invalid=4 attempts=14 fail_rate=0.29
+
+--- round 12 ---
+  [kimi] corner: 34 node(s), 106 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)

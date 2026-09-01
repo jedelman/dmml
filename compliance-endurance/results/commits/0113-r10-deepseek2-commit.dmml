@@ -1,0 +1,5 @@
+commit resolvesGrievance
+  declare relation convenesFor
+
+  npc/brannoc `convenesFor` contest/cistern_ninefathom_state_1
+  contest/cistern_ninefathom_state_1 . resolvedBy = crew/ninefathom_day

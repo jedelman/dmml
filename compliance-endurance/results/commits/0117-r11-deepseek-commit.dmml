@@ -1,0 +1,8 @@
+commit hedgeTreeline
+  declare relation leansOn
+
+  tree/oakhart . leansOn = tree/ashbound
+  tree/ashbound :: a Tree
+
+  consumes
+    strong forest/oakhart # hedge_3

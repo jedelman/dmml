@@ -1,0 +1,6 @@
+commit quenches_ashkar
+  event/ashkar_quench :: a Event
+  event/ashkar_quench . causedBy = storm/secondash
+  event/ashkar_quench . locatedIn = mountain/ashkar
+  storm/secondash `fallsOn` mountain/ashkar
+  mountain/ashkar . state = "quenched"

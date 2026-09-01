@@ -1,0 +1,5 @@
+commit n_
+  declare attribute luminances
+
+  relight/lantern/9 `carries` light/firefly
+  relight/lantern/9 . luminance = 24

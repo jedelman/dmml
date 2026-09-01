@@ -1,0 +1,30 @@
+machine cistern/ninefathom
+  states
+    filling
+    breached
+    consecrated
+    diverted
+
+  transition breach(flooder)
+    filling -> breached
+    guard $flooder `worksAt` mine/ninefathom
+    assert breached
+    retract filling
+
+  transition consecrate(keeper)
+    breached -> consecrated
+    guard $keeper `wardsBy` self
+    assert consecrated
+    retract breached
+
+  transition divert(engineer)
+    consecrated -> diverted
+    guard $engineer `worksAt` mine/ninefathom
+    assert diverted
+    retract consecrated
+
+  transition restore(keeper)
+    diverted -> consecrated
+    guard $keeper `wardsBy` self
+    assert consecrated
+    retract diverted

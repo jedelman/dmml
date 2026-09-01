@@ -1,0 +1,8 @@
+commit reveal_ashkar_omens
+  declare relation worksAt
+  declare relation carries
+  declare attribute describedBy
+
+  event/ashkar_eruption_omen . describedBy = "a crack runs through the ninth seam, and the ash that follows tastes of bronze"
+  npc/onn `worksAt` mine/ninefathom
+  goods/ashkar_bronze `carries` event/ashkar_eruption_omen

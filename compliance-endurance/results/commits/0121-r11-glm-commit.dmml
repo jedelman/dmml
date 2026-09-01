@@ -1,0 +1,11 @@
+commit hallows_greenseam
+  shrine/greenseam :: a Shrine
+  npc/keeper :: a Keeper
+  npc/keeper . honorsPath = path/greenlore
+  npc/keeper . intercedesFor = herbalist/onn
+  shrine/greenseam . state = "hallowed"
+  shrine/greenseam . luminance = 0.3
+  event/seam_hallowed :: a Event
+  event/seam_hallowed . belongsTo = shrine/greenseam
+  event/seam_hallowed . purpose = "the keeper, who sealed brannoc's accord at the cistern and presided when onn's role was settled, comes under oldroot in onn's footsteps and hallows the green seam as patron — a consecration brannoc's ward cannot reach, for his claim stops at the cistern's rim"
+  event/seam_hallowed . witnessedBy = herbalist/onn

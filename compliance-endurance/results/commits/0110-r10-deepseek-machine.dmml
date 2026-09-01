@@ -1,0 +1,10 @@
+machine smith/vesna
+  states
+    apprentice
+    journeyman
+    master
+
+  transition advance(authority)
+    apprentice -> journeyman
+    guard $authority `teaches` smith/vesna
+    assert journeyman

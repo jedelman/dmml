@@ -1,0 +1,10 @@
+commit mints
+  declare relation worksAt
+  declare relation masters
+
+  npc/vesna :: a Person
+  npc/vesna . belongsTo = culture/riverfolk
+  npc/vesna `worksAt` forest/oldroot
+  npc/vesna `masters` path/greenlore
+
+  forest/oldroot . state = "blighted"

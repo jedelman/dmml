@@ -1,0 +1,5 @@
+commit stagleave
+  declare relation convenesFor
+
+  culture/riverfolk `convenesFor` contest/herbalist_onn_role_1
+  event/greencounsel `convenes` contest/herbalist_onn_role_1

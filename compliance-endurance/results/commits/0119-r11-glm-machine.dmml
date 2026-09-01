@@ -1,0 +1,18 @@
+machine shrine/greenseam
+  states
+    hidden
+    found
+    hallowed
+
+  transition find(seeker)
+    hidden -> found
+    guard $seeker `masters` path/greenlore
+    guard self `locatedIn` forest/oldroot
+    assert found
+
+  transition hallow(patron)
+    found -> hallowed
+    guard $patron `honorsPath` path/greenlore
+    guard not self `wardedBy` npc/brannoc
+    assert hallowed
+    retract found

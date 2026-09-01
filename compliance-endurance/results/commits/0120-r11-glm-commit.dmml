@@ -1,0 +1,9 @@
+commit finds_greenseam
+  herbalist/onn :: a Herbalist
+  herbalist/onn . masters = path/greenlore
+  shrine/greenseam . locatedIn = forest/oldroot
+  shrine/greenseam . state = "found"
+  event/seam_found :: a Event
+  event/seam_found . belongsTo = shrine/greenseam
+  event/seam_found . purpose = "herbalist onn, who read the green way beneath oldroot when the second ash melted off the root-roads, follows the seams to their source and finds what the roots kept"
+  event/seam_found . witnessedBy = npc/keeper

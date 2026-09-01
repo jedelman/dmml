@@ -1,0 +1,10 @@
+machine cistern/ninefathom
+  states
+    split
+    sealed
+    consecrated
+
+  transition seal(key)
+    split -> sealed
+    guard self `belongsTo` cistern/ninefathom
+    assert sealed
