@@ -16,9 +16,13 @@
 -- migration-scope.md's Phase 2 for what a real port still needs.
 module DMML.Materialize
   ( WorldSnapshot (..)
+  , ContestedEntry (..)
   , emptySnapshot
   , applyCommit
   , applyCommits
+  , markContested
+  , resolveContested
+  , applyContests
   , renderSnapshot
   ) where
 
@@ -30,14 +34,56 @@ import qualified Data.Text as T
 
 import DMML.Ast
 
+-- | Two or more values independently asserted for the same (subject,
+-- predicate) by branches that never saw each other's change -- per
+-- written-world's own "corruption as content" principle (SPEC.md §12),
+-- this is never silently collapsed to one value. Each option carries a
+-- provenance label (whichever commit/branch asserted it) so both sides
+-- stay attributable, not anonymous.
+newtype ContestedEntry = ContestedEntry {contestedOptions :: [(Text, Value)]}
+  deriving (Eq, Show)
+
 data WorldSnapshot = WorldSnapshot
   { snapshotDeclared :: Map Text DeclKind
   , snapshotFacts :: Map (Text, Text) Value
+  , -- | A contested (subject, predicate) is NEVER also present in
+    -- 'snapshotFacts' -- there is no single "current" value to report
+    -- for it, on purpose. See 'markContested'/'resolveContested'.
+    snapshotContested :: Map (Text, Text) ContestedEntry
   }
   deriving (Eq, Show)
 
 emptySnapshot :: WorldSnapshot
-emptySnapshot = WorldSnapshot Map.empty Map.empty
+emptySnapshot = WorldSnapshot Map.empty Map.empty Map.empty
+
+-- | Marks a (subject, predicate) as contested -- moves it out of
+-- 'snapshotFacts' (if a value happened to be there) and records every
+-- live option with its provenance. Never called by ordinary sequential
+-- commit application ('applyCommit') -- an ordinary later commit
+-- overwriting an earlier one for the same pair is ordinary, correct
+-- append-only history (SPEC.md/UpdateInput's own established rule),
+-- not a contest. This is only ever called by something that has
+-- independently determined real divergence (two branches, neither
+-- aware of the other) -- see dmml-hs/app/CheckDivergence.hs.
+markContested :: (Text, Text) -> [(Text, Value)] -> WorldSnapshot -> WorldSnapshot
+markContested key options snap =
+  snap
+    { snapshotFacts = Map.delete key (snapshotFacts snap)
+    , snapshotContested = Map.insert key (ContestedEntry options) (snapshotContested snap)
+    }
+
+-- | Resolves a contest: removes it from 'snapshotContested', sets the
+-- agreed value in 'snapshotFacts'. Callers are responsible for having
+-- actually verified the resolution is legitimate (per whatever
+-- machine/guard governs that specific contest) before calling this --
+-- this function itself does no verification, it only applies an
+-- already-legitimate outcome.
+resolveContested :: (Text, Text) -> Value -> WorldSnapshot -> WorldSnapshot
+resolveContested key value snap =
+  snap
+    { snapshotContested = Map.delete key (snapshotContested snap)
+    , snapshotFacts = Map.insert key value (snapshotFacts snap)
+    }
 
 nodeRefText :: NodeRef -> Text
 nodeRefText = T.intercalate "/" . nodeRefSegments
@@ -62,6 +108,58 @@ applyCommit snap stmt = foldl' applyItem snap (commitItems stmt)
 applyCommits :: [CommitStmt] -> WorldSnapshot
 applyCommits = foldl' applyCommit emptySnapshot
 
+-- | Second pass, run after 'applyCommits': finds every @Contest@-typed
+-- node (minted by @dmml-hs/app/CheckDivergence.hs@'s divergence-to-
+-- content step) and enforces it. A contest whose recorded state is
+-- still @"contested"@ overrides whatever the naive fold above put in
+-- 'snapshotFacts' for its disputed pair -- moves it to
+-- 'snapshotContested' instead, per SPEC.md §12: never silently resolve
+-- to whichever value happened to be applied last.
+--
+-- A contest recorded as @"resolved"@ is trusted ONLY if the contest
+-- node itself carries a real @witnessedBy npc/keeper@ fact -- this is a
+-- hand-simulation of the ONE guard the minted contest machine actually
+-- has (@self \`witnessedBy\` npc\/keeper@), not a general machine-guard
+-- evaluator (dmml-hs doesn't have one yet -- see written-world/dev-
+-- journal/2026-08-31-dmml-runtime-migration-scope.md's Phase 2). An
+-- unwitnessed "resolved" claim is not honored -- the pair stays
+-- contested with its original options, the same as if no resolution
+-- had been attempted at all.
+applyContests :: WorldSnapshot -> WorldSnapshot
+applyContests snap = foldl' processContest snap contestNodes
+  where
+    facts = snapshotFacts snap
+
+    contestNodes =
+      [ subj
+      | ((subj, p), ValueNode ty) <- Map.toList facts
+      , p == "a"
+      , nodeRefSegments ty == ["Contest"]
+      ]
+
+    getStr key = case Map.lookup key facts of
+      Just (ValueLiteral (LitString s)) -> Just s
+      _ -> Nothing
+
+    isWitnessedByKeeper contestNode =
+      Map.lookup (contestNode, "witnessedBy") facts == Just (ValueNode (NodeRef ["npc", "keeper"]))
+
+    collectOptions contestNode =
+      [ (label, v)
+      | i <- [1 .. 10 :: Int] -- small fixed bound -- good enough for a spike, not a general list encoding
+      , Just v <- [Map.lookup (contestNode, "option" <> T.pack (show i) <> "Value") facts]
+      , Just label <- [getStr (contestNode, "option" <> T.pack (show i) <> "Source")]
+      ]
+
+    processContest s contestNode =
+      case (getStr (contestNode, "subject"), getStr (contestNode, "predicate"), getStr (contestNode, "state")) of
+        (Just _, Just _, Just "resolved") | isWitnessedByKeeper contestNode ->
+          s -- legitimately witnessed resolution: trust the naive fold's own value for this pair
+        (Just origSubj, Just origPred, _) ->
+          -- still contested, or an unwitnessed "resolved" claim -- either way, not settled
+          markContested (origSubj, origPred) (collectOptions contestNode) s
+        _ -> s
+
 renderValue :: Value -> Text
 renderValue (ValueNode n) = nodeRefText n
 renderValue (ValueLiteral (LitString s)) = "\"" <> s <> "\""
@@ -75,6 +173,12 @@ kindWord DeclAttribute = "attribute"
 -- | Renders a snapshot as plain text, in the same dot-field idiom the
 -- Surface syntax itself uses for facts -- so handing this to an agent
 -- as context reads consistently with what it's being asked to author.
+-- Every contested pair is surfaced explicitly, with every live option
+-- and its provenance -- never collapsed to a single value, never
+-- silently omitted. An agent (or a player) reading this snapshot sees
+-- the dispute exist, the same way "corruption as content" means a
+-- player finds out about drift instead of it being quietly resolved
+-- out of sight.
 renderSnapshot :: WorldSnapshot -> Text
 renderSnapshot snap =
   T.unlines $
@@ -84,3 +188,14 @@ renderSnapshot snap =
       ++ [ "  " <> subj <> " . " <> pred_ <> " = " <> renderValue v
          | ((subj, pred_), v) <- sortOn fst (Map.toList (snapshotFacts snap))
          ]
+      ++ contestedLines
+  where
+    contestedLines
+      | Map.null (snapshotContested snap) = []
+      | otherwise =
+          ["", "CONTESTED -- not settled, both/all options are live:"]
+            ++ concat
+              [ ("  " <> subj <> " . " <> pred_ <> " is disputed:")
+                  : ["    - " <> label <> " asserts " <> renderValue v | (label, v) <- contestedOptions entry]
+              | ((subj, pred_), entry) <- sortOn fst (Map.toList (snapshotContested snap))
+              ]

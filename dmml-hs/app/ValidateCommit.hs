@@ -1,18 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- | CLI shape-validator for one .dmml (Surface-syntax) file. Built for
--- the peer-to-peer git broker spike (written-world/sync-spike/) --
--- exits 0 and prints nothing on success, exits 1 and prints a real
--- parse error on failure, so a shell script can gate a merge on it.
+-- | CLI shape-validator for one .dmml (Surface-syntax) file -- a commit
+-- OR a machine (contest records minted by CheckDivergence.hs are
+-- machines, not commits, so this has to accept both). Built for the
+-- peer-to-peer git broker spike (written-world/sync-spike/) -- exits 0
+-- and prints nothing on success, exits 1 and prints a real parse error
+-- on failure, so a shell script can gate a merge on it.
 --
 -- Scope, stated plainly: this checks SHAPE only (does the file parse to
--- a valid CommitStmt) via DMML.Surface -- it does NOT check semantic
--- validity against the accumulated world state (self-declaration,
--- duplicate-fact-across-commits, consumed-cid-actually-exists). Those
--- live in the Rust crate's validate.rs/interpret.rs, not yet ported to
--- dmml-hs (see dmml-hs/../written-world/dev-journal/2026-08-31-dmml-
--- runtime-migration-scope.md's Phase 2). A broker built on this alone
--- catches malformed commits, not unsafe-but-well-formed ones.
+-- a valid CommitStmt or MachineStmt) via DMML.Surface -- it does NOT
+-- check semantic validity against the accumulated world state (self-
+-- declaration, duplicate-fact-across-commits, consumed-cid-actually-
+-- exists). Those live in the Rust crate's validate.rs/interpret.rs, not
+-- yet ported to dmml-hs (see dmml-hs/../written-world/dev-journal/
+-- 2026-08-31-dmml-runtime-migration-scope.md's Phase 2). A broker built
+-- on this alone catches malformed commits, not unsafe-but-well-formed
+-- ones.
 module Main (main) where
 
 import System.Environment (getArgs)
@@ -20,7 +23,7 @@ import System.Exit (exitFailure, exitSuccess)
 import qualified Data.Text.IO as TIO
 import Text.Megaparsec (errorBundlePretty)
 
-import DMML.Surface (parseCommitSurface)
+import DMML.Surface (parseCommitSurface, parseMachineSurface)
 
 main :: IO ()
 main = do
@@ -29,11 +32,13 @@ main = do
     [path] -> do
       src <- TIO.readFile path
       case parseCommitSurface src of
-        Left err -> do
-          putStrLn (path <> ": REJECTED")
-          putStrLn (errorBundlePretty err)
-          exitFailure
         Right _ -> exitSuccess
+        Left commitErr -> case parseMachineSurface src of
+          Right _ -> exitSuccess
+          Left _ -> do
+            putStrLn (path <> ": REJECTED")
+            putStrLn (errorBundlePretty commitErr)
+            exitFailure
     _ -> do
       putStrLn "usage: validate-commit <file.dmml>"
       exitFailure
