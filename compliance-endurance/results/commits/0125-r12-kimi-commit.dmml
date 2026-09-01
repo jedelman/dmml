@@ -1,0 +1,3 @@
+commit mints
+  herd/aurochs . state = grazing
+  herd/aurochs `grazesIn` pasture/thornveil

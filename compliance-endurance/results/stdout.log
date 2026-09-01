@@ -408,3 +408,26 @@ expecting "commit"
   [deepseek] corner: 34 node(s), 100 machine-def line(s)
     [deepseek] attempt 1: accepted (commit)
     [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (machine)
+  [glm] corner: 33 node(s), 109 machine-def line(s)
+    [glm] no fenced content, treating as stop
+  [deepseek2] corner: 33 node(s), 140 machine-def line(s)
+    [deepseek2] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-1.dmml: REJECTED
+<surface>:1:15:
+  |
+1 | commit contest/herbalist/onn/stage/two
+  |               ^^
+unexpected "/h"
+expecting end of li
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (machine)
+  round 12 totals: valid=9 invalid=1 attempts=11 fail_rate=0.09
+
+--- round 13 ---
+  [kimi] corner: 35 node(s), 123 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] DONE after 2 commit(s)
+  [deepseek] corner: 34 node(s), 101 machine-def line(s)

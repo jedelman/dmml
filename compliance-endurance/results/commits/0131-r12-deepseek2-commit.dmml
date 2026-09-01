@@ -1,0 +1,5 @@
+commit seal_cistern
+  declare relation seals
+
+  cistern/ninefathom `seals` npc/brannock
+  npc/brannock . seals = cistern/ninefathom

@@ -1,0 +1,5 @@
+commit resolve_herbalist_onn_contest
+  declare relation honorsPatron
+
+  npc/onn . worksAt = mine/ninefathom
+  contest/herbalist_onn_role_1 . resolvedBy = npc/keeper

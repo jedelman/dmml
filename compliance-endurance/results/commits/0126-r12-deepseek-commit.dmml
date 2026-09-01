@@ -1,0 +1,9 @@
+commit survey_contest_rite
+
+  declare relation resolvedBy
+  declare attribute method
+  declare attribute date
+
+  contest/cistern_ninefathom_state_1 . resolvedBy = npc/keeper
+  contest/cistern_ninefathom_state_1 . method = "offered tribute"
+  contest/cistern_ninefathom_state_1 . date = "unknown"

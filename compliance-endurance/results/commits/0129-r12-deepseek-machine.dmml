@@ -1,0 +1,13 @@
+machine cistern/ninefathom
+  states
+    split
+    sealed
+    flooded
+
+  transition seal()
+    split -> sealed
+    assert sealed
+
+  transition flood()
+    split -> flooded
+    assert flooded

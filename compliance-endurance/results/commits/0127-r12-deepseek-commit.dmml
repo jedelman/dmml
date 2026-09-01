@@ -1,0 +1,6 @@
+commit register_fix
+  declare attribute method
+  declare relation resolvedBy
+
+  contest/cistern_ninefathom_state_1 . resolvedBy = npc/keeper
+  contest/cistern_ninefathom_state_1 . method = "arbitrated"

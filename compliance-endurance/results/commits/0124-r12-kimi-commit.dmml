@@ -1,0 +1,5 @@
+commit mints
+  declare relation migratesTo
+
+  herd/aurochs . state = migrating
+  herd/aurochs `migratesTo` pasture/thornveil
