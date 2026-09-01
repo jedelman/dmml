@@ -1,0 +1,7 @@
+commit riverFounding
+  declare relation belongsTo
+
+  npc/cray . a = Person
+  npc/cray . role = "founder"
+  npc/cray `belongsTo` culture/riverfolk
+  culture/riverfolk . state = "flourishing"

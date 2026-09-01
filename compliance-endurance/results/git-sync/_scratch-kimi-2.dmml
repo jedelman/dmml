@@ -1,0 +1,5 @@
+commit riverTrade
+  declare relation tradesWith
+
+  culture/riverfolk `tradesWith` culture/highkin
+  npc/cray . role = "trader"
