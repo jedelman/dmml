@@ -1,0 +1,75 @@
+Declared predicates:
+  relation apprenticesUnder
+  relation belongsTo
+  relation carries
+  relation erupts
+  relation fallsOn
+  relation foundBy
+  relation grazesIn
+  relation locatedIn
+  relation masters
+  relation migratesTo
+  attribute purpose
+  attribute role
+  attribute state
+  relation tradesWith
+  relation wardedBy
+  relation witnessedBy
+  relation worksAt
+
+Current facts:
+  culture/highkin . a = Culture
+  culture/highkin . purpose = "settled on ashkar's terraces, kin to the mine and the quarry"
+  culture/highkin . state = "flourishing"
+  culture/highkin . tradesWith = culture/riverfolk
+  culture/highkin . worksAt = mountain/ashkar
+  culture/riverfolk . a = Culture
+  culture/riverfolk . purpose = "settled along the river below oldroot, kin to the herds they follow"
+  culture/riverfolk . state = "flourishing"
+  culture/riverfolk . tradesWith = culture/highkin
+  forest/oldroot . a = Forest
+  forest/oldroot . purpose = "old-growth woodland at the mountain's foot, where the herds graze"
+  forest/oldroot . state = "oldgrowth"
+  herd/aurochs . a = Herd
+  herd/aurochs . grazesIn = forest/oldroot
+  herd/aurochs . state = "grazing"
+  herd/stagfolk . a = Herd
+  herd/stagfolk . grazesIn = forest/oldroot
+  herd/stagfolk . migratesTo = forest/oldroot
+  herd/stagfolk . state = "migrating"
+  herd/stagfolk . wardedBy = npc/keeper
+  mine/ninefathom . a = Mine
+  mine/ninefathom . locatedIn = mountain/ashkar
+  mine/ninefathom . state = "undug"
+  mountain/ashkar . a = Mountain
+  mountain/ashkar . erupts = mine/ninefathom
+  mountain/ashkar . fallsOn = forest/oldroot
+  mountain/ashkar . purpose = "the range's tallest peak, a mine and a stonemasons' quarry cut into its flank"
+  mountain/ashkar . state = "erupting"
+  mountain/ashkar . witnessedBy = npc/keeper
+  npc/keeper . a = Keeper
+  npc/keeper . role = "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"
+  npc/keeper . witnessedBy = mountain/ashkar
+  npc/keeper . worksAt = forest/oldroot
+  npc/quarryBoss . a = Person
+  npc/quarryBoss . belongsTo = culture/highkin
+  npc/quarryBoss . role = "founder"
+  npc/quarryBoss . worksAt = mine/ninefathom
+  npc/riverKeeper . a = Person
+  npc/riverKeeper . belongsTo = culture/riverfolk
+  npc/riverKeeper . role = "founder"
+  path/bronzework . a = TechnicalPath
+  path/bronzework . purpose = "smelting ore drawn from ninefathom into worked bronze"
+  path/bronzework . state = "undiscovered"
+  path/greenlore . a = TechnicalPath
+  path/greenlore . apprenticesUnder = npc/keeper
+  path/greenlore . purpose = "reading oldroot's plants for healing and blight-craft"
+  path/greenlore . state = "undiscovered"
+  path/stonemasonry . a = TechnicalPath
+  path/stonemasonry . foundBy = culture/highkin
+  path/stonemasonry . purpose = "cutting and setting ashkar's own stone"
+  path/stonemasonry . state = "apprenticed"
+  seeker/greenlore . a = Seeker
+  seeker/greenlore . apprenticesUnder = path/bronzework
+  seeker/greenlore . masters = path/greenlore
+  seeker/greenlore . worksAt = mine/ninefathom

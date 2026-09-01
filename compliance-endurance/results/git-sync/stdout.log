@@ -4,3 +4,56 @@
   [kimi] corner: 6 node(s), own repo has 11 file(s)
     [kimi] attempt 1: accepted (commit)
     [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] committed 0012-r1-kimi-commit.dmml
+    [kimi] committed 0013-r1-kimi-commit.dmml
+    [kimi] committed 0014-r1-kimi-commit.dmml
+    [kimi] committed 0015-r1-kimi-commit.dmml
+  [deepseek] corner: 6 node(s), own repo has 11 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (machine)
+    [deepseek] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/git-sync/_scratch-deepseek-3.dmml: REJECTED
+<surface>:7:49:
+  |
+7 |   herd/stagfolk . tradesWith = culture/riverfolk
+  |                                   
+    [deepseek] attempt 4: INVALID -- /home/user/dmml/compliance-endurance/results/git-sync/_scratch-deepseek-4.dmml: REJECTED
+<surface>:5:49:
+  |
+5 |   culture/riverfolk . tradesWith = herd/stagfolk
+  |                                   
+    [deepseek] committed 0012-r1-deepseek-commit.dmml
+    [deepseek] committed 0013-r1-deepseek-machine.dmml
+  [mercury] corner: 5 node(s), own repo has 11 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] DONE after 1 commit(s)
+    [mercury] committed 0012-r1-mercury-commit.dmml
+  [deepseek2] corner: 5 node(s), own repo has 11 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (machine)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (machine)
+    [deepseek2] committed 0012-r1-deepseek2-commit.dmml
+    [deepseek2] committed 0013-r1-deepseek2-machine.dmml
+    [deepseek2] committed 0014-r1-deepseek2-commit.dmml
+    [deepseek2] committed 0015-r1-deepseek2-machine.dmml
+  round 1 authoring totals: valid=11 invalid=2 attempts=13 fail_rate=0.15
+  full-mesh sync (12 pairwise broker.sh runs)...
+    [sync] kimi <- deepseek: ok, no divergence
+    [sync] kimi <- mercury: ok, no divergence
+    [sync] kimi <- deepseek2: ok, no divergence
+    [sync] deepseek <- kimi: ok, no divergence
+    [sync] deepseek <- mercury: ok, no divergence
+    [sync] deepseek <- deepseek2: ok, no divergence
+    [sync] mercury <- kimi: ok, no divergence
+    [sync] mercury <- deepseek: ok, no divergence
+    [sync] mercury <- deepseek2: ok, no divergence
+    [sync] deepseek2 <- kimi: ok, no divergence
+    [sync] deepseek2 <- deepseek: ok, no divergence
+    [sync] deepseek2 <- mercury: ok, no divergence
+  converged: all 4 repos agree, 22 file(s) each
+
+--- round 2 ---
+  [kimi] corner: 7 node(s), own repo has 22 file(s)
+    [kimi] attempt 1: accepted (commit)
