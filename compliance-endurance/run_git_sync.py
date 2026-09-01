@@ -119,8 +119,11 @@ def full_mesh_sync(repos, validate_bin, divergence_bin, round_no, log):
             out = r.stdout
             minted = [l for l in out.splitlines() if l.startswith("DIVERGENCE minted as content:")]
             if r.returncode != 0:
-                log(f"    [sync] {a} <- {b}: REJECTED (unexpected -- every agent's own output already "
-                    f"passed validate-commit before being committed)\n{out}")
+                # stderr matters here -- a real crash once hid entirely
+                # in stderr while stdout looked like an ordinary,
+                # successful sync truncated mid-stream. Always log both.
+                log(f"    [sync] {a} <- {b}: FAILED (exit {r.returncode})\n"
+                    f"      stdout:\n{out}\n      stderr:\n{r.stderr}")
                 continue
             if minted:
                 total_contests += len(minted)
