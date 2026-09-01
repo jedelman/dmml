@@ -1,0 +1,5 @@
+=== worktree-sync endurance test: 4 agents (kimi, deepseek, mercury, deepseek2), up to 20 rounds, hub topology via hooks, workdir=/tmp/endurance-worktree-sync-6kfg26pu ===
+
+--- round 1 ---
+  [kimi] corner: 6 node(s), own worktree has 11 file(s)
+    [kimi] attempt 1: accepted (commit)
