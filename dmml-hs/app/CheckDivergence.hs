@@ -49,13 +49,28 @@ readListFile p = do
   contents <- readFile p
   pure [l | l <- lines contents, not (null l)]
 
+-- | A "new since merge-base" file list (what broker.sh/local-sync.sh
+-- actually hand this) is real diff output over ALL commits/*.dmml
+-- additions -- commits AND machines both, whatever an agent minted.
+-- This used to try parseCommitSurface unconditionally and crash hard
+-- the first time a real "new files" list included a machine an agent
+-- had organically authored (a real gap RenderSnapshot.hs already had
+-- to solve the same way for the same reason). A machine parses and
+-- validates like anything else, it just contributes no facts to the
+-- snapshot -- same classify-then-skip rule as RenderSnapshot.hs.
 materializeFiles :: [FilePath] -> IO WorldSnapshot
 materializeFiles paths = do
   srcs <- mapM TIO.readFile paths
-  let parsed = zip paths (map parseCommitSurface srcs)
-  case [(p, e) | (p, Left e) <- parsed] of
-    ((p, e) : _) -> error (p <> ":\n" <> errorBundlePretty e)
-    [] -> pure (applyCommits [stmt | (_, Right stmt) <- parsed])
+  let classified = zip paths (map classify srcs)
+  case [(p, e) | (p, Left e) <- classified] of
+    ((p, e) : _) -> error (p <> ":\n" <> e)
+    [] -> pure (applyCommits [stmt | (_, Right (Just stmt)) <- classified])
+  where
+    classify src = case parseCommitSurface src of
+      Right stmt -> Right (Just stmt)
+      Left commitErr -> case parseMachineSurface src of
+        Right _ -> Right Nothing
+        Left _ -> Left (errorBundlePretty commitErr)
 
 -- | Node/segment-safe slug: node_ref segments only allow letters,
 -- digits, underscore, and '.' as a piece separator -- no '/' (that's
