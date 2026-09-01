@@ -336,3 +336,5 @@ expecting end of line
     [kimi] attempt 2: accepted (machine)
     [kimi] DONE after 2 commit(s)
   [deepseek] corner: 30 node(s), 135 machine-def line(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (machine)
