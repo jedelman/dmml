@@ -44,7 +44,15 @@ COMMITS_DIR = RESULTS_DIR / "commits"
 AGENTS = [
     {"name": "kimi", "model": "moonshotai/kimi-k2.5", "reasoning_none": True},
     {"name": "deepseek", "model": "deepseek/deepseek-v4-flash-0731", "reasoning_none": True},
-    {"name": "glm", "model": "z-ai/glm-5.3-flash", "reasoning_none": False},
+    # glm-5.3-flash dropped (mandatory-reasoning token cost, same
+    # reason gemini-3.7-flash was dropped earlier) -- swapped for
+    # inception/mercury-2.5-preview. Verified live before using it in
+    # a real run: accepts reasoning.effort:"none" without error (both
+    # with and without the param return real content), unlike
+    # glm-5.3-flash/gemini-3.7-flash's hard rejection of "none" --
+    # same optional-reasoning regime as kimi/deepseek, not the
+    # mandatory-reasoning one.
+    {"name": "mercury", "model": "inception/mercury-2.5-preview", "reasoning_none": True},
     # gemini-3.7-flash dropped after round 4 (mandatory-reasoning, real
     # token cost was heavy) -- a second deepseek instance instead of a
     # second glm-flash, since glm-flash is ALSO mandatory-reasoning
