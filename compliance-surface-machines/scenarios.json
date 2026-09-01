@@ -1,0 +1,17 @@
+[
+  {
+    "id": "m1-simple-guarded-transition",
+    "title": "Machine: single guarded transition",
+    "task": "Author a DMML machine attached to node gate/4. It should have two states: sealed and open. Add one transition named breach, taking a parameter charge, going from sealed to open, guarded by the gate itself (self) holding a relation named 'vulnerableTo' pointed at whatever node was passed as the charge parameter. The transition's effect should assert the open state."
+  },
+  {
+    "id": "m2-multi-transition-with-negated-guard",
+    "title": "Machine: three states, two transitions, one negated guard",
+    "task": "Author a DMML machine attached to node forge/9. It should have three states: cold, banked, and blazing. Add a transition named stoke, taking a parameter fuel, going from cold to banked, guarded by the forge itself (self) holding a relation named 'burns' pointed at the fuel parameter, with an effect asserting banked. Add a second transition named flare, taking a parameter bellows, going from banked to blazing, with TWO guards: first, that the forge itself holds a relation named 'workedBy' pointed at the bellows parameter; second, NEGATED, that the forge itself does NOT hold a relation named 'quenched' pointed at the literal node water/1. The flare transition's effects should assert blazing and retract banked."
+  },
+  {
+    "id": "m3-nonself-anchor-multihop",
+    "title": "Machine: guard pattern anchored on a parameter, not self, with two hops",
+    "task": "Author a DMML machine attached to node archive/2. It should have two states: sealed and unsealed. Add a transition named unseal, taking a parameter petitioner, going from sealed to unsealed. It should have exactly one guard, and that guard's pattern must NOT anchor on the machine itself -- instead anchor the pattern on the petitioner parameter. From there, the pattern should hop through a relation named 'sworn' to the literal node council/high, then hop again through a relation named 'ratifies' to the literal node charter/1 (two hops total, non-self anchor). The transition's effect should assert unsealed."
+  }
+]

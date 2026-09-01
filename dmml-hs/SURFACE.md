@@ -166,6 +166,14 @@ Parses to the identical `MachineStmt` the equivalent
 on this exact door/12 example (the same one `GRAMMAR.md` and
 `MACHINE_SPEC.md` use).
 
+A second, richer hand-authored example — `examples/shrine.dmml`, three
+states, three transitions, a negated guard, a guard anchored on a
+transition parameter rather than `self`, a two-hop chain with literal
+node terms — exercises the parts of the grammar door/12 doesn't touch
+at all. Written and parse-verified before any model saw the machine
+grammar, specifically so the compliance checkpoint below wasn't testing
+against the only example a model could have copied.
+
 ## What's implemented
 
 `src/DMML/Surface.hs` — a `megaparsec` parser, exposing both
@@ -200,10 +208,21 @@ in one transition) beyond the single worked example shown above.
   **Machine authoring added 2026-09-01** — see the machine grammar
   section above. Still no `reference` or batching (`update`) support;
   JSON's `ReferenceInput`/`UpdateInput` have no surface-syntax
-  counterpart. No compliance checkpoint against light models for machine
-  authoring yet either — the commit-only checkpoints above don't cover
-  it, and the same "checked shape only, not self-declaration" caveat
-  applies here too.
+  counterpart.
+- ~~No compliance checkpoint against light models for machine authoring
+  yet.~~ **Done, 2026-09-01: 9/9 accepted**
+  (`dmml/compliance-surface-machines/`, same three models). Scenarios
+  deliberately exercised parts `examples/shrine.dmml` covers but
+  door/12 doesn't — a negated guard, a guard anchored on a transition
+  parameter instead of `self`, a two-hop chain — so this wasn't testing
+  recall of the one example every model saw. Spot-checked substantively:
+  all three models converged on identical, correct output for the
+  non-`self`-anchor scenario, and `glm-5.3-flash` correctly explained
+  *why* the literal node terms in its own reply weren't read as pattern
+  variables (citing the `/`-disambiguation rule above) — real evidence
+  it understood the rule, not just pattern-matched an example. Same
+  "checked shape only, not self-declaration" caveat as the commit
+  checkpoints applies here too.
 - **No error-recovery/reporting design.** `megaparsec`'s default error
   messages are used as-is — JSON Pointer-style localized errors
   (`from_json.rs`'s whole design point) don't have an equivalent here.

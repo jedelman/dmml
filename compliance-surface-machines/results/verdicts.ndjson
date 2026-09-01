@@ -1,0 +1,9 @@
+{"error":null,"fenced":true,"id":"m1-simple-guarded-transition","model":"google/gemini-3.7-flash","outcome":"accepted","scenario":"Machine: single guarded transition"}
+{"error":null,"fenced":true,"id":"m2-multi-transition-with-negated-guard","model":"google/gemini-3.7-flash","outcome":"accepted","scenario":"Machine: three states, two transitions, one negated guard"}
+{"error":null,"fenced":true,"id":"m3-nonself-anchor-multihop","model":"google/gemini-3.7-flash","outcome":"accepted","scenario":"Machine: guard pattern anchored on a parameter, not self, with two hops"}
+{"error":null,"fenced":true,"id":"m1-simple-guarded-transition","model":"z-ai/glm-5.3-flash","outcome":"accepted","scenario":"Machine: single guarded transition"}
+{"error":null,"fenced":true,"id":"m2-multi-transition-with-negated-guard","model":"z-ai/glm-5.3-flash","outcome":"accepted","scenario":"Machine: three states, two transitions, one negated guard"}
+{"error":null,"fenced":true,"id":"m3-nonself-anchor-multihop","model":"z-ai/glm-5.3-flash","outcome":"accepted","scenario":"Machine: guard pattern anchored on a parameter, not self, with two hops"}
+{"error":null,"fenced":true,"id":"m1-simple-guarded-transition","model":"moonshotai/kimi-k2.5","outcome":"accepted","scenario":"Machine: single guarded transition"}
+{"error":null,"fenced":true,"id":"m2-multi-transition-with-negated-guard","model":"moonshotai/kimi-k2.5","outcome":"accepted","scenario":"Machine: three states, two transitions, one negated guard"}
+{"error":null,"fenced":true,"id":"m3-nonself-anchor-multihop","model":"moonshotai/kimi-k2.5","outcome":"accepted","scenario":"Machine: guard pattern anchored on a parameter, not self, with two hops"}

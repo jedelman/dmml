@@ -1,0 +1,23 @@
+machine shrine/threshold
+  states
+    dormant
+    stirring
+    awakened
+
+  transition kindle(offering)
+    dormant -> stirring
+    guard self `accepts` $offering
+    assert stirring
+
+  transition awaken(witness)
+    stirring -> awakened
+    guard self `witnessedBy` $witness
+    guard not self `sealedBy` ward/1
+    assert awakened
+    retract stirring
+
+  transition seal(ward)
+    awakened -> dormant
+    guard $ward `belongsTo` circle/elders `holds` mandate/1
+    retract awakened
+    assert dormant
