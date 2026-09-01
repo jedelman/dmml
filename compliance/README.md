@@ -11,21 +11,30 @@ the doc GRAMMAR.md fix (2026-08-31) actually made authoring viable, and
 gives a pre-retirement baseline to compare any replacement authoring
 path against.
 
-## Status as of this writing: harness built, not yet run
+## Status: first real checkpoint run, 2026-08-31
 
-Two independent blockers stopped the actual dispatch this session:
+15/15 (model, scenario) pairs accepted against the real production
+`update_from_json` boundary — see `results/report.md` for the table,
+`results/dispatch.ndjson`/`results/verdicts.ndjson` for the raw evidence
+behind it. Spot-checked substantively, not just for parse success: the
+fact-level-consume scenario's output correctly used `FactRef`'s wildcard
+`object`-omitted form and a real `via` citation, across all three
+models, not a degenerate but technically-valid shape.
 
-- The `OpenRouter` MCP tool needs an interactive OAuth flow
-  (`claude mcp` / `/mcp`) this non-interactive session can't complete.
-- `OPENROUTER_API_KEY` *is* set in the environment (per
-  `written-world/CLAUDE.md`'s documented curl fallback), but a direct
-  `curl` call to `openrouter.ai` with it was blocked by the auto-mode
-  permission classifier before any request went out.
+Getting a real run took two fixes, both now in `dispatch.py`:
+`GRAMMAR_PATH` pointed one directory too deep (would have crashed
+before sending anything), and `glm-5.3-flash`/`gemini-3.7-flash` reject
+`reasoning.effort: "none"` outright — verified live against the API,
+correcting `written-world/CLAUDE.md`'s note that `glm-5.3-flash`'s
+reasoning support "was not yet verified." Both models reason
+by default with no way to disable it, and the first attempt at 4000
+`max_tokens` let one call's reasoning eat the whole budget before any
+content came out (`content: null`, no error) — bumped to 8000 fixed it.
 
-Neither is a design problem with the harness itself — both are about
-this session's permission to reach the network. Once either is resolved
-(authorize OpenRouter via `/mcp`, or grant Bash permission for the
-relevant domain), the pipeline below runs as-is.
+An earlier attempt this session, under auto mode, got blocked by the
+permission classifier before any request left the machine; running for
+real needed the user to drop auto mode and approve the outbound calls
+directly.
 
 ## Pipeline
 
@@ -72,8 +81,14 @@ in-product DMML-authoring targets per `written-world/CLAUDE.md`'s
 "In-product authoring agents" section), plus `moonshotai/kimi-k2.5` as a
 known-hallucination-prone stress test (its own dispatch-pipeline
 warning: "will get things wrong that don't show up as compile errors"
-when not given exact signatures — GRAMMAR.md being sufficient on its
-own is exactly what this checkpoint is testing for).
+when not given exact signatures). **That warning is specifically about
+Kimi authoring code without exact signatures in front of it** (a
+different task than DMML content-authoring with GRAMMAR.md as full
+context) — worth stating plainly since the 2026-08-31 run scored it
+5/5, same as the other two: it isn't evidence the dispatch-pipeline
+warning was wrong, only that "hand it a full, current, exact reference
+document" is exactly the condition that warning says Kimi needs and
+this checkpoint's prompt provides.
 
 ## Reading the report
 

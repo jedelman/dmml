@@ -2,12 +2,15 @@
 """Dispatch scenarios.json to a set of light models via OpenRouter and
 record raw replies for scoring.
 
-Not run as part of building this harness -- OpenRouter was unauthorized
-in the session that wrote it (the MCP tool needs an interactive OAuth
-flow this session couldn't complete), and a direct curl probe with
-OPENROUTER_API_KEY was blocked by the auto-mode permission classifier.
-Run this by hand (or after granting Bash permission for the relevant
-domain) once one of those paths is open.
+First real run: 2026-08-31, after the user dropped auto mode and
+approved the outbound curl calls directly (an earlier attempt under
+auto mode was blocked by the permission classifier before any request
+went out). Result: 15/15 accepted against the real production
+`update_from_json` boundary -- see results/report.md. That run also
+found two real bugs in this script, now fixed: GRAMMAR_PATH pointed one
+directory too deep, and glm-5.3-flash/gemini-3.7-flash both reject
+`reasoning.effort: "none"` outright (mandatory reasoning, unlike Kimi) --
+MAX_TOKENS is sized generously to leave room for real content after it.
 
 Usage:
     OPENROUTER_API_KEY=... python3 dispatch.py
@@ -25,7 +28,7 @@ import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-GRAMMAR_PATH = HERE.parent / "dmml" / "dmml-agent-nucleus" / "GRAMMAR.md"
+GRAMMAR_PATH = HERE.parent / "dmml-agent-nucleus" / "GRAMMAR.md"
 SCENARIOS_PATH = HERE / "scenarios.json"
 OUT_PATH = HERE / "results" / "dispatch.ndjson"
 
@@ -42,10 +45,25 @@ MODELS = [
     "moonshotai/kimi-k2.5",
 ]
 
-# Models documented (written-world/CLAUDE.md) as reasoning-on-by-default
-# with no visible output otherwise -- silently burns the whole budget
-# and returns nothing unless told not to reason.
-NEEDS_REASONING_NONE = {"z-ai/glm-5.3-flash", "moonshotai/kimi-k2.5"}
+# Kimi is documented (written-world/CLAUDE.md) as reasoning-on-by-default
+# with no visible output otherwise -- silently burns the whole budget and
+# returns nothing unless told not to reason. Verified directly against
+# the live API (not just from the doc) that glm-5.3-flash and
+# gemini-3.7-flash are the OPPOSITE: both reject `reasoning.effort:
+# "none"` outright ("Reasoning is mandatory for this endpoint and cannot
+# be disabled") -- CLAUDE.md's own caveat that glm-5.3-flash's
+# reasoning support "was not yet verified" turned out to matter. Their
+# reasoning tokens count against max_tokens same as Kimi's would, so
+# MAX_TOKENS below is sized generously rather than tight, to leave room
+# for real content after mandatory reasoning.
+NEEDS_REASONING_NONE = {"moonshotai/kimi-k2.5"}
+# Bumped from 4000 after a real run: glm-5.3-flash's mandatory reasoning
+# hit exactly that ceiling on one scenario (867-1000+ reasoning tokens
+# observed even on a much simpler isolated prompt) and returned
+# content: null with no error -- a token-budget artifact, not a
+# comprehension failure, but one this checkpoint needs enough headroom
+# to not manufacture.
+MAX_TOKENS = 8000
 
 SYSTEM_PROMPT_TEMPLATE = """You are authoring content for a DMML (Desiring-Machine Markup Language) \
 world. JSON is the ONLY authoring surface -- there is no text grammar. Below is the complete, \
@@ -65,7 +83,7 @@ outside the fence, but the fence must contain nothing except the JSON object."""
 def call_openrouter(api_key: str, model: str, system_prompt: str, user_prompt: str) -> str:
     payload = {
         "model": model,
-        "max_tokens": 1500,
+        "max_tokens": MAX_TOKENS,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
@@ -106,7 +124,9 @@ def main() -> int:
                 print(f"dispatching {model} / {sid} ...", file=sys.stderr)
                 try:
                     reply = call_openrouter(api_key, model, system_prompt, task)
-                except (urllib.error.URLError, urllib.error.HTTPError, KeyError, TimeoutError) as e:
+                except Exception as e:  # noqa: BLE001 -- any transport/parse failure is a real,
+                    # scorable "unparseable" outcome, not a reason to abort the whole run
+                    # (http.client.IncompleteRead on a mid-transfer drop was observed live).
                     reply = f"[dispatch error: {e}]"
                     print(f"  ERROR: {e}", file=sys.stderr)
                 record = {"id": sid, "model": model, "scenario": scenario["title"], "reply": reply}
