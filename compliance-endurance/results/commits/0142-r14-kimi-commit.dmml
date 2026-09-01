@@ -1,0 +1,6 @@
+commit mints
+  declare relation masters
+
+  npc/vesna :: a Person
+  npc/vesna `masters` path/greenlore
+  shrine/greenseam . state = "found"

@@ -1,0 +1,7 @@
+commit records_fracture
+  declare relation records
+  declare relation paints
+
+  contest/cistern_ninefathom_state_1 `records` culture/highkin
+  contest/cistern_ninefathom_state_1 . resolvedBy = npc/gilan
+  npc/gilan . belongsTo = culture/highkin

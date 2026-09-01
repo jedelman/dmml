@@ -1,0 +1,5 @@
+commit marks_fracture
+  declare relation witnessedBy
+
+  npc/gilan . belongsTo = culture/highkin
+  culture/highkin `fracture` npc/gilan

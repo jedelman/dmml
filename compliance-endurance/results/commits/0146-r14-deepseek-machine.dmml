@@ -1,0 +1,16 @@
+machine cistern/ninefathom
+  states
+    flowing
+    sealed
+    ruptured
+
+  transition seal(sealer)
+    flowing -> sealed
+    guard $sealer `seals` self
+    assert sealed
+    retract flowing
+
+  transition rupture()
+    flowing -> ruptured
+    assert ruptured
+    retract flowing

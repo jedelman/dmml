@@ -475,3 +475,23 @@ unexpected "<cont
   |           ^^
 unexpected "ci"
 expecting "::", '.', or '`'
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (machine)
+  [glm] corner: 37 node(s), 95 machine-def line(s)
+    [glm] no fenced content, treating as stop
+  [deepseek2] corner: 37 node(s), 117 machine-def line(s)
+    [deepseek2] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-1.dmml: REJECTED
+<surface>:3:12:
+  |
+3 |   relation appointedBy
+  |            ^^
+unexpected "ap"
+expecting "::", '.', or '`'
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (machine)
+  round 14 totals: valid=8 invalid=2 attempts=11 fail_rate=0.18
+
+--- round 15 ---
+  [kimi] corner: 38 node(s), 129 machine-def line(s)

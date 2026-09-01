@@ -1,0 +1,12 @@
+machine culture/highkin
+  states
+    nascent
+    flourishing
+    fractured
+    syncretized
+
+  transition fracture(grievant)
+    flourishing -> fractured
+    guard $grievant `belongsTo` self
+    assert fractured
+    retract flourishing

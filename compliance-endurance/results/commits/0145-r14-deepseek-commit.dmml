@@ -1,0 +1,3 @@
+commit record_contest_resolution
+  npc/keeper . testimony = "the cistern's contest, arbitrated by the keeper, resolved split to consecrated"
+  contest/cistern_ninefathom_state_1 . resolvedOn = "year/3"

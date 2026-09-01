@@ -1,0 +1,7 @@
+commit seal_hallows
+  declare relation seals
+  declare attribute state
+
+  npc/keeper . seals = cistern/ninefathom
+  npc/keeper . state = "witness"
+  event/seam_hallowing . witnessedBy = npc/keeper
