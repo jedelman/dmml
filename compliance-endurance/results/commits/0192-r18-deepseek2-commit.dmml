@@ -1,0 +1,9 @@
+commit flow_toward_the_foundry
+  declare relation turnsWheel
+  declare relation carriesOre
+  declare attribute heat
+
+  wheel/1 :: a Wheel
+  wheel/2 :: a Wheel
+  wheel/1 `turnsWheel` wheel/2
+  wheel/2 . heat = 0.9

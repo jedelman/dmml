@@ -1,0 +1,11 @@
+commit contest_honor
+  declare relation witnessedBy
+  declare relation pledgesTo
+  declare attribute pledge
+  declare attribute method
+
+  npc/keeper . method = "witness by oath"
+  npc/keeper `witnessedBy` npc/keeper
+  contest/herbalist_role_1 `pledgesTo` npc/keeper
+  contest/herbalist_role_1 . grievance = "keeper denied title for nine fathoms"
+  npc/keeper `bearsWitness` npc/ally

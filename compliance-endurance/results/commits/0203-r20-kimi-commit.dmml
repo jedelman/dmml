@@ -1,0 +1,10 @@
+commit mints
+  declare relation disputes
+  declare relation quarries
+  declare attribute year
+
+  npc/rival_mord :: a ClaimJumper
+  npc/rival_mord . description = "a slate-backed operator from the bench workings, quick with a counter-claim"
+  npc/rival_mord `disputes` mine/ninefathom
+  npc/rival_mord `worksAt` meadow/ninefathom_bench
+  mine/ninefathom . state = contested

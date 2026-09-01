@@ -1,0 +1,9 @@
+commit consecrate_obelisk
+  declare relation honorsPath
+  declare attribute occasion
+
+  carving/obelisk . occasion = "the keeper's ninth-turning rule"
+  carving/obelisk `honorsPath` path/greenlore
+  npc/brannoc `consecrates` carving/obelisk
+  contest/cistern_ninefathom_state_1 . resolvedBy = npc/brannoc
+  contest/cistern_ninefathom_state_1 . records = path/greenlore

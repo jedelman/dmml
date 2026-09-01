@@ -1,0 +1,8 @@
+commit recordHerbEdict
+  declare attribute date
+  declare relation observedOn
+  declare relation attestedBy
+
+  contest/path_greenlore_state_1 . date = "lore:keeper"
+  contest/path_greenlore_state_1 . attestedBy = npc/keeper
+  contest/path_greenlore_state_1 . observedOn = "ashmoot-night"

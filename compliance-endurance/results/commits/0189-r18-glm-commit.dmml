@@ -1,0 +1,12 @@
+commit gathers
+  npc/keeper . belongsTo = culture/riverfolk
+  npc/keeper . masters = path/greenlore
+
+  event/rivermoot :: a Gathering
+  event/rivermoot . occasion = "the rivermoot at which the keeper first gathered the boat-families of the lowbend under one custom"
+  event/rivermoot . locatedIn = river/lowbend
+  event/rivermoot . witnessedBy = npc/keeper
+  event/rivermoot . year = "the year the cistern was cut"
+
+  culture/riverfolk . honorsPath = path/greenlore
+  culture/riverfolk . state = flourishing

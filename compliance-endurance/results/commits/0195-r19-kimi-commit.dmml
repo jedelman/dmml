@@ -1,0 +1,11 @@
+commit mints
+  declare relation seals
+  declare relation witnessesSeal
+
+  event/cistern_sealing . a = Event
+  event/cistern_sealing . causedBy = npc/brannoc
+  event/cistern_sealing . locatedIn = cistern/ninefathom
+  event/cistern_sealing . witnessedBy = npc/keeper
+  npc/brannoc . seals = cistern/ninefathom
+  npc/keeper . witnessesSeal = event/cistern_sealing
+  culture/riverfolk . commemorates = event/cistern_sealing

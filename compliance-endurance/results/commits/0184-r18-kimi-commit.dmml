@@ -1,0 +1,5 @@
+commit mints
+  npc/brann . a = Keeper
+  npc/brann . commemorates = cistern/ninefathom
+  npc/brann . honoredBy = npc/brannoc
+  npc/brannoc . honorsPatron = npc/brann

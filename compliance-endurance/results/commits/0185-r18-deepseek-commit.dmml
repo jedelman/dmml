@@ -1,0 +1,8 @@
+commit construct
+  declare relation hews
+  declare relation quarries
+  declare attribute fluency
+
+  npc/delver `hews` stone/slate
+  npc/delver `quarries` mine/ninefathom
+  npc/delver . fluency = "expert"

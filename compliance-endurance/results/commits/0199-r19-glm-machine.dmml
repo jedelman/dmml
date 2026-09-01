@@ -1,0 +1,23 @@
+machine sump/ninefathom
+  states
+    dry
+    filling
+    drowned
+
+  transition rises(cause)
+    dry -> filling
+    guard $cause `belongsTo` cistern/ninefathom
+    assert filling
+    retract dry
+
+  transition drown(cause)
+    filling -> drowned
+    guard $cause `belongsTo` cistern/ninefathom
+    assert drowned
+    retract filling
+
+  transition drawdown(pumper)
+    filling -> dry
+    guard self `wardedBy` $pumper
+    assert dry
+    retract filling

@@ -1,0 +1,9 @@
+commit mints
+  declare relation worksAt
+
+  mine/ninefathom . state = sampled
+  event/firstsample . a = Sampling
+  event/firstsample . causedBy = npc/skarn
+  event/firstsample . locatedIn = mine/ninefathom
+  ore/firstsample . recordedBy = npc/skarn
+  npc/skarn . carriesOre = ore/firstsample

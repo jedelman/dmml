@@ -1,0 +1,10 @@
+commit ashkar_erupts
+  event/ashkar_split :: a Event
+  mountain/ashkar . erupts = event/ashkar_split
+  mountain/ashkar . state = erupting
+  event/ashkar_split . locatedIn = mountain/ashkar
+  event/ashkar_split . year = "the year the cistern was cut"
+  event/ashkar_split . witnessedBy = npc/brannoc
+  event/ashkar_split . purpose = "ashkar splits the slope above the ninefathom workings; the seam under the cistern gives way"
+  event/cisternburst . causedBy = event/ashkar_split
+  event/ashkar_quench . causedBy = storm/greycloak

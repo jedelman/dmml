@@ -1,0 +1,11 @@
+commit seals
+  declare attribute depth
+
+  adit/ninefathom :: a Adit
+  cistern/ninefathom . depth = 9
+  cistern/ninefathom . state = sealed
+  cistern/ninefathom . witnessedBy = npc/keeper
+  cistern/ninefathom . locatedIn = adit/ninefathom
+  adit/ninefathom . locatedIn = forest/oldroot
+  adit/ninefathom . description = "water-worn adit at the ninefathom workings, where pick-right and water-sharing were argued and the split ruling was cut into stone"
+  event/sealing . locatedIn = adit/ninefathom

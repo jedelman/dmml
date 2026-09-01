@@ -1,0 +1,10 @@
+commit mints
+  declare relation worksAt
+  declare relation supplies
+  declare attribute description
+
+  npc/miner_thole :: a Miner
+  npc/miner_thole . description = "thick-necked, slow to anger, slow to stop; works the contested seam on Ghorn's old mark"
+  npc/miner_thole `worksAt` mine/ninefathom
+  mine/ninefathom . state = worked
+  mine/ninefathom `supplies` cistern/ninefathom

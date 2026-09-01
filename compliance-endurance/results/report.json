@@ -1,0 +1,548 @@
+{
+  "rounds_run": 14,
+  "rounds_requested": 20,
+  "thrash_reason": null,
+  "final_world_file_count": 219,
+  "rounds": [
+    {
+      "round": 7,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1
+        },
+        "deepseek2": {
+          "valid": 1,
+          "invalid": 0,
+          "no_fence": 1
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.0,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0075-r7-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0076-r7-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0077-r7-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0078-r7-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0079-r7-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0080-r7-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0081-r7-deepseek2-commit.dmml"
+      ]
+    },
+    {
+      "round": 8,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 2,
+          "invalid": 2,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.125,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0082-r8-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0083-r8-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0084-r8-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0085-r8-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0086-r8-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0087-r8-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0088-r8-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0089-r8-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0090-r8-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0091-r8-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0092-r8-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0093-r8-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0094-r8-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0095-r8-deepseek2-commit.dmml"
+      ]
+    },
+    {
+      "round": 9,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 2,
+          "invalid": 2,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 1,
+          "invalid": 2,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.3076923076923077,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0096-r9-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0097-r9-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0098-r9-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0099-r9-deepseek-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0100-r9-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0101-r9-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0102-r9-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0103-r9-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0104-r9-deepseek2-commit.dmml"
+      ]
+    },
+    {
+      "round": 10,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.09090909090909091,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0105-r10-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0106-r10-kimi-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0107-r10-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0108-r10-deepseek-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0109-r10-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0110-r10-deepseek-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0111-r10-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0112-r10-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0113-r10-deepseek2-commit.dmml"
+      ]
+    },
+    {
+      "round": 11,
+      "stats": {
+        "kimi": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 1,
+          "invalid": 2,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 2,
+          "invalid": 2,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.2857142857142857,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0114-r11-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0115-r11-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0116-r11-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0117-r11-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0118-r11-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0119-r11-glm-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0120-r11-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0121-r11-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0122-r11-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0123-r11-deepseek2-machine.dmml"
+      ]
+    },
+    {
+      "round": 12,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.09090909090909091,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0124-r12-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0125-r12-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0126-r12-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0127-r12-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0128-r12-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0129-r12-deepseek-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0130-r12-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0131-r12-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0132-r12-deepseek2-machine.dmml"
+      ]
+    },
+    {
+      "round": 13,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 0,
+          "invalid": 2,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.25,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0133-r13-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0134-r13-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0135-r13-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0136-r13-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0137-r13-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0138-r13-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0139-r13-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0140-r13-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0141-r13-deepseek2-machine.dmml"
+      ]
+    },
+    {
+      "round": 14,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.18181818181818182,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0142-r14-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0143-r14-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0144-r14-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0145-r14-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0146-r14-deepseek-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0147-r14-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0148-r14-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0149-r14-deepseek2-machine.dmml"
+      ]
+    },
+    {
+      "round": 15,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 0,
+          "invalid": 2,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.21428571428571427,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0150-r15-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0151-r15-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0152-r15-kimi-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0153-r15-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0154-r15-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0155-r15-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0156-r15-deepseek-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0157-r15-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0158-r15-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0159-r15-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0160-r15-glm-commit.dmml"
+      ]
+    },
+    {
+      "round": 16,
+      "stats": {
+        "kimi": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 0,
+          "invalid": 2,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1
+        },
+        "deepseek2": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.2727272727272727,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0161-r16-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0162-r16-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0163-r16-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0164-r16-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0165-r16-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0166-r16-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0167-r16-deepseek2-commit.dmml"
+      ]
+    },
+    {
+      "round": 17,
+      "stats": {
+        "kimi": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.07142857142857142,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0168-r17-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0169-r17-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0170-r17-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0171-r17-deepseek-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0172-r17-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0173-r17-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0174-r17-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0175-r17-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0176-r17-glm-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0177-r17-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0178-r17-deepseek2-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0179-r17-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0180-r17-deepseek2-commit.dmml"
+      ]
+    },
+    {
+      "round": 18,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        },
+        "glm": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 2,
+          "invalid": 2,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.1875,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0181-r18-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0182-r18-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0183-r18-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0184-r18-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0185-r18-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0186-r18-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0187-r18-deepseek-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0188-r18-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0189-r18-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0190-r18-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0191-r18-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0192-r18-deepseek2-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0193-r18-deepseek2-commit.dmml"
+      ]
+    },
+    {
+      "round": 19,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 2,
+          "invalid": 1,
+          "no_fence": 1
+        },
+        "glm": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.09090909090909091,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0194-r19-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0195-r19-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0196-r19-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0197-r19-deepseek-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0198-r19-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0199-r19-glm-machine.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0200-r19-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0201-r19-glm-commit.dmml"
+      ]
+    },
+    {
+      "round": 20,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 0,
+          "invalid": 1,
+          "no_fence": 1
+        },
+        "glm": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 1,
+          "invalid": 1,
+          "no_fence": 0
+        }
+      },
+      "new_contests": 0,
+      "fail_rate": 0.2,
+      "adopted_files": [
+        "/home/user/dmml/compliance-endurance/results/commits/0202-r20-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0203-r20-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0204-r20-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0205-r20-kimi-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0206-r20-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0207-r20-glm-commit.dmml",
+        "/home/user/dmml/compliance-endurance/results/commits/0208-r20-deepseek2-commit.dmml"
+      ]
+    }
+  ]
+}

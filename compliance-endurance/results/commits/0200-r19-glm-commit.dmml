@@ -1,0 +1,7 @@
+commit drowns
+  sump/ninefathom . a = Sump
+  sump/ninefathom . locatedIn = mine/ninefathom
+  sump/ninefathom . causedBy = event/burstwater
+  sump/ninefathom . depth = 9
+  sump/ninefathom . drowned = true
+  sump/ninefathom . description = "the drowned sump at the bottom of the ninefathom workings: the burstwater came down all at once and ran it dry to filling to drowned before anyone could reach the ladders; nine fathoms stand in it now, and the pump-ward is unclaimed"

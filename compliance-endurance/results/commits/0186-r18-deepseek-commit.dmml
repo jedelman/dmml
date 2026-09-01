@@ -1,0 +1,10 @@
+commit greenlore_records
+  declare relation witnesses
+  declare relation teaches
+  declare relation records
+  declare attribute lesson
+
+  event/firstdig . witnesses = event/ashkar_eruption
+  event/greenmastery . records = lesson/water_under_stone
+  lesson/water_under_stone . lesson = "the oldest thing in the mountain is not the stone but the sealed water beneath it"
+  lesson/water_under_stone . inscribedWith = shrine/whispering

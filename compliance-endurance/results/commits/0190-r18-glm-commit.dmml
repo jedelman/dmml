@@ -1,0 +1,5 @@
+commit finds_seam
+  shrine/greenseam . locatedIn = forest/oldroot
+  shrine/greenseam . marker = "a seam of green stone half-swallowed by root and loam, bared where the slope shrugged in its sleep"
+  npc/keeper . honorsPath = path/greenlore
+  shrine/greenseam . state = found

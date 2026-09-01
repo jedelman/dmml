@@ -1,0 +1,3 @@
+commit cistern_trade_once_more
+  cistern/ninefathom `tradesWith` mine/ninefathom
+  carving/obelisk `records` contest/cistern_ninefathom_state_1

@@ -1,0 +1,17 @@
+machine shrine/whispering
+  states
+    quiet
+    speaking
+    sealed
+
+  transition awaken(touch)
+    quiet -> speaking
+    guard $touch `belongsTo` shrine/whispering
+    assert speaking
+    retract quiet
+
+  transition seal()
+    speaking -> sealed
+    guard self `consecrates` cistern/ninefathom
+    assert sealed
+    retract speaking

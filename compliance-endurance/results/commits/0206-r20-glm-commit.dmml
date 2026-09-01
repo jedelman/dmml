@@ -1,0 +1,9 @@
+commit ashkar_stirs
+  mountain/ashkar . rumble = npc/brannoc
+  mountain/ashkar . state = restless
+  mountain/ashkar . heat = 0.6
+  npc/brannoc . witnesses = mountain/ashkar
+  storm/greycloak :: a Storm
+  storm/greycloak . locatedIn = mountain/ashkar
+  storm/greycloak . fallsOn = mountain/ashkar
+  storm/greycloak . purpose = "green-tinged squall gathering over the crater rim, the rain the herders of oldroot say ashkar is owed"

@@ -1,0 +1,7 @@
+commit mints
+  declare relation records
+
+  record/cistern_ledger . a = Record
+  record/cistern_ledger . records = contest/cistern_ninefathom_state_1
+  record/cistern_ledger . inscribedWith = "The seal holds. The water waits. The split endures."
+  record/cistern_ledger . carvedBy = npc/brannoc

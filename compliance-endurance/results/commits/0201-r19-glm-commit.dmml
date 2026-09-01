@@ -1,0 +1,5 @@
+commit resolves
+  contest/path_greenlore_state_1 . witnessedBy = npc/keeper
+  npc/keeper . resolves = contest/path_greenlore_state_1
+  npc/keeper . honorsPath = path/discovery
+  contest/path_greenlore_state_1 . state = "resolved"

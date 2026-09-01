@@ -1,0 +1,5 @@
+commit mints
+  declare relation causedBy
+
+  rain/ashkar_quench . causedBy = event/storm_quench
+  mountain/ashkar . state = dormant

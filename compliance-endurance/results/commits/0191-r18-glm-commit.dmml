@@ -1,0 +1,8 @@
+commit bursts
+  event/burstwater :: a Flood
+  event/burstwater . causedBy = event/first_tremor
+  event/burstwater . locatedIn = adit/ninefathom
+  event/burstwater . witnessedBy = npc/keeper
+  event/burstwater . year = "the year the cistern was cut"
+  event/burstwater . testimony = "the seal held against rain and rope, but not against the slope's shrug; the ninefathom cistern let go all at once, and the workings below drank nine fathoms of standing water in the space of ten breaths"
+  cistern/ninefathom . state = overflowed

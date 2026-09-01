@@ -1,0 +1,9 @@
+commit mints
+  declare relation worksAt
+  declare attribute state
+  declare attribute description
+
+  npc/prospector_ghorn :: a Prospector
+  npc/prospector_ghorn . description = "a rangy figure with shale-dust in his beard, first to mark the seam"
+  npc/prospector_ghorn `worksAt` mine/ninefathom
+  mine/ninefathom . state = sampled
