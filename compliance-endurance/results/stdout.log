@@ -594,3 +594,19 @@ expecting end of line
   [kimi] corner: 45 node(s), 142 machine-def line(s)
     [kimi] attempt 1: accepted (commit)
     [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+  [deepseek] corner: 45 node(s), 122 machine-def line(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (machine)
+    [deepseek] attempt 4: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-4.dmml: REJECTED
+<surface>:1:1:
+  |
+1 | contest/cistern_ninefathom_state_1 . resolvedBy = npc/brann
+  | ^^^^^^
+unexpected "contes"
+expect
+  [glm] corner: 44 node(s), 99 machine-def line(s)
+    [glm] attempt 1: accepted (commit)
+    [glm] attempt 2: accepted (commit)
