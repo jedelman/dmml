@@ -1,0 +1,24 @@
+commit mints
+  declare relation locatedIn
+  declare relation tends
+  declare attribute purpose
+  declare attribute state
+  declare attribute role
+
+  commons/hearth :: a Commons
+  commons/hearth . purpose = "a shared gathering ground, governed collectively"
+
+  shrine/threshold :: a Shrine
+  shrine/threshold `locatedIn` commons/hearth
+  shrine/threshold . state = "dormant"
+
+  forge/9 :: a Forge
+  forge/9 `locatedIn` commons/hearth
+  forge/9 . state = "cold"
+
+  archive/2 :: a Archive
+  archive/2 `locatedIn` commons/hearth
+
+  npc/keeper :: a Keeper
+  npc/keeper . role = "tends the hearth and admits petitioners to the shrine"
+  npc/keeper `tends` commons/hearth

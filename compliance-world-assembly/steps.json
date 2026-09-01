@@ -1,0 +1,17 @@
+[
+  {
+    "id": "step1-scribe-arrives",
+    "model": "google/gemini-3.7-flash",
+    "task": "A wandering scribe has just arrived at the commons. Author a single DMML commit that mints them as a new NPC (pick any node name under npc/, e.g. npc/scribe) and records, using the EXISTING 'locatedIn' relation shown in the world snapshot above (do not declare a new one), that they are located in commons/hearth."
+  },
+  {
+    "id": "step2-scribe-tends-forge",
+    "model": "z-ai/glm-5.3-flash",
+    "task": "The scribe who just arrived (their exact node name is shown in the CURRENT WORLD STATE above -- read it from there, do not guess or invent a name) has begun tending the forge (node forge/9). Author a single DMML commit recording this, using the SAME 'tends' relation the keeper already uses for the hearth (see the snapshot) -- reuse it for this different pair of nodes; do not declare a new relation for 'tending'."
+  },
+  {
+    "id": "step3-forge-heats",
+    "model": "moonshotai/kimi-k2.5",
+    "task": "The forge (node forge/9), now being tended, has changed state from cold to banked. Author a single DMML commit recording this using the EXISTING 'state' attribute already shown in the world snapshot above (do not declare a new one). This is a sequential update to an already-tracked attribute -- a fresh assertion of the new value is correct; no consumes/retraction is needed for this."
+  }
+]

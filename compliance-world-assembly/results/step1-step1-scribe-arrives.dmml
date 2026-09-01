@@ -1,0 +1,3 @@
+commit mints
+  npc/scribe :: a Scribe
+  npc/scribe `locatedIn` commons/hearth

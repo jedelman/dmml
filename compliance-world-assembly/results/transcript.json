@@ -1,0 +1,26 @@
+[
+  {
+    "step": 1,
+    "id": "step1-scribe-arrives",
+    "model": "google/gemini-3.7-flash",
+    "reply": "```dmml\ncommit mints\n  npc/scribe :: a Scribe\n  npc/scribe `locatedIn` commons/hearth\n```",
+    "candidate": "commit mints\n  npc/scribe :: a Scribe\n  npc/scribe `locatedIn` commons/hearth",
+    "outcome": "accepted"
+  },
+  {
+    "step": 2,
+    "id": "step2-scribe-tends-forge",
+    "model": "z-ai/glm-5.3-flash",
+    "reply": "The scribe is `npc/scribe` per the snapshot, and `tends` is already declared, so this commit only asserts the new fact \u2014 mirroring the keeper's dot-assignment form, with `forge/9` as a bare node reference.\n\n```\ncommit scribeTendsForge\n\n  npc/scribe . tends = forge/9\n```",
+    "candidate": "commit scribeTendsForge\n\n  npc/scribe . tends = forge/9",
+    "outcome": "accepted"
+  },
+  {
+    "step": 3,
+    "id": "step3-forge-heats",
+    "model": "moonshotai/kimi-k2.5",
+    "reply": "```\ncommit updates\n  forge/9 . state = \"banked\"\n```",
+    "candidate": "commit updates\n  forge/9 . state = \"banked\"",
+    "outcome": "accepted"
+  }
+]
