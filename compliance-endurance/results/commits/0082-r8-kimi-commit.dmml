@@ -1,0 +1,12 @@
+commit mints
+  declare relation worksAt
+  declare relation disputes
+  declare relation supplies
+  declare attribute state
+  declare attribute purpose
+
+  event/sample_vesna . a = Event
+  event/sample_vesna . belongsTo = mine/ninefathom
+  event/sample_vesna . purpose = "smith/vesna takes the first assay from the ninefathom seam, reading the color of the strike"
+
+  mine/ninefathom . state = "sampled"

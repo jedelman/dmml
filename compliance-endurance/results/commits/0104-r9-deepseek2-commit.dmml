@@ -1,0 +1,7 @@
+commit shepherdGrievance
+  declare relation disputes
+  declare attribute grievance
+
+  storm/secondash . grievance = "lightning struck the rivenkine herd and scattered it"
+
+  herd/riverkine `disputes` storm/secondash

@@ -1,0 +1,6 @@
+commit mints
+  declare relation grazesIn
+  declare attribute state
+
+  herd/aurochs . grazesIn = forest/oldroot
+  herd/aurochs . state = "migrating"

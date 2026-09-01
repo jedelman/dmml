@@ -1,0 +1,6 @@
+commit brannoc_seals
+  declare relation seals
+  declare attribute state
+
+  npc/brannoc `seals` contest/cistern_ninefathom_state_1
+  npc/brannoc . state = "resolved"

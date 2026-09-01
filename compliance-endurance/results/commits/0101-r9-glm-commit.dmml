@@ -1,0 +1,8 @@
+commit brannoc_consulted
+  declare relation consults
+  declare attribute state
+  declare relation witnessedBy
+
+  smith/vesna `consults` npc/brannoc
+  contest/cistern_ninefathom_state_1 . witnessedBy = smith/vesna
+  npc/brannoc . state = "counseled"

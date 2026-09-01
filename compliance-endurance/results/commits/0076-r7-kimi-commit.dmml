@@ -1,0 +1,9 @@
+commit mints
+  declare relation migratesTo
+  declare attribute state
+  declare attribute description
+
+  meadow/aurochs_home . a = Meadow
+  meadow/aurochs_home . description = "broad water-meadow where the stagfolk graze after the long walk from oldroot"
+  herd/aurochs . migratesTo = meadow/aurochs_home
+  herd/aurochs . state = "grazing"

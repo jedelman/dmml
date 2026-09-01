@@ -1,0 +1,9 @@
+commit document_herbalists_counsel
+  herbalist/onn . a = Herbalist
+  herbalist/onn . consults = npc/brann
+  npc/brann . role = "keeper"
+  herbalist/onn . testimony = "the ash read ill for the mine, and I took the matter to the keeper"
+
+  refs
+    herbalist/onn # onn
+    npc/brann # brann

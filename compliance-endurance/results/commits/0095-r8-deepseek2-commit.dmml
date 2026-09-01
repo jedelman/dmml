@@ -1,0 +1,8 @@
+commit record_synod_light
+  declare attribute luminance
+  lantern/brann . belongsTo = npc/brann
+  lantern/brann . a = Lantern
+  lantern/brann . luminance = "steady"
+  lantern/brann . wardedBy = npc/brann
+  lantern/brann . locatedIn = mine/ninefathom
+  crew/ninefathom_day . carries = lantern/brann

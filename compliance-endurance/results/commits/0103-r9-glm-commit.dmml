@@ -1,0 +1,6 @@
+commit riverfolk_flourish
+  declare relation belongsTo
+  declare attribute state
+
+  npc/keeper `belongsTo` culture/riverfolk
+  culture/riverfolk . state = "flourishing"

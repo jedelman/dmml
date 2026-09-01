@@ -1,0 +1,7 @@
+commit deepen_herbalist_network
+  declare relation consults
+  declare relation witnessedBy
+
+  npc/herbalist `consults` npc/keeper
+  event/greencounsel `witnessedBy` npc/keeper
+  rain/longrain `witnessedBy` npc/keeper

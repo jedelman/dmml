@@ -1,0 +1,7 @@
+commit revivesmithy
+  declare relation honorsPatron
+  declare attribute patronName
+
+  smith/vesna . patronName = "Brannoc"
+  smith/vesna `honorsPatron` npc/brannoc
+  goods/ashkar_bronze . describedBy = "bronze forged from ore of the ninefathom seam after the ash"

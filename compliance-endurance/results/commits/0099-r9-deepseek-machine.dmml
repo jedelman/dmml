@@ -1,0 +1,10 @@
+machine contest/cistern_ninefathom_state_1
+  states
+    contested
+    resolved
+
+  transition resolve(arbiter, chosen)
+    contested -> resolved
+    guard $arbiter `worksAt` mine/ninefathom
+    guard $chosen `belongsTo` crew/ninefathom_day
+    assert resolved

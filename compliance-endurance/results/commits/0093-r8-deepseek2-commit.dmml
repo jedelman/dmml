@@ -1,0 +1,8 @@
+commit resolveCisternContest
+  declare relation resolves
+
+  cistern/ninefathom . state = "split"
+  crew/ninefathom_day . resolves = contest/cistern_ninefathom_state_1
+
+  contest/cistern_ninefathom_state_1 . state = "resolved"
+  contest/cistern_ninefathom_state_1 . resolves = cistern/ninefathom

@@ -1,0 +1,5 @@
+commit mints
+  declare relation founded
+
+  npc/delver . founded = culture/highkin
+  culture/highkin . state = "flourishing"

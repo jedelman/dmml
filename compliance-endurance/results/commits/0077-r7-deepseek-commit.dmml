@@ -1,0 +1,8 @@
+commit intercede
+  declare relation intercedesFor
+  declare relation bearsWitness
+  declare attribute testimony
+
+  npc/skarn . bearsWitness = herd/stagfolk
+  event/firstdig . intercedesFor = meadow/highpasture
+  npc/skarn . testimony = "If the riverkine are driven from highpasture, the stonemasons will have no stone for the seamdriver's shrine."

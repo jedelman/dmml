@@ -1,0 +1,8 @@
+commit masters
+  event/greenmastery . causedBy = event/greencounsel
+  event/greenmastery . subject = path/greenlore
+  event/greenmastery . witnessedBy = herbalist/onn
+  npc/keeper . bearsWitness = event/greenmastery
+  herbalist/onn . masters = path/greenlore
+  herbalist/onn . testimony = "The ash did not bury the green way — it paved it. Read the seams where the grey snow melted first."
+  path/greenlore . state = "mastered"

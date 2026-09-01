@@ -1,0 +1,12 @@
+commit appoints_scout
+  declare relation appointsAs
+  declare attribute role
+
+  npc/scout :: a Scout
+  herd/stagfolk . wardedBy = npc/scout
+  npc/scout . role = "watcher"
+  npc/scout `appointedAs` herd/stagfolk
+
+  refs
+    npc/scout # scout
+    herd/stagfolk # herd

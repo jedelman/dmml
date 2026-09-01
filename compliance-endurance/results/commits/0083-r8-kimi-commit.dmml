@@ -1,0 +1,11 @@
+commit mints
+  declare relation disputes
+
+  crew/ninefathom_day . a = Crew
+  crew/ninefathom_day . worksAt = mine/ninefathom
+
+  event/claim_disputed . a = Event
+  event/claim_disputed . belongsTo = mine/ninefathom
+  event/claim_disputed . purpose = "crew/ninefathom_day disputes smith/vesna's assay-rights, sinking a counter-shaft from the cistern side"
+
+  mine/ninefathom . state = "contested"

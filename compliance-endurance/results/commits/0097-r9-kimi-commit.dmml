@@ -1,0 +1,3 @@
+commit mints
+  path/bronzework . state = "lost"
+  smith/vesna . masters = path/bronzework

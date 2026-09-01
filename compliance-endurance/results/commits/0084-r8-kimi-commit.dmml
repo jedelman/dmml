@@ -1,0 +1,8 @@
+commit mints
+  declare relation worksAt
+
+  event/work_begins . a = Event
+  event/work_begins . belongsTo = mine/ninefathom
+  event/work_begins . purpose = "crew/ninefathom_day drives the seam proper, the dispute settled by pick-right and water-sharing"
+
+  mine/ninefathom . state = "worked"

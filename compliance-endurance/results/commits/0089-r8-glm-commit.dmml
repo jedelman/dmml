@@ -1,0 +1,13 @@
+commit drives
+  pasture/highpasture :: a Pasture
+  pasture/highpasture . locatedIn = mountain/ashkar
+  pasture/highpasture . description = "the high graze above the ashkar treeline, where the riverkine summer and the seam-road to the shrine-quarries begins"
+  herd/riverkine :: a Herd
+  herd/riverkine . belongsTo = culture/riverfolk
+  herd/riverkine . grazesIn = pasture/highpasture
+  event/stagleave :: a Migration
+  event/stagleave . subject = herd/stagfolk
+  event/stagleave . causedBy = rain/longrain
+  event/stagleave . witnessedBy = npc/brannoc
+  herd/stagfolk . state = "migrating"
+  herd/stagfolk . migratesTo = pasture/highpasture

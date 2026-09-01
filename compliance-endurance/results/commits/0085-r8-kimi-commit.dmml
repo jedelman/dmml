@@ -1,0 +1,9 @@
+commit mints
+  declare relation worksAt
+  declare relation supplies
+
+  event/seam_exhausted . a = Event
+  event/seam_exhausted . belongsTo = mine/ninefathom
+  event/seam_exhausted . purpose = "the ninefathom seam gives out at last, the cistern's water still running through the hollowed dark"
+
+  mine/ninefathom . state = "exhausted"

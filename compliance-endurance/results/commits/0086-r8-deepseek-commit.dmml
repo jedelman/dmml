@@ -1,0 +1,10 @@
+commit survey
+  declare relation surveyedBy
+
+  contest/cistern_nine . description = "A deep cistern sealed by Brannoc's authority"
+  npc/onn . role = "arbiter"
+  npc/onn `appointedBy` council/elders
+  npc/onn `convenes` council/elders
+  herd/riverkine `grazesIn` pasture/lowfields
+  forest/oldroot `wardsWith` shrine/whispering
+  herd/riverkine . description = "A small herd grazing the low pastures, marked with river-clan brands"

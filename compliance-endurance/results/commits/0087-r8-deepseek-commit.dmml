@@ -1,0 +1,9 @@
+commit consecrates
+  declare relation consecrates
+  declare relation disputes
+  declare attribute state
+
+  contest/herbalist_onn_role_1 `consecrates` contest/herbalist_onn_role_2
+  contest/herbalist_onn_role_2 . state = "keeper"
+  contest/herbalist_onn_role_2 . disputes = herbalist/onn_role
+  cistern/ninefathom . consecrates = contest/herbalist_onn_role_2

@@ -1,0 +1,10 @@
+commit resolves_greenlore
+  declare relation witnessedBy
+  declare relation bearsWitness
+  declare attribute testimony
+  declare attribute state
+
+  contest/path_greenlore_state_1 `witnessedBy` npc/keeper
+  npc/keeper `bearsWitness` contest/path_greenlore_state_1
+  contest/path_greenlore_state_1 . testimony = "keeper walked the root-road as the grey snow ran green and swore the mastering true"
+  contest/path_greenlore_state_1 . state = "resolved"

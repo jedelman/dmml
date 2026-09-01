@@ -1,0 +1,14 @@
+commit counsels
+  event/greencounsel :: a Counsel
+  event/greencounsel . subject = herbalist/onn
+  event/greencounsel . causedBy = event/greendiscovery
+  event/greencounsel . witnessedBy = npc/keeper
+  event/secondash . causedBy = storm/secondash
+  storm/secondash . causedBy = event/ashkar_eruption
+  storm/secondash . fallsOn = forest/oldroot
+  herbalist/onn . bearsWitness = event/ashkar_eruption
+  herbalist/onn . consults = npc/keeper
+  herbalist/onn . appointedBy = npc/keeper
+  herbalist/onn . role = "founder"
+  contest/herbalist_onn_role_1 . resolvedBy = npc/keeper
+  contest/herbalist_onn_role_1 . state = "resolved"
