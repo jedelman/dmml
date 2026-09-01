@@ -113,3 +113,8 @@ expec
   [kimi] corner: 8 node(s), own worktree has 45 file(s)
     [kimi] attempt 1: accepted (commit)
     [kimi] attempt 2: accepted (commit)
+    [kimi] no fenced content, treating as stop
+    [kimi] committed 0046-r4-kimi-commit.dmml
+    [kimi] committed 0047-r4-kimi-commit.dmml
+  [deepseek] corner: 8 node(s), own worktree has 45 file(s)
+    [deepseek] attempt 1: accepted (machine)
