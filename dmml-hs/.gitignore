@@ -1,3 +1,6 @@
 *.o
 *.hi
 demo
+surface_demo
+validate-commit
+compliance-check-surface

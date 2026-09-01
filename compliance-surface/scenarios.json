@@ -1,0 +1,27 @@
+[
+  {
+    "id": "s1-mint-room-pair",
+    "title": "Simple commit: declare + facts",
+    "task": "Author a single DMML commit that mints two connected rooms. Declare whatever relation/attribute predicates you use. Assert: room/1 opens to room/2, and room/1 has a dampness attribute of 0.6 (a number)."
+  },
+  {
+    "id": "s2-mixed-value-types",
+    "title": "One commit, mixed value types",
+    "task": "Author a single DMML commit that mints an item, key/7. Give it three attributes in one commit: a material attribute with the string value 'iron', a weight attribute with the number value 1.2, and a boolean attribute cursed set to true."
+  },
+  {
+    "id": "s3-retract-and-reassert",
+    "title": "Fact-level consume (retraction) + a via reference",
+    "task": "room/42 was previously asserted as locked by an earlier commit at at://did:plc:aaaa1111/org.example.commit/xyz789 (cid: bafyabcxyz111). Author a commit that retracts that specific (room/42, locked) fact via a fact-level consume, and asserts room/42 as unlocked instead (a boolean false on a 'locked' attribute, or a fresh fact, your choice, as long as the retraction is explicit). Also cite at://did:plc:aaaa1111/org.example.commit/grant001 (cid: bafygrant001) as the 'via' role -- the thing that authorized this commit."
+  },
+  {
+    "id": "s4-pure-retraction",
+    "title": "Consumes-only commit, no new facts",
+    "task": "Author a commit whose ONLY content is a retraction: room/9 was asserted as flooded by an earlier commit at at://did:plc:bbbb2222/org.example.commit/flood001 (cid: bafyflood001). Retract that (room/9, flooded) fact via a fact-level consume. Do not assert any new facts -- this commit is a pure retraction."
+  },
+  {
+    "id": "s5-trap-old-vocabulary",
+    "title": "Adversarial: task phrased in the retired schema's vocabulary",
+    "task": "Author a commit for the predicate 'asserts' that produces the triple: notebooks/interregnum claims 'the crisis consists in the old dying and the new not yet born' (as a string). Some older internal notes describe a commit's content as a JSON object with a 'produces' field holding N-Quads text, a 'predicate' field for the verb, and a 'created_at' timestamp -- ignore any of that if it conflicts with the grammar reference given to you below; author against the CURRENT real syntax only."
+  }
+]

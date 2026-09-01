@@ -1,0 +1,15 @@
+{"error":null,"fenced":true,"id":"s1-mint-room-pair","model":"google/gemini-3.7-flash","outcome":"accepted","scenario":"Simple commit: declare + facts"}
+{"error":null,"fenced":true,"id":"s2-mixed-value-types","model":"google/gemini-3.7-flash","outcome":"accepted","scenario":"One commit, mixed value types"}
+{"error":null,"fenced":true,"id":"s3-retract-and-reassert","model":"google/gemini-3.7-flash","outcome":"accepted","scenario":"Fact-level consume (retraction) + a via reference"}
+{"error":null,"fenced":true,"id":"s4-pure-retraction","model":"google/gemini-3.7-flash","outcome":"accepted","scenario":"Consumes-only commit, no new facts"}
+{"error":null,"fenced":true,"id":"s5-trap-old-vocabulary","model":"google/gemini-3.7-flash","outcome":"accepted","scenario":"Adversarial: task phrased in the retired schema's vocabulary"}
+{"error":null,"fenced":true,"id":"s1-mint-room-pair","model":"z-ai/glm-5.3-flash","outcome":"accepted","scenario":"Simple commit: declare + facts"}
+{"error":null,"fenced":true,"id":"s2-mixed-value-types","model":"z-ai/glm-5.3-flash","outcome":"accepted","scenario":"One commit, mixed value types"}
+{"error":null,"fenced":true,"id":"s3-retract-and-reassert","model":"z-ai/glm-5.3-flash","outcome":"accepted","scenario":"Fact-level consume (retraction) + a via reference"}
+{"error":null,"fenced":true,"id":"s4-pure-retraction","model":"z-ai/glm-5.3-flash","outcome":"accepted","scenario":"Consumes-only commit, no new facts"}
+{"error":null,"fenced":true,"id":"s5-trap-old-vocabulary","model":"z-ai/glm-5.3-flash","outcome":"accepted","scenario":"Adversarial: task phrased in the retired schema's vocabulary"}
+{"error":null,"fenced":true,"id":"s1-mint-room-pair","model":"moonshotai/kimi-k2.5","outcome":"accepted","scenario":"Simple commit: declare + facts"}
+{"error":null,"fenced":true,"id":"s2-mixed-value-types","model":"moonshotai/kimi-k2.5","outcome":"accepted","scenario":"One commit, mixed value types"}
+{"error":null,"fenced":true,"id":"s3-retract-and-reassert","model":"moonshotai/kimi-k2.5","outcome":"accepted","scenario":"Fact-level consume (retraction) + a via reference"}
+{"error":null,"fenced":true,"id":"s4-pure-retraction","model":"moonshotai/kimi-k2.5","outcome":"accepted","scenario":"Consumes-only commit, no new facts"}
+{"error":null,"fenced":true,"id":"s5-trap-old-vocabulary","model":"moonshotai/kimi-k2.5","outcome":"accepted","scenario":"Adversarial: task phrased in the retired schema's vocabulary"}
