@@ -25,8 +25,12 @@
 -- Both mints are ordinary DMML, parsed and validated the same as any
 -- other content before being written -- dogfooded, not just described.
 --
--- Usage: check-divergence <mine-list-file> <peer-list-file> <output-dir> <mine-label> <peer-label>
+-- Usage: check-divergence <mine-list-file> <peer-list-file> <known-list-file> <output-dir> <mine-label> <peer-label>
 --   Each list file: one .dmml path per line (may be empty).
+--   known-list-file: the invoking repo's OWN full commits/*.dmml corpus
+--   as it stood before this merge -- used only to skip minting a
+--   duplicate Contest for a (subject, predicate) some earlier Contest
+--   already covers there (see alreadyContestedPairs below).
 -- Always exits 0 -- divergence is no longer a reason to block a merge,
 -- only a reason to mint a contest. Prints which files (if any) were
 -- written.
@@ -40,8 +44,8 @@ import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
-import DMML.Ast (Value (..), Literal (..))
-import DMML.Materialize (WorldSnapshot (..), applyCommits)
+import DMML.Ast (Value (..), Literal (..), NodeRef (nodeRefSegments))
+import DMML.Materialize (WorldSnapshot (..), applyCommits, emptySnapshot)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
 
 readListFile :: FilePath -> IO [FilePath]
@@ -112,15 +116,38 @@ mintContest n (subj, pred_) options = (factCommit, machine)
         , "    assert resolved"
         ]
 
+-- | Every (subject, predicate) pair some already-materialized
+-- @Contest@ node in this history disputes -- resolved or not. Real
+-- gap found designing (not yet running) a >2-peer full-mesh sync test:
+-- with more than one peer, the SAME raw divergence can be re-discovered
+-- by more than one pairwise check within a single sync round (peer C
+-- receives both sides of a dispute via two separate merges before
+-- either merge's own "new since merge-base" window has advanced past
+-- the original two commits), minting a second, redundant Contest for a
+-- pair already covered by an earlier one. Passing a repo's own current
+-- full history in lets a check skip a key that's already a live or
+-- settled Contest topic there, instead of re-litigating it from scratch
+-- every time two branches happen to both carry the original raw values.
+alreadyContestedPairs :: WorldSnapshot -> Map.Map (Text, Text) ()
+alreadyContestedPairs snap = Map.fromList [((s, p), ()) | (s, p) <- catPairs]
+  where
+    facts = snapshotFacts snap
+    contestNodes = [subj | ((subj, p), ValueNode ty) <- Map.toList facts, p == "a", nodeRefSegments ty == ["Contest"]]
+    getStr key = case Map.lookup key facts of Just (ValueLiteral (LitString s)) -> Just s; _ -> Nothing
+    catPairs = [(s, p) | n <- contestNodes, Just s <- [getStr (n, "subject")], Just p <- [getStr (n, "predicate")]]
+
 main :: IO ()
 main = do
   args <- getArgs
   case args of
-    [mineListPath, peerListPath, outDir, mineLabel, peerLabel] -> do
+    [mineListPath, peerListPath, knownListPath, outDir, mineLabel, peerLabel] -> do
       mineFiles <- readListFile mineListPath
       peerFiles <- readListFile peerListPath
+      knownFiles <- readListFile knownListPath
       mineSnap <- materializeFiles mineFiles
       peerSnap <- materializeFiles peerFiles
+      knownSnap <- if null knownFiles then pure emptySnapshot else materializeFiles knownFiles
+      let alreadyKnown = alreadyContestedPairs knownSnap
       -- A shared (subject, predicate) key is only a real contest if the
       -- two independently-derived values actually differ -- two agents
       -- who never saw each other's work converging on the SAME value
@@ -136,6 +163,7 @@ main = do
             | (k, mv) <- Map.toList (snapshotFacts mineSnap)
             , Just pv <- [Map.lookup k (snapshotFacts peerSnap)]
             , mv /= pv
+            , not (k `Map.member` alreadyKnown)
             ]
       if null overlapKeys
         then putStrLn "no divergence"
@@ -161,4 +189,4 @@ main = do
                 putStrLn ("  " <> T.unpack subj <> " . " <> T.unpack pred_ <> ": " <> mineLabel <> "=" <> show mv <> " vs " <> peerLabel <> "=" <> show pv)
             )
             (zip [1 :: Int ..] overlapKeys)
-    _ -> putStrLn "usage: check-divergence <mine-list-file> <peer-list-file> <output-dir> <mine-label> <peer-label>" >> exitFailure
+    _ -> putStrLn "usage: check-divergence <mine-list-file> <peer-list-file> <known-list-file> <output-dir> <mine-label> <peer-label>" >> exitFailure
