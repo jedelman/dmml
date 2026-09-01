@@ -468,3 +468,10 @@ unexpected "<cont
     [kimi] attempt 2: accepted (commit)
     [kimi] DONE after 2 commit(s)
   [deepseek] corner: 37 node(s), 113 machine-def line(s)
+    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-1.dmml: REJECTED
+<surface>:2:11:
+  |
+2 |   machine cistern/ninefathom
+  |           ^^
+unexpected "ci"
+expecting "::", '.', or '`'
