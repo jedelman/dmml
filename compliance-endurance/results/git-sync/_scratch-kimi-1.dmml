@@ -1,6 +1,0 @@
-commit riverAndRoot
-  declare relation discovers
-
-  npc/keeper `discovers` path/greenlore
-  npc/keeper . masters = path/greenlore
-  path/greenlore . state = "apprenticed"
