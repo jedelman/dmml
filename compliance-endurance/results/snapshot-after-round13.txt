@@ -1,0 +1,437 @@
+Declared predicates:
+  relation appointedBy
+  relation appointsAs
+  relation apprenticesUnder
+  relation bears
+  relation bearsWitness
+  relation belongsTo
+  relation carries
+  relation causedBy
+  relation commemorates
+  relation consecrates
+  relation consults
+  relation convenes
+  relation convenesFor
+  attribute date
+  attribute describedBy
+  attribute description
+  relation disputes
+  relation erupts
+  relation fallsOn
+  relation forgesFor
+  relation founded
+  relation grazesIn
+  attribute grievance
+  relation honorsPath
+  relation honorsPatron
+  relation intercedesFor
+  relation leansOn
+  relation locatedIn
+  attribute luminance
+  attribute luminances
+  attribute marker
+  relation masters
+  attribute method
+  relation migratesTo
+  attribute occasion
+  attribute option1Source
+  attribute option1Value
+  attribute option2Source
+  attribute option2Value
+  relation pasturedIn
+  attribute patronName
+  attribute predicate
+  attribute purpose
+  relation resolvedBy
+  relation resolves
+  attribute role
+  relation rumble
+  relation seals
+  attribute state
+  attribute subject
+  relation supplies
+  relation surveyedBy
+  relation syncretizedWith
+  relation teaches
+  attribute testimony
+  relation tradesWith
+  relation wardedBy
+  relation witnessedBy
+  relation worksAt
+  attribute year
+
+Current facts:
+  cistern/ninefathom . a = Cistern
+  cistern/ninefathom . belongsTo = mine/ninefathom
+  cistern/ninefathom . consecrates = contest/herbalist_onn_role_2
+  cistern/ninefathom . locatedIn = mountain/ashkar
+  cistern/ninefathom . purpose = "rain-catch cut above the adit; water to wash the ore, and a standing threat to the workings below"
+  cistern/ninefathom . seals = npc/brannock
+  cistern/ninefathom . state = flowing
+  cistern/ninefathom . supplies = mine/ninefathom
+  cistern/ninefathom . wardedBy = npc/brannoc
+  cistern/ninefathom . witnessedBy = smith/vesna
+  contest/cistern_nine . description = "A deep cistern sealed by Brannoc's authority"
+  contest/cistern_ninefathom_state . a = Contest
+  contest/cistern_ninefathom_state . state = "split"
+  contest/cistern_ninefathom_state_1 . a = Contest
+  contest/cistern_ninefathom_state_1 . bears = culture/riverfolk
+  contest/cistern_ninefathom_state_1 . date = "unknown"
+  contest/cistern_ninefathom_state_1 . disputes = crew/ninefathom_day
+  contest/cistern_ninefathom_state_1 . method = "arbitrated"
+  contest/cistern_ninefathom_state_1 . option1Source = "first"
+  contest/cistern_ninefathom_state_1 . option1Value = "split"
+  contest/cistern_ninefathom_state_1 . option2Source = "second"
+  contest/cistern_ninefathom_state_1 . option2Value = "consecrated"
+  contest/cistern_ninefathom_state_1 . predicate = "state"
+  contest/cistern_ninefathom_state_1 . resolvedBy = npc/keeper
+  contest/cistern_ninefathom_state_1 . resolves = cistern/ninefathom
+  contest/cistern_ninefathom_state_1 . state = "resolved"
+  contest/cistern_ninefathom_state_1 . subject = "cistern/ninefathom"
+  contest/cistern_ninefathom_state_1 . witnessedBy = npc/keeper
+  contest/herbalist/onn_role . a = Contest
+  contest/herbalist_onn_role . state = "founder"
+  contest/herbalist_onn_role_1 . a = Contest
+  contest/herbalist_onn_role_1 . consecrates = contest/herbalist_onn_role_2
+  contest/herbalist_onn_role_1 . disputes = herbalist/onn
+  contest/herbalist_onn_role_1 . option1Source = "deepseek"
+  contest/herbalist_onn_role_1 . option1Value = "herbalist who reads the ash's warning and seeks the keeper's counsel"
+  contest/herbalist_onn_role_1 . option2Source = "glm"
+  contest/herbalist_onn_role_1 . option2Value = "founder of the greenlore path"
+  contest/herbalist_onn_role_1 . predicate = "role"
+  contest/herbalist_onn_role_1 . resolvedBy = npc/keeper
+  contest/herbalist_onn_role_1 . state = "resolved"
+  contest/herbalist_onn_role_1 . subject = "herbalist/onn"
+  contest/herbalist_onn_role_2 . disputes = herbalist/onn_role
+  contest/herbalist_onn_role_2 . state = "keeper"
+  contest/path_greenlore_state_1 . a = Contest
+  contest/path_greenlore_state_1 . disputes = path/greenlore
+  contest/path_greenlore_state_1 . option1Source = "glm"
+  contest/path_greenlore_state_1 . option1Value = "mastered"
+  contest/path_greenlore_state_1 . option2Source = "gemini"
+  contest/path_greenlore_state_1 . option2Value = "undiscovered"
+  contest/path_greenlore_state_1 . predicate = "state"
+  contest/path_greenlore_state_1 . resolvedBy = npc/keeper
+  contest/path_greenlore_state_1 . state = resolved
+  contest/path_greenlore_state_1 . subject = "path/greenlore"
+  contest/path_greenlore_state_1 . testimony = "keeper walked the root-road as the grey snow ran green and swore the mastering true"
+  contest/path_greenlore_state_1 . witnessedBy = npc/keeper
+  crew/ninefathom_day . a = Crew
+  crew/ninefathom_day . appointedBy = nil
+  crew/ninefathom_day . carries = lantern/brann
+  crew/ninefathom_day . resolves = contest/cistern_ninefathom_state_1
+  crew/ninefathom_day . worksAt = mine/ninefathom
+  culture/highkin . a = Culture
+  culture/highkin . purpose = "settled on ashkar's terraces, kin to the mine and the quarry"
+  culture/highkin . state = "flourishing"
+  culture/highkin . tradesWith = culture/riverfolk
+  culture/riverfolk . a = Culture
+  culture/riverfolk . convenesFor = contest/herbalist_onn_role_1
+  culture/riverfolk . purpose = "settled along the river below oldroot, kin to the herds they follow"
+  culture/riverfolk . state = "flourishing"
+  culture/riverfolk . syncretizedWith = culture/highkin
+  culture/riverfolk . tradesWith = smith/vesna
+  event/ashkar_eruption . a = Event
+  event/ashkar_eruption . belongsTo = mountain/ashkar
+  event/ashkar_eruption . purpose = "the mountain splits, ninefathom's cistern cracks, ash falling on oldroot's warded canopy"
+  event/ashkar_eruption . witnessedBy = npc/brannoc
+  event/ashkar_eruption . year = 1043
+  event/ashkar_eruption_omen . describedBy = "a crack runs through the ninth seam, and the ash that follows tastes of bronze"
+  event/ashkar_quench . a = Event
+  event/ashkar_quench . causedBy = storm/secondash
+  event/ashkar_quench . locatedIn = mountain/ashkar
+  event/ashkar_rumble . a = Event
+  event/ashkar_rumble . belongsTo = mountain/ashkar
+  event/ashkar_rumble . purpose = "the first tremor, felt in ninefathom's deepest gallery, dust falling like snow"
+  event/ashkar_rumble . rumble = mountain/ashkar
+  event/ashkar_rumble . subject = "unrest"
+  event/ashkar_rumble . witnessedBy = npc/skarn
+  event/bargainfeast . a = Syncretism
+  event/bargainfeast . belongsTo = culture/riverfolk
+  event/bargainfeast . description = "the highkin came down the terraces with bronze and the riverfolk brought riverkine weave and cheese, and over three nights of barter the two kin found their songs and grammar rhyming; by the third dawn their trade-tokens bore both river-runes and terrace-marks, and the riverfolk were no longer only riverfolk"
+  event/bargainfeast . locatedIn = forest/oldroot
+  event/bargainfeast . purpose = "the highkin came down the terraces with bronze and the riverfolk brought riverkine weave and cheese, and over three nights of barter the two kin found their songs and grammar rhyming"
+  event/bargainfeast . supplies = crew/ninefathom_day
+  event/bargainfeast . witnessedBy = npc/brannoc
+  event/cistern_opening . a = Event
+  event/cistern_opening . belongsTo = cistern/ninefathom
+  event/cistern_opening . causedBy = mine/ninefathom
+  event/cistern_opening . purpose = "the sealed rain-catch loosed down the adit, drowning the exhausted ninefathom workings for good"
+  event/cistern_opening . witnessedBy = smith/vesna
+  event/cisternburst . belongsTo = mine/ninefathom
+  event/cisternburst . purpose = "when ashkar split the slope, ninefathom's cistern cracked along its seam and the ninefathom water ran down into the undug dark"
+  event/claim_disputed . a = Event
+  event/claim_disputed . belongsTo = mine/ninefathom
+  event/claim_disputed . purpose = "crew/ninefathom_day disputes smith/vesna's assay-rights, sinking a counter-shaft from the cistern side"
+  event/firstash . a = Ashfall
+  event/firstash . belongsTo = mountain/ashkar
+  event/firstash . fallsOn = forest/oldroot
+  event/firstash . purpose = "ashkar's throat open now, the old mine sealed by fire and the cistern split"
+  event/firstash . state = "erupting"
+  event/firstash . witnessedBy = herbalist/onn
+  event/firstcut . a = Event
+  event/firstcut . belongsTo = path/stonemasonry
+  event/firstcut . causedBy = cistern/ninefathom
+  event/firstcut . description = "the rain-catch cut above the adit, reckoned the first true stonework of the ninefathom folk"
+  event/firstcut . witnessedBy = npc/brannoc
+  event/firstdig . a = Event
+  event/firstdig . belongsTo = mine/ninefathom
+  event/firstdig . causedBy = cistern/ninefathom
+  event/firstdig . intercedesFor = meadow/highpasture
+  event/firstdig . purpose = "crew/ninefathom_day sinks the first adit with the seamdriver in hand, while the split cistern's run-off whispers somewhere below the workings"
+  event/firstlesson . a = Event
+  event/firstlesson . belongsTo = path/stonemasonry
+  event/firstlesson . causedBy = mine/ninefathom
+  event/firstlesson . description = "with the ninefathom drowned and its ore beyond reach, Vesna sets down the seamdriver and takes up the chisel, learning the stone-cutting Brannoc began at the rain-catch"
+  event/firstlesson . witnessedBy = npc/brannoc
+  event/greencounsel . a = Counsel
+  event/greencounsel . causedBy = event/greendiscovery
+  event/greencounsel . convenes = contest/herbalist_onn_role_1
+  event/greencounsel . resolves = contest/path_greenlore_state_1
+  event/greencounsel . subject = herbalist/onn
+  event/greencounsel . witnessedBy = npc/keeper
+  event/greendiscovery . a = Discovery
+  event/greendiscovery . belongsTo = path/greenlore
+  event/greendiscovery . causedBy = event/secondash
+  event/greendiscovery . locatedIn = forest/oldroot
+  event/greendiscovery . purpose = "the finding of the green path: when the second ash melted off the root-roads, the seams ran green where the grey snow had lain, and herbalist onn read the way beneath oldroot"
+  event/greendiscovery . subject = path/greenlore
+  event/greendiscovery . witnessedBy = herbalist/onn
+  event/greenmastery . a = Mastery
+  event/greenmastery . belongsTo = path/greenlore
+  event/greenmastery . causedBy = event/greencounsel
+  event/greenmastery . founded = path/greenlore
+  event/greenmastery . purpose = "onn walked the whole grazing-round under the settling ash and read the rootwoods' warding whole, apprenticeship passing into mastery"
+  event/greenmastery . subject = path/greenlore
+  event/greenmastery . witnessedBy = herbalist/onn
+  event/greenmastery . year = "the year of the second ash"
+  event/herbalist_onn_vow . a = Event
+  event/herbalist_onn_vow . happenedOn = "year/3"
+  event/herbalist_onn_vow . witnessedBy = herbalist/onn
+  event/sample_vesna . a = Event
+  event/sample_vesna . belongsTo = mine/ninefathom
+  event/sample_vesna . purpose = "smith/vesna takes the first assay from the ninefathom seam, reading the color of the strike"
+  event/sealing . a = Sealing
+  event/sealing . consecrates = mountain/ashkar
+  event/sealing . seals = mine/ninefathom
+  event/sealing . subject = "the ninefathom shaft, sealed against the ash's breath"
+  event/sealing . witnessedBy = npc/keeper
+  event/seam_exhausted . a = Event
+  event/seam_exhausted . belongsTo = mine/ninefathom
+  event/seam_exhausted . purpose = "the ninefathom seam gives out at last, the cistern's water still running through the hollowed dark"
+  event/seam_found . a = Event
+  event/seam_found . belongsTo = shrine/greenseam
+  event/seam_found . purpose = "herbalist onn, who read the green way beneath oldroot when the second ash melted off the root-roads, follows the seams to their source and finds what the roots kept"
+  event/seam_found . witnessedBy = npc/keeper
+  event/seam_hallowed . a = Event
+  event/seam_hallowed . belongsTo = shrine/greenseam
+  event/seam_hallowed . purpose = "the keeper, who sealed brannoc's accord at the cistern and presided when onn's role was settled, comes under oldroot in onn's footsteps and hallows the green seam as patron — a consecration brannoc's ward cannot reach, for his claim stops at the cistern's rim"
+  event/seam_hallowed . witnessedBy = herbalist/onn
+  event/secondash . a = Ashfall
+  event/secondash . belongsTo = mountain/ashkar
+  event/secondash . causedBy = storm/secondash
+  event/secondash . purpose = "the second ash: the restless peak opens above the basin and grey snow falls on root-roads and workings alike"
+  event/secondash . witnessedBy = herbalist/onn
+  event/stagaleave . year = 1031
+  event/stagleave . a = Migration
+  event/stagleave . causedBy = rain/longrain
+  event/stagleave . subject = herd/stagfolk
+  event/stagleave . witnessedBy = npc/brannoc
+  event/storm_quench . a = Event
+  event/storm_quench . fallsOn = mountain/ashkar
+  event/storm_quench . purpose = "a black rain from the seaward quarter, falling on ashkar's burning crown, the first quenching"
+  event/work_begins . a = Event
+  event/work_begins . belongsTo = mine/ninefathom
+  event/work_begins . purpose = "crew/ninefathom_day drives the seam proper, the dispute settled by pick-right and water-sharing"
+  forest/oldroot . a = Forest
+  forest/oldroot . locatedIn = mountain/ashkar
+  forest/oldroot . purpose = "old-growth woodland at the mountain's foot, where the herds graze"
+  forest/oldroot . state = "blighted"
+  forest/oldroot . wardsWith = shrine/whispering
+  goods/ashkar_bronze . a = Good
+  goods/ashkar_bronze . carries = event/ashkar_eruption_omen
+  goods/ashkar_bronze . describedBy = "bronze forged from ore of the ninefathom seam after the ash"
+  goods/ashkar_bronze . purpose = "cramps and fittings forged from ninefathom copper and tin to bind the cistern's split stone"
+  goods/ashkar_copper . a = Good
+  goods/ashkar_copper . surveyedBy = smith/vesna
+  goods/riverweave . a = Good
+  goods/riverweave . belongsTo = culture/riverfolk
+  hammer/seamdriver . a = Hammer
+  hammer/seamdriver . locatedIn = mine/ninefathom
+  hammer/seamdriver . purpose = "seamdriver hammer, forged by vesna for the keeper's rites"
+  herbalist/onn . a = Herbalist
+  herbalist/onn . appointedBy = npc/keeper
+  herbalist/onn . apprenticesUnder = path/greenlore
+  herbalist/onn . bearsWitness = event/ashkar_eruption
+  herbalist/onn . belongsTo = culture/highkin
+  herbalist/onn . consults = npc/brann
+  herbalist/onn . masters = path/greenlore
+  herbalist/onn . testimony = "the ash read ill for the mine, and I took the matter to the keeper"
+  herbalist/onn . worksAt = forest/oldroot
+  herd/aurochs . a = Herd
+  herd/aurochs . grazesIn = pasture/thornveil
+  herd/aurochs . migratesTo = pasture/thornveil
+  herd/aurochs . pasturedIn = meadow/highpasture
+  herd/aurochs . state = grazing
+  herd/keeper . documents = contest/cistern_ninefathom_state_1
+  herd/riverkine . a = Herd
+  herd/riverkine . belongsTo = culture/riverfolk
+  herd/riverkine . description = "A small herd grazing the low pastures, marked with river-clan brands"
+  herd/riverkine . disputes = storm/secondash
+  herd/riverkine . grazesIn = pasture/highpasture
+  herd/riverkine . migratesTo = meadow/highpasture
+  herd/stagfolk . a = Herd
+  herd/stagfolk . grazesIn = forest/oldroot
+  herd/stagfolk . migratesTo = pasture/highpasture
+  herd/stagfolk . pasturedIn = meadow/highpasture
+  herd/stagfolk . state = "migrating"
+  herd/stagfolk . wardedBy = npc/scout
+  lantern/brann . a = Lantern
+  lantern/brann . belongsTo = npc/brann
+  lantern/brann . locatedIn = mine/ninefathom
+  lantern/brann . luminance = "steady"
+  lantern/brann . wardedBy = npc/brann
+  meadow/aurochs_home . a = Meadow
+  meadow/aurochs_home . description = "broad water-meadow where the stagfolk graze after the long walk from oldroot"
+  meadow/highpasture . a = Meadow
+  meadow/highpasture . grazesIn = herd/aurochs
+  meadow/highpasture . locatedIn = mountain/ashkar
+  meadow/highpasture . purpose = "high pasture above the treeline, where the herds winter before descending"
+  mine/ninefathom . a = Mine
+  mine/ninefathom . description = "the ninefathom adit, where copper runs green in the seam and the water-table waits to claim the unwary"
+  mine/ninefathom . locatedIn = mountain/ashkar
+  mine/ninefathom . purpose = "the ninefathom seam under ashkar's flank, opened hard on the cistern's breaking — the dig races the water that ran down into the undug dark"
+  mine/ninefathom . state = "exhausted"
+  mine/ninefathom . supplies = goods/ashkar_bronze
+  mountain/ashkar . a = Mountain
+  mountain/ashkar . erupts = event/secondash
+  mountain/ashkar . purpose = "volcanic peak towering above the old-growth basin"
+  mountain/ashkar . rumble = event/ashkar_rumble
+  mountain/ashkar . state = "quenched"
+  mountain/ashkar . witnessedBy = npc/skarn
+  npc/brann . role = "keeper"
+  npc/brannoc . a = Miner
+  npc/brannoc . apprenticesUnder = path/stonemasonry
+  npc/brannoc . belongsTo = culture/highkin
+  npc/brannoc . carries = goods/ashkar_copper
+  npc/brannoc . convenesFor = contest/cistern_ninefathom_state_1
+  npc/brannoc . masters = path/stonemasonry
+  npc/brannoc . role = "quarryman come down to mend the split cistern above the adit"
+  npc/brannoc . seals = contest/cistern_ninefathom_state_1
+  npc/brannoc . state = "resolved"
+  npc/brannoc . supplies = cistern/ninefathom
+  npc/brannoc . teaches = smith/vesna
+  npc/brannoc . worksAt = mountain/ashkar
+  npc/brannock . seals = cistern/ninefathom
+  npc/delver . a = Miner
+  npc/delver . appointsSkill = path/stonemasonry
+  npc/delver . apprenticesUnder = path/bronzework
+  npc/delver . belongsTo = culture/highkin
+  npc/delver . carries = goods/ashkar_copper
+  npc/delver . founded = culture/highkin
+  npc/delver . masters = path/bronzework
+  npc/delver . role = "first down the ninefathom shaft"
+  npc/delver . worksAt = mine/ninefathom
+  npc/herbalist . consults = npc/keeper
+  npc/keeper . a = Keeper
+  npc/keeper . appointedBy = culture/riverfolk
+  npc/keeper . bearsWitness = contest/path_greenlore_state_1
+  npc/keeper . belongsTo = culture/riverfolk
+  npc/keeper . carries = goods/riverweave
+  npc/keeper . consults = npc/brannoc
+  npc/keeper . honorsPath = path/greenlore
+  npc/keeper . intercedesFor = herbalist/onn
+  npc/keeper . masters = path/bronzework
+  npc/keeper . purpose = "keeper of the greenlore path, witness to oldroot's cycles"
+  npc/keeper . role = "founder of the riverfolk"
+  npc/keeper . teaches = path/greenlore
+  npc/keeper . witnessedBy = event/ashkar_eruption
+  npc/onn . appointedBy = council/elders
+  npc/onn . convenes = council/elders
+  npc/onn . role = "arbiter"
+  npc/onn . worksAt = mine/ninefathom
+  npc/scout . a = Scout
+  npc/scout . appointedAs = herd/stagfolk
+  npc/scout . role = "watcher"
+  npc/skarn . a = Npc
+  npc/skarn . apprenticesUnder = npc/brannoc
+  npc/skarn . bearsWitness = herd/stagfolk
+  npc/skarn . belongsTo = culture/highkin
+  npc/skarn . carries = hammer/seamdriver
+  npc/skarn . testimony = "If the riverkine are driven from highpasture, the stonemasons will have no stone for the seamdriver's shrine."
+  npc/skarn . worksAt = mine/ninefathom
+  npc/vesna . a = Person
+  npc/vesna . belongsTo = culture/riverfolk
+  npc/vesna . honorsPath = path/greenlore
+  npc/vesna . masters = path/greenlore
+  npc/vesna . worksAt = forest/oldroot
+  ore/firstsample . a = Ore
+  ore/firstsample . belongsTo = mine/ninefathom
+  ore/firstsample . locatedIn = mine/ninefathom
+  ore/firstsample . purpose = "first ore struck from the ninefathom seam after the mountain grumbled"
+  pasture/highpasture . a = Pasture
+  pasture/highpasture . description = "the high graze above the ashkar treeline, where the riverkine summer and the seam-road to the shrine-quarries begins"
+  pasture/highpasture . locatedIn = mountain/ashkar
+  path/bronzework . a = Path
+  path/bronzework . apprenticesUnder = path/greenlore
+  path/bronzework . locatedIn = mountain/ashkar
+  path/bronzework . purpose = "smelting ore drawn from ninefathom into worked bronze"
+  path/bronzework . state = "lost"
+  path/bronzework . supplies = mine/ninefathom
+  path/greenlore . a = Path
+  path/greenlore . locatedIn = forest/oldroot
+  path/greenlore . purpose = "lore of tending the rootwoods and warding wild herds"
+  path/greenlore . syncretizedWith = path/stonemasonry
+  path/stonemasonry . a = TechnicalPath
+  path/stonemasonry . consecrates = goods/riverweave
+  path/stonemasonry . consults = path/greenlore
+  path/stonemasonry . locatedIn = mountain/ashkar
+  path/stonemasonry . purpose = "cutting and setting ashkar's own stone, tempered by riverfolk practice"
+  path/stonemasonry . state = mastered
+  path/stonemasonry . witnessedBy = culture/riverfolk
+  rain/ashkar_quench . a = Rain
+  rain/ashkar_quench . fallsOn = mountain/ashkar
+  rain/longrain . a = Rain
+  rain/longrain . fallsOn = mountain/ashkar
+  rain/longrain . purpose = "the long rain riding the ash-wind, heavy enough to drown the eruption's glow"
+  rain/longrain . witnessedBy = npc/keeper
+  relight/lantern/9 . carries = light/firefly
+  relight/lantern/9 . luminance = 24
+  river/lowbend . a = River
+  river/lowbend . purpose = "broad bend of the shallows where aurochs cross"
+  shrine/greenseam . a = Shrine
+  shrine/greenseam . locatedIn = forest/oldroot
+  shrine/greenseam . luminance = 0.3
+  shrine/greenseam . state = "hallowed"
+  shrine/innermost . a = Shrine
+  shrine/innermost . commemorates = solstice/3
+  smith/vesna . a = Smith
+  smith/vesna . apprenticesUnder = path/stonemasonry
+  smith/vesna . belongsTo = culture/highkin
+  smith/vesna . carries = cistern/ninefathom
+  smith/vesna . consults = npc/brannoc
+  smith/vesna . forgesFor = cistern/ninefathom
+  smith/vesna . honorsPatron = npc/brannoc
+  smith/vesna . masters = path/stonemasonry
+  smith/vesna . patronName = "Brannoc"
+  smith/vesna . purpose = "master of bronzework, the only one who could mend the cistern's seams"
+  smith/vesna . role = "master ore-smith of the ashkar slopes"
+  smith/vesna . state = "journeyman"
+  smith/vesna . supplies = hammer/seamdriver
+  smith/vesna . tradesWith = npc/brannoc
+  smith/vesna . worksAt = mine/ninefathom
+  solstice/3 . occasion = "first harvest"
+  storm/secondash . a = Storm
+  storm/secondash . causedBy = event/ashkar_eruption
+  storm/secondash . fallsOn = mountain/ashkar
+  storm/secondash . grievance = "lightning struck the rivenkine herd and scattered it"
+  tree/ashbound . a = Tree
+  tree/oakhart . leansOn = tree/ashbound
+
+CONTESTED -- not settled, both/all options are live:
+  herbalist/onn . role is disputed:
+    - deepseek asserts "herbalist who reads the ash's warning and seeks the keeper's counsel"
+    - glm asserts "founder of the greenlore path"
+  path/greenlore . state is disputed:
+    - glm asserts "mastered"
+    - gemini asserts "undiscovered"

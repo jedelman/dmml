@@ -1,0 +1,5 @@
+commit mints
+  declare relation consults
+
+  npc/keeper `consults` npc/brannoc
+  npc/brannoc . state = "counseled"

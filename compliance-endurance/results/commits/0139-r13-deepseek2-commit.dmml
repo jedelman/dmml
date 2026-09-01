@@ -1,0 +1,7 @@
+commit commemoratesSolstice
+  declare relation commemorates
+  declare attribute occasion
+
+  shrine/innermost :: a Shrine
+  shrine/innermost `commemorates` solstice/3
+  solstice/3 . occasion = "first harvest"

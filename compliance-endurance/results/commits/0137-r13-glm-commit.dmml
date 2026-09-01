@@ -1,0 +1,8 @@
+commit discovers_stonemasonry
+  npc/brannoc . worksAt = mountain/ashkar
+  path/stonemasonry . state = apprenticed
+  event/firstcut :: a Event
+  event/firstcut . belongsTo = path/stonemasonry
+  event/firstcut `causedBy` cistern/ninefathom
+  event/firstcut . witnessedBy = npc/brannoc
+  event/firstcut . description = "the rain-catch cut above the adit, reckoned the first true stonework of the ninefathom folk"

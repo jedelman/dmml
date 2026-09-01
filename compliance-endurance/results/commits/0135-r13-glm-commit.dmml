@@ -1,0 +1,5 @@
+commit greenlore_resolved
+  contest/path_greenlore_state_1 . witnessedBy = npc/keeper
+  contest/path_greenlore_state_1 . resolvedBy = npc/keeper
+  event/greencounsel . resolves = contest/path_greenlore_state_1
+  contest/path_greenlore_state_1 . state = resolved

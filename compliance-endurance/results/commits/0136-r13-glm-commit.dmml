@@ -1,0 +1,7 @@
+commit opens_cistern_ninefathom
+  cistern/ninefathom . state = flowing
+  event/cistern_opening :: a Event
+  event/cistern_opening . belongsTo = cistern/ninefathom
+  event/cistern_opening `causedBy` mine/ninefathom
+  event/cistern_opening . witnessedBy = smith/vesna
+  event/cistern_opening . purpose = "the sealed rain-catch loosed down the adit, drowning the exhausted ninefathom workings for good"

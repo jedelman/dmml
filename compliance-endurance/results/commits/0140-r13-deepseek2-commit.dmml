@@ -1,0 +1,7 @@
+commit recordContest
+  declare relation bears
+  declare attribute marker
+
+  contest/cistern_ninefathom_state_1 . option1Source = "first"
+  contest/cistern_ninefathom_state_1 . option2Source = "second"
+  contest/cistern_ninefathom_state_1 . bears = culture/riverfolk

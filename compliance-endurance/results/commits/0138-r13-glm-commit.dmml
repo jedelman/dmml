@@ -1,0 +1,9 @@
+commit masters_stonemasonry
+  smith/vesna . apprenticesUnder = path/stonemasonry
+  path/stonemasonry . state = mastered
+  smith/vesna . masters = path/stonemasonry
+  event/firstlesson :: a Event
+  event/firstlesson . belongsTo = path/stonemasonry
+  event/firstlesson `causedBy` mine/ninefathom
+  event/firstlesson . witnessedBy = npc/brannoc
+  event/firstlesson . description = "with the ninefathom drowned and its ore beyond reach, Vesna sets down the seamdriver and takes up the chisel, learning the stone-cutting Brannoc began at the rain-catch"

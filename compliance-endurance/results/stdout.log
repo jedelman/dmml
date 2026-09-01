@@ -431,3 +431,40 @@ expecting end of li
     [kimi] attempt 2: accepted (commit)
     [kimi] DONE after 2 commit(s)
   [deepseek] corner: 34 node(s), 101 machine-def line(s)
+    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-1.dmml: REJECTED
+<surface>:1:14:
+  |
+1 | commit settle-expedition
+  |              ^^
+unexpected "-e"
+expecting end of line
+    [deepseek] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek-2.dmml: REJECTED
+<surface>:7:22:
+  |
+7 |     fact smith/vesna `worksAt` forge/underhill
+  |                      ^
+unexpected '`'
+expecti
+  [glm] corner: 34 node(s), 180 machine-def line(s)
+    [glm] attempt 1: accepted (commit)
+    [glm] attempt 2: accepted (commit)
+    [glm] attempt 3: accepted (commit)
+    [glm] attempt 4: accepted (commit)
+  [deepseek2] corner: 35 node(s), 83 machine-def line(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/_scratch-deepseek2-2.dmml: REJECTED
+<surface>:2:3:
+  |
+2 |   <contest/cistern_ninefathom_state_1> `resolvedBy` npc/arbiter
+  |   ^^^^^^^^
+unexpected "<cont
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (machine)
+  round 13 totals: valid=9 invalid=3 attempts=12 fail_rate=0.25
+
+--- round 14 ---
+  [kimi] corner: 38 node(s), 151 machine-def line(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] DONE after 2 commit(s)
+  [deepseek] corner: 37 node(s), 113 machine-def line(s)

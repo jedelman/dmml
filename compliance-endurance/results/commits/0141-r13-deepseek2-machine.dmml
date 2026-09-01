@@ -1,0 +1,9 @@
+machine contest/cistern_ninefathom_state_1
+  states
+    unresolved
+    resolved
+
+  transition resolve(arbiter)
+    unresolved -> resolved
+    guard $arbiter `appointedBy` self
+    assert resolved
