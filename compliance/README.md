@@ -11,6 +11,12 @@ the doc GRAMMAR.md fix (2026-08-31) actually made authoring viable, and
 gives a pre-retirement baseline to compare any replacement authoring
 path against.
 
+**Model-specific facts this checkpoint run surfaced** (reasoning-
+mandatory vs. disable-able, real token-budget sizing) **live in
+`written-world/MODELS.md`**, not duplicated here — that's the
+consolidated, project-wide reference; this file stays scoped to the
+checkpoint itself.
+
 ## Status: first real checkpoint run, 2026-08-31
 
 15/15 (model, scenario) pairs accepted against the real production
