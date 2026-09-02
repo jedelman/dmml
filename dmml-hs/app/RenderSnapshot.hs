@@ -3,23 +3,35 @@
 -- | CLI: parse one or more .dmml files (Surface-syntax commits OR
 -- machines, one top-level item per file) IN ORDER and print the
 -- materialized WorldSnapshot's rendering after applying all of them.
--- Machine files are validated (so a bad one still fails the whole run)
--- but contribute no facts to the snapshot -- only commits do; a
--- machine's own behavior isn't executed here (no guard evaluator, see
--- DMML.Materialize.applyContests's own doc comment). Built for
--- compliance-surface-informed/, compliance-world-assembly/, and
--- sync-spike/'s dispatch scripts to generate real "world so far"
+-- Built for compliance-surface-informed/, compliance-world-assembly/,
+-- and sync-spike/'s dispatch scripts to generate real "world so far"
 -- context from a real chain of files, rather than a copy-pasted static
 -- string that could drift from the actual seed content.
+--
+-- REWORKED 2026-09-02 (Phase D3, jedelman/dmml#1): machines are no
+-- longer discarded after validation. Every parsed machine is kept
+-- (keyed by its own node) and DMML.Governance.applyGovernance is run
+-- over the materialized snapshot before rendering -- a governed pair
+-- that validates gets collapsed to its one canonical value, exactly
+-- like any other real-world read now would; an ungoverned or still-
+-- pending pair renders every live alternative, same as before.
 module Main (main) where
 
+import qualified Data.Map.Strict as Map
+import Data.Text (Text)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
+import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Text.Megaparsec (errorBundlePretty)
 
+import DMML.Ast (CommitStmt, MachineStmt (..), NodeRef (nodeRefSegments))
+import DMML.Governance (applyGovernance)
 import DMML.Materialize (applyCommits, renderSnapshot)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
+
+nodeRefText :: NodeRef -> Text
+nodeRefText = T.intercalate "/" . nodeRefSegments
 
 main :: IO ()
 main = do
@@ -32,20 +44,18 @@ main = do
       case [(p, e) | (p, Left e) <- results] of
         ((p, e) : _) -> putStrLn (p <> ":\n" <> e) >> exitFailure
         [] -> do
-          let stmts = [stmt | (_, Right (Just stmt)) <- results]
+          let stmts = [c | (_, Right (Left c)) <- results]
+              machines = [m | (_, Right (Right m)) <- results]
+              machineMap = Map.fromList [(nodeRefText (machineNode m), m) | m <- machines]
           -- No cross-branch divergence to attribute here -- one ordered,
           -- single-author file list, not two independently-labeled
-          -- sides -- so a fixed batch label is fine (only matters for
-          -- multi-valued-pair provenance display, which won't arise from
-          -- a single linear materialization anyway, barring a genuinely
-          -- self-contradictory chain of commits).
-          TIO.putStr (renderSnapshot (applyCommits "world" stmts))
+          -- sides -- so a fixed batch label is fine.
+          let snap = applyGovernance machineMap (applyCommits "world" stmts)
+          TIO.putStr (renderSnapshot snap)
   where
-    -- Right (Just stmt): a valid commit, contributes facts.
-    -- Right Nothing: a valid machine, contributes nothing to the snapshot.
-    -- Left err: neither parses.
+    classify :: Text -> Either String (Either CommitStmt MachineStmt)
     classify src = case parseCommitSurface src of
-      Right stmt -> Right (Just stmt)
+      Right stmt -> Right (Left stmt)
       Left commitErr -> case parseMachineSurface src of
-        Right _ -> Right Nothing
+        Right machine -> Right (Right machine)
         Left _ -> Left (errorBundlePretty commitErr)

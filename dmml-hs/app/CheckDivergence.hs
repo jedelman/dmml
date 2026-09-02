@@ -12,11 +12,16 @@
 -- applying both sides' commits and unioning the two snapshots via
 -- 'mergeSnapshots' IS the whole mechanism -- every (subject, predicate)
 -- pair both sides genuinely diverge on ends up multi-valued automatically,
--- with zero special-casing and nothing written to disk. This tool now
--- only REPORTS which pairs are multi-valued, for a human/hook message --
--- reducing a governed predicate's alternatives to one canonical value is
--- real, not-yet-built work (governed-machine arbitration, see the
--- tracking issue) that belongs at materialization/read time, not here.
+-- with zero special-casing and nothing written to disk.
+--
+-- REWORKED AGAIN, same day (Phase D3): machines are no longer discarded.
+-- Every parsed machine from EITHER side is kept and
+-- DMML.Governance.applyGovernance runs over the merged snapshot before
+-- reporting -- a pair that's genuinely governed and already validates
+-- (e.g. a real witnessed resolve already sitting in one side's history)
+-- is correctly reported as settled, not as live divergence. Only a
+-- still-multi-valued pair after governance is real, unresolved
+-- divergence worth surfacing.
 --
 -- Usage: check-divergence <mine-list-file> <peer-list-file> <output-dir> <mine-label> <peer-label>
 --   Each list file: one .dmml path per line (may be empty).
@@ -34,9 +39,13 @@ import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
-import DMML.Ast (Literal (..), NodeRef (nodeRefSegments), Value (..))
+import DMML.Ast (CommitStmt, Literal (..), MachineStmt (..), NodeRef (nodeRefSegments), Value (..))
+import DMML.Governance (applyGovernance)
 import DMML.Materialize (WorldSnapshot (..), applyCommits, currentValue, mergeSnapshots)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
+
+nodeRefText :: NodeRef -> Text
+nodeRefText = T.intercalate "/" . nodeRefSegments
 
 readListFile :: FilePath -> IO [FilePath]
 readListFile p = do
@@ -45,20 +54,25 @@ readListFile p = do
 
 -- | A "new since merge-base" file list is real diff output over ALL
 -- commits/*.dmml additions -- commits AND machines both, whatever an
--- agent minted. Classify-then-skip: a machine parses and validates like
--- anything else, it just contributes no facts to the snapshot.
-materializeFiles :: Text -> [FilePath] -> IO WorldSnapshot
+-- agent minted. Returns both: commits materialize into facts, machines
+-- are retained (keyed by their own node) for governance lookup.
+materializeFiles :: Text -> [FilePath] -> IO (WorldSnapshot, Map.Map Text MachineStmt)
 materializeFiles label paths = do
   srcs <- mapM TIO.readFile paths
   let classified = zip paths (map classify srcs)
   case [(p, e) | (p, Left e) <- classified] of
     ((p, e) : _) -> error (p <> ":\n" <> e)
-    [] -> pure (applyCommits label [stmt | (_, Right (Just stmt)) <- classified])
+    [] ->
+      let commits = [c | (_, Right (Left c)) <- classified]
+          machines = [m | (_, Right (Right m)) <- classified]
+          machineMap = Map.fromList [(nodeRefText (machineNode m), m) | m <- machines]
+       in pure (applyCommits label commits, machineMap)
   where
+    classify :: Text -> Either String (Either CommitStmt MachineStmt)
     classify src = case parseCommitSurface src of
-      Right stmt -> Right (Just stmt)
+      Right stmt -> Right (Left stmt)
       Left commitErr -> case parseMachineSurface src of
-        Right _ -> Right Nothing
+        Right machine -> Right (Right machine)
         Left _ -> Left (errorBundlePretty commitErr)
 
 main :: IO ()
@@ -68,18 +82,19 @@ main = do
     [mineListPath, peerListPath, _outDir, mineLabel, peerLabel] -> do
       mineFiles <- readListFile mineListPath
       peerFiles <- readListFile peerListPath
-      mineSnap <- materializeFiles (T.pack mineLabel) mineFiles
-      peerSnap <- materializeFiles (T.pack peerLabel) peerFiles
+      (mineSnap, mineMachines) <- materializeFiles (T.pack mineLabel) mineFiles
+      (peerSnap, peerMachines) <- materializeFiles (T.pack peerLabel) peerFiles
       let merged = mergeSnapshots mineSnap peerSnap
-      -- Report, don't mint: every (subject, predicate) pair with more
-      -- than one live alternative after the merge is real, surfaced
-      -- divergence -- but it's already IN the merged commit history
-      -- (each side's own file already exists on disk), nothing new to
-      -- write.
+          machines = Map.union mineMachines peerMachines
+          governed = applyGovernance machines merged
+      -- Report, don't mint: every (subject, predicate) pair STILL
+      -- multi-valued after governance is real, unresolved divergence --
+      -- but it's already IN the merged commit history (each side's own
+      -- file already exists on disk), nothing new to write.
       let reallyDivergent =
             [ (k, vs)
-            | (k, _) <- Map.toList (snapshotFacts merged)
-            , let vs = currentValue k merged
+            | (k, _) <- Map.toList (snapshotFacts governed)
+            , let vs = currentValue k governed
             , length vs > 1
             ]
       if null reallyDivergent
