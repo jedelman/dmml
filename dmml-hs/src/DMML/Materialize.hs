@@ -65,12 +65,27 @@ emptySnapshot = WorldSnapshot Map.empty Map.empty Map.empty
 -- not a contest. This is only ever called by something that has
 -- independently determined real divergence (two branches, neither
 -- aware of the other) -- see dmml-hs/app/CheckDivergence.hs.
+--
+-- MERGES into any options already recorded for this key rather than
+-- replacing them -- a real bug, found running the worktree-sync
+-- endurance test, not hypothesized: a pair left unresolved after one
+-- Contest can go on to be disputed again by a LATER, entirely separate
+-- Contest (nobody ever witnessed a resolution in between), and a plain
+-- overwrite here silently dropped the first Contest's options from the
+-- rendered snapshot the moment the second one was processed -- exactly
+-- the "silently resolve/drop information" move SPEC.md sec12 forbids,
+-- just relocated from resolving-a-value to dropping-an-option. Options
+-- already present (identical label AND value) aren't duplicated if the
+-- same divergence is somehow reprocessed.
 markContested :: (Text, Text) -> [(Text, Value)] -> WorldSnapshot -> WorldSnapshot
 markContested key options snap =
   snap
     { snapshotFacts = Map.delete key (snapshotFacts snap)
-    , snapshotContested = Map.insert key (ContestedEntry options) (snapshotContested snap)
+    , snapshotContested = Map.insertWith mergeEntries key (ContestedEntry options) (snapshotContested snap)
     }
+  where
+    mergeEntries (ContestedEntry newOpts) (ContestedEntry existingOpts) =
+      ContestedEntry (existingOpts ++ [o | o <- newOpts, o `notElem` existingOpts])
 
 -- | Resolves a contest: removes it from 'snapshotContested', sets the
 -- agreed value in 'snapshotFacts'. Callers are responsible for having
