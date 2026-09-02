@@ -31,6 +31,7 @@ module DMML.Materialize
   , applyCommits
   , mergeSnapshots
   , currentValue
+  , collapseToOne
   , renderSnapshot
   ) where
 
@@ -132,6 +133,19 @@ mergeSnapshots a b =
 -- currently-unreduced divergence). The only way to read a fact's value.
 currentValue :: (Text, Text) -> WorldSnapshot -> [(Text, Value)]
 currentValue key snap = maybe [] alternativeValues (Map.lookup key (snapshotFacts snap))
+
+-- | Deliberately collapses a (subject, predicate) pair's live
+-- alternatives down to one -- the ONE write operation in this module
+-- that overwrites rather than adds. Never called by ordinary commit
+-- application ('applyCommit') -- an ordinary mint is collision-free by
+-- construction and never collapses anything on its own. This exists
+-- specifically for governed-machine arbitration (see DMML.Governance's
+-- 'arbitrate') to apply an already-validated outcome; it does no
+-- validation itself, same division of responsibility as the old
+-- 'resolveContested' this replaces.
+collapseToOne :: (Text, Text) -> Text -> Value -> WorldSnapshot -> WorldSnapshot
+collapseToOne key label v snap =
+  snap {snapshotFacts = Map.insert key (Alternatives [(label, v)]) (snapshotFacts snap)}
 
 renderValue :: Value -> Text
 renderValue (ValueNode n) = nodeRefText n
