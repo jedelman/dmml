@@ -156,6 +156,19 @@ applyContests snap = foldl' processContest snap contestNodes
       Just (ValueLiteral (LitString s)) -> Just s
       _ -> Nothing
 
+    -- | For fields that are guard-relevant (subject/predicate/state) --
+    -- these are minted as bare node refs, never quoted string literals,
+    -- so a guard's EXISTS walk can actually traverse them (see
+    -- DMML.Guard / dev-journal/2026-09-02-machines-as-facts-generic-
+    -- guard-evaluator.md's Opus-review finding: the real Rust crate's
+    -- crepe loader refuses to walk a literal-valued fact at all, and
+    -- Jason's own call was "eliminate string literals for guards --
+    -- only symbols"). Only 'optionNSource' provenance labels stay
+    -- 'getStr' -- free-text attribution, never guard-checked.
+    getNode key = case Map.lookup key facts of
+      Just (ValueNode n) -> Just (nodeRefText n)
+      _ -> Nothing
+
     isWitnessedByKeeper contestNode =
       Map.lookup (contestNode, "witnessedBy") facts == Just (ValueNode (NodeRef ["npc", "keeper"]))
 
@@ -167,7 +180,7 @@ applyContests snap = foldl' processContest snap contestNodes
       ]
 
     processContest s contestNode =
-      case (getStr (contestNode, "subject"), getStr (contestNode, "predicate"), getStr (contestNode, "state")) of
+      case (getNode (contestNode, "subject"), getNode (contestNode, "predicate"), getNode (contestNode, "state")) of
         (Just _, Just _, Just "resolved") | isWitnessedByKeeper contestNode ->
           s -- legitimately witnessed resolution: trust the naive fold's own value for this pair
         (Just origSubj, Just origPred, _) ->

@@ -111,18 +111,25 @@ mintContest n (subj, pred_) options = (factCommit, machine)
       T.unlines $
         [ "commit raises"
         , "  declare relation disputes"
-        , "  declare attribute subject"
-        , "  declare attribute predicate"
-        , "  declare attribute state"
+          -- subject/predicate/state are guard-relevant -- declared and
+          -- minted as relations to bare node refs, never quoted string
+          -- literals, so EXISTS(...) can actually walk them (the real
+          -- Rust crate's crepe loader refuses to walk a literal-valued
+          -- fact at all; Jason's call: "eliminate string literals for
+          -- guards -- only symbols"). optionNSource stays an attribute
+          -- below -- free-text provenance labels, never guard-checked.
+        , "  declare relation subject"
+        , "  declare relation predicate"
+        , "  declare relation state"
         ]
           ++ ["  declare attribute option" <> T.pack (show i) <> "Value" | i <- [1 .. length options]]
           ++ ["  declare attribute option" <> T.pack (show i) <> "Source" | i <- [1 .. length options]]
           ++
           [ ""
           , "  " <> node <> " :: a Contest"
-          , "  " <> node <> " . subject = \"" <> subj <> "\""
-          , "  " <> node <> " . predicate = \"" <> pred_ <> "\""
-          , "  " <> node <> " . state = \"contested\""
+          , "  " <> node <> " . subject = " <> subj
+          , "  " <> node <> " . predicate = " <> pred_
+          , "  " <> node <> " . state = contested"
           ]
           ++ optionLines
           ++ ["  " <> node <> " `disputes` " <> subj]
