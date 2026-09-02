@@ -59,6 +59,9 @@ module DMML.Retroconsistency
   , RetroResult (..)
   , retroconsistency
   , renderImpliedCommit
+  , BrokenGuard (..)
+  , GateResult (..)
+  , gateConsistentTree
   ) where
 
 import Data.List (foldl', nub)
@@ -203,3 +206,74 @@ renderImpliedCommit verb facts =
     ["commit " <> verb]
       ++ ["  declare relation " <> p | p <- nub (map impliedPredicate facts)]
       ++ ["  " <> impliedSubject f <> " `" <> impliedPredicate f <> "` " <> impliedTarget f | f <- facts]
+
+-- Gating a retro commit on a whole-tree-consistent result -----------------
+--
+-- Jason, 2026-09-02: "let's gate retro commits on a consistent tree."
+-- The doc comment above states minting is "ALWAYS safe by construction"
+-- at the data level -- true, but incomplete: that only covers the ONE
+-- guard a retro commit was generated to satisfy. Adding a fact can
+-- still change what OTHER guards, elsewhere in the tree, currently
+-- evaluate to -- specifically, it can newly BLOCK a negated guard that
+-- held before. A positive guard can never newly FAIL this way (more
+-- facts only ever make an @EXISTS@ pattern MORE likely true, never
+-- less), so a negated guard flipping from held to blocked is the ONLY
+-- way additive minting can break something -- which is exactly what
+-- this gate checks, and the only thing it needs to.
+
+-- | One guard, on some OTHER machine\/transition than the one a retro
+-- commit was generated for, that held before the candidate facts were
+-- applied and is now blocked after.
+data BrokenGuard = BrokenGuard
+  { brokenMachine :: Text
+  , brokenTransition :: Text
+  , brokenPredicate :: Text
+  }
+  deriving (Eq, Show)
+
+data GateResult
+  = GateOk
+  | GateBroken [BrokenGuard]
+  deriving (Eq, Show)
+
+-- | True iff a guard's pattern references a @$param@ anywhere (anchor
+-- or any hop). Such a guard can't be generically re-checked here --
+-- its real meaning depends on a specific transition FIRING's own
+-- argument bindings, which a whole-tree consistency scan doesn't have
+-- and structurally can't (it's checking "is the tree still consistent
+-- as data," not "would this specific firing still succeed"). Excluded
+-- from the scan, not silently treated as passing -- a real, disclosed
+-- gap, not a gap in coverage nobody chose.
+usesParam :: GuardClause -> Bool
+usesParam g = any isParam (patternAnchor pat : map hopTerm (patternHops pat))
+  where
+    pat = existsPattern (guardExists g)
+    isParam (TermParam _) = True
+    isParam _ = False
+
+-- | Checks whether applying a candidate set of new facts (typically a
+-- retroconsistency-implied commit's own content) would break any
+-- currently-satisfied negated guard anywhere in the known machine set
+-- -- not just the transition the candidate facts were generated for.
+-- @before@\/@after@ must differ ONLY by the candidate facts (the
+-- caller's job, same division of responsibility 'DMML.Governance'
+-- already has for its own inputs) -- this function doesn't compute the
+-- diff itself, it evaluates both snapshots and compares.
+gateConsistentTree :: Map.Map Text MachineStmt -> WorldSnapshot -> WorldSnapshot -> GateResult
+gateConsistentTree machines before after =
+  case brokens of
+    [] -> GateOk
+    _ -> GateBroken brokens
+  where
+    brokens =
+      [ BrokenGuard (nodeRefText (machineNode m)) (transitionIdent t) (hopPredicate lastHop)
+      | m <- Map.elems machines
+      , t <- machineTransitions m
+      , g <- transitionGuards t
+      , guardNegated g
+      , not (usesParam g)
+      , let ctx = EvalContext {ctxSelfNode = nodeRefText (machineNode m), ctxParams = Map.empty}
+      , evalGuard g ctx before
+      , not (evalGuard g ctx after)
+      , let lastHop = last (patternHops (existsPattern (guardExists g)))
+      ]
