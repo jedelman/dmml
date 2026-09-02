@@ -123,17 +123,19 @@ def build_binaries():
     render = DMML_HS / "render-snapshot"
     divergence = DMML_HS / "check-divergence"
     entropy_sidecar = DMML_HS / "entropy-sidecar"
+    checkpoint_rebuild = DMML_HS / "checkpoint-rebuild"
     for src, out in [
         ("app/ValidateCommit.hs", validate),
         ("app/RenderSnapshot.hs", render),
         ("app/CheckDivergence.hs", divergence),
         ("app/EntropySidecar.hs", entropy_sidecar),
+        ("app/CheckpointRebuild.hs", checkpoint_rebuild),
     ]:
         r = sh("ghc", "-isrc", "-iapp", "-O0", src, "-o", str(out), cwd=str(DMML_HS))
         if r.returncode != 0:
             print(r.stdout, r.stderr, file=sys.stderr)
             raise RuntimeError(f"build failed: {src}")
-    return validate, render, divergence, entropy_sidecar
+    return validate, render, divergence, entropy_sidecar, checkpoint_rebuild
 
 
 def validate_file(validate_bin, path):
@@ -406,7 +408,7 @@ def main():
         print("OPENROUTER_API_KEY not set", file=sys.stderr)
         return 1
 
-    validate_bin, render_bin, divergence_bin, _entropy_bin = build_binaries()
+    validate_bin, render_bin, divergence_bin, _entropy_bin, _checkpoint_bin = build_binaries()
     surface_text = SURFACE_PATH.read_text()
     rng = random.Random(args.seed)
 

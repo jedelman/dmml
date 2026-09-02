@@ -51,6 +51,7 @@ DMML_HS = HERE.parent / "dmml-hs"
 SYNC_SPIKE_BROKER = HERE.parent.parent / "written-world" / "sync-spike" / "broker"
 INSTALL_HOOKS_SH = SYNC_SPIKE_BROKER / "install-hooks.sh"
 HOOK_MERGE_SH = SYNC_SPIKE_BROKER / "hook-merge.sh"
+REBUILD_CACHE_SH = SYNC_SPIKE_BROKER / "rebuild-cache.sh"
 RESULTS_DIR = HERE / "results" / "worktree-sync"
 
 AGENTS = base.AGENTS  # kimi, deepseek, mercury, deepseek2
@@ -133,10 +134,27 @@ def sync_agent_into_canonical(canon, branch, env, log):
         log(f"    [sync] canonical <- {branch}: ACCEPTED, {len(live_pairs)} pair(s) still live/unresolved")
     else:
         log(f"    [sync] canonical <- {branch}: ACCEPTED, no divergence")
-    return True, live_pairs
+
+    # F2/checkpoint-per-commit real-scale check: this merge's post-merge
+    # hook should have folded a SMALL number of new files (in the
+    # bootstrap case, everything so far once; every merge after that,
+    # only what this specific merge introduced) -- never a count that
+    # grows with total history. Surfaced per-merge here rather than only
+    # checked once at the end, so a regression shows up round-by-round,
+    # not just in a final summary.
+    cp_fold_count = None
+    m = CHECKPOINT_FOLD_RE.search(combined)
+    if m:
+        cp_fold_count = int(m.group(1))
+        log(f"    [sync] checkpoint: folded {cp_fold_count} new file(s) this merge")
+    elif "checkpoint-rebuild failed" in combined:
+        log(f"    [sync] WARNING: checkpoint-rebuild failed this merge (non-fatal, see hook output above)")
+
+    return True, live_pairs, cp_fold_count
 
 
 DIVERGENCE_SUBJ_PRED_RE = re.compile(r"^DIVERGENCE \(live, unresolved\): (\S+) \. (\S+)$")
+CHECKPOINT_FOLD_RE = re.compile(r"\[post-merge\] checkpointed (\d+) new file\(s\)")
 
 
 def render_repo_snapshot(render_bin, repo_dir):
@@ -176,7 +194,7 @@ def main():
         return 1
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    validate_bin, render_bin, divergence_bin, entropy_sidecar_bin = base.build_binaries()
+    validate_bin, render_bin, divergence_bin, entropy_sidecar_bin, checkpoint_rebuild_bin = base.build_binaries()
     surface_text = base.SURFACE_PATH.read_text()
 
     round_log = []
@@ -195,6 +213,9 @@ def main():
     env = dict(os.environ)
     env["DMML_VALIDATOR"] = str(validate_bin)
     env["DMML_DIVERGENCE_CHECK"] = str(divergence_bin)
+    env["DMML_RENDER_SNAPSHOT"] = str(render_bin)
+    env["DMML_REBUILD_CACHE"] = str(REBUILD_CACHE_SH)
+    env["DMML_CHECKPOINT_REBUILD"] = str(checkpoint_rebuild_bin)
 
     # Entropy sidecar: a real, separate, resumable process watching the
     # canonical repo's commits/ live for the whole run -- an observer,
@@ -216,6 +237,7 @@ def main():
         log(f"  WARNING: entropy sidecar binary not found at {entropy_sidecar_bin}, running without it")
 
     live_pair_history = []  # (round, subj, pred) -- pairs reported still-live after a sync, informational only
+    checkpoint_fold_history = []  # {round, agent, folded} -- per-merge checkpoint fold counts, real-scale evidence
     report_rounds = []
     stop_reason = None
     total_valid_commits = 0
@@ -303,9 +325,11 @@ def main():
             name = agent["name"]
             if not round_accepted[name]:
                 continue  # nothing new on this agent's branch to merge
-            ok, live_pairs = sync_agent_into_canonical(canon, worktrees[name]["branch"], env, log)
+            ok, live_pairs, cp_fold_count = sync_agent_into_canonical(canon, worktrees[name]["branch"], env, log)
             for (s, p) in live_pairs:
                 live_pair_history.append((round_no, s, p))
+            if cp_fold_count is not None:
+                checkpoint_fold_history.append({"round": round_no, "agent": name, "folded": cp_fold_count})
 
         report_rounds.append({
             "round": round_no, "stats": round_stats, "fail_rate": fail_rate,
@@ -354,6 +378,38 @@ def main():
 
     entropy_alerts = sorted((canon / "commits").glob("*entropy-collapse*.dmml"))
 
+    # Checkpoint-per-commit real-scale verification: independently fold
+    # every real commits/*.dmml file from scratch under the same final
+    # tree-sha the incremental chain actually reached, and diff against
+    # what that chain of many single-merge incremental folds produced.
+    # This is the exact same check the small worktree demo already
+    # verified once by hand -- run again here at real endurance scale
+    # (dozens of merges, not 4) to catch anything the small demo
+    # wouldn't have surfaced (e.g. a bug that only shows up once a
+    # checkpoint chain is many links deep).
+    checkpoint_dir = canon / "checkpoints"
+    final_tree_sha = git(canon, "rev-parse", "HEAD:commits").strip()
+    checkpoint_files = sorted(checkpoint_dir.glob("*.json")) if checkpoint_dir.exists() else []
+    tip_checkpoint = checkpoint_dir / f"{final_tree_sha}.json"
+    checkpoint_verification = {
+        "checkpoint_files_written": len(checkpoint_files),
+        "tip_checkpoint_exists": tip_checkpoint.exists(),
+        "fold_counts_per_merge": [h["folded"] for h in checkpoint_fold_history],
+        "max_fold_count": max((h["folded"] for h in checkpoint_fold_history), default=None),
+    }
+    if tip_checkpoint.exists():
+        reference_out = RESULTS_DIR / "checkpoint-reference-full-replay.json"
+        r = sh(str(checkpoint_rebuild_bin), final_tree_sha, str(reference_out), "none",
+               *[str(f) for f in agent_commit_files(canon)])
+        if r.returncode != 0:
+            checkpoint_verification["matches_full_replay"] = False
+            checkpoint_verification["error"] = r.stdout + r.stderr
+        else:
+            checkpoint_verification["matches_full_replay"] = (
+                tip_checkpoint.read_text() == reference_out.read_text()
+            )
+    log(f"  checkpoint verification: {checkpoint_verification}")
+
     report = {
         "rounds_run": len(report_rounds),
         "target_commits": args.target_commits,
@@ -366,6 +422,7 @@ def main():
         "per_agent_commits": per_agent_commits,
         "live_unresolved_pairs": sorted({f"{s}.{p}" for (_, s, p) in live_pair_history}),
         "entropy_collapse_alerts": [f.name for f in entropy_alerts],
+        "checkpoint_verification": checkpoint_verification,
         "rounds": report_rounds,
     }
     (RESULTS_DIR / "report.json").write_text(json.dumps(report, indent=2))

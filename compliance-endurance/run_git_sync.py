@@ -170,7 +170,7 @@ def main():
         return 1
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    validate_bin, render_bin, divergence_bin, _entropy_bin = base.build_binaries()
+    validate_bin, render_bin, divergence_bin, _entropy_bin, _checkpoint_bin = base.build_binaries()
     surface_text = base.SURFACE_PATH.read_text()
 
     round_log = []
