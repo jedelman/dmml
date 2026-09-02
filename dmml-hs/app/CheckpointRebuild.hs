@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | CLI: folds ONLY the new commits/*.dmml files a single merge just
@@ -29,6 +30,9 @@
 --                 entire point; the caller (pre-merge-commit) is
 --                 responsible for scoping this correctly, same
 --                 responsibility it already has for shape-validation.
+--                 May freely include machine-definition files mixed in
+--                 with real commits -- see 'foldFiles' below for why
+--                 those are silently skipped, not an error.
 module Main (main) where
 
 import qualified Data.ByteString.Lazy as BL
@@ -59,8 +63,9 @@ main = do
           case decodeCheckpoint raw of
             Nothing -> putStrLn ("checkpoint-rebuild: failed to decode parent checkpoint " <> path) >> exitFailure
             Just ck -> pure (checkpointToSnapshot ck)
-      newSnap <- foldFiles parentSnap newFiles
+      (newSnap, foldedCount) <- foldFiles parentSnap 0 newFiles
       let out = snapshotToCheckpoint (T.pack treeSha) newSnap
+          skippedCount = length newFiles - foldedCount
       BL.writeFile outPath (encodeCheckpoint out)
       putStrLn
         ( "checkpoint-rebuild: wrote "
@@ -69,7 +74,11 @@ main = do
             <> treeSha
             <> ", "
             <> show (length newFiles)
-            <> " new file(s) folded in over parent "
+            <> " new file(s) given, "
+            <> show foldedCount
+            <> " folded as commits, "
+            <> show skippedCount
+            <> " skipped as machine defs, over parent "
             <> parentArg
             <> ")"
         )
@@ -77,19 +86,28 @@ main = do
       putStrLn "usage: checkpoint-rebuild <tree-sha> <output.json> <parent.json|none> <newfile.dmml> [...]"
         >> exitFailure
   where
-    -- Every new file must be a real, already-validated commit -- a
-    -- machine definition here is a real caller error (machines aren't
-    -- folded into the fact checkpoint at all, see DMML.Checkpoint's own
-    -- doc comment), not silently skipped, since silently dropping it
-    -- would leave the checkpoint's caller believing it was accounted
-    -- for.
-    foldFiles snap [] = pure snap
-    foldFiles snap (path : rest) = do
+    -- CORRECTED after a real endurance-scale run found this wrong (not
+    -- just reasoned about): a machine-definition file showing up in the
+    -- new-files list is the NORMAL case, not a caller error -- both the
+    -- bootstrap fold (seed content always includes machine files
+    -- alongside real commits) and, more importantly, ordinary steady-
+    -- state operation (an agent minting a brand-new machine mid-run is
+    -- completely routine authored content, confirmed happening for real
+    -- in a 40-commit worktree-sync run) can put one in this file list.
+    -- Machines simply don't belong in the raw fact checkpoint at all
+    -- (DMML.Checkpoint's own doc comment) -- silently skipping one here
+    -- is the correct behavior, not information loss: nothing about a
+    -- machine file was ever going to be folded into this snapshot
+    -- regardless of how it arrived. A genuine parse failure (neither a
+    -- commit nor a machine) stays a hard error -- real malformed
+    -- content, which pre-merge-commit's own shape validation should
+    -- already have caught before this ever runs, kept here as a safety
+    -- net, not the expected path.
+    foldFiles snap !n [] = pure (snap, n)
+    foldFiles snap !n (path : rest) = do
       src <- TIO.readFile path
       case parseCommitSurface src of
-        Right stmt -> foldFiles (applyCommit "merge" snap stmt) rest
+        Right stmt -> foldFiles (applyCommit "merge" snap stmt) (n + 1) rest
         Left commitErr -> case parseMachineSurface src of
-          Right _ ->
-            putStrLn (path <> ": checkpoint-rebuild only folds commits, not machine defs")
-              >> exitFailure
+          Right _ -> foldFiles snap n rest
           Left _ -> putStrLn (path <> ":\n" <> errorBundlePretty commitErr) >> exitFailure
