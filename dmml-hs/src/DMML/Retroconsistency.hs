@@ -34,15 +34,14 @@
 --     modeling problem, not something to paper over.
 --   * A multi-hop pattern IS handled (the whole chain gets synthesized,
 --     each hop building on the last) — this covers a single machine's
---     own guard chain, but NOT chaining across separate machines\/
---     relations (Jason's quarry example: the stone's own destination is
---     a different fact on a different node's own governance, not a hop
---     in the quarry's own pattern). That's a real, disclosed follow-up:
---     run this module again, recursively, on whatever machine (if any)
---     governs each freshly-implied node, until nothing new is implied.
---     Not built here — see @written-world@'s own dev-journal entry for
---     this feature for why that's a fixpoint over this primitive, not a
---     new primitive itself.
+--     own guard chain. Chaining ACROSS separate machines (Jason's
+--     quarry example) is handled by 'fixpointRetroconsistency', built
+--     2026-09-02 — see that function's own doc comment for the real
+--     mechanism and for a correction to what this comment used to claim
+--     about it (chasing a FRESHLY-minted node's own governance, which
+--     turns out to be structurally impossible — nothing has asserted
+--     anything about a brand-new node yet, so there is no governance
+--     fact to discover there in the first place).
 --
 -- Consistency, precisely: at the DATA level, minting is ALWAYS safe by
 -- construction here — 'DMML.Materialize.applyCommit' is collision-free
@@ -62,16 +61,22 @@ module DMML.Retroconsistency
   , BrokenGuard (..)
   , GateResult (..)
   , gateConsistentTree
+  , ChainStep (..)
+  , ChainResult (..)
+  , fixpointRetroconsistency
   ) where
 
 import Data.List (foldl', nub)
 import qualified Data.Map.Strict as Map
+import qualified Data.Set as Set
 import Data.Text (Text)
 import qualified Data.Text as T
 
 import DMML.Ast
 import DMML.Guard (EvalContext (..), evalGuard, lookupTransition)
-import DMML.Materialize (WorldSnapshot, currentValue)
+import DMML.Materialize (WorldSnapshot, applyCommit, currentValue)
+import DMML.Surface (parseCommitSurface)
+import Text.Megaparsec (errorBundlePretty)
 
 -- | One fact retroconsistency proposes minting to make a guard hold.
 -- Always node-valued -- a guard pattern only ever walks node-valued
@@ -277,3 +282,130 @@ gateConsistentTree machines before after =
       , not (evalGuard g ctx after)
       , let lastHop = last (patternHops (existsPattern (guardExists g)))
       ]
+
+-- Cross-machine chaining ---------------------------------------------------
+--
+-- Jason, 2026-09-02: "cross machine chaining is the way to go next."
+-- This module's own earlier doc comment (and the dev-journal entry that
+-- first described this follow-up) framed it as "if a freshly-minted
+-- node turns out to itself be governed by some machine." That framing
+-- doesn't survive contact with how governance actually works here: a
+-- BRAND-NEW node (an existential hop's fresh placeholder) has no facts
+-- about it at all yet — nothing has asserted anything, so there is no
+-- governance edge to discover, full stop. The real chaining case is a
+-- BOUND target — a guard hop resolving to a real, ALREADY-EXISTING node
+-- (@self \`deliversTo\` warehouse\/central@) — and per this whole
+-- project's own convention throughout every real example built this
+-- session, a node's governing machine is simply the 'MachineStmt'
+-- declared with that same node as its own @machineNode@ — NOT an
+-- @equips@\/@trigger@ lookup ('DMML.Governance.findGoverningMachine'),
+-- which is reserved for arbitrating a DISPUTED multi-valued pair, a
+-- different concern from "does a machine plainly govern this node."
+
+-- | One (machine, transition) link in a fixpoint chain, and the facts
+-- it implied.
+data ChainStep = ChainStep
+  { stepMachine :: Text
+  , stepTransition :: Text
+  , stepFacts :: [ImpliedFact]
+  }
+  deriving (Eq, Show)
+
+data ChainResult
+  = -- | Every step, in the order they were resolved. The full,
+    -- combined fact list (in order, across every step) is
+    -- @concatMap stepFacts@ over this.
+    ChainOk [ChainStep]
+  | -- | The chain broke at this (machine, transition) -- either
+    -- retroconsistency itself found it 'Irreconcilable', or applying
+    -- its implied facts failed 'gateConsistentTree'. Whatever steps
+    -- resolved before this one are NOT returned -- a chain that breaks
+    -- partway through is not a partial success; the caller gets
+    -- nothing to apply, same all-or-nothing posture
+    -- 'sync-spike/broker.sh' already takes for a rejected branch.
+    ChainFailed
+      { chainFailedAt :: (Text, Text)
+      , chainFailedReason :: Text
+      }
+  deriving (Eq, Show)
+
+-- | Runs retroconsistency to a fixpoint starting from one (machine,
+-- transition), gating EVERY step against the full known machine set
+-- (not just once at the end -- a later step could just as easily break
+-- something an earlier step already relied on holding). When an
+-- implied fact's target is a real, existing node that is itself some
+-- machine's own declared node, that machine's own transitions are
+-- added to the worklist too -- Jason's quarry example: a
+-- @deliversTo warehouse\/central@ fact discovered while retro-filling
+-- @quarry\/east@'s own @extract@ transition can, in turn, surface
+-- @warehouse\/central@'s OWN unsatisfied preconditions (e.g. needing a
+-- clerk on record before it can legitimately be receiving deliveries).
+--
+-- A freshly-minted node (an existential hop's placeholder, never
+-- before named anywhere) can never match a declared machine's own
+-- node — nothing named it, so nothing governs it yet — and chaining
+-- correctly, structurally does nothing further there; see this
+-- module's own top-level doc comment for why that's not a workaround,
+-- it's the actually-correct conclusion once you check what "governed"
+-- can even mean for a node nothing has asserted anything about.
+--
+-- A newly-reached machine's EVERY declared transition is checked
+-- (there's no predicate/context here to pick just one) -- any that
+-- come back 'Implied' contribute a further 'ChainStep' and queue their
+-- own bound targets in turn; any that are already 'AlreadyConsistent'
+-- are silently skipped (nothing new); the first 'Irreconcilable'
+-- anywhere fails the whole chain.
+--
+-- Terminates for a real reason, not an assumption: a visited
+-- @(machine, transition)@ set, since a real domain CAN have a cycle
+-- (A's transition reaches B, B's reaches back to A).
+fixpointRetroconsistency :: Map.Map Text MachineStmt -> Text -> Text -> WorldSnapshot -> ChainResult
+fixpointRetroconsistency machines rootMachine rootTransition snap0 =
+  go Set.empty [] snap0 [(rootMachine, rootTransition)]
+  where
+    go _visited stepsAcc _snap [] = ChainOk (reverse stepsAcc)
+    go visited stepsAcc snap ((mText, tName) : rest)
+      | (mText, tName) `Set.member` visited = go visited stepsAcc snap rest
+      | otherwise = case Map.lookup mText machines of
+          Nothing -> ChainFailed (mText, tName) "no machine declared with this node -- can't be reached, only reported here as a defensive check"
+          Just m ->
+            let ctx = EvalContext {ctxSelfNode = mText, ctxParams = Map.empty}
+                visited' = Set.insert (mText, tName) visited
+             in case retroconsistency m tName ctx snap of
+                  Nothing -> ChainFailed (mText, tName) "no such transition declared on this machine"
+                  Just (Irreconcilable msg) -> ChainFailed (mText, tName) msg
+                  Just AlreadyConsistent -> go visited' stepsAcc snap rest
+                  Just (Implied facts) ->
+                    case applyFacts snap facts of
+                      Left err -> ChainFailed (mText, tName) ("internal: rendered implied commit did not parse -- " <> err)
+                      Right snap' -> case gateConsistentTree machines snap snap' of
+                        GateBroken broken ->
+                          ChainFailed
+                            (mText, tName)
+                            ( "would break: "
+                                <> T.intercalate
+                                  "; "
+                                  [brokenMachine b <> "'s " <> brokenTransition b <> " (" <> brokenPredicate b <> ")" | b <- broken]
+                            )
+                        GateOk ->
+                          let newTargets =
+                                [ (impliedTarget f, transitionIdent t2)
+                                | f <- facts
+                                , Just m2 <- [Map.lookup (impliedTarget f) machines]
+                                , t2 <- machineTransitions m2
+                                ]
+                           in go visited' (ChainStep mText tName facts : stepsAcc) snap' (rest ++ newTargets)
+
+    -- Applies a step's implied facts the same real way a caller would
+    -- -- through 'renderImpliedCommit' and a real parse, not by
+    -- constructing 'FactStmt' values directly -- so every step of a
+    -- chain is provably real, parseable DMML the whole way through, the
+    -- same discipline this session held to everywhere else content got
+    -- minted. Should never actually fail (renderImpliedCommit's own
+    -- output has been real, valid Surface syntax in every case tested
+    -- so far) -- handled as a real, reported failure rather than
+    -- 'error', not because it's expected, but because a total function
+    -- doesn't get to assume its own dependencies never regress.
+    applyFacts snap facts = case parseCommitSurface (renderImpliedCommit "chains" facts) of
+      Left e -> Left (T.pack (errorBundlePretty e))
+      Right c -> Right (applyCommit "retro" snap c)
