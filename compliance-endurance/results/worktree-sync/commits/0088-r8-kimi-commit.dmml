@@ -1,0 +1,7 @@
+commit ninefathomOpened
+  mine/ninefathom . state = "dug"
+  stockpile/bronzeIngots . stockLevel = "moderate"
+  npc/smith . state = "practicing"
+  npc/stonemason . state = "working"
+  path/bronzework . state = "discovered"
+  workshop/forgeYard . state = "active"

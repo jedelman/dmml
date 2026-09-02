@@ -1,0 +1,8 @@
+commit greenSignsAtOldroot
+  declare relation guidesToTo
+  declare attribute greenSign
+
+  npc/tender . greenSign = "oldroot's edge shows blight-fire curling at the roots, a sign the keeper's ward is thinning"
+  npc/tender `guidesToTo` forest/oldroot
+  herd/stagfolk . migratesTo = meadow/riverbend
+  herd/stagfolk . state = "gathering"

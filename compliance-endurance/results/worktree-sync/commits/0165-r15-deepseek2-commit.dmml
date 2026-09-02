@@ -1,0 +1,6 @@
+commit firstRinging
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . temper = "tested"
+  npc/smith . state = "practicing"
+  npc/keeper . steadies = mountain/ashkar
+  ritual/seasonal . state = "ready"

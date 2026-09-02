@@ -1,0 +1,19 @@
+commit sets
+  declare relation belongsTo
+  declare relation locatedIn
+  declare relation marks
+  declare relation purpose
+  declare relation tendedBy
+  declare relation trialNote
+  declare relation trialState
+  declare relation triggers
+
+  object/stoneFordTest :: a PracticeStone
+  object/stoneFordTest . belongsTo = site/stoneFord
+  object/stoneFordTest . locatedIn = site/stoneFord
+  object/stoneFordTest . marks = mountain/ashkar
+  object/stoneFordTest . purpose = "a split stone where mason's chisel-marks and water-ripples are read together, testing the stoneFord's bridge of crafts"
+  object/stoneFordTest . tendedBy = npc/stoneFordApprentice
+  object/stoneFordTest . trialNote = "first joint reading, stone-laid ford holds against the water's tremor-echo"
+  object/stoneFordTest . trialState = "testing"
+  object/stoneFordTest . triggers = path/stonemasonry

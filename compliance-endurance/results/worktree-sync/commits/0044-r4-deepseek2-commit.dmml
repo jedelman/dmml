@@ -1,0 +1,18 @@
+commit kindlingTheRoof
+  declare relation sharesShelfWith
+
+  path/bronzework `enables` path/greenlore
+  path/greenlore `guards` herd/stagfolk
+  herd/stagfolk `migratesTo` forest/oldroot
+  npc/tender `learnsFrom` npc/herder
+  npc/herder `guidesTo` ritual/seasonal
+  ritual/seasonal `fallOn` forest/oldroot
+  mountain/ashkar . tremorIntensity = "mounting"
+  npc/mason . worksAt = quarry/ashkarFlank
+  mine/ninefathom . state = "dug"
+  forest/oldroot . state = "awakening"
+  path/bronzework . state = "discovered"
+  npc/stonemason . state = "seeking"
+  herd/aurochs . state = "fleeing"
+  herd/aurochs . migratesTo = culture/riverfolk
+  culture/riverfolk . state = "nascent"

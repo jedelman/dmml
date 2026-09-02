@@ -1,0 +1,12 @@
+commit trailMarking
+  declare relation marksPath
+  declare relation guidesTravelersTo
+
+  marker/fordPost :: a TrailMarker
+  marker/fordPost . purpose = "a painted stone post where the ford meets the packroad, showing the way to riverfolk and highkin alike"
+  marker/fordPost . state = "standing"
+  marker/fordPost `marksPath` path/packroad
+  marker/fordPost `guidesTravelersTo` site/riverFord
+  marker/fordPost `locatedIn` path/packroad
+  marker/fordPost `signalsTo` npc/fordWarden
+  marker/fordPost `witnessedBy` mountain/ashkar

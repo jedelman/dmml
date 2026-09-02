@@ -1,7 +1,3 @@
-commit stonemastery
-  npc/stonehand . a = NPC
-  npc/stonehand . apprenticesUnder = path/stonemasonry
-  npc/stonehand . craft = "ashkar mason"
-  npc/stonehand . worksAt = mine/ninefathom
-  path/stonemasonry . state = "mastered"
-  path/stonemasonry . honoredBy = culture/highkin
+commit grows
+  npc/herder `learnsFrom` npc/tender
+  npc/tender `discovers` path/greenlore

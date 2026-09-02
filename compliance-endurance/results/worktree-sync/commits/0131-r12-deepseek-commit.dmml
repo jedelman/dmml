@@ -1,0 +1,17 @@
+commit riverBendWatch
+  declare relation watchesHerd
+  declare relation notesPassage
+
+  npc/foothillWarden . state = "alert"
+  npc/foothillWarden . watchesHerd = herd/stagfolk
+  npc/foothillWarden . notesPassage = herd/aurochs
+  npc/foothillWarden . signalsTo = object/bronzeBell
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . temper = "tested"
+  mountain/ashkar . tremorIntensity = "faint"
+  mountain/ashkar . tremorsObserved = npc/foothillWarden
+  meadow/riverbend . grazingQuality = "lush"
+  herd/aurochs . state = "gathering"
+  herd/stagfolk . state = "gathering"
+  npc/keeper . state = "active"
+  npc/keeper . guidesTo = meadow/riverbend

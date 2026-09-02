@@ -1,0 +1,20 @@
+commit gatheringAtRiverbend
+  declare relation gathersAt
+  declare relation offersBronze
+
+  ritual/seasonal . state = "ready"
+  ritual/seasonal . ritualState = "ready"
+  ritual/seasonal . offeringState = "assembled"
+  ritual/seasonal . offeringsGathered = 2
+  herd/aurochs . migratesTo = meadow/riverbend
+  herd/stagfolk . migratesTo = meadow/riverbend
+  npc/herder . gathersAt = meadow/riverbend
+  npc/keeper . gathersAt = meadow/riverbend
+  npc/foothillWarden . gathersAt = meadow/riverbend
+  path/greenlore . state = "discovered"
+  path/bronzework . state = "discovered"
+  path/stonemasonry . state = "discovered"
+  workshop/forgeYard . state = "active"
+  workshop/forgeYard . offersBronze = object/firstBar
+  object/firstBar . temper = "tested"
+  ritual/highkinRite . state = "ready"

@@ -1,0 +1,6 @@
+commit highkinQuarry
+  declare relation hauls
+
+  npc/mason . hauls = mountain/ashkar
+  npc/packer . hauls = mountain/ashkar
+  culture/highkin . hauls = mine/ninefathom

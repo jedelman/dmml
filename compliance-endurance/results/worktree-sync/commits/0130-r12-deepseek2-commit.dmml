@@ -1,0 +1,3 @@
+commit kinshipOfFires
+  npc/herder . observes = workshop/forgeYard
+  npc/herder . state = "curious"

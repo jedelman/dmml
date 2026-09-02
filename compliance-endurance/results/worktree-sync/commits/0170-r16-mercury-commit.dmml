@@ -1,0 +1,37 @@
+commit ringTheBell
+  declare relation anchors
+
+  object/bronzeBell :: a BronzeBell
+  object/bronzeBell . bellHung = true
+  object/bronzeBell . bellState = "untested"
+  object/bronzeBell . carriesTremor = mountain/ashkar
+  object/bronzeBell . hungIn = workshop/forgeYard
+  object/bronzeBell . resonatesWith = site/observationPost
+  object/bronzeBell . ringsFor = ritual/highkinRite
+  object/bronzeBell . suppliedWithBronze = stockpile/bronzeIngots
+  object/bronzeBell . temper = "soft"
+  object/bronzeBell . tendedBy = npc/forgeTender
+  object/bronzeBell . triggers = path/bronzework
+  npc/keeper . a = Keeper
+  npc/keeper . apprenticedTo = npc/tender
+  npc/keeper . apprenticesUnder = npc/tender
+  npc/keeper . bearsWitness = mountain/ashkar
+  npc/keeper . gathersAt = meadow/riverbend
+  npc/keeper . guidesTo = ritual/seasonal
+  npc/keeper . marks = ritual/seasonal
+  npc/keeper . role = "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"
+  npc/keeper . state = "active"
+  npc/keeper . steadies = herd/stagfolk
+  npc/keeper . tends = herd/stagfolk
+  ritual/highkinRite . a = Ritual
+  ritual/highkinRite . bellHung = true
+  ritual/highkinRite . belongsTo = culture/highkin
+  ritual/highkinRite . carriesSignTo = npc/foothillWarden
+  ritual/highkinRite . converges = ritual/seasonal
+  ritual/highkinRite . harvests = npc/herder
+  ritual/highkinRite . invokes = object/bronzeBell
+  ritual/highkinRite . marks = mountain/ashkar
+  ritual/highkinRite . purpose = "a highkin rite held at first light, where the smith's first bronze bar is offered to ashkar's slope"
+  ritual/highkinRite . readiness = "prepared"
+  ritual/highkinRite . resonatesWith = site/observationPost
+  ritual/highkinRite . state = "preparing"

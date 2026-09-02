@@ -1,0 +1,21 @@
+machine npc/smith
+  states
+    learning
+    seeking
+    forging
+    mastering
+
+  transition studyMason()
+    learning -> seeking
+    guard self `learnsFrom` $mentor
+    guard $mentor `worksAt` mine/ninefathom
+
+  transition dreamOfBronze()
+    seeking -> forging
+    guard self `dreamsOf` $path
+    guard $path `a` TechnicalPath
+
+  transition masterTheForge()
+    forging -> mastering
+    guard self `worksAt` mine/ninefathom
+    guard not self `learnsFrom` $stillLearning

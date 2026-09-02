@@ -1,197 +1,872 @@
 {
-  "rounds_run": 7,
-  "rounds_requested": 20,
-  "thrash_reason": "same (subject, predicate) contested across multiple rounds: [('culture/riverfolk', 'state', [1, 7])]",
-  "final_file_count": 79,
+  "rounds_run": 19,
+  "target_commits": 200,
+  "total_valid_commits": 200,
+  "stop_reason": "reached target of 200 commits",
+  "final_file_count": 212,
+  "wall_elapsed_seconds": 2138.4,
+  "total_prompt_tokens": 3707621,
+  "total_completion_tokens": 34553,
+  "per_agent_commits": {
+    "kimi": 57,
+    "deepseek": 53,
+    "mercury": 27,
+    "deepseek2": 63
+  },
+  "live_unresolved_pairs": [
+    "culture/riverfolk.tradesWith",
+    "forest/oldroot.state",
+    "herd/aurochs.migratesTo",
+    "herd/aurochs.state",
+    "mountain/ashkar.state",
+    "mountain/ashkar.tremorIntensity",
+    "mountain/ashkar.tremorsObserved",
+    "mountain/ashkar.witnessedBy",
+    "npc/keeper.role",
+    "npc/keeper.steadies",
+    "npc/packer.supplies",
+    "npc/seasonGuide.observes",
+    "npc/smith.observes",
+    "npc/stonemason.state",
+    "npc/tender.apprenticesUnder",
+    "npc/vigilKeeper.observes",
+    "npc/vigilKeeper.vigilFocus",
+    "object/bronzeBell.bellState",
+    "object/bronzeBell.resonatesWith",
+    "object/bronzeBell.temper",
+    "object/firstBar.temper",
+    "path/bronzework.state",
+    "path/greenlore.state",
+    "path/packroad.carriesTidings",
+    "path/stonemasonry.state",
+    "ritual/highkinRite.marks",
+    "ritual/highkinRite.state",
+    "ritual/seasonal.guidesTo",
+    "ritual/seasonal.offeringState",
+    "ritual/waterRite.state",
+    "site/bellVigil.signalsTo",
+    "site/observationPost.resonatesWith",
+    "site/riverFordLore.trainingState",
+    "stockpile/bronzeIngots.stockLevel"
+  ],
+  "entropy_collapse_alerts": [],
   "rounds": [
     {
       "round": 1,
       "stats": {
         "kimi": {
-          "valid": 4,
+          "valid": 2,
           "invalid": 0,
-          "no_fence": 0
+          "no_fence": 0,
+          "prompt_tokens": 13933,
+          "completion_tokens": 236,
+          "dispatch_seconds": 15.216708872999789,
+          "n_dispatches": 3
         },
         "deepseek": {
-          "valid": 4,
-          "invalid": 0,
-          "no_fence": 0
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 20170,
+          "completion_tokens": 659,
+          "dispatch_seconds": 17.02118172099972,
+          "n_dispatches": 4
         },
         "mercury": {
           "valid": 0,
           "invalid": 0,
-          "no_fence": 1
+          "no_fence": 1,
+          "prompt_tokens": 3893,
+          "completion_tokens": 186,
+          "dispatch_seconds": 3.3895575619999363,
+          "n_dispatches": 1
         },
         "deepseek2": {
-          "valid": 3,
-          "invalid": 0,
-          "no_fence": 0
+          "valid": 2,
+          "invalid": 2,
+          "no_fence": 0,
+          "prompt_tokens": 18859,
+          "completion_tokens": 458,
+          "dispatch_seconds": 27.7369862810001,
+          "n_dispatches": 4
         }
       },
-      "new_contests_minted": 2,
-      "fail_rate": 0.0
+      "fail_rate": 0.2727272727272727,
+      "cumulative_commits": 7
     },
     {
       "round": 2,
       "stats": {
         "kimi": {
-          "valid": 2,
+          "valid": 4,
           "invalid": 0,
-          "no_fence": 0
+          "no_fence": 0,
+          "prompt_tokens": 24175,
+          "completion_tokens": 366,
+          "dispatch_seconds": 13.463061576999735,
+          "n_dispatches": 4
         },
         "deepseek": {
-          "valid": 3,
-          "invalid": 1,
-          "no_fence": 0
-        },
-        "mercury": {
-          "valid": 0,
-          "invalid": 0,
-          "no_fence": 1
-        },
-        "deepseek2": {
           "valid": 1,
           "invalid": 0,
-          "no_fence": 0
+          "no_fence": 0,
+          "prompt_tokens": 9873,
+          "completion_tokens": 106,
+          "dispatch_seconds": 3.0839634139997543,
+          "n_dispatches": 2
+        },
+        "mercury": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 25953,
+          "completion_tokens": 737,
+          "dispatch_seconds": 4.365679790000286,
+          "n_dispatches": 4
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 22581,
+          "completion_tokens": 242,
+          "dispatch_seconds": 8.500377811000362,
+          "n_dispatches": 4
         }
       },
-      "new_contests_minted": 0,
-      "fail_rate": 0.125
+      "fail_rate": 0.08333333333333333,
+      "cumulative_commits": 18
     },
     {
       "round": 3,
       "stats": {
         "kimi": {
-          "valid": 4,
-          "invalid": 0,
-          "no_fence": 0
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 30580,
+          "completion_tokens": 707,
+          "dispatch_seconds": 20.481415131000176,
+          "n_dispatches": 4
         },
         "deepseek": {
-          "valid": 3,
+          "valid": 4,
           "invalid": 0,
-          "no_fence": 1
+          "no_fence": 0,
+          "prompt_tokens": 31121,
+          "completion_tokens": 646,
+          "dispatch_seconds": 25.27273920600055,
+          "n_dispatches": 4
         },
         "mercury": {
-          "valid": 3,
-          "invalid": 0,
-          "no_fence": 0
+          "valid": 2,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 27108,
+          "completion_tokens": 263,
+          "dispatch_seconds": 3.9193941859994084,
+          "n_dispatches": 4
         },
         "deepseek2": {
-          "valid": 3,
+          "valid": 4,
           "invalid": 0,
-          "no_fence": 0
+          "no_fence": 0,
+          "prompt_tokens": 30262,
+          "completion_tokens": 138,
+          "dispatch_seconds": 17.575106225000127,
+          "n_dispatches": 4
         }
       },
-      "new_contests_minted": 0,
-      "fail_rate": 0.0
+      "fail_rate": 0.13333333333333333,
+      "cumulative_commits": 31
     },
     {
       "round": 4,
       "stats": {
         "kimi": {
-          "valid": 2,
+          "valid": 4,
           "invalid": 0,
-          "no_fence": 1
+          "no_fence": 0,
+          "prompt_tokens": 33848,
+          "completion_tokens": 658,
+          "dispatch_seconds": 19.18474020299982,
+          "n_dispatches": 4
         },
         "deepseek": {
-          "valid": 1,
+          "valid": 4,
           "invalid": 0,
-          "no_fence": 0
+          "no_fence": 0,
+          "prompt_tokens": 36245,
+          "completion_tokens": 544,
+          "dispatch_seconds": 13.338473729000725,
+          "n_dispatches": 4
         },
         "mercury": {
           "valid": 1,
-          "invalid": 1,
-          "no_fence": 0
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 12975,
+          "completion_tokens": 173,
+          "dispatch_seconds": 2.388407428999926,
+          "n_dispatches": 2
         },
         "deepseek2": {
           "valid": 3,
-          "invalid": 0,
-          "no_fence": 0
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 34112,
+          "completion_tokens": 656,
+          "dispatch_seconds": 51.26594536599987,
+          "n_dispatches": 4
         }
       },
-      "new_contests_minted": 0,
-      "fail_rate": 0.1111111111111111
+      "fail_rate": 0.07692307692307693,
+      "cumulative_commits": 43
     },
     {
       "round": 5,
       "stats": {
         "kimi": {
-          "valid": 2,
-          "invalid": 0,
-          "no_fence": 0
+          "valid": 1,
+          "invalid": 2,
+          "no_fence": 0,
+          "prompt_tokens": 22516,
+          "completion_tokens": 579,
+          "dispatch_seconds": 16.765439467000306,
+          "n_dispatches": 3
         },
         "deepseek": {
-          "valid": 3,
+          "valid": 4,
           "invalid": 0,
-          "no_fence": 0
+          "no_fence": 0,
+          "prompt_tokens": 40161,
+          "completion_tokens": 548,
+          "dispatch_seconds": 45.362791595999624,
+          "n_dispatches": 4
         },
         "mercury": {
-          "valid": 0,
+          "valid": 2,
           "invalid": 0,
-          "no_fence": 1
+          "no_fence": 0,
+          "prompt_tokens": 24153,
+          "completion_tokens": 126,
+          "dispatch_seconds": 3.520109401000809,
+          "n_dispatches": 3
         },
         "deepseek2": {
-          "valid": 3,
+          "valid": 2,
           "invalid": 0,
-          "no_fence": 0
+          "no_fence": 0,
+          "prompt_tokens": 25675,
+          "completion_tokens": 369,
+          "dispatch_seconds": 27.097629777999828,
+          "n_dispatches": 3
         }
       },
-      "new_contests_minted": 0,
-      "fail_rate": 0.0
+      "fail_rate": 0.18181818181818182,
+      "cumulative_commits": 52
     },
     {
       "round": 6,
       "stats": {
         "kimi": {
-          "valid": 2,
-          "invalid": 0,
-          "no_fence": 0
-        },
-        "deepseek": {
           "valid": 3,
           "invalid": 1,
-          "no_fence": 0
+          "no_fence": 0,
+          "prompt_tokens": 43671,
+          "completion_tokens": 871,
+          "dispatch_seconds": 37.81085398700088,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 29020,
+          "completion_tokens": 221,
+          "dispatch_seconds": 21.004808683000192,
+          "n_dispatches": 3
         },
         "mercury": {
-          "valid": 1,
-          "invalid": 2,
-          "no_fence": 0
+          "valid": 2,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 34197,
+          "completion_tokens": 256,
+          "dispatch_seconds": 4.257518666999658,
+          "n_dispatches": 4
         },
         "deepseek2": {
-          "valid": 2,
-          "invalid": 2,
-          "no_fence": 0
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 45012,
+          "completion_tokens": 499,
+          "dispatch_seconds": 49.074885401000756,
+          "n_dispatches": 4
         }
       },
-      "new_contests_minted": 0,
-      "fail_rate": 0.38461538461538464
+      "fail_rate": 0.15384615384615385,
+      "cumulative_commits": 63
     },
     {
       "round": 7,
       "stats": {
         "kimi": {
-          "valid": 2,
-          "invalid": 0,
-          "no_fence": 0
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 37712,
+          "completion_tokens": 870,
+          "dispatch_seconds": 41.95635913600063,
+          "n_dispatches": 4
         },
         "deepseek": {
           "valid": 3,
-          "invalid": 0,
-          "no_fence": 0
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 38159,
+          "completion_tokens": 503,
+          "dispatch_seconds": 51.85676673699936,
+          "n_dispatches": 4
         },
         "mercury": {
           "valid": 1,
           "invalid": 0,
-          "no_fence": 0
+          "no_fence": 0,
+          "prompt_tokens": 6616,
+          "completion_tokens": 57,
+          "dispatch_seconds": 1.0792234380000991,
+          "n_dispatches": 1
         },
         "deepseek2": {
           "valid": 3,
-          "invalid": 1,
-          "no_fence": 0
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 49603,
+          "completion_tokens": 986,
+          "dispatch_seconds": 53.48342751200016,
+          "n_dispatches": 4
         }
       },
-      "new_contests_minted": 1,
-      "fail_rate": 0.1
+      "fail_rate": 0.16666666666666666,
+      "cumulative_commits": 73
+    },
+    {
+      "round": 8,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 50010,
+          "completion_tokens": 679,
+          "dispatch_seconds": 21.711457213999893,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 40402,
+          "completion_tokens": 402,
+          "dispatch_seconds": 36.84301667699992,
+          "n_dispatches": 4
+        },
+        "mercury": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1,
+          "prompt_tokens": 6664,
+          "completion_tokens": 35,
+          "dispatch_seconds": 1.1943003589999535,
+          "n_dispatches": 1
+        },
+        "deepseek2": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 52064,
+          "completion_tokens": 666,
+          "dispatch_seconds": 18.885902937999163,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.07692307692307693,
+      "cumulative_commits": 84
+    },
+    {
+      "round": 9,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 53917,
+          "completion_tokens": 531,
+          "dispatch_seconds": 18.069700771999123,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 36279,
+          "completion_tokens": 386,
+          "dispatch_seconds": 8.197085936999883,
+          "n_dispatches": 3
+        },
+        "mercury": {
+          "valid": 2,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 46016,
+          "completion_tokens": 170,
+          "dispatch_seconds": 4.9792488220005,
+          "n_dispatches": 4
+        },
+        "deepseek2": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 56194,
+          "completion_tokens": 149,
+          "dispatch_seconds": 6.243333637000433,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.07692307692307693,
+      "cumulative_commits": 96
+    },
+    {
+      "round": 10,
+      "stats": {
+        "kimi": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 58142,
+          "completion_tokens": 458,
+          "dispatch_seconds": 22.596810901000026,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 60822,
+          "completion_tokens": 635,
+          "dispatch_seconds": 63.95020910500034,
+          "n_dispatches": 4
+        },
+        "mercury": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1,
+          "prompt_tokens": 7701,
+          "completion_tokens": 109,
+          "dispatch_seconds": 0.7618936270000631,
+          "n_dispatches": 1
+        },
+        "deepseek2": {
+          "valid": 2,
+          "invalid": 2,
+          "no_fence": 0,
+          "prompt_tokens": 55071,
+          "completion_tokens": 435,
+          "dispatch_seconds": 53.85317340900065,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.16666666666666666,
+      "cumulative_commits": 105
+    },
+    {
+      "round": 11,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 64532,
+          "completion_tokens": 557,
+          "dispatch_seconds": 22.564939249999952,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 67958,
+          "completion_tokens": 489,
+          "dispatch_seconds": 50.371539250000296,
+          "n_dispatches": 4
+        },
+        "mercury": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1,
+          "prompt_tokens": 8186,
+          "completion_tokens": 47,
+          "dispatch_seconds": 0.6971192269998028,
+          "n_dispatches": 1
+        },
+        "deepseek2": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 66768,
+          "completion_tokens": 285,
+          "dispatch_seconds": 35.97655226899997,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.0,
+      "cumulative_commits": 117
+    },
+    {
+      "round": 12,
+      "stats": {
+        "kimi": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 58306,
+          "completion_tokens": 729,
+          "dispatch_seconds": 25.212777624999944,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 72895,
+          "completion_tokens": 655,
+          "dispatch_seconds": 61.12883065599999,
+          "n_dispatches": 4
+        },
+        "mercury": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 69053,
+          "completion_tokens": 204,
+          "dispatch_seconds": 4.643148776000544,
+          "n_dispatches": 4
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 71961,
+          "completion_tokens": 470,
+          "dispatch_seconds": 66.82500709600026,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.07692307692307693,
+      "cumulative_commits": 129
+    },
+    {
+      "round": 13,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 77013,
+          "completion_tokens": 807,
+          "dispatch_seconds": 26.18693884899949,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 78468,
+          "completion_tokens": 312,
+          "dispatch_seconds": 42.140450203,
+          "n_dispatches": 4
+        },
+        "mercury": {
+          "valid": 1,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 25513,
+          "completion_tokens": 228,
+          "dispatch_seconds": 2.241739096999936,
+          "n_dispatches": 2
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 78232,
+          "completion_tokens": 273,
+          "dispatch_seconds": 42.503769981000005,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.0,
+      "cumulative_commits": 140
+    },
+    {
+      "round": 14,
+      "stats": {
+        "kimi": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 83652,
+          "completion_tokens": 621,
+          "dispatch_seconds": 29.291472415000044,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 53794,
+          "completion_tokens": 327,
+          "dispatch_seconds": 52.336552430999745,
+          "n_dispatches": 3
+        },
+        "mercury": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1,
+          "prompt_tokens": 9860,
+          "completion_tokens": 63,
+          "dispatch_seconds": 0.7306113289996574,
+          "n_dispatches": 1
+        },
+        "deepseek2": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 86282,
+          "completion_tokens": 558,
+          "dispatch_seconds": 63.87825046900025,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.0,
+      "cumulative_commits": 149
+    },
+    {
+      "round": 15,
+      "stats": {
+        "kimi": {
+          "valid": 0,
+          "invalid": 2,
+          "no_fence": 0,
+          "prompt_tokens": 21128,
+          "completion_tokens": 440,
+          "dispatch_seconds": 19.00676791700016,
+          "n_dispatches": 2
+        },
+        "deepseek": {
+          "valid": 1,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 29515,
+          "completion_tokens": 87,
+          "dispatch_seconds": 19.93254207400014,
+          "n_dispatches": 2
+        },
+        "mercury": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 54386,
+          "completion_tokens": 116,
+          "dispatch_seconds": 7.654939146999368,
+          "n_dispatches": 3
+        },
+        "deepseek2": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 91025,
+          "completion_tokens": 546,
+          "dispatch_seconds": 65.74308176400064,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.2222222222222222,
+      "cumulative_commits": 156
+    },
+    {
+      "round": 16,
+      "stats": {
+        "kimi": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 91099,
+          "completion_tokens": 651,
+          "dispatch_seconds": 24.889169878000303,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 69306,
+          "completion_tokens": 711,
+          "dispatch_seconds": 69.8878546410001,
+          "n_dispatches": 4
+        },
+        "mercury": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 54407,
+          "completion_tokens": 633,
+          "dispatch_seconds": 2.953795877000175,
+          "n_dispatches": 3
+        },
+        "deepseek2": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 94138,
+          "completion_tokens": 1378,
+          "dispatch_seconds": 114.43602337099992,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.07692307692307693,
+      "cumulative_commits": 168
+    },
+    {
+      "round": 17,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 61692,
+          "completion_tokens": 721,
+          "dispatch_seconds": 29.609877833000155,
+          "n_dispatches": 3
+        },
+        "deepseek": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 101068,
+          "completion_tokens": 300,
+          "dispatch_seconds": 37.33741888900022,
+          "n_dispatches": 4
+        },
+        "mercury": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 95852,
+          "completion_tokens": 121,
+          "dispatch_seconds": 9.645007122000152,
+          "n_dispatches": 4
+        },
+        "deepseek2": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 102319,
+          "completion_tokens": 964,
+          "dispatch_seconds": 95.25806545600062,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.0,
+      "cumulative_commits": 182
+    },
+    {
+      "round": 18,
+      "stats": {
+        "kimi": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 76801,
+          "completion_tokens": 759,
+          "dispatch_seconds": 24.31114861900005,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 1,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 34619,
+          "completion_tokens": 104,
+          "dispatch_seconds": 19.800845883999955,
+          "n_dispatches": 2
+        },
+        "mercury": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 63099,
+          "completion_tokens": 117,
+          "dispatch_seconds": 4.494161647000055,
+          "n_dispatches": 3
+        },
+        "deepseek2": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 109753,
+          "completion_tokens": 791,
+          "dispatch_seconds": 61.92573968299985,
+          "n_dispatches": 4
+        }
+      },
+      "fail_rate": 0.09090909090909091,
+      "cumulative_commits": 192
+    },
+    {
+      "round": 19,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 115867,
+          "completion_tokens": 1115,
+          "dispatch_seconds": 32.629804453999895,
+          "n_dispatches": 4
+        },
+        "deepseek": {
+          "valid": 2,
+          "invalid": 1,
+          "no_fence": 0,
+          "prompt_tokens": 87109,
+          "completion_tokens": 330,
+          "dispatch_seconds": 26.205362287000753,
+          "n_dispatches": 4
+        },
+        "mercury": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1,
+          "prompt_tokens": 13353,
+          "completion_tokens": 440,
+          "dispatch_seconds": 1.7798664580004697,
+          "n_dispatches": 1
+        },
+        "deepseek2": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0,
+          "prompt_tokens": 73147,
+          "completion_tokens": 289,
+          "dispatch_seconds": 34.975645010000335,
+          "n_dispatches": 3
+        }
+      },
+      "fail_rate": 0.1,
+      "cumulative_commits": 200
     }
   ]
 }

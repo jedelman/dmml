@@ -1,0 +1,5 @@
+commit packroadWitnessesTremor
+  declare relation carriesTremor
+
+  path/packroad . carriesTremor = mountain/ashkar
+  npc/packer . witnesses = mountain/ashkar

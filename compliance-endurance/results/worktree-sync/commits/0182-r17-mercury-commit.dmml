@@ -1,0 +1,4 @@
+commit bellSignRead
+  declare relation soundsTremor
+
+  site/bellVigil . soundsTremor = object/bronzeBell

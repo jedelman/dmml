@@ -1,0 +1,20 @@
+commit mints
+  declare relation tends
+  declare relation crafts
+
+  npc/keeper . a = Keeper
+  npc/keeper . apprenticesUnder = npc/tender
+  npc/keeper . role = "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"
+  npc/keeper . state = "active"
+  npc/keeper . tends = herd/stagfolk
+
+  npc/tender . a = Keeper
+  npc/tender . apprenticesUnder = npc/keeper
+  npc/tender . role = "apprentice to the keeper, learning to ward the herd and read the mountain's signs"
+  npc/tender . state = "learning"
+  npc/tender . tends = herd/stagfolk
+
+  path/stonemasonry . a = TechnicalPath
+  path/stonemasonry . purpose = "cutting and setting ashkar's own stone"
+  path/stonemasonry . state = "undiscovered"
+  npc/mason . crafts = path/stonemasonry

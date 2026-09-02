@@ -1,0 +1,17 @@
+commit waterLore
+  declare relation trainsAt
+  declare relation echoesTo
+  declare attribute trainingState
+
+  site/riverFordLore . a = Site
+  site/riverFordLore . locatedIn = path/packroad
+  site/riverFordLore . purpose = "a reed-sheltered pool below the ford where water-reading is taught, where the river's own tremor-echoes are read against ashkar's"
+  site/riverFordLore . state = "nascent"
+  site/riverFordLore . tendedBy = npc/fordWarden
+  site/riverFordLore . trainsAt = npc/fordWarden
+  site/riverFordLore . trainingState = "nascent"
+  site/riverFordLore . echoesTo = site/bellVigil
+  site/riverFordLore . echoes = object/bronzeBell
+  site/riverFordLore . witnesses = mountain/ashkar
+  site/riverFordLore . resonatesWith = object/bronzeBell
+  site/riverFordLore . convergesAt = site/riverFord

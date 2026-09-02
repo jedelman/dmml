@@ -1,0 +1,6 @@
+commit firstRinging
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . temper = "tested"
+  workshop/forgeYard . state = "active"
+  object/bronzeBell . triggers = path/bronzework
+  workshop/forgeYard . guidesPreparationOf = ritual/seasonal

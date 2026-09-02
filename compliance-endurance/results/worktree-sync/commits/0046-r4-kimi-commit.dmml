@@ -1,10 +1,4 @@
-commit forestRenewal
-  declare relation heals
-  declare attribute depth
+commit advances
+  declare relation guidesPreparationOf
 
-  forest/oldroot . state = "regrown"
-  forest/oldroot . rite = "root-binding ceremony"
-  npc/greenhand . heals = forest/oldroot
-  npc/greenhand . craft = "blight-warden"
-  mine/ninefathom . depth = 340
-  mine/ninefathom . locatedIn = mountain/ashkar
+  npc/tender `guidesPreparationOf` ritual/seasonal

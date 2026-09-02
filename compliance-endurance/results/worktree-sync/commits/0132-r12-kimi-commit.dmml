@@ -1,0 +1,11 @@
+commit mints
+  declare relation locatedIn
+  declare relation shelters
+  declare relation signalsTo
+
+  site/wayRest :: a Site
+  site/wayRest . locatedIn = path/packroad
+  site/wayRest . purpose = "a lean-to where pack-beasts rest between riverfolk and highkin, where tidings and tremors both pass through"
+  site/wayRest . shelters = npc/packer
+  site/wayRest . signalsTo = npc/seasonGuide
+  site/wayRest . state = "active"

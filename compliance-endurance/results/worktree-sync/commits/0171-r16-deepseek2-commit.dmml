@@ -1,0 +1,21 @@
+commit tidingsIntoTheRite
+  site/wayRest . carriesTidingsTo = npc/seasonGuide
+  npc/seasonGuide . carriesWordOf = site/bellVigil
+  npc/seasonGuide . signalsTo = ritual/seasonal
+  npc/seasonGuide . state = "active"
+  npc/tender . greenSign = "oldroot stirs awake, blight-fire fading at the roots"
+  npc/tender . state = "active"
+  npc/keeper . steadies = mountain/ashkar
+  npc/foothillWarden . state = "alert"
+  npc/foothillWarden . tends = forest/oldroot
+  herd/brindle . state = "gathering"
+  herd/brindle . unease = "settled"
+  ritual/seasonal . ritualState = "ready"
+  ritual/seasonal . offeringState = "assembled"
+  ritual/seasonal . offeringsGathered = 2
+  ritual/highkinRite . state = "ready"
+  ritual/highkinRite . marks = object/bronzeBell
+  path/greenlore . state = "discovered"
+  path/stonemasonry . state = "discovered"
+  stockpile/bronzeIngots . stockLevel = "moderate"
+  quarry/ashkarFlank . state = "active"

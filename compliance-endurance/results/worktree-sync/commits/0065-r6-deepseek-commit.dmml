@@ -1,0 +1,10 @@
+commit riverRites
+  declare relation bearsWitness
+  declare relation consecrates
+  declare attribute offeringState
+
+  npc/tender . bearsWitness = mountain/ashkar
+  npc/keeper . bearsWitness = mountain/ashkar
+  ritual/seasonal . consecrates = herd/aurochs
+  ritual/seasonal . offeringState = "gathering"
+  npc/packer . carriesSignTo = ritual/seasonal

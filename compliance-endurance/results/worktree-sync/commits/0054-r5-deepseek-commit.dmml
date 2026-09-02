@@ -1,5 +1,0 @@
-commit highkinRite
-  culture/highkin . a = Culture
-  culture/highkin . carriedBy = npc/stonehand
-  culture/highkin . rite = "ashkar forging"
-  npc/stonehand . carries = "highkin sigil"

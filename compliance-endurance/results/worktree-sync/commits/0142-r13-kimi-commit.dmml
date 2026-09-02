@@ -1,0 +1,15 @@
+commit establishes
+  declare relation convergesAt
+  declare relation echoes
+  declare relation receivesTidingsFrom
+  declare attribute vigilState
+
+  site/bellVigil :: a Site
+  site/bellVigil . locatedIn = path/packroad
+  site/bellVigil . purpose = "a high ledge where the bronze bell's tremor-echoes are first heard, where packroad tidings and mountain warnings meet"
+  site/bellVigil . vigilState = "active"
+  site/bellVigil `convergesAt` ritual/seasonal
+  site/bellVigil `echoes` object/bronzeBell
+  site/bellVigil `receivesTidingsFrom` npc/packer
+  site/bellVigil `signalsTo` npc/foothillWarden
+  site/bellVigil `witnesses` mountain/ashkar

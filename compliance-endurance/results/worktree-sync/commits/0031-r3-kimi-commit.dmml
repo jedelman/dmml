@@ -1,0 +1,13 @@
+commit forgesBond
+  declare relation dreamsOf
+  declare relation learnsFrom
+
+  npc/smith . a = NPC
+  npc/smith . belongsTo = culture/highkin
+  npc/smith . dreamsOf = path/bronzework
+  npc/smith . learnsFrom = npc/stonemason
+  npc/smith . role = "tends the forge-fires, kin to the mason who dreams of bronze"
+  npc/smith . state = "learning"
+  npc/smith . worksAt = mine/ninefathom
+
+  npc/stonemason . apprenticesUnder = npc/smith

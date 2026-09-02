@@ -1,0 +1,5 @@
+commit kindlingWard
+  declare relation tends
+
+  npc/tender . tends = herd/stagfolk
+  npc/tender . purpose = "to learn the keeper's ward and read oldroot's green signs"

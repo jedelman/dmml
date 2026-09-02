@@ -1,0 +1,5 @@
+commit forgeAwakening
+  npc/smith . state = "practicing"
+  workshop/forgeYard . state = "active"
+  meadow/riverbend . grazesIn = herd/aurochs
+  npc/herder . guidesTo = meadow/riverbend

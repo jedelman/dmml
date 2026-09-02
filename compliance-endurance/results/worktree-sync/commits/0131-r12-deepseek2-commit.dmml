@@ -1,0 +1,3 @@
+commit sharedSigns
+  npc/herder . sharesWith = npc/foothillWarden
+  npc/foothillWarden . learnsFrom = npc/herder

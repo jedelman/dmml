@@ -1,0 +1,22 @@
+commit founds
+  declare relation foundedBy
+  declare relation guidesPreparationOf
+  declare relation learnsFrom
+  declare relation locatedIn
+  declare relation observes
+  declare relation sharesWith
+  declare relation signalsTo
+  declare relation tendedBy
+  declare relation witnesses
+
+  site/stoneFord :: a Site
+  site/stoneFord . foundedBy = npc/fordWarden
+  site/stoneFord . guidesPreparationOf = ritual/waterRite
+  site/stoneFord . locatedIn = path/packroad
+  site/stoneFord . observes = quarry/ashkarFlank
+  site/stoneFord . purpose = "a stone-laid ford where the riverfolk warden and highkin mason meet, reading water-tremors against ashkar's cut stone"
+  site/stoneFord . sharesWith = site/riverFord
+  site/stoneFord . signalsTo = npc/mason
+  site/stoneFord . state = "nascent"
+  site/stoneFord . tendedBy = npc/fordWarden
+  site/stoneFord . witnesses = mountain/ashkar

@@ -1,0 +1,3 @@
+commit bronzeworkKnown
+  path/bronzework . state = "discovered"
+  mine/ninefathom . state = "dug"

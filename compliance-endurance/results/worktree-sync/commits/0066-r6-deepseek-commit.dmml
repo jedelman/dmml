@@ -1,0 +1,10 @@
+commit oldrootWard
+  declare relation steadies
+  declare relation wakens
+
+  npc/keeper . steadies = herd/stagfolk
+  npc/tender . steadies = herd/stagfolk
+  path/greenlore . wakens = forest/oldroot
+  npc/foothillWarden . tends = forest/oldroot
+  npc/herder . guards = herd/brindle
+  culture/riverfolk . gathers = npc/foothillWarden

@@ -1,0 +1,9 @@
+commit ritualReadiness
+  declare relation invokes
+
+  ritual/highkinRite . state = "ready"
+  soil/smeltTest . trialState = "tested"
+  soil/smeltTest . trialNote = "first bar tested against ashkar's faint tremor, temper holds"
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . temper = "tested"
+  workshop/forgeYard . state = "active"

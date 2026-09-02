@@ -1,0 +1,5 @@
+commit bellRecast
+  object/bronzeBell . temper = "tested"
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . triggers = path/bronzework
+  object/bronzeBell . suppliedWithBronze = stockpile/bronzeIngots

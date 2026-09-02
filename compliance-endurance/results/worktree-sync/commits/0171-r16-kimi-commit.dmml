@@ -1,0 +1,14 @@
+commit marksConvergence
+  declare relation convergesAt
+  declare relation echoes
+  declare relation signalsTo
+  declare relation witnesses
+
+  site/herdEcho . convergesAt = ritual/seasonal
+
+  ritual/seasonal . echoes = site/herdEcho
+
+  npc/bellHerder . signalsTo = npc/seasonGuide
+
+  npc/seasonGuide . learnsFrom = npc/bellHerder
+  npc/seasonGuide . observes = site/herdEcho

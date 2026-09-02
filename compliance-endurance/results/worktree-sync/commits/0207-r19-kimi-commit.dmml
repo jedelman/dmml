@@ -1,0 +1,25 @@
+commit apprents
+  declare relation apprenticedTo
+  declare relation apprenticesUnder
+  declare relation belongsTo
+  declare relation craftFocus
+  declare relation learnsFrom
+  declare relation observes
+  declare relation role
+  declare relation sharesWith
+  declare relation state
+  declare relation tends
+  declare relation witnesses
+
+  npc/stoneFordApprentice :: a Mason
+  npc/stoneFordApprentice . apprenticedTo = npc/mason
+  npc/stoneFordApprentice . apprenticesUnder = npc/mason
+  npc/stoneFordApprentice . belongsTo = culture/highkin
+  npc/stoneFordApprentice . craftFocus = "stone-laying"
+  npc/stoneFordApprentice . learnsFrom = npc/fordWarden
+  npc/stoneFordApprentice . observes = site/stoneFord
+  npc/stoneFordApprentice . role = "highkin apprentice learning water-reading at the stoneFord, bridging mason's stone-craft and warden's tremor-sense"
+  npc/stoneFordApprentice . sharesWith = npc/fordWarden
+  npc/stoneFordApprentice . state = "learning"
+  npc/stoneFordApprentice . tends = site/stoneFord
+  npc/stoneFordApprentice . witnesses = mountain/ashkar

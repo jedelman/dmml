@@ -1,0 +1,3 @@
+commit ritualInvocation
+  ritual/highkinRite . state = "ready"
+  ritual/highkinRite . invokes = object/bronzeBell

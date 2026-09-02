@@ -1,0 +1,17 @@
+machine workshop/forgeYard
+  states
+    building
+    active
+    integrated
+
+  transition completeConstruction()
+    building -> active
+    guard self `foundedBy` $builder
+    assert active
+
+  transition achieveIntegration(key)
+    active -> integrated
+    guard self `suppliedWithBronze` $bronze
+    guard self `suppliedWithStone` $stone
+    assert integrated
+    retract active

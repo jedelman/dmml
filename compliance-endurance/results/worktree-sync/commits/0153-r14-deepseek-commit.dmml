@@ -1,0 +1,8 @@
+commit wayRestRings
+  declare relation carriesTidingsTo
+
+  site/wayRest . carriesTidingsTo = npc/vigilKeeper
+  site/wayRest . witnesses = mountain/ashkar
+  path/packroad . carriesTidings = site/wayRest
+  npc/packer . carriesSignTo = site/wayRest
+  object/bronzeBell . resonatesWith = site/wayRest

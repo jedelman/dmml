@@ -1,9 +1,14 @@
-commit advanceGreenlore
-  declare relation apprenticesUnder
-  declare attribute state
+commit opensQuarry
+  declare relation extractsFrom
+  declare relation processesAt
 
-  npc/mossfinger :: a Person
-  npc/mossfinger . role = "green-warden"
-  npc/mossfinger . belongsTo = culture/riverfolk
-  npc/mossfinger `apprenticesUnder` path/greenlore
-  path/greenlore . state = "mastered"
+  quarry/ashkarFlank . a = Quarry
+  quarry/ashkarFlank . extractsFrom = mountain/ashkar
+  quarry/ashkarFlank . locatedIn = mountain/ashkar
+  quarry/ashkarFlank . purpose = "the highkin's stone-yard, where ashkar's bones are cut and dressed"
+  quarry/ashkarFlank . state = "active"
+
+  npc/mason . worksAt = quarry/ashkarFlank
+  npc/mason . processesAt = quarry/ashkarFlank
+
+  path/stonemasonry . discoveredBy = npc/mason

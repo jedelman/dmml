@@ -1,0 +1,6 @@
+commit beastUnease
+  declare attribute unease
+
+  herd/brindle . unease = "restless"
+  npc/packer . witnesses = herd/brindle
+  herd/brindle . witnessedBy = mountain/ashkar

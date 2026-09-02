@@ -1,5 +1,0 @@
-commit mineRites
-  herd/stagfolk . state = "grazing"
-  herd/stagfolk . grazesIn = forest/oldroot
-  npc/keeper . worksAt = mine/ninefathom
-  mine/ninefathom . purpose = "supplies ore for riverfolk tools"

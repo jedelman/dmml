@@ -1,0 +1,6 @@
+commit riverSigns
+  declare relation carriesTidings
+  declare relation readsSignsFrom
+
+  path/packroad `carriesTidings` npc/foothillWarden
+  npc/foothillWarden `readsSignsFrom` mountain/ashkar

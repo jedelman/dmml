@@ -1,0 +1,17 @@
+commit trainsEcho
+  declare relation apprenticedTo
+  declare relation apprenticesUnder
+  declare relation guidesTo
+  declare relation learnsFrom
+  declare relation sharesWith
+  declare relation witnesses
+
+  npc/bellHerder . apprenticedTo = npc/vigilKeeper
+  npc/bellHerder . apprenticesUnder = npc/vigilKeeper
+  npc/bellHerder . guidesTo = site/herdEcho
+  npc/bellHerder . sharesWith = npc/herder
+  npc/bellHerder . witnesses = herd/aurochs
+
+  npc/herder . learnsFrom = npc/bellHerder
+
+  npc/vigilKeeper . witnesses = site/herdEcho

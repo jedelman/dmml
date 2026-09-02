@@ -1,0 +1,12 @@
+commit warderOfTheFoothills
+  declare relation learnsFrom
+  declare relation tends
+  declare relation witnesses
+
+  npc/foothillWarden . a = NPC
+  npc/foothillWarden . belongsTo = culture/highkin
+  npc/foothillWarden . learnsFrom = npc/keeper
+  npc/foothillWarden . role = "reads ashkar's tremors at oldroot's edge, kin to keeper and herder alike"
+  npc/foothillWarden . state = "watchful"
+  npc/foothillWarden . tends = herd/stagfolk
+  npc/foothillWarden . witnesses = mountain/ashkar

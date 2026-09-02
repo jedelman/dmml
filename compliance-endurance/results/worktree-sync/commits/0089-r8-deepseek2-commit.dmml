@@ -1,0 +1,10 @@
+commit ritualReadiness
+  declare relation converges
+  declare relation steadies
+
+  ritual/seasonal `converges` forest/oldroot
+  npc/keeper `steadies` mountain/ashkar
+  npc/keeper . state = "active"
+  npc/tender . marks = mountain/ashkar
+  ritual/seasonal . offeringState = "assembled"
+  ritual/seasonal . ritualState = "ready"

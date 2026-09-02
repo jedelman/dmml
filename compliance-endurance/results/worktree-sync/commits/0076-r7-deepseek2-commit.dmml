@@ -1,0 +1,17 @@
+commit highkinSecondLight
+  declare attribute tremorIntensity
+  declare attribute stockLevel
+
+  npc/smith . state = "practicing"
+  npc/smith . crafts = path/bronzework
+  npc/stonemason . state = "seeking"
+  mountain/ashkar . tremorIntensity = "faint"
+  mountain/ashkar . tremorsObserved = npc/foothillWarden
+  stockpile/stoneBlocks . stockLevel = "moderate"
+  npc/packer . carriesSignTo = npc/foothillWarden
+  path/packroad . carriesSignTo = npc/foothillWarden
+  herd/aurochs . gathers = npc/herder
+  herd/aurochs . migratesTo = forest/oldroot
+  ritual/seasonal . guidesTo = forest/oldroot
+  ritual/seasonal . harvests = herd/aurochs
+  ritual/seasonal . offeringsGathered = 1

@@ -1,6 +1,11 @@
-commit stoneCraft
-  declare relation quarries
-  declare attribute craft
+commit packRoutes
+  declare relation carries
+  declare attribute role
 
-  mine/ninefathom . craft = "dressing the mountain's stone for terrace and shrine"
-  culture/highkin . quarries = mine/ninefathom
+  npc/packer . a = Packer
+  npc/packer . role = "drives the pack-beasts between riverfolk and highkin, kin to both"
+  npc/packer . belongsTo = culture/riverfolk
+  herd/brindle . a = Herd
+  herd/brindle . carries = npc/packer
+  herd/brindle . grazesIn = forest/oldroot
+  herd/brindle . state = "grazing"

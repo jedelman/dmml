@@ -1,0 +1,4 @@
+commit firstBronze
+  npc/smith . state = "practicing"
+  npc/smith `forgesFor` npc/stonemason
+  stockpile/bronzeIngots . stockLevel = "low"

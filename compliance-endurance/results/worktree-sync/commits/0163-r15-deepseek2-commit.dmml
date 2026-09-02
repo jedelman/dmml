@@ -1,0 +1,5 @@
+commit bellHungVigil
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . resonatesWith = site/observationPost
+  npc/vigilKeeper . vigilFocus = "the first ringing, ashkar's reply"
+  site/observationPost . convergesAt = site/bellVigil

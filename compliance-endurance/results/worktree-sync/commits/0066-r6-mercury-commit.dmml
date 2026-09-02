@@ -1,0 +1,9 @@
+commit mountainWhispers2
+  declare relation witnessedBy
+  declare attribute tremorIntensity
+  declare attribute state
+
+  mountain/ashkar :: a Mountain
+  mountain/ashkar . state = "rumbling"
+  mountain/ashkar . tremorIntensity = "mounting"
+  mountain/ashkar . witnessedBy = npc/keeper

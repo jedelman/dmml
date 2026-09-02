@@ -1,0 +1,7 @@
+commit barTesting
+  mine/ninefathom . state = "dug"
+  npc/stonemason . state = "seeking"
+  npc/stonemason . worksAt = workshop/forgeYard
+  object/firstBar . temper = "tested"
+  soil/smeltTest . trialState = "tested"
+  soil/smeltTest . trialNote = "first bar tested against ashkar's faint tremor, temper holds"

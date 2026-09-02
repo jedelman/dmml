@@ -1,0 +1,8 @@
+commit forgeYardTrade
+  declare relation sharesWith
+  declare relation anchors
+
+  workshop/forgeYard `sharesWith` path/stonemasonry
+  workshop/forgeYard `anchors` path/bronzework
+  path/stonemasonry . discoveredBy = npc/mason
+  npc/packer `supplies` workshop/forgeYard

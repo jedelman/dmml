@@ -1,0 +1,6 @@
+commit riverFolkGather
+  declare relation gathers
+
+  herd/aurochs . gathers = npc/herder
+  herd/brindle . gathers = npc/packer
+  culture/riverfolk . gathers = npc/packer

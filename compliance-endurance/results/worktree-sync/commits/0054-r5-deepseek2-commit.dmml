@@ -1,5 +1,0 @@
-commit riverMarket
-  declare relation tradesWith
-
-  culture/riverfolk . tradesWith = culture/highkin
-  npc/bronzehand . tradesWith = culture/riverfolk

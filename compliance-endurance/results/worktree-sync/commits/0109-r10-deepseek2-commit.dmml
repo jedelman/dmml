@@ -1,0 +1,7 @@
+commit firstTrial
+  declare relation suppliesTrialTo
+  declare attribute trialNote
+
+  npc/smith `suppliesTrialTo` soil/smeltTest
+  soil/smeltTest . trialNote = "first bar, soft temper, awaiting the mountain's word"
+  workshop/forgeYard . purpose = "a yard where stone-cut meets forge-fire, testing bronze against ashkar's tremor"

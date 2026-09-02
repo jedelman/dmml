@@ -1,0 +1,16 @@
+commit tremorReadAcrossTheVigil
+  npc/foothillWarden . carriesTidingsTo = site/wayRest
+  site/wayRest . carriesTidingsTo = npc/seasonGuide
+  npc/seasonGuide . observes = mountain/ashkar
+  npc/seasonGuide . readsSignsFrom = site/bellVigil
+  npc/vigilKeeper . vigilState = "watchful"
+  npc/vigilKeeper . vigilFocus = "bronze echoes from wayRest and the mountain's own warnings"
+  object/bronzeBell . temper = "tested"
+  soil/smeltTest . trialNote = "first bar tested against ashkar's faint tremor, temper holds"
+  soil/smeltTest . trialState = "tested"
+  path/bronzework . state = "discovered"
+  workshop/forgeYard . state = "active"
+  meadow/riverbend . grazingQuality = "lush"
+  herd/stagfolk . state = "gathering"
+  herd/aurochs . state = "grazing"
+  forest/oldroot . state = "awakening"

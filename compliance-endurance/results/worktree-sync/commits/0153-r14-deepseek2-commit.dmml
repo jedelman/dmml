@@ -1,0 +1,9 @@
+commit highkinRiteBellHung
+  declare attribute bellHung
+
+  ritual/highkinRite . bellHung = true
+  ritual/highkinRite . invokes = object/bronzeBell
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . ringsFor = ritual/highkinRite
+  npc/vigilKeeper . observes = ritual/highkinRite
+  npc/vigilKeeper . vigilFocus = "the first ringing, ashkar's reply"

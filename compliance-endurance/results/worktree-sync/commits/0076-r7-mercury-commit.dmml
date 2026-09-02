@@ -1,0 +1,7 @@
+commit riverRites
+  declare relation consecrates
+  declare attribute offeringState
+
+  ritual/seasonal :: a Ritual
+  ritual/seasonal . offeringState = "gathering"
+  ritual/seasonal . consecrates = herd/aurochs

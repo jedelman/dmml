@@ -1,0 +1,10 @@
+commit bellTested
+  declare relation ringsFor
+
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . temper = "tested"
+  soil/smeltTest . trialState = "tested"
+  ritual/highkinRite . resonatesWith = object/bronzeBell
+  ritual/highkinRite . ringsFor = object/bronzeBell
+  npc/smith . observes = soil/smeltTest
+  npc/forgeTender . observes = soil/smeltTest

@@ -1,0 +1,22 @@
+commit riverRites
+  declare relation tends
+  declare relation learnsFrom
+  declare relation guidesTo
+  declare relation discovers
+  declare relation enables
+  declare relation observes
+  declare attribute state
+  declare attribute role
+  declare attribute craftFocus
+
+  npc/forgeTender :: a NPC
+  npc/forgeTender . belongsTo = culture/riverfolk
+  npc/forgeTender . learnsFrom = npc/smith
+  npc/forgeTender . observes = mountain/ashkar
+  npc/forgeTender . role = "riverfolk who tends the forge-fires, learning bronzework from the highkin smith"
+  npc/forgeTender . state = "learning"
+  npc/forgeTender . craftFocus = "bronze"
+  npc/forgeTender . tends = workshop/forgeYard
+  npc/forgeTender . discovers = path/bronzework
+  npc/forgeTender . enables = ritual/seasonal
+  npc/forgeTender . guidesTo = workshop/forgeYard

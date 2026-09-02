@@ -1,0 +1,11 @@
+commit herdsFlee
+  mountain/ashkar . state = "rumbling"
+  forest/oldroot . state = "awakening"
+  herd/stagfolk . state = "fleeing"
+  herd/aurochs . state = "fleeing"
+  herd/aurochs . migratesTo = culture/riverfolk
+  npc/keeper . role = "guides the fleeing herds, witnesses ashkar's fury"
+  npc/keeper . guidesTo = forest/oldroot
+  npc/herder . guidesTo = forest/oldroot
+  ritual/seasonal . ritualState = "preparing"
+  ritual/seasonal . fallOn = forest/oldroot

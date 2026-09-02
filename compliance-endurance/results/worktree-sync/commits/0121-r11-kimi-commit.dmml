@@ -1,0 +1,6 @@
+commit pathForging
+  path/bronzework . state = "discovered"
+  npc/smith . worksAt = workshop/forgeYard
+  npc/smith . observes = soil/smeltTest
+  ritual/highkinRite . state = "ready"
+  object/firstBar . belongsTo = ritual/highkinRite

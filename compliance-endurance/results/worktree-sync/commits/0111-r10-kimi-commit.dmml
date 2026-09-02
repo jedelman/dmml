@@ -1,0 +1,12 @@
+commit firstFiring
+  declare relation carriesWork
+  declare relation forgesFor
+  declare relation supplies
+  declare attribute temper
+  declare attribute trialState
+
+  object/firstBar . temper = "tested"
+  soil/smeltTest . trialState = "tested"
+  npc/forgeTender . carriesWork = object/firstBar
+  npc/smith . forgesFor = npc/forgeTender
+  workshop/forgeYard . supplies = culture/riverfolk

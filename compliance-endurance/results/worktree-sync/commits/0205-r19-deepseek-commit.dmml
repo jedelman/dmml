@@ -1,0 +1,7 @@
+commit waterRiteReadies
+  ritual/waterRite . state = "ready"
+  ritual/waterRite . signalsTo = ritual/seasonal
+  site/riverFordLore . trainingState = "practicing"
+  npc/fordWarden . state = "active"
+  ritual/seasonal . convergesAt = site/riverFord
+  ritual/seasonal . guidesHerdsTo = meadow/riverbend

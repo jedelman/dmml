@@ -1,0 +1,4 @@
+commit firstRing
+  npc/foothillWarden . signalsTo = object/bronzeBell
+  ritual/highkinRite . marks = object/bronzeBell
+  object/bronzeBell . carriesTremor = mountain/ashkar

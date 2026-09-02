@@ -2,127 +2,80 @@ Declared predicates:
   relation apprenticesUnder
   relation belongsTo
   relation carries
-  attribute craft
-  relation disputes
   relation erupts
   relation fallsOn
   relation grazesIn
-  relation honors
   relation locatedIn
   relation masters
   relation migratesTo
-  attribute option1Source
-  attribute option1Value
-  attribute option2Source
-  attribute option2Value
-  attribute predicate
   attribute purpose
-  relation quarries
-  attribute rite
   attribute role
   attribute state
-  attribute subject
   relation tradesWith
   relation wardedBy
   relation witnessedBy
   relation worksAt
 
-Current facts:
-  contest/culture_highkin_state_1 . a = Contest
-  contest/culture_highkin_state_1 . disputes = culture/highkin
-  contest/culture_highkin_state_1 . option1Source = "player/canonical"
-  contest/culture_highkin_state_1 . option1Value = "flourishing"
-  contest/culture_highkin_state_1 . option2Source = "agent/deepseek2"
-  contest/culture_highkin_state_1 . option2Value = "trading"
-  contest/culture_highkin_state_1 . predicate = "state"
-  contest/culture_highkin_state_1 . state = "contested"
-  contest/culture_highkin_state_1 . subject = "culture/highkin"
-  contest/culture_riverfolk_state_2 . a = Contest
-  contest/culture_riverfolk_state_2 . disputes = culture/riverfolk
-  contest/culture_riverfolk_state_2 . option1Source = "player/canonical"
-  contest/culture_riverfolk_state_2 . option1Value = "flourishing"
-  contest/culture_riverfolk_state_2 . option2Source = "agent/deepseek2"
-  contest/culture_riverfolk_state_2 . option2Value = "fishing"
-  contest/culture_riverfolk_state_2 . predicate = "state"
-  contest/culture_riverfolk_state_2 . state = "contested"
-  contest/culture_riverfolk_state_2 . subject = "culture/riverfolk"
+Facts:
   culture/highkin . a = Culture
-  culture/highkin . belongsTo = culture/highkin
-  culture/highkin . carries = "coins"
-  culture/highkin . locatedIn = mountain/ashkar
-  culture/highkin . masters = culture/riverfolk
   culture/highkin . purpose = "settled on ashkar's terraces, kin to the mine and the quarry"
-  culture/highkin . quarries = mine/ninefathom
-  culture/highkin . role = "traders"
+  culture/highkin . state = "nascent"
   culture/highkin . tradesWith = culture/riverfolk
-  culture/highkin . worksAt = mine/ninefathom
   culture/riverfolk . a = Culture
-  culture/riverfolk . apprenticesUnder = culture/highkin
-  culture/riverfolk . carries = "nets"
-  culture/riverfolk . fallsOn = forest/oldroot
-  culture/riverfolk . locatedIn = forest/oldroot
-  culture/riverfolk . migratesTo = forest/oldroot
   culture/riverfolk . purpose = "settled along the river below oldroot, kin to the herds they follow"
-  culture/riverfolk . rite = "the Silt-Song, sung each spring when the melt wakes the river"
-  culture/riverfolk . role = "fishers"
-  culture/riverfolk . tradesWith = culture/highkin
+  culture/riverfolk . state = "nascent"
+  culture/riverfolk . tradesWith -- 2 live alternatives:
+    - world asserts culture/highkin
+    - world asserts herd/stagfolk
   forest/oldroot . a = Forest
-  forest/oldroot . fallsOn = mountain/ashkar
-  forest/oldroot . grazesIn = true
   forest/oldroot . purpose = "old-growth woodland at the mountain's foot, where the herds graze"
   forest/oldroot . state = "oldgrowth"
-  forest/oldroot . wardedBy = "green ward"
-  forest/oldroot . witnessedBy = npc/keeper
   herd/aurochs . a = Herd
   herd/aurochs . grazesIn = forest/oldroot
-  herd/aurochs . migratesTo = forest/oldroot
   herd/aurochs . state = "grazing"
+  herd/brindle . a = Herd
+  herd/brindle . carries = npc/packer
+  herd/brindle . grazesIn = forest/oldroot
+  herd/brindle . state = "grazing"
   herd/stagfolk . a = Herd
   herd/stagfolk . grazesIn = forest/oldroot
-  herd/stagfolk . migratesTo = forest/oldroot
-  herd/stagfolk . state = "migrating"
+  herd/stagfolk . state = "grazing"
   herd/stagfolk . wardedBy = npc/keeper
   mine/ninefathom . a = Mine
-  mine/ninefathom . craft = "dressing the mountain's stone for terrace and shrine"
   mine/ninefathom . locatedIn = mountain/ashkar
-  mine/ninefathom . purpose = "supplies ore for riverfolk tools"
-  mine/ninefathom . state = "active"
-  mine/ninefathom . wardedBy = "deep wards"
+  mine/ninefathom . state -- 2 live alternatives:
+    - world asserts "undug"
+    - world asserts "dug"
   mountain/ashkar . a = Mountain
-  mountain/ashkar . erupts = "rarely"
   mountain/ashkar . purpose = "the range's tallest peak, a mine and a stonemasons' quarry cut into its flank"
-  mountain/ashkar . state = "quiescent"
+  mountain/ashkar . state = "dormant"
   mountain/ashkar . witnessedBy = npc/keeper
-  npc/bronzehand . a = Person
-  npc/bronzehand . belongsTo = culture/highkin
-  npc/bronzehand . role = "mine-founder"
-  npc/bronzehand . worksAt = mine/ninefathom
+  npc/herder . a = Herder
+  npc/herder . apprenticesUnder = npc/keeper
+  npc/herder . belongsTo = culture/riverfolk
+  npc/herder . role = "follows herd/aurochs through oldroot, kin to the riverfolk"
   npc/keeper . a = Keeper
-  npc/keeper . carries = "lantern"
-  npc/keeper . honors = culture/riverfolk
-  npc/keeper . livesIn = mine/ninefathom
-  npc/keeper . role = "warden"
-  npc/keeper . worksAt = mine/ninefathom
-  npc/riverward . a = Person
-  npc/riverward . belongsTo = culture/riverfolk
-  npc/riverward . role = "herd-warden"
-  npc/stonehand . a = Person
-  npc/stonehand . role = "quarry-founder"
-  npc/stonehand . worksAt = mountain/ashkar
+  npc/keeper . apprenticesUnder = npc/tender
+  npc/keeper . role = "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"
+  npc/mason . a = Mason
+  npc/mason . belongsTo = culture/highkin
+  npc/mason . role = "cuts ashkar's stone for the highkin, kin to the quarry"
+  npc/mason . worksAt = mountain/ashkar
+  npc/packer . a = Packer
+  npc/packer . belongsTo = culture/riverfolk
+  npc/packer . role = "drives the pack-beasts between riverfolk and highkin, kin to both"
+  npc/stonemason . a = NPC
+  npc/stonemason . role = "cuts ashkar's stone, dreams of the bronzework path"
+  npc/stonemason . state = "working"
+  npc/stonemason . worksAt = mine/ninefathom
+  npc/tender . a = Keeper
+  npc/tender . role = "apprentice to the keeper, learning to ward the herd and read the mountain's signs"
   path/bronzework . a = TechnicalPath
   path/bronzework . purpose = "smelting ore drawn from ninefathom into worked bronze"
-  path/bronzework . state = "apprenticed"
+  path/bronzework . state = "undiscovered"
   path/greenlore . a = TechnicalPath
   path/greenlore . purpose = "reading oldroot's plants for healing and blight-craft"
   path/greenlore . state = "undiscovered"
   path/stonemasonry . a = TechnicalPath
   path/stonemasonry . purpose = "cutting and setting ashkar's own stone"
-  path/stonemasonry . state = "apprenticed"
-
-CONTESTED -- not settled, both/all options are live:
-  culture/highkin . state is disputed:
-    - player/canonical asserts "flourishing"
-    - agent/deepseek2 asserts "trading"
-  culture/riverfolk . state is disputed:
-    - player/canonical asserts "flourishing"
-    - agent/deepseek2 asserts "fishing"
+  path/stonemasonry . state = "undiscovered"

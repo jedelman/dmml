@@ -1,0 +1,6 @@
+commit vigilDeepens
+  declare relation marksSignFrom
+
+  npc/vigilKeeper . marksSignFrom = site/wayRest
+  site/wayRest . echoes = object/bronzeBell
+  npc/vigilKeeper . vigilFocus = "bronze echoes from wayRest and the mountain's own warnings"

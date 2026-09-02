@@ -1,4 +1,0 @@
-commit recordBronzehandMastery
-  npc/bronzehand . craft = "bronzework"
-  npc/bronzehand . masters = path/bronzework
-  path/bronzework . state = "mastered"

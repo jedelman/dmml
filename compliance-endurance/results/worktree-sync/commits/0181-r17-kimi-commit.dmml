@@ -1,0 +1,34 @@
+commit riverCrossing
+  declare relation tends
+  declare relation locatedIn
+  declare relation guidesTo
+  declare relation carriesSignTo
+  declare relation sharesWith
+  declare relation witnesses
+  declare attribute state
+  declare attribute purpose
+
+  site/riverFord :: a Site
+  site/riverFord . locatedIn = path/packroad
+  site/riverFord . purpose = "the shallow ford where pack-beasts wade and herders read the water's tremor-echoes against ashkar's own"
+  site/riverFord . state = "nascent"
+  site/riverFord . witnesses = mountain/ashkar
+
+  npc/fordWarden :: a NPC
+  npc/fordWarden . belongsTo = culture/riverfolk
+  npc/fordWarden . craftFocus = "water-reading"
+  npc/fordWarden . guidesTo = site/riverFord
+  npc/fordWarden . learnsFrom = npc/vigilKeeper
+  npc/fordWarden . locatedIn = site/riverFord
+  npc/fordWarden . observes = mountain/ashkar
+  npc/fordWarden . purpose = "reads the ford's ripples for tremor-signs, bridging the vigil-keeper's bell-lore and the herder's green-sense"
+  npc/fordWarden . role = "keeps the river crossing, kin to vigil-keeper and herder alike"
+  npc/fordWarden . sharesWith = npc/herder
+  npc/fordWarden . state = "learning"
+  npc/fordWarden . tends = site/riverFord
+  npc/fordWarden . witnesses = mountain/ashkar
+
+  site/riverFord `tendedBy` npc/fordWarden
+  site/riverFord `guidesTo` meadow/riverbend
+  site/riverFord `carriesSignTo` npc/foothillWarden
+  npc/fordWarden `carriesSignTo` site/bellVigil

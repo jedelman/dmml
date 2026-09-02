@@ -1,0 +1,7 @@
+commit riverRites
+  declare relation harvests
+  declare attribute ritualState
+
+  ritual/seasonal :: a Ritual
+  ritual/seasonal . harvests = herd/aurochs
+  ritual/seasonal . ritualState = "ready"

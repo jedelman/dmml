@@ -1,6 +1,0 @@
-commit riverfolkMatters
-  declare relation follows
-
-  culture/riverfolk :: a Culture
-  culture/riverfolk . rite = "green-keeping"
-  npc/mossfinger . follows = culture/riverfolk

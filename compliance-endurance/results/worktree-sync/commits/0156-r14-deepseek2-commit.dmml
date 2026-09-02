@@ -1,0 +1,10 @@
+commit firstRinging
+  ritual/highkinRite . state = "ready"
+  ritual/highkinRite . marks = object/bronzeBell
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . temper = "tested"
+  object/bronzeBell . carriesTremor = mountain/ashkar
+  mountain/ashkar . state = "rumbling"
+  mountain/ashkar . tremorIntensity = "mounting"
+  npc/vigilKeeper . observes = mountain/ashkar
+  npc/vigilKeeper . vigilState = "listening"

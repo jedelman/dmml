@@ -1,0 +1,10 @@
+commit riverHerderRite
+  declare relation walksTo
+  declare relation marks
+  declare relation shelters
+  declare relation supplies
+
+  npc/herder `walksTo` ritual/seasonal
+  npc/herder . marks = mountain/ashkar
+  herd/brindle `shelters` forest/oldroot
+  npc/packer `supplies` ritual/seasonal

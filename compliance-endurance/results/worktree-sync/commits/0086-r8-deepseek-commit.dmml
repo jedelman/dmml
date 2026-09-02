@@ -1,0 +1,6 @@
+commit forgeYardSignals
+  declare relation sharesShelfWithStore
+  declare relation signalsTo
+
+  workshop/forgeYard . sharesShelfWith = stockpile/bronzeIngots
+  workshop/forgeYard . signalsTo = quarry/ashkarFlank

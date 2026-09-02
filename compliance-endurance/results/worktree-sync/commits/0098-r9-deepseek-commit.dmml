@@ -1,0 +1,12 @@
+commit firstBronze
+  declare relation carriesWork
+  declare attribute temper
+
+  object/firstBar :: a BronzeBar
+  object/firstBar . temper = "soft"
+  object/firstBar . belongsTo = workshop/forgeYard
+
+  npc/packer `carriesWork` object/firstBar
+  path/packroad `carriesSignTo` object/firstBar
+  workshop/forgeYard `sharesWith` object/firstBar
+  stockpile/stoneBlocks `sharesShelfWith` object/firstBar

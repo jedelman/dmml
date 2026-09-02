@@ -1,0 +1,6 @@
+commit settleRivers
+  declare relation guidesTo
+
+  herd/aurochs . migratesTo = culture/riverfolk
+  herd/aurochs . state = "fleeing"
+  ritual/seasonal . guidesTo = herd/aurochs

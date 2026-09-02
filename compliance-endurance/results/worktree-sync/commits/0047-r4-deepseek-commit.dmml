@@ -1,0 +1,3 @@
+commit ashkarWakes
+  mountain/ashkar . state = "rumbling"
+  mountain/ashkar . tremorIntensity = "moderate"

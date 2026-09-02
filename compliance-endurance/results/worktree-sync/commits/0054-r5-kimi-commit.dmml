@@ -1,5 +1,0 @@
-commit greenloreFound
-  declare relation apprenticesUnder
-
-  path/greenlore . state = "apprenticed"
-  npc/greenhand `apprenticesUnder` path/greenlore

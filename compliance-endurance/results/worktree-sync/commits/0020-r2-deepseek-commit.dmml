@@ -1,0 +1,6 @@
+commit riverRites
+  declare relation witnessedBy
+
+  npc/herder . witnessedBy = npc/keeper
+  culture/riverfolk . tradesWith = culture/highkin
+  herd/stagfolk . state = "grazing"

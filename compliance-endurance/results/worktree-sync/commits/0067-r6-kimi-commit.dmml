@@ -1,0 +1,7 @@
+commit greenloreFound
+  path/greenlore . state = "discovered"
+  npc/herder . guidesTo = forest/oldroot
+  npc/smith . state = "practicing"
+  npc/stonemason . state = "working"
+  stockpile/bronzeIngots . stockLevel = "low"
+  mine/ninefathom . state = "dug"

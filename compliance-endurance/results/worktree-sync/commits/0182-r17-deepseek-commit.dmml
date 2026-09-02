@@ -1,0 +1,5 @@
+commit bellRingsObservation
+  npc/vigilKeeper . vigilState = "watchful"
+  object/bronzeBell . bellState = "hung"
+  site/observationPost . resonatesWith = object/bronzeBell
+  mountain/ashkar . tremorIntensity = "faint"

@@ -1,0 +1,15 @@
+commit quarryOutput
+  declare relation sharesShelfWith
+  declare attribute stockLevel
+
+  stockpile/stoneBlocks :: a Stockpile
+  stockpile/stoneBlocks . locatedIn = quarry/ashkarFlank
+  stockpile/stoneBlocks . purpose = " dressed stone from ashkarFlank, awaiting the mason's hand or the packer's road"
+  stockpile/stoneBlocks . stockLevel = "moderate"
+  stockpile/stoneBlocks `sharesShelfWith` stockpile/bronzeIngots
+  stockpile/bronzeIngots :: a Stockpile
+  stockpile/bronzeIngots . locatedIn = mine/ninefathom
+  stockpile/bronzeIngots . purpose = " raw bronze from ninefathom's first fires, scarce and precious"
+  stockpile/bronzeIngots . stockLevel = "low"
+  npc/smith . state = "practicing"
+  npc/smith `masters` path/bronzework

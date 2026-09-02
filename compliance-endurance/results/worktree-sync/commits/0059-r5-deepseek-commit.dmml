@@ -1,0 +1,4 @@
+commit wardenAlert
+  npc/foothillWarden . state = "alert"
+  mountain/ashkar . tremorsObserved = npc/foothillWarden
+  mountain/ashkar . witnessedBy = npc/foothillWarden

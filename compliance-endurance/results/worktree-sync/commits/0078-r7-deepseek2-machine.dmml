@@ -1,0 +1,11 @@
+machine mine/ninefathom
+  states
+    undug
+    dug
+
+  transition dig(smith)
+    undug -> dug
+    guard self `locatedIn` mountain/ashkar
+    guard self `triggers` path/bronzework
+    guard smith `masters` path/bronzework
+    assert dug

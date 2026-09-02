@@ -1,0 +1,7 @@
+commit herdSignsAtDusk
+  herd/stagfolk . state = "gathering"
+  herd/stagfolk . migratesTo = meadow/riverbend
+  npc/foothillWarden . state = "alert"
+  npc/foothillWarden . tends = forest/oldroot
+  ritual/seasonal . offeringState = "assembled"
+  ritual/seasonal . offeringsGathered = 2

@@ -1,0 +1,9 @@
+commit smeltTrial
+  declare relation suppliesTrial
+
+  soil/smeltTest . trialState = "tested"
+  soil/smeltTest . marks = mountain/ashkar
+  npc/smith . suppliesTrial = soil/smeltTest
+  mine/ninefathom . suppliesTrial = soil/smeltTest
+  mountain/ashkar . witnesses = soil/smeltTest
+  workshop/forgeYard . state = "active"

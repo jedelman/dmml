@@ -1,0 +1,15 @@
+commit guardingTheAwakening
+  npc/keeper . state = "active"
+  npc/keeper . tends = herd/stagfolk
+  herd/stagfolk . grazesIn = forest/oldroot
+  forest/oldroot . a = Forest
+  mountain/ashkar . tremorsObserved = npc/keeper
+  ritual/seasonal . ritualState = "preparing"
+  path/stonemasonry . state = "discovered"
+  npc/smith . dreamsOf = path/bronzework
+  mine/ninefathom . state = "dug"
+  forest/oldroot . state = "awakening"
+  herd/aurochs . migratesTo = culture/riverfolk
+  culture/riverfolk . tradesWith = culture/highkin
+  npc/mason . worksAt = quarry/ashkarFlank
+  npc/tender . apprenticesUnder = npc/keeper

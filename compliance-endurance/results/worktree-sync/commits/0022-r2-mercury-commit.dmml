@@ -1,0 +1,29 @@
+commit mints
+  declare relation harvests
+  declare relation guards
+
+  path/greenlore . a = TechnicalPath
+  path/greenlore . purpose = "reading oldroot's plants for healing and blight-craft"
+  path/greenlore . state = "undiscovered"
+
+  herd/brindle . a = Herd
+  herd/brindle . carries = npc/packer
+  herd/brindle . grazesIn = forest/oldroot
+  herd/brindle . state = "grazing"
+
+  forest/oldroot . a = Forest
+  forest/oldroot . purpose = "old-growth woodland at the mountain's foot, where the herds graze"
+  forest/oldroot . state = "oldgrowth"
+
+  npc/herder . a = Herder
+  npc/herder . apprenticedTo = npc/keeper
+  npc/herder . apprenticesUnder = npc/keeper
+  npc/herder . belongsTo = culture/riverfolk
+  npc/herder . role = "follows herd/aurochs through oldroot, kin to the riverfolk"
+  npc/herder . state = "active"
+  npc/herder . guards = herd/aurochs
+
+  npc/packer . a = Packer
+  npc/packer . belongsTo = culture/riverfolk
+  npc/packer . role = "drives the pack-beasts between riverfolk and highkin, kin to both"
+  npc/packer . harvests = path/greenlore

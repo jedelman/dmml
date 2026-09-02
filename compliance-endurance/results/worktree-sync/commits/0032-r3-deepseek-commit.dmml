@@ -1,0 +1,6 @@
+commit oldrootAwakens
+  declare attribute state
+
+  forest/oldroot . state = "awakening"
+  mine/ninefathom . state = "dug"
+  path/bronzework . state = "undiscovered"

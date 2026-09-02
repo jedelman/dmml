@@ -1,6 +1,0 @@
-commit resolveRiverfolkContest
-  declare relation witnessedBy
-  declare attribute state
-
-  contest/culture_riverfolk_state_2 `witnessedBy` npc/keeper
-  contest/culture_riverfolk_state_2 . state = "resolved"

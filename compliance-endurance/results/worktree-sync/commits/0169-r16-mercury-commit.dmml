@@ -1,0 +1,12 @@
+commit advanceSeason
+  declare relation anchors
+
+  ritual/seasonal :: a Ritual
+  ritual/seasonal . bellHung = true
+  ritual/seasonal . converges = ritual/highkinRite
+  ritual/seasonal . gatheringState = "assembled"
+  ritual/seasonal . guidesTo = herd/aurochs
+  ritual/seasonal . offeringsGathered = 2
+  ritual/seasonal . purpose = "marks the turning of the herds, honoring the river's path"
+  ritual/seasonal . ritualState = "ready"
+  ritual/seasonal . state = "ready"

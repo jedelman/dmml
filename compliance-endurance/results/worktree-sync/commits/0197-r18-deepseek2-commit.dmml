@@ -1,0 +1,6 @@
+commit waterRiteReady
+  ritual/waterRite . state = "ready"
+  ritual/waterRite . ritualState = "ready"
+  npc/fordWarden . state = "active"
+  site/riverFordLore . trainingState = "practicing"
+  site/riverFordLore . echoesTo = site/bellVigil

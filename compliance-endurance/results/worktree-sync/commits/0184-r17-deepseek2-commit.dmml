@@ -1,0 +1,15 @@
+commit oldrootStirs
+  declare relation carriesTidings
+
+  mountain/ashkar . state = "rumbling"
+  forest/oldroot . state = "awakening"
+  npc/tender . greenSign = "oldroot stirs awake, blight-fire fading at the roots"
+  npc/keeper . role = "guides the fleeing herds, witnesses ashkar's fury"
+  npc/smith . state = "practicing"
+  npc/forgeTender . state = "active"
+  workshop/forgeYard . state = "active"
+  path/bronzework . state = "discovered"
+  path/packroad . carriesTidings = npc/foothillWarden
+  ritual/highkinRite . state = "ready"
+  site/herdEcho . signalsTo = site/bellVigil
+  herd/aurochs . migratesTo = forest/oldroot

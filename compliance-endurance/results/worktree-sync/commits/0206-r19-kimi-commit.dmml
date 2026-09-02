@@ -1,0 +1,16 @@
+commit raises
+  declare relation guidesTravelersTo
+  declare relation locatedIn
+  declare relation marksPath
+  declare relation pairedWith
+  declare relation signalsTo
+
+  marker/stoneFordPost :: a TrailMarker
+  marker/stoneFordPost . guidesTravelersTo = site/stoneFord
+  marker/stoneFordPost . locatedIn = path/packroad
+  marker/stoneFordPost . marksPath = path/packroad
+  marker/stoneFordPost . pairedWith = marker/fordPost
+  marker/stoneFordPost . purpose = "a split-stone post where the mason's notch meets the warden's water-mark, showing the way to stoneFord"
+  marker/stoneFordPost . signalsTo = npc/fordWarden
+  marker/stoneFordPost . state = "standing"
+  marker/stoneFordPost . witnessedBy = mountain/ashkar

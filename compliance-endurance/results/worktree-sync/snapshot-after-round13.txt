@@ -1,0 +1,577 @@
+Declared predicates:
+  relation anchors
+  relation apprenticedTo
+  relation apprenticesUnder
+  relation bears
+  relation bearsWitness
+  attribute bellState
+  relation belongsTo
+  relation carries
+  relation carriesBronze
+  relation carriesOfferingTo
+  relation carriesSignTo
+  relation carriesTidings
+  relation carriesTremor
+  relation carriesWork
+  relation consecrates
+  relation converges
+  relation convergesAt
+  attribute craftFocus
+  relation crafts
+  relation discovers
+  relation dreamsOf
+  relation echoes
+  relation enables
+  relation erupts
+  relation extractsFrom
+  relation fallsOn
+  relation forgesFor
+  relation foundedBy
+  relation gathers
+  relation gathersAt
+  relation grazesIn
+  attribute grazingQuality
+  attribute greenSign
+  relation guards
+  relation guidesHerdsTo
+  relation guidesPreparationOf
+  relation guidesTo
+  relation guidesToTo
+  relation harvests
+  relation hauls
+  relation hungIn
+  relation invokes
+  relation learnsFrom
+  relation locatedIn
+  relation marks
+  relation masters
+  relation migratesTo
+  relation notesPassage
+  relation observes
+  attribute offeringState
+  relation offers
+  relation offersBronze
+  relation operatedBy
+  relation prepares
+  relation processesAt
+  attribute purpose
+  attribute readiness
+  relation readsSignsFrom
+  relation receivesTidingsFrom
+  relation resonatesWith
+  relation ringsFor
+  attribute ritualState
+  attribute role
+  relation scatters
+  relation sharesDreamOf
+  relation sharesShelfWith
+  relation sharesShelfWithStore
+  relation sharesWith
+  relation shelters
+  relation signalsTo
+  relation soundsTremor
+  attribute state
+  relation steadies
+  attribute stockLevel
+  relation storesFor
+  relation suppliedWithBronze
+  relation suppliedWithStone
+  relation supplies
+  relation suppliesTrial
+  relation suppliesTrialTo
+  attribute temper
+  relation tendedBy
+  relation tends
+  relation tendsVigil
+  relation tradesWith
+  attribute trailState
+  attribute tremorIntensity
+  relation tremorsObserved
+  attribute trialNote
+  attribute trialState
+  relation triggers
+  attribute unease
+  relation verifies
+  attribute vigilFocus
+  attribute vigilState
+  relation wakens
+  relation walksTo
+  relation wardedBy
+  relation wards
+  relation watchesHerd
+  relation witnessedBy
+  relation witnesses
+  relation witnessesReturn
+  relation worksAt
+
+Facts:
+  culture/highkin . a = Culture
+  culture/highkin . hauls = mine/ninefathom
+  culture/highkin . purpose = "settled on ashkar's terraces, kin to the mine and the quarry"
+  culture/highkin . state = "nascent"
+  culture/highkin . tradesWith = culture/riverfolk
+  culture/riverfolk . a = Culture
+  culture/riverfolk . gathers -- 2 live alternatives:
+    - world asserts npc/packer
+    - world asserts npc/foothillWarden
+  culture/riverfolk . purpose = "settled along the river below oldroot, kin to the herds they follow"
+  culture/riverfolk . state = "nascent"
+  culture/riverfolk . tradesWith -- 2 live alternatives:
+    - world asserts culture/highkin
+    - world asserts herd/stagfolk
+  forest/oldroot . a = Forest
+  forest/oldroot . purpose = "old-growth woodland at the mountain's foot, where the herds graze"
+  forest/oldroot . state -- 3 live alternatives:
+    - world asserts "oldgrowth"
+    - world asserts "awakening"
+    - world asserts "blighted"
+  herd/aurochs . a = Herd
+  herd/aurochs . gatheredAt = meadow/riverbend
+  herd/aurochs . gathers = npc/herder
+  herd/aurochs . grazesIn = forest/oldroot
+  herd/aurochs . migratesTo -- 4 live alternatives:
+    - world asserts "none"
+    - world asserts culture/riverfolk
+    - world asserts forest/oldroot
+    - world asserts meadow/riverbend
+  herd/aurochs . state -- 3 live alternatives:
+    - world asserts "grazing"
+    - world asserts "fleeing"
+    - world asserts "gathering"
+  herd/brindle . a = Herd
+  herd/brindle . carries = npc/packer
+  herd/brindle . gathers = npc/packer
+  herd/brindle . gathersAt = meadow/riverbend
+  herd/brindle . grazesIn = forest/oldroot
+  herd/brindle . shelters = forest/oldroot
+  herd/brindle . state = "grazing"
+  herd/brindle . unease = "restless"
+  herd/brindle . witnessedBy -- 2 live alternatives:
+    - world asserts mountain/ashkar
+    - world asserts npc/packer
+  herd/stagfolk . a = Herd
+  herd/stagfolk . gathersAt = meadow/riverbend
+  herd/stagfolk . grazesIn = forest/oldroot
+  herd/stagfolk . migratesTo -- 2 live alternatives:
+    - world asserts forest/oldroot
+    - world asserts meadow/riverbend
+  herd/stagfolk . state -- 3 live alternatives:
+    - world asserts "grazing"
+    - world asserts "fleeing"
+    - world asserts "gathering"
+  herd/stagfolk . wardedBy = npc/keeper
+  meadow/riverbend . a = Meadow
+  meadow/riverbend . grazesIn = herd/aurochs
+  meadow/riverbend . grazingQuality = "lush"
+  meadow/riverbend . locatedIn = culture/riverfolk
+  meadow/riverbend . purpose = "the riverfolk's summer pasture, where the herds water before the mountain crossing"
+  mine/ninefathom . a = Mine
+  mine/ninefathom . locatedIn = mountain/ashkar
+  mine/ninefathom . state -- 2 live alternatives:
+    - world asserts "undug"
+    - world asserts "dug"
+  mine/ninefathom . steadies = mountain/ashkar
+  mine/ninefathom . suppliesTrial = soil/smeltTest
+  mountain/ashkar . a = Mountain
+  mountain/ashkar . fallsOn = forest/oldroot
+  mountain/ashkar . purpose = "the range's tallest peak, a mine and a stonemasons' quarry cut into its flank"
+  mountain/ashkar . state -- 3 live alternatives:
+    - world asserts "dormant"
+    - world asserts "rumbling"
+    - world asserts "erupting"
+  mountain/ashkar . tremorIntensity -- 3 live alternatives:
+    - world asserts "faint"
+    - world asserts "mounting"
+    - world asserts "moderate"
+  mountain/ashkar . tremorsObserved -- 3 live alternatives:
+    - world asserts npc/keeper
+    - world asserts npc/tender
+    - world asserts npc/foothillWarden
+  mountain/ashkar . triggers = path/bronzework
+  mountain/ashkar . witnessedBy -- 3 live alternatives:
+    - world asserts npc/keeper
+    - world asserts npc/tender
+    - world asserts npc/foothillWarden
+  mountain/ashkar . witnesses = soil/smeltTest
+  npc/foothillWarden . a = NPC
+  npc/foothillWarden . belongsTo = culture/highkin
+  npc/foothillWarden . gathersAt = meadow/riverbend
+  npc/foothillWarden . learnsFrom -- 3 live alternatives:
+    - world asserts npc/keeper
+    - world asserts npc/packer
+    - world asserts npc/herder
+  npc/foothillWarden . marks = ritual/seasonal
+  npc/foothillWarden . notesPassage = herd/aurochs
+  npc/foothillWarden . readsSignsFrom -- 2 live alternatives:
+    - world asserts mountain/ashkar
+    - world asserts object/bronzeBell
+  npc/foothillWarden . role -- 2 live alternatives:
+    - world asserts "reads ashkar's tremors at oldroot's edge, kin to keeper and herder alike"
+    - world asserts "reads ashkar's tremors at oldroot's edge, and the herd's restless signs, kin to keeper and herder alike"
+  npc/foothillWarden . signalsTo = object/bronzeBell
+  npc/foothillWarden . soundsTremor = object/bronzeBell
+  npc/foothillWarden . state -- 2 live alternatives:
+    - world asserts "watchful"
+    - world asserts "alert"
+  npc/foothillWarden . tends -- 2 live alternatives:
+    - world asserts herd/stagfolk
+    - world asserts forest/oldroot
+  npc/foothillWarden . watchesHerd = herd/stagfolk
+  npc/foothillWarden . witnesses = mountain/ashkar
+  npc/foothillWarden . witnessesReturn = npc/herder
+  npc/forgeTender . a = NPC
+  npc/forgeTender . apprenticedTo = npc/smith
+  npc/forgeTender . apprenticesUnder = npc/smith
+  npc/forgeTender . belongsTo = culture/riverfolk
+  npc/forgeTender . carriesWork = object/firstBar
+  npc/forgeTender . craftFocus = "bronze"
+  npc/forgeTender . discovers = path/bronzework
+  npc/forgeTender . enables = ritual/seasonal
+  npc/forgeTender . guidesTo = workshop/forgeYard
+  npc/forgeTender . learnsFrom = npc/smith
+  npc/forgeTender . observes -- 2 live alternatives:
+    - world asserts mountain/ashkar
+    - world asserts object/secondBar
+  npc/forgeTender . role = "riverfolk who tends the forge-fires, learning bronzework from the highkin smith"
+  npc/forgeTender . sharesDreamOf = path/bronzework
+  npc/forgeTender . state = "learning"
+  npc/forgeTender . tends = workshop/forgeYard
+  npc/forgeTender . worksAt = workshop/forgeYard
+  npc/herder . a = Herder
+  npc/herder . apprenticedTo = npc/keeper
+  npc/herder . apprenticesUnder = npc/keeper
+  npc/herder . belongsTo = culture/riverfolk
+  npc/herder . discovers = path/greenlore
+  npc/herder . enables = ritual/seasonal
+  npc/herder . gathersAt = meadow/riverbend
+  npc/herder . guards -- 2 live alternatives:
+    - world asserts herd/aurochs
+    - world asserts herd/brindle
+  npc/herder . guidesHerdsTo = meadow/riverbend
+  npc/herder . guidesTo -- 3 live alternatives:
+    - world asserts ritual/seasonal
+    - world asserts forest/oldroot
+    - world asserts meadow/riverbend
+  npc/herder . learnsFrom = npc/tender
+  npc/herder . marks = mountain/ashkar
+  npc/herder . observes = workshop/forgeYard
+  npc/herder . role = "follows herd/aurochs through oldroot, kin to the riverfolk"
+  npc/herder . sharesWith = npc/foothillWarden
+  npc/herder . state -- 2 live alternatives:
+    - world asserts "active"
+    - world asserts "curious"
+  npc/herder . walksTo = ritual/seasonal
+  npc/herder . witnessedBy = npc/keeper
+  npc/keeper . a = Keeper
+  npc/keeper . apprenticedTo = npc/tender
+  npc/keeper . apprenticesUnder = npc/tender
+  npc/keeper . bearsWitness = mountain/ashkar
+  npc/keeper . gathersAt = meadow/riverbend
+  npc/keeper . guidesTo -- 3 live alternatives:
+    - world asserts ritual/seasonal
+    - world asserts forest/oldroot
+    - world asserts meadow/riverbend
+  npc/keeper . marks = ritual/seasonal
+  npc/keeper . role -- 2 live alternatives:
+    - world asserts "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"
+    - world asserts "guides the fleeing herds, witnesses ashkar's fury"
+  npc/keeper . state = "active"
+  npc/keeper . steadies -- 2 live alternatives:
+    - world asserts herd/stagfolk
+    - world asserts mountain/ashkar
+  npc/keeper . tends = herd/stagfolk
+  npc/mason . a = Mason
+  npc/mason . belongsTo = culture/highkin
+  npc/mason . crafts = path/stonemasonry
+  npc/mason . discovers = path/stonemasonry
+  npc/mason . hauls = mountain/ashkar
+  npc/mason . masters = npc/stonemason
+  npc/mason . processesAt = quarry/ashkarFlank
+  npc/mason . role = "cuts ashkar's stone for the highkin, kin to the quarry"
+  npc/mason . worksAt -- 2 live alternatives:
+    - world asserts mountain/ashkar
+    - world asserts quarry/ashkarFlank
+  npc/packer . a = Packer
+  npc/packer . bears = path/packroad
+  npc/packer . belongsTo = culture/riverfolk
+  npc/packer . carriesOfferingTo = ritual/seasonal
+  npc/packer . carriesSignTo -- 3 live alternatives:
+    - world asserts npc/foothillWarden
+    - world asserts ritual/seasonal
+    - world asserts workshop/forgeYard
+  npc/packer . carriesWork = object/firstBar
+  npc/packer . gathers = culture/riverfolk
+  npc/packer . harvests = path/greenlore
+  npc/packer . hauls = mountain/ashkar
+  npc/packer . observes = mountain/ashkar
+  npc/packer . role = "drives the pack-beasts between riverfolk and highkin, kin to both"
+  npc/packer . supplies -- 2 live alternatives:
+    - world asserts ritual/seasonal
+    - world asserts workshop/forgeYard
+  npc/packer . witnesses -- 2 live alternatives:
+    - world asserts herd/brindle
+    - world asserts mountain/ashkar
+  npc/seasonGuide . a = NPC
+  npc/seasonGuide . belongsTo = culture/riverfolk
+  npc/seasonGuide . craftFocus = "herding"
+  npc/seasonGuide . guidesPreparationOf = ritual/seasonal
+  npc/seasonGuide . learnsFrom = npc/herder
+  npc/seasonGuide . role = "reads the herd's movements and the mountain's tremors, preparing the seasonal rite"
+  npc/seasonGuide . state = "learning"
+  npc/seasonGuide . tends = herd/aurochs
+  npc/seasonGuide . walksTo = meadow/riverbend
+  npc/smith . a = NPC
+  npc/smith . belongsTo = culture/highkin
+  npc/smith . carriesBronze = stockpile/bronzeIngots
+  npc/smith . carriesOfferingTo = ritual/highkinRite
+  npc/smith . carriesWork = object/secondBar
+  npc/smith . craftFocus = "bronze"
+  npc/smith . crafts = path/bronzework
+  npc/smith . discovers = path/bronzework
+  npc/smith . dreamsOf = path/bronzework
+  npc/smith . forgesFor -- 2 live alternatives:
+    - world asserts npc/stonemason
+    - world asserts npc/forgeTender
+  npc/smith . learnsFrom = npc/stonemason
+  npc/smith . masters = path/bronzework
+  npc/smith . observes -- 3 live alternatives:
+    - world asserts mountain/ashkar
+    - world asserts soil/smeltTest
+    - world asserts ritual/seasonal
+  npc/smith . role = "tends the forge-fires, kin to the mason who dreams of bronze"
+  npc/smith . sharesDreamOf = path/bronzework
+  npc/smith . signalsTo = ritual/highkinRite
+  npc/smith . state -- 2 live alternatives:
+    - world asserts "learning"
+    - world asserts "practicing"
+  npc/smith . suppliesTrial = soil/smeltTest
+  npc/smith . suppliesTrialTo = soil/smeltTest
+  npc/smith . worksAt -- 2 live alternatives:
+    - world asserts mine/ninefathom
+    - world asserts workshop/forgeYard
+  npc/stonemason . a = NPC
+  npc/stonemason . apprenticesUnder = npc/smith
+  npc/stonemason . carriesBronze = stockpile/bronzeIngots
+  npc/stonemason . craftFocus = "stone"
+  npc/stonemason . discovers = path/bronzework
+  npc/stonemason . observes -- 2 live alternatives:
+    - world asserts mountain/ashkar
+    - world asserts ritual/highkinRite
+  npc/stonemason . role = "cuts ashkar's stone, dreams of the bronzework path"
+  npc/stonemason . sharesDreamOf = path/bronzework
+  npc/stonemason . state -- 2 live alternatives:
+    - world asserts "working"
+    - world asserts "seeking"
+  npc/stonemason . worksAt -- 2 live alternatives:
+    - world asserts mine/ninefathom
+    - world asserts workshop/forgeYard
+  npc/tender . a = Keeper
+  npc/tender . apprenticesUnder -- 2 live alternatives:
+    - world asserts npc/herder
+    - world asserts npc/keeper
+  npc/tender . bearsWitness = mountain/ashkar
+  npc/tender . discovers = path/greenlore
+  npc/tender . greenSign = "oldroot's edge shows blight-fire curling at the roots, a sign the keeper's ward is thinning"
+  npc/tender . guidesPreparationOf = ritual/seasonal
+  npc/tender . guidesTo = ritual/seasonal
+  npc/tender . guidesToTo = forest/oldroot
+  npc/tender . learnsFrom = npc/herder
+  npc/tender . marks = mountain/ashkar
+  npc/tender . observes = ritual/highkinRite
+  npc/tender . prepares = ritual/seasonal
+  npc/tender . purpose = "to learn the keeper's ward and read oldroot's green signs"
+  npc/tender . role = "apprentice to the keeper, learning to ward the herd and read the mountain's signs"
+  npc/tender . state = "learning"
+  npc/tender . steadies = herd/stagfolk
+  npc/tender . tends = herd/stagfolk
+  npc/tender . wards = herd/stagfolk
+  npc/tender . witnessedBy = mountain/ashkar
+  npc/vigilKeeper . a = NPC
+  npc/vigilKeeper . belongsTo = culture/riverfolk
+  npc/vigilKeeper . craftFocus = "tremor-reading"
+  npc/vigilKeeper . learnsFrom = npc/foothillWarden
+  npc/vigilKeeper . observes = mountain/ashkar
+  npc/vigilKeeper . role = "keeps the bellVigil, learning to read ashkar's tremors through the bronze bell's echoes"
+  npc/vigilKeeper . state = "learning"
+  npc/vigilKeeper . tends = site/bellVigil
+  npc/vigilKeeper . tendsVigil = site/bellVigil
+  npc/vigilKeeper . vigilFocus = "bronze echoes and mountain warnings"
+  object/bronzeBell . a = BronzeBell
+  object/bronzeBell . bellState -- 2 live alternatives:
+    - world asserts "untested"
+    - world asserts "hung"
+  object/bronzeBell . carriesTremor = mountain/ashkar
+  object/bronzeBell . hungIn = workshop/forgeYard
+  object/bronzeBell . resonatesWith = mountain/ashkar
+  object/bronzeBell . ringsFor = ritual/highkinRite
+  object/bronzeBell . suppliedWithBronze = stockpile/bronzeIngots
+  object/bronzeBell . temper -- 2 live alternatives:
+    - world asserts "soft"
+    - world asserts "tested"
+  object/bronzeBell . tendedBy = npc/forgeTender
+  object/bronzeBell . triggers = path/bronzework
+  object/firstBar . a = BronzeBar
+  object/firstBar . belongsTo -- 2 live alternatives:
+    - world asserts workshop/forgeYard
+    - world asserts ritual/highkinRite
+  object/firstBar . carriesOfferingTo = ritual/highkinRite
+  object/firstBar . mark = ritual/seasonal
+  object/firstBar . temper -- 3 live alternatives:
+    - world asserts "soft"
+    - world asserts "tested"
+    - world asserts "hard"
+  object/firstBar . trialState = "tested"
+  object/firstBar . verifies = ritual/highkinRite
+  object/secondBar . a = BronzeBar
+  object/secondBar . belongsTo = workshop/forgeYard
+  object/secondBar . carriesOfferingTo = ritual/seasonal
+  object/secondBar . temper = "hard"
+  object/secondBar . verifies = soil/smeltTest
+  path/bronzework . a = TechnicalPath
+  path/bronzework . enables = path/greenlore
+  path/bronzework . purpose = "smelting ore drawn from ninefathom into worked bronze"
+  path/bronzework . state -- 2 live alternatives:
+    - world asserts "undiscovered"
+    - world asserts "discovered"
+  path/greenlore . a = TechnicalPath
+  path/greenlore . enables = ritual/seasonal
+  path/greenlore . guards = herd/stagfolk
+  path/greenlore . purpose = "reading oldroot's plants for healing and blight-craft"
+  path/greenlore . state -- 2 live alternatives:
+    - world asserts "undiscovered"
+    - world asserts "discovered"
+  path/greenlore . wakens = forest/oldroot
+  path/packroad . a = Trail
+  path/packroad . belongsTo = culture/riverfolk
+  path/packroad . carriesOfferingTo = ritual/highkinRite
+  path/packroad . carriesSignTo -- 3 live alternatives:
+    - world asserts npc/foothillWarden
+    - world asserts object/firstBar
+    - world asserts ritual/highkinRite
+  path/packroad . carriesTidings = npc/foothillWarden
+  path/packroad . carriesTremor = mountain/ashkar
+  path/packroad . purpose = "the pack-beasts' way between riverfolk and highkin, skirting oldroot's edge"
+  path/packroad . scatters = workshop/forgeYard
+  path/packroad . trailState = "worn"
+  path/packroad . witnessedBy = npc/foothillWarden
+  path/stonemasonry . a = TechnicalPath
+  path/stonemasonry . discoveredBy = npc/mason
+  path/stonemasonry . enables = path/bronzework
+  path/stonemasonry . purpose = "cutting and setting ashkar's own stone"
+  path/stonemasonry . state -- 2 live alternatives:
+    - world asserts "undiscovered"
+    - world asserts "discovered"
+  path/stonemasonry . wakens = workshop/forgeYard
+  quarry/ashkarFlank . a = Quarry
+  quarry/ashkarFlank . extractsFrom = mountain/ashkar
+  quarry/ashkarFlank . locatedIn = mountain/ashkar
+  quarry/ashkarFlank . marks = mountain/ashkar
+  quarry/ashkarFlank . purpose = "the highkin's stone-yard, where ashkar's bones are cut and dressed"
+  quarry/ashkarFlank . state = "active"
+  ritual/highkinRite . a = Ritual
+  ritual/highkinRite . belongsTo = culture/highkin
+  ritual/highkinRite . carriesSignTo = npc/foothillWarden
+  ritual/highkinRite . converges = ritual/seasonal
+  ritual/highkinRite . harvests = npc/herder
+  ritual/highkinRite . invokes = object/bronzeBell
+  ritual/highkinRite . marks -- 2 live alternatives:
+    - world asserts mountain/ashkar
+    - world asserts object/bronzeBell
+  ritual/highkinRite . purpose = "a highkin rite held at first light, where the smith's first bronze bar is offered to ashkar's slope"
+  ritual/highkinRite . readiness = "prepared"
+  ritual/highkinRite . state -- 2 live alternatives:
+    - world asserts "preparing"
+    - world asserts "ready"
+  ritual/seasonal . a = Ritual
+  ritual/seasonal . consecrates = herd/aurochs
+  ritual/seasonal . converges -- 2 live alternatives:
+    - world asserts forest/oldroot
+    - world asserts ritual/highkinRite
+  ritual/seasonal . fallOn = forest/oldroot
+  ritual/seasonal . gatheringState = "assembled"
+  ritual/seasonal . guidesHerdsTo = meadow/riverbend
+  ritual/seasonal . guidesTo -- 2 live alternatives:
+    - world asserts forest/oldroot
+    - world asserts herd/aurochs
+  ritual/seasonal . harvests = herd/aurochs
+  ritual/seasonal . offeringState -- 2 live alternatives:
+    - world asserts "gathering"
+    - world asserts "assembled"
+  ritual/seasonal . offeringsGathered -- 2 live alternatives:
+    - world asserts 1
+    - world asserts 2
+  ritual/seasonal . purpose = "marks the turning of the herds, honoring the river's path"
+  ritual/seasonal . ritualState -- 2 live alternatives:
+    - world asserts "preparing"
+    - world asserts "ready"
+  ritual/seasonal . state -- 2 live alternatives:
+    - world asserts "preparing"
+    - world asserts "ready"
+  site/bellVigil . a = Site
+  site/bellVigil . convergesAt = ritual/seasonal
+  site/bellVigil . echoes = object/bronzeBell
+  site/bellVigil . locatedIn = path/packroad
+  site/bellVigil . purpose = "a high ledge where the bronze bell's tremor-echoes are first heard, where packroad tidings and mountain warnings meet"
+  site/bellVigil . receivesTidingsFrom = npc/packer
+  site/bellVigil . signalsTo = npc/foothillWarden
+  site/bellVigil . tendedBy = npc/vigilKeeper
+  site/bellVigil . vigilState = "active"
+  site/bellVigil . witnesses = mountain/ashkar
+  site/wayRest . a = Site
+  site/wayRest . carriesOfferingTo = ritual/highkinRite
+  site/wayRest . locatedIn = path/packroad
+  site/wayRest . purpose = "a lean-to where pack-beasts rest between riverfolk and highkin, where tidings and tremors both pass through"
+  site/wayRest . shelters = npc/packer
+  site/wayRest . signalsTo = npc/seasonGuide
+  site/wayRest . state = "active"
+  soil/smeltTest . a = PracticeStone
+  soil/smeltTest . belongsTo = workshop/forgeYard
+  soil/smeltTest . marks = mountain/ashkar
+  soil/smeltTest . trialNote -- 2 live alternatives:
+    - world asserts "first bar, soft temper, awaiting the mountain's word"
+    - world asserts "first bar tested against ashkar's faint tremor, temper holds"
+  soil/smeltTest . trialState -- 2 live alternatives:
+    - world asserts "untested"
+    - world asserts "tested"
+  soil/smeltTest . triggers = path/bronzework
+  stockpile/bronzeIngots . a = Stockpile
+  stockpile/bronzeIngots . locatedIn = mine/ninefathom
+  stockpile/bronzeIngots . purpose = " raw bronze from ninefathom's first fires, scarce and precious"
+  stockpile/bronzeIngots . stockLevel -- 3 live alternatives:
+    - world asserts "low"
+    - world asserts "depleted"
+    - world asserts "moderate"
+  stockpile/bronzeIngots . suppliesTrial = soil/smeltTest
+  stockpile/stoneBlocks . a = Stockpile
+  stockpile/stoneBlocks . locatedIn = quarry/ashkarFlank
+  stockpile/stoneBlocks . purpose = " dressed stone from ashkarFlank, awaiting the mason's hand or the packer's road"
+  stockpile/stoneBlocks . sharesShelfWith -- 2 live alternatives:
+    - world asserts stockpile/bronzeIngots
+    - world asserts object/firstBar
+  stockpile/stoneBlocks . stockLevel = "moderate"
+  workshop/forgeYard . a = Workshop
+  workshop/forgeYard . anchors = path/bronzework
+  workshop/forgeYard . focus = "bronze and stone together"
+  workshop/forgeYard . foundedBy = npc/stonemason
+  workshop/forgeYard . guidesPreparationOf = ritual/highkinRite
+  workshop/forgeYard . locatedIn = quarry/ashkarFlank
+  workshop/forgeYard . offersBronze -- 2 live alternatives:
+    - world asserts object/firstBar
+    - world asserts object/secondBar
+  workshop/forgeYard . operatedBy = npc/smith
+  workshop/forgeYard . purpose -- 2 live alternatives:
+    - world asserts "a new yard between stone-cut and forge-fire, where the bronzework path may root in ashkar's bones"
+    - world asserts "a yard where stone-cut meets forge-fire, testing bronze against ashkar's tremor"
+  workshop/forgeYard . sharesShelfWith = stockpile/bronzeIngots
+  workshop/forgeYard . sharesWith -- 2 live alternatives:
+    - world asserts path/stonemasonry
+    - world asserts object/firstBar
+  workshop/forgeYard . signalsTo = quarry/ashkarFlank
+  workshop/forgeYard . state -- 2 live alternatives:
+    - world asserts "building"
+    - world asserts "active"
+  workshop/forgeYard . storesFor = soil/smeltTest
+  workshop/forgeYard . suppliedWithBronze = stockpile/bronzeIngots
+  workshop/forgeYard . suppliedWithStone = stockpile/stoneBlocks
+  workshop/forgeYard . supplies = culture/riverfolk
+  workshop/forgeYard . triggers = path/bronzework

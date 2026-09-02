@@ -1,281 +1,796 @@
-=== worktree-sync endurance test: 4 agents (kimi, deepseek, mercury, deepseek2), up to 20 rounds, hub topology via hooks, workdir=/tmp/endurance-worktree-sync-6kfg26pu ===
+=== worktree-sync endurance test: 4 agents (kimi, deepseek, mercury, deepseek2), target=200 commits (safety caps: 60 rounds / 14400s / 8000000 tokens), hub topology via hooks, workdir=/tmp/endurance-worktree-sync-69inv3we ===
+  entropy sidecar started (pid 3015), watching /tmp/endurance-worktree-sync-69inv3we/canonical/commits every 10s
 
---- round 1 ---
-  [kimi] corner: 6 node(s), own worktree has 11 file(s)
+--- round 1 --- (commits so far: 0/200, tokens so far: 0, elapsed: 0s)
+  [kimi] corner: 0 node(s), own worktree has 12 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (machine)
+    [kimi] DONE after 2 commit(s)
+    [kimi] committed 0013-r1-kimi-commit.dmml
+    [kimi] committed 0014-r1-kimi-machine.dmml
+  [deepseek] corner: 0 node(s), own worktree has 12 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek-2.dmml: REJECTED
+<surface>:13:35:
+   |
+13 |   herd/brindle . state = "grazing"
+   |                                   ^
+dup
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] committed 0013-r1-deepseek-commit.dmml
+    [deepseek] committed 0014-r1-deepseek-commit.dmml
+    [deepseek] committed 0015-r1-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 12 file(s)
+    [mercury] no fenced content, treating as stop
+  [deepseek2] corner: 0 node(s), own worktree has 12 file(s)
+    [deepseek2] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek2-1.dmml: REJECTED
+<surface>:2:12:
+  |
+2 |   relation tradesWith
+  |            ^^
+unexpected "tr"
+expecting "::", '.', or '
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek2-4.dmml: REJECTED
+<surface>:6:42:
+  |
+6 |   path/stonemasonry . state = "practiced"
+  |                                    
+    [deepseek2] committed 0013-r1-deepseek2-commit.dmml
+    [deepseek2] committed 0014-r1-deepseek2-commit.dmml
+  round 1 authoring totals: valid=7 invalid=3 attempts=11 fail_rate=0.27 (cumulative commits: 7/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 1 pair(s) still live/unresolved
+
+--- round 2 --- (commits so far: 7/200, tokens so far: 58394, elapsed: 65s)
+  [kimi] corner: 0 node(s), own worktree has 19 file(s)
     [kimi] attempt 1: accepted (commit)
     [kimi] attempt 2: accepted (commit)
     [kimi] attempt 3: accepted (commit)
     [kimi] attempt 4: accepted (commit)
-    [kimi] committed 0012-r1-kimi-commit.dmml
-    [kimi] committed 0013-r1-kimi-commit.dmml
-    [kimi] committed 0014-r1-kimi-commit.dmml
-    [kimi] committed 0015-r1-kimi-commit.dmml
-  [deepseek] corner: 6 node(s), own worktree has 11 file(s)
+    [kimi] committed 0020-r2-kimi-commit.dmml
+    [kimi] committed 0021-r2-kimi-commit.dmml
+    [kimi] committed 0022-r2-kimi-commit.dmml
+    [kimi] committed 0023-r2-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 19 file(s)
     [deepseek] attempt 1: accepted (commit)
-    [deepseek] attempt 2: accepted (machine)
-    [deepseek] attempt 3: accepted (commit)
-    [deepseek] attempt 4: accepted (machine)
-    [deepseek] committed 0012-r1-deepseek-commit.dmml
-    [deepseek] committed 0013-r1-deepseek-machine.dmml
-    [deepseek] committed 0014-r1-deepseek-commit.dmml
-    [deepseek] committed 0015-r1-deepseek-machine.dmml
-  [mercury] corner: 5 node(s), own worktree has 11 file(s)
-    [mercury] no fenced content, treating as stop
-  [deepseek2] corner: 5 node(s), own worktree has 11 file(s)
-    [deepseek2] attempt 1: accepted (commit)
-    [deepseek2] attempt 2: accepted (commit)
-    [deepseek2] attempt 3: accepted (commit)
-    [deepseek2] DONE after 3 commit(s)
-    [deepseek2] committed 0012-r1-deepseek2-commit.dmml
-    [deepseek2] committed 0013-r1-deepseek2-commit.dmml
-    [deepseek2] committed 0014-r1-deepseek2-commit.dmml
-  round 1 authoring totals: valid=11 invalid=0 attempts=12 fail_rate=0.00
-  hub sync (4 hook-merge.sh calls into canonical)...
-    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek2: ACCEPTED, 2 contest(s) minted
-
---- round 2 ---
-  [kimi] corner: 8 node(s), own worktree has 26 file(s)
-    [kimi] attempt 1: accepted (commit)
-    [kimi] attempt 2: accepted (commit)
-    [kimi] DONE after 2 commit(s)
-    [kimi] committed 0027-r2-kimi-commit.dmml
-    [kimi] committed 0028-r2-kimi-commit.dmml
-  [deepseek] corner: 7 node(s), own worktree has 26 file(s)
-    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek-1.dmml: REJECTED
-<surface>:2:11:
-  |
-2 |   declare actor npc/riverward
-  |           ^^^^^^^^^
-unexpected "actor npc"
-expec
-    [deepseek] attempt 2: accepted (commit)
-    [deepseek] attempt 3: accepted (commit)
-    [deepseek] attempt 4: accepted (machine)
-    [deepseek] committed 0027-r2-deepseek-commit.dmml
-    [deepseek] committed 0028-r2-deepseek-commit.dmml
-    [deepseek] committed 0029-r2-deepseek-machine.dmml
-  [mercury] corner: 7 node(s), own worktree has 26 file(s)
-    [mercury] no fenced content, treating as stop
-  [deepseek2] corner: 7 node(s), own worktree has 26 file(s)
-    [deepseek2] attempt 1: accepted (commit)
-    [deepseek2] DONE after 1 commit(s)
-    [deepseek2] committed 0027-r2-deepseek2-commit.dmml
-  round 2 authoring totals: valid=6 invalid=1 attempts=8 fail_rate=0.12
-  hub sync (4 hook-merge.sh calls into canonical)...
-    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek2: ACCEPTED, no divergence
-
---- round 3 ---
-  [kimi] corner: 8 node(s), own worktree has 32 file(s)
-    [kimi] attempt 1: accepted (commit)
-    [kimi] attempt 2: accepted (commit)
-    [kimi] attempt 3: accepted (commit)
-    [kimi] attempt 4: accepted (machine)
-    [kimi] committed 0033-r3-kimi-commit.dmml
-    [kimi] committed 0034-r3-kimi-commit.dmml
-    [kimi] committed 0035-r3-kimi-commit.dmml
-    [kimi] committed 0036-r3-kimi-machine.dmml
-  [deepseek] corner: 8 node(s), own worktree has 32 file(s)
-    [deepseek] attempt 1: accepted (commit)
-    [deepseek] attempt 2: accepted (commit)
-    [deepseek] attempt 3: accepted (commit)
-    [deepseek] no fenced content, treating as stop
-    [deepseek] committed 0033-r3-deepseek-commit.dmml
-    [deepseek] committed 0034-r3-deepseek-commit.dmml
-    [deepseek] committed 0035-r3-deepseek-commit.dmml
-  [mercury] corner: 7 node(s), own worktree has 32 file(s)
+    [deepseek] DONE after 1 commit(s)
+    [deepseek] committed 0020-r2-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 19 file(s)
     [mercury] attempt 1: accepted (commit)
     [mercury] attempt 2: accepted (commit)
     [mercury] attempt 3: accepted (commit)
     [mercury] DONE after 3 commit(s)
-    [mercury] committed 0033-r3-mercury-commit.dmml
-    [mercury] committed 0034-r3-mercury-commit.dmml
-    [mercury] committed 0035-r3-mercury-commit.dmml
-  [deepseek2] corner: 7 node(s), own worktree has 32 file(s)
+    [mercury] committed 0020-r2-mercury-commit.dmml
+    [mercury] committed 0021-r2-mercury-commit.dmml
+    [mercury] committed 0022-r2-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 19 file(s)
     [deepseek2] attempt 1: accepted (commit)
-    [deepseek2] attempt 2: accepted (machine)
-    [deepseek2] attempt 3: accepted (commit)
-    [deepseek2] DONE after 3 commit(s)
-    [deepseek2] committed 0033-r3-deepseek2-commit.dmml
-    [deepseek2] committed 0034-r3-deepseek2-machine.dmml
-    [deepseek2] committed 0035-r3-deepseek2-commit.dmml
-  round 3 authoring totals: valid=13 invalid=0 attempts=14 fail_rate=0.00
-  hub sync (4 hook-merge.sh calls into canonical)...
-    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
-    [sync] canonical <- agent/mercury: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek2: ACCEPTED, no divergence
-
---- round 4 ---
-  [kimi] corner: 8 node(s), own worktree has 45 file(s)
-    [kimi] attempt 1: accepted (commit)
-    [kimi] attempt 2: accepted (commit)
-    [kimi] no fenced content, treating as stop
-    [kimi] committed 0046-r4-kimi-commit.dmml
-    [kimi] committed 0047-r4-kimi-commit.dmml
-  [deepseek] corner: 8 node(s), own worktree has 45 file(s)
-    [deepseek] attempt 1: accepted (machine)
-    [deepseek] DONE after 1 commit(s)
-    [deepseek] committed 0046-r4-deepseek-machine.dmml
-  [mercury] corner: 8 node(s), own worktree has 45 file(s)
-    [mercury] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-mercury-1.dmml: REJECTED
-<surface>:3:13:
+    [deepseek2] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek2-2.dmml: REJECTED
+<surface>:7:43:
   |
-3 |   attribute rite
-  |             ^^
-unexpected "ri"
-expecting "::", '.', '`', or en
-    [mercury] attempt 2: accepted (commit)
-    [mercury] DONE after 1 commit(s)
-    [mercury] committed 0046-r4-mercury-commit.dmml
-  [deepseek2] corner: 8 node(s), own worktree has 45 file(s)
-    [deepseek2] attempt 1: accepted (commit)
-    [deepseek2] attempt 2: accepted (machine)
+7 |   culture/riverfolk . gathers = npc/tender
+  |                                   
     [deepseek2] attempt 3: accepted (commit)
-    [deepseek2] DONE after 3 commit(s)
-    [deepseek2] committed 0046-r4-deepseek2-commit.dmml
-    [deepseek2] committed 0047-r4-deepseek2-machine.dmml
-    [deepseek2] committed 0048-r4-deepseek2-commit.dmml
-  round 4 authoring totals: valid=7 invalid=1 attempts=9 fail_rate=0.11
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0020-r2-deepseek2-commit.dmml
+    [deepseek2] committed 0021-r2-deepseek2-commit.dmml
+    [deepseek2] committed 0022-r2-deepseek2-commit.dmml
+  round 2 authoring totals: valid=11 invalid=1 attempts=12 fail_rate=0.08 (cumulative commits: 18/200)
   hub sync (4 hook-merge.sh calls into canonical)...
-    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
-    [sync] canonical <- agent/mercury: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek2: ACCEPTED, no divergence
+    [sync] canonical <- agent/kimi: ACCEPTED, 3 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek: ACCEPTED, 3 pair(s) still live/unresolved
+    [sync] canonical <- agent/mercury: ACCEPTED, 9 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 9 pair(s) still live/unresolved
 
---- round 5 ---
-  [kimi] corner: 9 node(s), own worktree has 52 file(s)
+--- round 3 --- (commits so far: 18/200, tokens so far: 142427, elapsed: 97s)
+  [kimi] corner: 0 node(s), own worktree has 30 file(s)
     [kimi] attempt 1: accepted (commit)
-    [kimi] attempt 2: accepted (commit)
-    [kimi] DONE after 2 commit(s)
-    [kimi] committed 0053-r5-kimi-commit.dmml
-    [kimi] committed 0054-r5-kimi-commit.dmml
-  [deepseek] corner: 9 node(s), own worktree has 52 file(s)
+    [kimi] attempt 2: accepted (machine)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-kimi-4.dmml: REJECTED
+<surface>:1:1:
+  |
+1 | machine quarry/ashkarFlank
+  | ^^^^^^
+unexpected "machin"
+expecting "commit"
+    [kimi] committed 0031-r3-kimi-commit.dmml
+    [kimi] committed 0032-r3-kimi-machine.dmml
+    [kimi] committed 0033-r3-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 30 file(s)
     [deepseek] attempt 1: accepted (commit)
-    [deepseek] attempt 2: accepted (commit)
-    [deepseek] attempt 3: accepted (commit)
-    [deepseek] DONE after 3 commit(s)
-    [deepseek] committed 0053-r5-deepseek-commit.dmml
-    [deepseek] committed 0054-r5-deepseek-commit.dmml
-    [deepseek] committed 0055-r5-deepseek-commit.dmml
-  [mercury] corner: 8 node(s), own worktree has 52 file(s)
-    [mercury] no fenced content, treating as stop
-  [deepseek2] corner: 8 node(s), own worktree has 52 file(s)
-    [deepseek2] attempt 1: accepted (commit)
-    [deepseek2] attempt 2: accepted (commit)
-    [deepseek2] attempt 3: accepted (machine)
-    [deepseek2] DONE after 3 commit(s)
-    [deepseek2] committed 0053-r5-deepseek2-commit.dmml
-    [deepseek2] committed 0054-r5-deepseek2-commit.dmml
-    [deepseek2] committed 0055-r5-deepseek2-machine.dmml
-  round 5 authoring totals: valid=8 invalid=0 attempts=9 fail_rate=0.00
-  hub sync (4 hook-merge.sh calls into canonical)...
-    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek2: ACCEPTED, no divergence
-
---- round 6 ---
-  [kimi] corner: 9 node(s), own worktree has 60 file(s)
-    [kimi] attempt 1: accepted (commit)
-    [kimi] attempt 2: accepted (commit)
-    [kimi] DONE after 2 commit(s)
-    [kimi] committed 0061-r6-kimi-commit.dmml
-    [kimi] committed 0062-r6-kimi-commit.dmml
-  [deepseek] corner: 9 node(s), own worktree has 60 file(s)
-    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek-1.dmml: REJECTED
-<surface>:19:39:
-   |
-19 |   path/stonemasonry . state = mastered
-   |                                    
     [deepseek] attempt 2: accepted (commit)
     [deepseek] attempt 3: accepted (commit)
     [deepseek] attempt 4: accepted (commit)
-    [deepseek] committed 0061-r6-deepseek-commit.dmml
-    [deepseek] committed 0062-r6-deepseek-commit.dmml
-    [deepseek] committed 0063-r6-deepseek-commit.dmml
-  [mercury] corner: 8 node(s), own worktree has 60 file(s)
-    [mercury] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-mercury-1.dmml: REJECTED
-<surface>:4:13:
+    [deepseek] committed 0031-r3-deepseek-commit.dmml
+    [deepseek] committed 0032-r3-deepseek-commit.dmml
+    [deepseek] committed 0033-r3-deepseek-commit.dmml
+    [deepseek] committed 0034-r3-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 30 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-mercury-2.dmml: REJECTED
+<surface>:3:13:
   |
-4 |   attribute craft
+3 |   attribute tremorIntensity
   |             ^^
-unexpected "cr"
-expecting "::", '.', '`', or e
+unexpected "tr"
+expecting "::", '.',
+    [mercury] attempt 3: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] committed 0031-r3-mercury-commit.dmml
+    [mercury] committed 0032-r3-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 30 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0031-r3-deepseek2-commit.dmml
+    [deepseek2] committed 0032-r3-deepseek2-commit.dmml
+    [deepseek2] committed 0033-r3-deepseek2-commit.dmml
+    [deepseek2] committed 0034-r3-deepseek2-commit.dmml
+  round 3 authoring totals: valid=13 invalid=2 attempts=15 fail_rate=0.13 (cumulative commits: 31/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, 2 pair(s) still live/unresolved
+    [sync] canonical <- agent/mercury: ACCEPTED, 3 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 3 pair(s) still live/unresolved
+
+--- round 4 --- (commits so far: 31/200, tokens so far: 263252, elapsed: 167s)
+  [kimi] corner: 0 node(s), own worktree has 43 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] committed 0044-r4-kimi-commit.dmml
+    [kimi] committed 0045-r4-kimi-commit.dmml
+    [kimi] committed 0046-r4-kimi-commit.dmml
+    [kimi] committed 0047-r4-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 43 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] committed 0044-r4-deepseek-commit.dmml
+    [deepseek] committed 0045-r4-deepseek-commit.dmml
+    [deepseek] committed 0046-r4-deepseek-commit.dmml
+    [deepseek] committed 0047-r4-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 43 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] DONE after 1 commit(s)
+    [mercury] committed 0044-r4-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 43 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek2-3.dmml: REJECTED
+<surface>:1:1:
+  |
+1 | machine mountain/ashkar
+  | ^^^^^^
+unexpected "machin"
+expecting "commit"
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0044-r4-deepseek2-commit.dmml
+    [deepseek2] committed 0045-r4-deepseek2-commit.dmml
+    [deepseek2] committed 0046-r4-deepseek2-commit.dmml
+  round 4 authoring totals: valid=12 invalid=1 attempts=13 fail_rate=0.08 (cumulative commits: 43/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
+    [sync] canonical <- agent/mercury: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 3 pair(s) still live/unresolved
+
+--- round 5 --- (commits so far: 43/200, tokens so far: 382463, elapsed: 256s)
+  [kimi] corner: 0 node(s), own worktree has 55 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-kimi-2.dmml: REJECTED
+<surface>:11:42:
+   |
+11 |   ritual/seasonal . ritualState = "ready"
+   |                                     
+    [kimi] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-kimi-3.dmml: REJECTED
+<surface>:11:42:
+   |
+11 |   ritual/seasonal . ritualState = "ready"
+   |                                     
+    [kimi] committed 0056-r5-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 55 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] committed 0056-r5-deepseek-commit.dmml
+    [deepseek] committed 0057-r5-deepseek-commit.dmml
+    [deepseek] committed 0058-r5-deepseek-commit.dmml
+    [deepseek] committed 0059-r5-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 55 file(s)
+    [mercury] attempt 1: accepted (commit)
     [mercury] attempt 2: accepted (commit)
-    [mercury] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-mercury-3.dmml: REJECTED
-<surface>:4:13:
+    [mercury] DONE after 2 commit(s)
+    [mercury] committed 0056-r5-mercury-commit.dmml
+    [mercury] committed 0057-r5-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 55 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] DONE after 2 commit(s)
+    [deepseek2] committed 0056-r5-deepseek2-commit.dmml
+    [deepseek2] committed 0057-r5-deepseek2-commit.dmml
+  round 5 authoring totals: valid=9 invalid=2 attempts=11 fail_rate=0.18 (cumulative commits: 52/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
+    [sync] canonical <- agent/mercury: ACCEPTED, 1 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 1 pair(s) still live/unresolved
+
+--- round 6 --- (commits so far: 52/200, tokens so far: 496590, elapsed: 351s)
+  [kimi] corner: 0 node(s), own worktree has 64 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-kimi-4.dmml: REJECTED
+<surface>:1:1:
   |
-4 |   attribute craft
-  |             ^^
-unexpected "cr"
-expecting "::", '.', '`', or e
-    [mercury] committed 0061-r6-mercury-commit.dmml
-  [deepseek2] corner: 8 node(s), own worktree has 60 file(s)
-    [deepseek2] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek2-1.dmml: REJECTED
-<surface>:2:10:
+1 | machine ritual/seasonal
+  | ^^^^^^
+unexpected "machin"
+expecting "commit"
+    [kimi] committed 0065-r6-kimi-commit.dmml
+    [kimi] committed 0066-r6-kimi-commit.dmml
+    [kimi] committed 0067-r6-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 64 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] DONE after 2 commit(s)
+    [deepseek] committed 0065-r6-deepseek-commit.dmml
+    [deepseek] committed 0066-r6-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 64 file(s)
+    [mercury] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-mercury-1.dmml: REJECTED
+<surface>:10:57:
+   |
+10 |   mountain/ashkar . tremorsObserved = npc/foothillWarden
+   |                   
+    [mercury] attempt 2: accepted (commit)
+    [mercury] attempt 3: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] committed 0065-r6-mercury-commit.dmml
+    [mercury] committed 0066-r6-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 64 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0065-r6-deepseek2-commit.dmml
+    [deepseek2] committed 0066-r6-deepseek2-commit.dmml
+    [deepseek2] committed 0067-r6-deepseek2-commit.dmml
+    [deepseek2] committed 0068-r6-deepseek2-commit.dmml
+  round 6 authoring totals: valid=11 invalid=2 attempts=13 fail_rate=0.15 (cumulative commits: 63/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, 2 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek: ACCEPTED, 2 pair(s) still live/unresolved
+    [sync] canonical <- agent/mercury: ACCEPTED, 5 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 5 pair(s) still live/unresolved
+
+--- round 7 --- (commits so far: 63/200, tokens so far: 650337, elapsed: 466s)
+  [kimi] corner: 0 node(s), own worktree has 75 file(s)
+    [kimi] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-kimi-1.dmml: REJECTED
+<surface>:18:48:
+   |
+18 |   npc/stonemason . worksAt = workshop/forgeYard
+   |                               
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (machine)
+    [kimi] committed 0076-r7-kimi-commit.dmml
+    [kimi] committed 0077-r7-kimi-commit.dmml
+    [kimi] committed 0078-r7-kimi-machine.dmml
+  [deepseek] corner: 0 node(s), own worktree has 75 file(s)
+    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek-1.dmml: REJECTED
+<surface>:8:47:
   |
-2 |   assert path/greenlore . state = "mastered"
-  |          ^^
-unexpected "pa"
-expe
-    [deepseek2] attempt 2: accepted (machine)
+8 |   npc/packer `bringsWordOf` npc/foothillWarden
+  |                                
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] committed 0076-r7-deepseek-commit.dmml
+    [deepseek] committed 0077-r7-deepseek-commit.dmml
+    [deepseek] committed 0078-r7-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 75 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] dispatch error: unexpected response: {'id': 'gen-1788357684-G0MOwavh0NHagZ5pGVO6', 'error': {'message': "Upstream error from Inception: I'm sorry, but I can't help with that request.", 'code': 502}}
+    [mercury] committed 0076-r7-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 75 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
     [deepseek2] attempt 3: accepted (machine)
-    [deepseek2] attempt 4: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek2-4.dmml: REJECTED
-<surface>:2:10:
+    [deepseek2] DONE after 3 commit(s)
+    [deepseek2] committed 0076-r7-deepseek2-commit.dmml
+    [deepseek2] committed 0077-r7-deepseek2-commit.dmml
+    [deepseek2] committed 0078-r7-deepseek2-machine.dmml
+  round 7 authoring totals: valid=10 invalid=2 attempts=12 fail_rate=0.17 (cumulative commits: 73/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
+    [sync] canonical <- agent/mercury: ACCEPTED, 1 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 1 pair(s) still live/unresolved
+
+--- round 8 --- (commits so far: 73/200, tokens so far: 784843, elapsed: 618s)
+  [kimi] corner: 0 node(s), own worktree has 85 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] committed 0086-r8-kimi-commit.dmml
+    [kimi] committed 0087-r8-kimi-commit.dmml
+    [kimi] committed 0088-r8-kimi-commit.dmml
+    [kimi] committed 0089-r8-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 85 file(s)
+    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek-1.dmml: REJECTED
+<surface>:5:23:
   |
-2 |   assert culture/riverfolk . tradesWith = culture/highkin
-  |          ^^
-unexpec
-    [deepseek2] committed 0061-r6-deepseek2-machine.dmml
-    [deepseek2] committed 0062-r6-deepseek2-machine.dmml
-  round 6 authoring totals: valid=8 invalid=5 attempts=13 fail_rate=0.38
+5 |   workshop/forgeYard `. sharesStock = workshop/forgeYard
+  |                      
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] committed 0086-r8-deepseek-commit.dmml
+    [deepseek] committed 0087-r8-deepseek-commit.dmml
+    [deepseek] committed 0088-r8-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 85 file(s)
+    [mercury] no fenced content, treating as stop
+  [deepseek2] corner: 0 node(s), own worktree has 85 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0086-r8-deepseek2-commit.dmml
+    [deepseek2] committed 0087-r8-deepseek2-commit.dmml
+    [deepseek2] committed 0088-r8-deepseek2-commit.dmml
+    [deepseek2] committed 0089-r8-deepseek2-commit.dmml
+  round 8 authoring totals: valid=11 invalid=1 attempts=13 fail_rate=0.08 (cumulative commits: 84/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 1 pair(s) still live/unresolved
+
+--- round 9 --- (commits so far: 84/200, tokens so far: 935765, elapsed: 699s)
+  [kimi] corner: 0 node(s), own worktree has 96 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] committed 0097-r9-kimi-commit.dmml
+    [kimi] committed 0098-r9-kimi-commit.dmml
+    [kimi] committed 0099-r9-kimi-commit.dmml
+    [kimi] committed 0100-r9-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 96 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] DONE after 2 commit(s)
+    [deepseek] committed 0097-r9-deepseek-commit.dmml
+    [deepseek] committed 0098-r9-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 96 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-mercury-2.dmml: REJECTED
+<surface>:3:13:
+  |
+3 |   attribute offeringState
+  |             ^^
+unexpected "of"
+expecting "::", '.', '
+    [mercury] attempt 3: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] committed 0097-r9-mercury-commit.dmml
+    [mercury] committed 0098-r9-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 96 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0097-r9-deepseek2-commit.dmml
+    [deepseek2] committed 0098-r9-deepseek2-commit.dmml
+    [deepseek2] committed 0099-r9-deepseek2-commit.dmml
+    [deepseek2] committed 0100-r9-deepseek2-commit.dmml
+  round 9 authoring totals: valid=12 invalid=1 attempts=13 fail_rate=0.08 (cumulative commits: 96/200)
   hub sync (4 hook-merge.sh calls into canonical)...
     [sync] canonical <- agent/kimi: ACCEPTED, no divergence
     [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
     [sync] canonical <- agent/mercury: ACCEPTED, no divergence
     [sync] canonical <- agent/deepseek2: ACCEPTED, no divergence
 
---- round 7 ---
-  [kimi] corner: 10 node(s), own worktree has 68 file(s)
+--- round 10 --- (commits so far: 96/200, tokens so far: 1129407, elapsed: 740s)
+  [kimi] corner: 0 node(s), own worktree has 108 file(s)
     [kimi] attempt 1: accepted (commit)
     [kimi] attempt 2: accepted (commit)
-    [kimi] DONE after 2 commit(s)
-    [kimi] committed 0069-r7-kimi-commit.dmml
-    [kimi] committed 0070-r7-kimi-commit.dmml
-  [deepseek] corner: 9 node(s), own worktree has 68 file(s)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] DONE after 3 commit(s)
+    [kimi] committed 0109-r10-kimi-commit.dmml
+    [kimi] committed 0110-r10-kimi-commit.dmml
+    [kimi] committed 0111-r10-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 108 file(s)
     [deepseek] attempt 1: accepted (commit)
-    [deepseek] attempt 2: accepted (machine)
+    [deepseek] attempt 2: accepted (commit)
     [deepseek] attempt 3: accepted (commit)
-    [deepseek] DONE after 3 commit(s)
-    [deepseek] committed 0069-r7-deepseek-commit.dmml
-    [deepseek] committed 0070-r7-deepseek-machine.dmml
-    [deepseek] committed 0071-r7-deepseek-commit.dmml
-  [mercury] corner: 9 node(s), own worktree has 68 file(s)
-    [mercury] attempt 1: accepted (commit)
-    [mercury] DONE after 1 commit(s)
-    [mercury] committed 0069-r7-mercury-commit.dmml
-  [deepseek2] corner: 9 node(s), own worktree has 68 file(s)
-    [deepseek2] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek2-1.dmml: REJECTED
-<surface>:2:12:
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] committed 0109-r10-deepseek-commit.dmml
+    [deepseek] committed 0110-r10-deepseek-commit.dmml
+    [deepseek] committed 0111-r10-deepseek-commit.dmml
+    [deepseek] committed 0112-r10-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 108 file(s)
+    [mercury] no fenced content, treating as stop
+  [deepseek2] corner: 0 node(s), own worktree has 108 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (machine)
+    [deepseek2] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek2-3.dmml: REJECTED
+<surface>:1:1:
   |
-2 |   relation heals
-  |            ^^
-unexpected "he"
-expecting "::", '.', or '`'
+1 | soil/smeltTest . trialState = "untested"
+  | ^^^^^^
+unexpected "soil/s"
+expecting 
+    [deepseek2] attempt 4: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek2-4.dmml: REJECTED
+<surface>:1:1:
+  |
+1 | declare attribute purpose
+  | ^^^^^^
+unexpected "declar"
+expecting "commit"
+    [deepseek2] committed 0109-r10-deepseek2-commit.dmml
+    [deepseek2] committed 0110-r10-deepseek2-machine.dmml
+  round 10 authoring totals: valid=9 invalid=2 attempts=12 fail_rate=0.17 (cumulative commits: 105/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, 1 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 1 pair(s) still live/unresolved
+
+--- round 11 --- (commits so far: 105/200, tokens so far: 1312780, elapsed: 883s)
+  [kimi] corner: 0 node(s), own worktree has 117 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] committed 0118-r11-kimi-commit.dmml
+    [kimi] committed 0119-r11-kimi-commit.dmml
+    [kimi] committed 0120-r11-kimi-commit.dmml
+    [kimi] committed 0121-r11-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 117 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] committed 0118-r11-deepseek-commit.dmml
+    [deepseek] committed 0119-r11-deepseek-commit.dmml
+    [deepseek] committed 0120-r11-deepseek-commit.dmml
+    [deepseek] committed 0121-r11-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 117 file(s)
+    [mercury] no fenced content, treating as stop
+  [deepseek2] corner: 0 node(s), own worktree has 117 file(s)
+    [deepseek2] attempt 1: accepted (commit)
     [deepseek2] attempt 2: accepted (commit)
     [deepseek2] attempt 3: accepted (commit)
     [deepseek2] attempt 4: accepted (commit)
-    [deepseek2] committed 0069-r7-deepseek2-commit.dmml
-    [deepseek2] committed 0070-r7-deepseek2-commit.dmml
-    [deepseek2] committed 0071-r7-deepseek2-commit.dmml
-  round 7 authoring totals: valid=9 invalid=1 attempts=10 fail_rate=0.10
+    [deepseek2] committed 0118-r11-deepseek2-commit.dmml
+    [deepseek2] committed 0119-r11-deepseek2-commit.dmml
+    [deepseek2] committed 0120-r11-deepseek2-commit.dmml
+    [deepseek2] committed 0121-r11-deepseek2-commit.dmml
+  round 11 authoring totals: valid=12 invalid=0 attempts=13 fail_rate=0.00 (cumulative commits: 117/200)
   hub sync (4 hook-merge.sh calls into canonical)...
     [sync] canonical <- agent/kimi: ACCEPTED, no divergence
-    [sync] canonical <- agent/deepseek: ACCEPTED, 1 contest(s) minted
+    [sync] canonical <- agent/deepseek: ACCEPTED, 2 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 2 pair(s) still live/unresolved
+
+--- round 12 --- (commits so far: 117/200, tokens so far: 1521602, elapsed: 995s)
+  [kimi] corner: 0 node(s), own worktree has 129 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-kimi-2.dmml: REJECTED
+<surface>:6:1:
+  |
+6 | machine ritual/seasonal
+  | ^
+unexpected 'm'
+expecting end of input
+    [kimi] attempt 3: accepted (machine)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] committed 0130-r12-kimi-commit.dmml
+    [kimi] committed 0131-r12-kimi-machine.dmml
+    [kimi] committed 0132-r12-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 129 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] DONE after 3 commit(s)
+    [deepseek] committed 0130-r12-deepseek-commit.dmml
+    [deepseek] committed 0131-r12-deepseek-commit.dmml
+    [deepseek] committed 0132-r12-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 129 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: accepted (commit)
+    [mercury] attempt 3: accepted (commit)
+    [mercury] DONE after 3 commit(s)
+    [mercury] committed 0130-r12-mercury-commit.dmml
+    [mercury] committed 0131-r12-mercury-commit.dmml
+    [mercury] committed 0132-r12-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 129 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] DONE after 3 commit(s)
+    [deepseek2] committed 0130-r12-deepseek2-commit.dmml
+    [deepseek2] committed 0131-r12-deepseek2-commit.dmml
+    [deepseek2] committed 0132-r12-deepseek2-commit.dmml
+  round 12 authoring totals: valid=12 invalid=1 attempts=13 fail_rate=0.08 (cumulative commits: 129/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, 1 pair(s) still live/unresolved
+    [sync] canonical <- agent/mercury: ACCEPTED, 1 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 1 pair(s) still live/unresolved
+
+--- round 13 --- (commits so far: 129/200, tokens so far: 1795875, elapsed: 1156s)
+  [kimi] corner: 0 node(s), own worktree has 141 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (machine)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] committed 0142-r13-kimi-commit.dmml
+    [kimi] committed 0143-r13-kimi-commit.dmml
+    [kimi] committed 0144-r13-kimi-machine.dmml
+    [kimi] committed 0145-r13-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 141 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] DONE after 3 commit(s)
+    [deepseek] committed 0142-r13-deepseek-commit.dmml
+    [deepseek] committed 0143-r13-deepseek-commit.dmml
+    [deepseek] committed 0144-r13-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 141 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] DONE after 1 commit(s)
+    [mercury] committed 0142-r13-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 141 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] DONE after 3 commit(s)
+    [deepseek2] committed 0142-r13-deepseek2-commit.dmml
+    [deepseek2] committed 0143-r13-deepseek2-commit.dmml
+    [deepseek2] committed 0144-r13-deepseek2-commit.dmml
+  round 13 authoring totals: valid=11 invalid=0 attempts=11 fail_rate=0.00 (cumulative commits: 140/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
     [sync] canonical <- agent/mercury: ACCEPTED, no divergence
     [sync] canonical <- agent/deepseek2: ACCEPTED, no divergence
 
-*** STOPPING after round 7: same (subject, predicate) contested across multiple rounds: [('culture/riverfolk', 'state', [1, 7])] ***
+--- round 14 --- (commits so far: 140/200, tokens so far: 2056721, elapsed: 1272s)
+  [kimi] corner: 0 node(s), own worktree has 152 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (machine)
+    [kimi] attempt 3: accepted (machine)
+    [kimi] DONE after 3 commit(s)
+    [kimi] committed 0153-r14-kimi-commit.dmml
+    [kimi] committed 0154-r14-kimi-machine.dmml
+    [kimi] committed 0155-r14-kimi-machine.dmml
+  [deepseek] corner: 0 node(s), own worktree has 152 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] DONE after 2 commit(s)
+    [deepseek] committed 0153-r14-deepseek-commit.dmml
+    [deepseek] committed 0154-r14-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 152 file(s)
+    [mercury] no fenced content, treating as stop
+  [deepseek2] corner: 0 node(s), own worktree has 152 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (machine)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0153-r14-deepseek2-commit.dmml
+    [deepseek2] committed 0154-r14-deepseek2-machine.dmml
+    [deepseek2] committed 0155-r14-deepseek2-commit.dmml
+    [deepseek2] committed 0156-r14-deepseek2-commit.dmml
+  round 14 authoring totals: valid=9 invalid=0 attempts=10 fail_rate=0.00 (cumulative commits: 149/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 2 pair(s) still live/unresolved
+
+--- round 15 --- (commits so far: 149/200, tokens so far: 2291878, elapsed: 1421s)
+  [kimi] corner: 0 node(s), own worktree has 161 file(s)
+    [kimi] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-kimi-1.dmml: REJECTED
+<surface>:19:43:
+   |
+19 |   path/greenlore `enables` path/bronzework
+   |                                    
+    [kimi] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-kimi-2.dmml: REJECTED
+<surface>:17:46:
+   |
+17 |   npc/pathWalker `learnsFrom` npc/forgeTender
+   |                                 
+  [deepseek] corner: 0 node(s), own worktree has 161 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] DONE after 1 commit(s)
+    [deepseek] committed 0162-r15-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 161 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] committed 0162-r15-mercury-commit.dmml
+    [mercury] committed 0163-r15-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 161 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0162-r15-deepseek2-commit.dmml
+    [deepseek2] committed 0163-r15-deepseek2-commit.dmml
+    [deepseek2] committed 0164-r15-deepseek2-commit.dmml
+    [deepseek2] committed 0165-r15-deepseek2-commit.dmml
+  round 15 authoring totals: valid=7 invalid=2 attempts=9 fail_rate=0.22 (cumulative commits: 156/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
+    [sync] canonical <- agent/mercury: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 1 pair(s) still live/unresolved
+
+--- round 16 --- (commits so far: 156/200, tokens so far: 2489121, elapsed: 1536s)
+  [kimi] corner: 0 node(s), own worktree has 168 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] DONE after 3 commit(s)
+    [kimi] committed 0169-r16-kimi-commit.dmml
+    [kimi] committed 0170-r16-kimi-commit.dmml
+    [kimi] committed 0171-r16-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 168 file(s)
+    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek-1.dmml: REJECTED
+<surface>:8:22:
+  |
+8 |   workshop/forgeYard \`marksReadiness\` ritual/seasonal
+  |                      ^
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] committed 0169-r16-deepseek-commit.dmml
+    [deepseek] committed 0170-r16-deepseek-commit.dmml
+    [deepseek] committed 0171-r16-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 168 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] committed 0169-r16-mercury-commit.dmml
+    [mercury] committed 0170-r16-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 168 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0169-r16-deepseek2-commit.dmml
+    [deepseek2] committed 0170-r16-deepseek2-commit.dmml
+    [deepseek2] committed 0171-r16-deepseek2-commit.dmml
+    [deepseek2] committed 0172-r16-deepseek2-commit.dmml
+  round 16 authoring totals: valid=12 invalid=1 attempts=13 fail_rate=0.08 (cumulative commits: 168/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
+    [sync] canonical <- agent/mercury: ACCEPTED, 3 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 9 pair(s) still live/unresolved
+
+--- round 17 --- (commits so far: 168/200, tokens so far: 2801444, elapsed: 1751s)
+  [kimi] corner: 0 node(s), own worktree has 180 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (machine)
+    [kimi] DONE after 2 commit(s)
+    [kimi] committed 0181-r17-kimi-commit.dmml
+    [kimi] committed 0182-r17-kimi-machine.dmml
+  [deepseek] corner: 0 node(s), own worktree has 180 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] committed 0181-r17-deepseek-commit.dmml
+    [deepseek] committed 0182-r17-deepseek-commit.dmml
+    [deepseek] committed 0183-r17-deepseek-commit.dmml
+    [deepseek] committed 0184-r17-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 180 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: accepted (commit)
+    [mercury] attempt 3: accepted (commit)
+    [mercury] attempt 4: accepted (commit)
+    [mercury] committed 0181-r17-mercury-commit.dmml
+    [mercury] committed 0182-r17-mercury-commit.dmml
+    [mercury] committed 0183-r17-mercury-commit.dmml
+    [mercury] committed 0184-r17-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 180 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0181-r17-deepseek2-commit.dmml
+    [deepseek2] committed 0182-r17-deepseek2-commit.dmml
+    [deepseek2] committed 0183-r17-deepseek2-commit.dmml
+    [deepseek2] committed 0184-r17-deepseek2-commit.dmml
+  round 17 authoring totals: valid=14 invalid=0 attempts=14 fail_rate=0.00 (cumulative commits: 182/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, 2 pair(s) still live/unresolved
+    [sync] canonical <- agent/mercury: ACCEPTED, 2 pair(s) still live/unresolved
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 6 pair(s) still live/unresolved
+
+--- round 18 --- (commits so far: 182/200, tokens so far: 3164481, elapsed: 1927s)
+  [kimi] corner: 0 node(s), own worktree has 194 file(s)
+    [kimi] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-kimi-1.dmml: REJECTED
+<surface>:13:48:
+   |
+13 |   marker/fordPost `witnessedBy` mountain/ashkar
+   |                               
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] committed 0195-r18-kimi-commit.dmml
+    [kimi] committed 0196-r18-kimi-commit.dmml
+    [kimi] committed 0197-r18-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 194 file(s)
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] DONE after 1 commit(s)
+    [deepseek] committed 0195-r18-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 194 file(s)
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] committed 0195-r18-mercury-commit.dmml
+    [mercury] committed 0196-r18-mercury-commit.dmml
+  [deepseek2] corner: 0 node(s), own worktree has 194 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] committed 0195-r18-deepseek2-commit.dmml
+    [deepseek2] committed 0196-r18-deepseek2-commit.dmml
+    [deepseek2] committed 0197-r18-deepseek2-commit.dmml
+    [deepseek2] committed 0198-r18-deepseek2-commit.dmml
+  round 18 authoring totals: valid=10 invalid=1 attempts=11 fail_rate=0.09 (cumulative commits: 192/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
+    [sync] canonical <- agent/mercury: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek2: ACCEPTED, 2 pair(s) still live/unresolved
+
+--- round 19 --- (commits so far: 192/200, tokens so far: 3450524, elapsed: 2040s)
+  [kimi] corner: 0 node(s), own worktree has 204 file(s)
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] committed 0205-r19-kimi-commit.dmml
+    [kimi] committed 0206-r19-kimi-commit.dmml
+    [kimi] committed 0207-r19-kimi-commit.dmml
+    [kimi] committed 0208-r19-kimi-commit.dmml
+  [deepseek] corner: 0 node(s), own worktree has 204 file(s)
+    [deepseek] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/worktree-sync/_scratch-deepseek-1.dmml: REJECTED
+<surface>:2:32:
+  |
+2 |   declare attribute waterSign  // already declared above — re-declaration is fine,
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] DONE after 2 commit(s)
+    [deepseek] committed 0205-r19-deepseek-commit.dmml
+    [deepseek] committed 0206-r19-deepseek-commit.dmml
+  [mercury] corner: 0 node(s), own worktree has 204 file(s)
+    [mercury] no fenced content, treating as stop
+  [deepseek2] corner: 0 node(s), own worktree has 204 file(s)
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] DONE after 2 commit(s)
+    [deepseek2] committed 0205-r19-deepseek2-commit.dmml
+    [deepseek2] committed 0206-r19-deepseek2-commit.dmml
+  round 19 authoring totals: valid=8 invalid=1 attempts=10 fail_rate=0.10 (cumulative commits: 200/200)
+  hub sync (4 hook-merge.sh calls into canonical)...
+    [sync] canonical <- agent/kimi: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek: ACCEPTED, no divergence
+    [sync] canonical <- agent/deepseek2: ACCEPTED, no divergence
+
+*** STOPPING after round 19: reached target of 200 commits ***
+  stopping entropy sidecar...

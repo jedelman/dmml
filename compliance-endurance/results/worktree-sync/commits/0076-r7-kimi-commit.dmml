@@ -1,0 +1,18 @@
+commit establish
+  declare relation foundedBy
+  declare relation operatedBy
+  declare relation suppliedWithBronze
+  declare relation suppliedWithStone
+
+  workshop/forgeYard :: a Workshop
+  workshop/forgeYard . locatedIn = quarry/ashkarFlank
+  workshop/forgeYard . purpose = "a new yard between stone-cut and forge-fire, where the bronzework path may root in ashkar's bones"
+  workshop/forgeYard . focus = "bronze and stone together"
+  workshop/forgeYard . state = "building"
+
+  workshop/forgeYard `foundedBy` npc/stonemason
+  workshop/forgeYard `operatedBy` npc/smith
+  workshop/forgeYard `suppliedWithBronze` stockpile/bronzeIngots
+  workshop/forgeYard `suppliedWithStone` stockpile/stoneBlocks
+  npc/stonemason . state = "seeking"
+  npc/stonemason . worksAt = workshop/forgeYard

@@ -1,8 +1,0 @@
-commit forestRestoration
-  declare relation worksAt
-  declare attribute rite
-
-  npc/mossfinger . a = Person
-  npc/mossfinger . worksAt = forest/oldroot
-
-  forest/oldroot . rite = "root-binding ceremony"

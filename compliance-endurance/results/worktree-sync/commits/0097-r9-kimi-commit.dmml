@@ -1,0 +1,3 @@
+commit stonemasonCommits
+  npc/stonemason . state = "working"
+  npc/stonemason . worksAt = workshop/forgeYard

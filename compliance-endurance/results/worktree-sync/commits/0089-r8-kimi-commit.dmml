@@ -1,0 +1,7 @@
+commit smithPracticing
+  npc/smith . state = "practicing"
+  npc/stonemason . state = "working"
+  workshop/forgeYard . state = "active"
+  npc/stonemason `worksAt` workshop/forgeYard
+  npc/smith `worksAt` workshop/forgeYard
+  path/stonemasonry . state = "discovered"

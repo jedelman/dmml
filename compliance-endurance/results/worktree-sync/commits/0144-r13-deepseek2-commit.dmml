@@ -1,0 +1,4 @@
+commit smithCarriesFirstBarToRite
+  declare relation carriesOfferingTo
+
+  npc/smith . carriesOfferingTo = ritual/highkinRite

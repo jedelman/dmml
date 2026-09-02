@@ -1,0 +1,9 @@
+commit bronzeKinship
+  declare relation converges
+
+  ritual/highkinRite . converges = ritual/seasonal
+  ritual/seasonal . converges = ritual/highkinRite
+  npc/stonemason `observes` ritual/highkinRite
+  npc/tender `observes` ritual/highkinRite
+  path/packroad . carriesSignTo = ritual/highkinRite
+  ritual/highkinRite . harvests = npc/herder

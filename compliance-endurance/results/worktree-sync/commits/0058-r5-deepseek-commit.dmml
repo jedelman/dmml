@@ -1,0 +1,6 @@
+commit signCarried
+  declare relation carriesSignTo
+
+  path/packroad . carriesSignTo = npc/foothillWarden
+  npc/packer . carriesSignTo = npc/foothillWarden
+  npc/foothillWarden . learnsFrom = npc/packer

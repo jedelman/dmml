@@ -1,0 +1,7 @@
+commit wardenSignals
+  declare relation signalsToBell
+  declare attribute bellMessage
+
+  npc/foothillWarden `signalsToBell` object/bronzeBell
+  npc/foothillWarden . bellMessage = "ashkar's tremor mounts, ring the warning"
+  object/bronzeBell `resonatesWith` mountain/ashkar

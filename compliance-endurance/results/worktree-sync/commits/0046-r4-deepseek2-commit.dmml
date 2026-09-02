@@ -1,3 +1,8 @@
-commit herdSettlesAtOldroot
-  herd/aurochs . migratesTo = forest/oldroot
-  herd/aurochs . state = grazing
+commit calmingTheMountain
+  mountain/ashkar . state = "rumbling"
+  mountain/ashkar . tremorIntensity = "mounting"
+  mountain/ashkar . witnessedBy = npc/keeper
+  mountain/ashkar . tremorsObserved = npc/keeper
+  npc/keeper . role = "guides the fleeing herds, witnesses ashkar's fury"
+  herd/stagfolk . state = "fleeing"
+  forest/oldroot . state = "awakening"

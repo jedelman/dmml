@@ -1,0 +1,27 @@
+commit foundsVigil
+  declare relation foundedBy
+  declare relation guidesPreparationOf
+  declare relation learnsFrom
+  declare relation tends
+  declare relation tendsVigil
+  declare relation walksTo
+
+  npc/bellHerder :: a Herder
+  npc/bellHerder . belongsTo = culture/riverfolk
+  npc/bellHerder . craftFocus = "bell-herding"
+  npc/bellHerder . learnsFrom = npc/vigilKeeper
+  npc/bellHerder . role = "learns to read the bronze bell's echoes through the herds' own tremor-sense, bridging greenlore and vigil-keeping"
+  npc/bellHerder . state = "learning"
+  npc/bellHerder . tends = herd/aurochs
+  npc/bellHerder . walksTo = site/bellVigil
+
+  site/herdEcho :: a Site
+  site/herdEcho . echoes = object/bronzeBell
+  site/herdEcho . foundedBy = npc/bellHerder
+  site/herdEcho . locatedIn = meadow/riverbend
+  site/herdEcho . purpose = "a grass-hidden listening post where the herder trains to hear ashkar's warnings in the herd's restless shifting"
+  site/herdEcho . receivesTidingsFrom = npc/bellHerder
+  site/herdEcho . signalsTo = site/bellVigil
+  site/herdEcho . state = "nascent"
+  site/herdEcho . tendedBy = npc/bellHerder
+  site/herdEcho . witnesses = mountain/ashkar

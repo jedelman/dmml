@@ -1,0 +1,9 @@
+commit tempers
+  object/secondBar :: a BronzeBar
+  object/secondBar . belongsTo = workshop/forgeYard
+  object/secondBar . carriesOfferingTo = ritual/seasonal
+  object/secondBar . temper = "hard"
+  object/secondBar . verifies = soil/smeltTest
+  workshop/forgeYard . offersBronze = object/secondBar
+  npc/smith . carriesWork = object/secondBar
+  npc/forgeTender . observes = object/secondBar

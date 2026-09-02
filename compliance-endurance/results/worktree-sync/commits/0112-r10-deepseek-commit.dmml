@@ -1,0 +1,9 @@
+commit barTested
+  declare relation triggers
+
+  object/firstBar . temper = "hard"
+  path/bronzework . state = "discovered"
+  npc/smith . state = "practicing"
+  npc/stonemason . state = "seeking"
+  soil/smeltTest `triggers` path/bronzework
+  workshop/forgeYard `triggers` path/bronzework

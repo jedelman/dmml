@@ -1,0 +1,4 @@
+commit highkinRiteReady
+  ritual/highkinRite . state = "ready"
+  npc/packer . carriesSignTo = ritual/seasonal
+  ritual/highkinRite . resonatesWith = site/observationPost

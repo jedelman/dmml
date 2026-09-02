@@ -1,0 +1,7 @@
+commit bronzeworkProgress
+  declare relation verifies
+  declare attribute readiness
+
+  ritual/highkinRite . readiness = "prepared"
+  object/firstBar . temper = "tested"
+  object/firstBar . verifies = ritual/highkinRite

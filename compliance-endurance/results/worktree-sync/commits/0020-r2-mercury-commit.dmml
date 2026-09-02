@@ -1,0 +1,18 @@
+commit mints
+  declare relation migratesTo
+  declare relation apprenticedTo
+
+  herd/aurochs . a = Herd
+  herd/aurochs . grazesIn = forest/oldroot
+  herd/aurochs . state = "grazing"
+  herd/aurochs . migratesTo = "none"
+
+  npc/herder . a = Herder
+  npc/herder . apprenticedTo = npc/keeper
+  npc/herder . role = "follows herd/aurochs through oldroot, kin to the riverfolk"
+  npc/herder . belongsTo = culture/riverfolk
+  npc/herder . state = "active"
+
+  npc/keeper . a = Keeper
+  npc/keeper . apprenticedTo = npc/tender
+  npc/keeper . role = "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"

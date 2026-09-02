@@ -1,0 +1,10 @@
+commit bellHanging
+  declare relation preparesToHang
+  declare relation carriesWordOf
+
+  object/bronzeBell . bellHung = true
+  object/bronzeBell . temper = "tested"
+  npc/smith . preparesToHang = object/bronzeBell
+  npc/forgeTender . preparesToHang = object/bronzeBell
+  npc/packer . carriesWordOf = npc/foothillWarden
+  workshop/forgeYard . convergesAt = ritual/highkinRite

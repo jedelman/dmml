@@ -1,0 +1,3 @@
+commit smithPractices
+  npc/smith . state = "practicing"
+  npc/smith . worksAt = workshop/forgeYard

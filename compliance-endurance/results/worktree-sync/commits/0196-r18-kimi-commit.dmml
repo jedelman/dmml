@@ -1,0 +1,13 @@
+commit trailMarking
+  declare relation guidesTravelersTo
+  declare relation pairedWith
+
+  marker/quarryTurn :: a TrailMarker
+  marker/quarryTurn . purpose = "a notched stone where the packroad forks toward ashkarFlank, showing the mason's way"
+  marker/quarryTurn . state = "standing"
+  marker/quarryTurn `guidesTravelersTo` quarry/ashkarFlank
+  marker/quarryTurn `locatedIn` path/packroad
+  marker/quarryTurn `marksPath` path/packroad
+  marker/quarryTurn `pairedWith` marker/fordPost
+  marker/quarryTurn `signalsTo` npc/mason
+  marker/quarryTurn `witnessedBy` mountain/ashkar

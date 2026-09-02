@@ -1,0 +1,9 @@
+commit quarryHands
+  declare relation worksAt
+  declare attribute role
+
+  npc/mason . a = Mason
+  npc/mason . role = "cuts ashkar's stone for the highkin, kin to the quarry"
+  npc/mason . belongsTo = culture/highkin
+  npc/mason . worksAt = mountain/ashkar
+  culture/highkin . tradesWith = culture/riverfolk

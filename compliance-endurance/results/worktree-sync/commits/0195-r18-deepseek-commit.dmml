@@ -1,0 +1,8 @@
+commit bellTremorReadings
+  declare relation relaysReading
+  declare relation readsTremorThrough
+  declare attribute readingNote
+
+  site/observationPost . relaysReading = site/bellVigil
+  site/observationPost . readsTremorThrough = object/bronzeBell
+  site/observationPost . readingNote = "warden and vigil-keeper compare the bell's echo against ashkar's own tremor at the sheltered ledge"

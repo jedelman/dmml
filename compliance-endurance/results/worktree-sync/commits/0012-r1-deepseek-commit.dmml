@@ -1,6 +1,0 @@
-commit riverRites
-  declare attribute rite
-  declare relation honors
-
-  culture/riverfolk . rite = "the Silt-Song, sung each spring when the melt wakes the river"
-  npc/keeper . honors = culture/riverfolk

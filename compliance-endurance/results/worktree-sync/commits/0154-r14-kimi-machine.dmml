@@ -1,0 +1,19 @@
+machine object/bronzeBell
+  states
+    untested
+    hung
+    ringing
+
+  transition hang(tender)
+    untested -> hung
+    guard self `tendedBy` $tender
+    assert hung
+
+  transition ring(tremorSource)
+    hung -> ringing
+    guard self `resonatesWith` $tremorSource
+    assert ringing
+
+  transition cease()
+    ringing -> hung
+    assert hung

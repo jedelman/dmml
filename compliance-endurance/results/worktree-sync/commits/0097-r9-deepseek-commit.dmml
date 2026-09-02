@@ -1,0 +1,12 @@
+commit forgeTrial
+  declare relation suppliesTrial
+  declare relation storesFor
+  declare attribute trialState
+
+  soil/smeltTest :: a PracticeStone
+  soil/smeltTest . trialState = "untested"
+  soil/smeltTest . belongsTo = workshop/forgeYard
+
+  workshop/forgeYard `storesFor` soil/smeltTest
+  stockpile/bronzeIngots `suppliesTrial` soil/smeltTest
+  npc/smith `observes` soil/smeltTest

@@ -1,0 +1,15 @@
+commit appoints
+  declare relation tendsVigil
+  declare attribute vigilFocus
+
+  npc/vigilKeeper :: a NPC
+  npc/vigilKeeper . belongsTo = culture/riverfolk
+  npc/vigilKeeper . craftFocus = "tremor-reading"
+  npc/vigilKeeper . learnsFrom = npc/foothillWarden
+  npc/vigilKeeper . observes = mountain/ashkar
+  npc/vigilKeeper . role = "keeps the bellVigil, learning to read ashkar's tremors through the bronze bell's echoes"
+  npc/vigilKeeper . state = "learning"
+  npc/vigilKeeper . tends = site/bellVigil
+  npc/vigilKeeper . vigilFocus = "bronze echoes and mountain warnings"
+  npc/vigilKeeper `tendsVigil` site/bellVigil
+  site/bellVigil `tendedBy` npc/vigilKeeper

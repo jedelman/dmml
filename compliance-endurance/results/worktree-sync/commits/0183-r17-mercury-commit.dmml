@@ -1,0 +1,4 @@
+commit bellStateUpdate
+  declare attribute bellState
+
+  object/bronzeBell . bellState = "hung"

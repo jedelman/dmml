@@ -1,0 +1,14 @@
+commit resolvePathStates
+  declare relation discovers
+
+  path/bronzework :: a TechnicalPath
+  path/greenlore :: a TechnicalPath
+  path/stonemasonry :: a TechnicalPath
+
+  npc/mason . discovers = path/stonemasonry
+  npc/smith . discovers = path/bronzework
+  npc/herder . discovers = path/greenlore
+
+  path/bronzework . state = "discovered"
+  path/greenlore . state = "discovered"
+  path/stonemasonry . state = "discovered"

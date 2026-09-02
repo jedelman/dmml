@@ -1,0 +1,12 @@
+commit firstLight
+  declare relation marks
+
+  ritual/highkinRite . a = Ritual
+  ritual/highkinRite . belongsTo = culture/highkin
+  ritual/highkinRite . purpose = "a highkin rite held at first light, where the smith's first bronze bar is offered to ashkar's slope"
+  ritual/highkinRite . state = "preparing"
+  ritual/highkinRite . marks = mountain/ashkar
+  ritual/highkinRite . carriesSignTo = npc/foothillWarden
+  npc/smith `signalsTo` ritual/highkinRite
+  object/firstBar `belongsTo` ritual/highkinRite
+  workshop/forgeYard . guidesPreparationOf = ritual/highkinRite

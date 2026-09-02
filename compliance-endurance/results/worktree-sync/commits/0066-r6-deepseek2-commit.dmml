@@ -1,0 +1,4 @@
+commit tenderPreparesRitual
+  declare relation prepares
+
+  npc/tender . prepares = ritual/seasonal

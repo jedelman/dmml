@@ -1,0 +1,10 @@
+commit forgeBonding
+  declare relation apprenticedTo
+  declare relation apprenticesUnder
+  declare relation sharesDreamOf
+  declare relation worksAt
+
+  npc/forgeTender . apprenticedTo = npc/smith
+  npc/forgeTender . apprenticesUnder = npc/smith
+  npc/forgeTender . sharesDreamOf = path/bronzework
+  npc/forgeTender . worksAt = workshop/forgeYard

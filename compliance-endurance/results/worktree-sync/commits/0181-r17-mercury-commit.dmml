@@ -1,0 +1,4 @@
+commit bellSign
+  declare relation readsSignsFrom
+
+  npc/vigilKeeper . readsSignsFrom = object/bronzeBell

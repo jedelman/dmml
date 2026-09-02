@@ -1,0 +1,12 @@
+commit riverRites
+  declare relation forgesFor
+  declare attribute craftFocus
+
+  npc/stonemason . state = "seeking"
+  npc/smith . state = "practicing"
+  npc/smith . craftFocus = "bronze"
+  npc/stonemason . craftFocus = "stone"
+  npc/smith . forgesFor = npc/stonemason
+  stockpile/bronzeIngots . stockLevel = "depleted"
+  path/bronzework . state = "discovered"
+  npc/stonemason . discovers = path/bronzework

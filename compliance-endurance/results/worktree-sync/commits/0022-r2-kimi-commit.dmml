@@ -1,0 +1,9 @@
+commit ashkarRumblings
+  declare relation triggers
+
+  mountain/ashkar . state = "rumbling"
+  mine/ninefathom . state = "dug"
+  mountain/ashkar `triggers` path/bronzework
+  path/bronzework . state = "discovered"
+  npc/stonemason . state = "working"
+  npc/stonemason . worksAt = mine/ninefathom

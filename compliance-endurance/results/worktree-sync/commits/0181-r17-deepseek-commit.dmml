@@ -1,0 +1,7 @@
+commit highkinBellRite
+  declare relation ringsAt
+
+  ritual/highkinRite . ringsAt = site/observationPost
+  npc/smith . state = "practicing"
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . resonatesWith = site/observationPost

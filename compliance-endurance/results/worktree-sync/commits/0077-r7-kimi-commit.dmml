@@ -1,0 +1,5 @@
+commit prepares
+  ritual/seasonal . ritualState = "ready"
+  ritual/seasonal . offeringState = "assembled"
+  npc/herder . guidesTo = ritual/seasonal
+  herd/aurochs . state = "gathering"

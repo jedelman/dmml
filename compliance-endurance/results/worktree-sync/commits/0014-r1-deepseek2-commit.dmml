@@ -1,28 +1,6 @@
-commit oldrootWard
+commit keeperApprentice
   declare relation apprenticesUnder
-  declare relation belongsTo
-  declare relation carries
-  declare relation erupts
-  declare relation fallsOn
-  declare relation grazesIn
-  declare relation locatedIn
-  declare relation masters
-  declare relation migratesTo
-  declare attribute purpose
-  declare attribute role
-  declare attribute state
-  declare relation tradesWith
-  declare relation wardedBy
-  declare relation witnessedBy
-  declare relation worksAt
 
-  forest/oldroot . wardedBy = "green ward"
-  mine/ninefathom . state = "active"
-  mountain/ashkar . state = "quiescent"
-  herd/aurochs . state = "grazing"
-  herd/stagfolk . state = "migrating"
-  npc/keeper . role = "warden"
-  npc/keeper . livesIn = mine/ninefathom
-  culture/riverfolk . tradesWith = culture/highkin
-  culture/highkin . carries = "coins"
-  culture/riverfolk . fallsOn = forest/oldroot
+  npc/keeper . apprenticesUnder = npc/tender
+  npc/tender . a = Keeper
+  npc/tender . role = "apprentice to the keeper, learning to ward the herd and read the mountain's signs"

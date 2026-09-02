@@ -1,0 +1,10 @@
+commit trailSigns
+  declare relation bears
+  declare attribute trailState
+
+  path/packroad . a = Trail
+  path/packroad . belongsTo = culture/riverfolk
+  path/packroad . purpose = "the pack-beasts' way between riverfolk and highkin, skirting oldroot's edge"
+  path/packroad . trailState = "worn"
+  npc/packer . bears = path/packroad
+  path/packroad . witnessedBy = npc/foothillWarden

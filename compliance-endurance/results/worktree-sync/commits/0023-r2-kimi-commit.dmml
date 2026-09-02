@@ -1,0 +1,9 @@
+commit eruption
+  declare relation scatters
+
+  mountain/ashkar . state = "erupting"
+  mountain/ashkar `fallsOn` forest/oldroot
+  forest/oldroot . state = "blighted"
+  herd/aurochs . migratesTo = culture/riverfolk
+  herd/aurochs . state = "fleeing"
+  npc/keeper . role = "guides the fleeing herds, witnesses ashkar's fury"

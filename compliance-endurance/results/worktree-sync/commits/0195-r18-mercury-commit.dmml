@@ -1,0 +1,6 @@
+commit riverSigns
+  declare relation readsSignsFrom
+  declare relation readsTremors
+
+  npcs/tender . readsSignsFrom = forest/oldroot
+  npc/tender . readsTremors = mountain/ashkar

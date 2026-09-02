@@ -1,0 +1,4 @@
+commit tenderWards
+  declare relation wards
+
+  npc/tender . wards = herd/stagfolk

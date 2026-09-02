@@ -1,9 +1,0 @@
-machine contest/culture_highkin_state_1
-  states
-    contested
-    resolved
-
-  transition resolve(witness)
-    contested -> resolved
-    guard self `witnessedBy` npc/keeper
-    assert resolved

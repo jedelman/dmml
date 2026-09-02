@@ -1,6 +1,0 @@
-commit riverRites
-  declare relation honors
-  declare attribute rite
-
-  culture/riverfolk . honors = culture/highkin
-  culture/riverfolk . rite = "confluence blessing"

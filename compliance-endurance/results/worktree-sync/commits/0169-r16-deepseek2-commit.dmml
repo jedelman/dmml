@@ -1,0 +1,17 @@
+commit wardenRingsTheVigil
+  declare relation carriesWarningFrom
+  declare relation carriesWarningTo
+
+  object/bronzeBell . bellState = "hung"
+  npc/foothillWarden . state = "alert"
+  npc/foothillWarden . carriesWarningFrom = mountain/ashkar
+  npc/foothillWarden . carriesWarningTo = npc/vigilKeeper
+  npc/vigilKeeper . vigilFocus = "the first ringing, ashkar's reply"
+  site/bellVigil . resonatesWith = object/bronzeBell
+  site/observationPost . resonatesWith = object/bronzeBell
+  ritual/highkinRite . marks = object/bronzeBell
+  ritual/seasonal . offeringState = "assembled"
+  herd/stagfolk . state = "gathering"
+  herd/aurochs . state = "gathering"
+  mountain/ashkar . tremorIntensity = "mounting"
+  mountain/ashkar . state = "rumbling"

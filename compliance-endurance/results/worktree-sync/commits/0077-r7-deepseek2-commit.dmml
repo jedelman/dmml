@@ -1,0 +1,19 @@
+commit riverfolkTies
+  npc/packer . gathers = culture/riverfolk
+  npc/packer . carriesSignTo = npc/foothillWarden
+  npc/packer . witnesses = herd/brindle
+  npc/smith . state = "practicing"
+  mountain/ashkar . tremorIntensity = "faint"
+  mountain/ashkar . tremorsObserved = npc/foothillWarden
+  mountain/ashkar . witnessedBy = npc/foothillWarden
+  herd/brindle . unease = "restless"
+  herd/brindle . witnessedBy = npc/packer
+  herd/stagfolk . state = "grazing"
+  herd/stagfolk . wardedBy = npc/keeper
+  ritual/seasonal . offeringState = "gathering"
+  ritual/seasonal . guidesTo = forest/oldroot
+  ritual/seasonal . harvests = herd/aurochs
+  path/greenlore . state = "discovered"
+  path/greenlore . wakens = forest/oldroot
+  stockpile/stoneBlocks . stockLevel = "moderate"
+  stockpile/bronzeIngots . stockLevel = "low"

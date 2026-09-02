@@ -1,0 +1,9 @@
+machine object/firstBar
+  states
+    soft
+    tempered
+    cracked
+
+  transition temper()
+    soft -> tempered
+    guard self `belongsTo` workshop/forgeYard

@@ -1,0 +1,12 @@
+commit forgeBell
+  declare relation ringsFor
+  declare relation hungIn
+  declare relation resonatesWith
+  declare attribute bellState
+
+  object/bronzeBell :: a BronzeBell
+  object/bronzeBell . hungIn = workshop/forgeYard
+  object/bronzeBell . resonatesWith = mountain/ashkar
+  object/bronzeBell . ringsFor = ritual/highkinRite
+  object/bronzeBell . bellState = "untested"
+  object/bronzeBell . temper = "soft"

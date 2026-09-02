@@ -1,0 +1,6 @@
+commit wardenRingsTheBell
+  object/bronzeBell . bellState = "hung"
+  object/bronzeBell . temper = "tested"
+  npc/foothillWarden . readsSignsFrom = mountain/ashkar
+  npc/foothillWarden . signalsTo = object/bronzeBell
+  npc/keeper . role = "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"

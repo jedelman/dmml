@@ -1,0 +1,7 @@
+commit highkinRite
+  declare relation converges
+  declare attribute readiness
+
+  ritual/highkinRite :: a Ritual
+  ritual/highkinRite . converges = ritual/seasonal
+  ritual/highkinRite . readiness = "prepared"

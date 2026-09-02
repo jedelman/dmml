@@ -1,0 +1,7 @@
+commit bellTending
+  declare relation soundsTremor
+  declare relation tendedBy
+
+  npc/foothillWarden . soundsTremor = object/bronzeBell
+  npc/foothillWarden . readsSignsFrom = object/bronzeBell
+  object/bronzeBell . tendedBy = npc/forgeTender

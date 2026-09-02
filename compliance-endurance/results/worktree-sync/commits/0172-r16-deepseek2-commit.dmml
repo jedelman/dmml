@@ -1,0 +1,25 @@
+commit firstBarCarriedToTheRite
+  object/firstBar . belongsTo = ritual/highkinRite
+  object/firstBar . temper = "hard"
+  npc/packer . carriesWork = object/firstBar
+  npc/packer . carriesSignTo = ritual/highkinRite
+  npc/packer . witnesses = mountain/ashkar
+  npc/packer . state = "active"
+  npc/smith . state = "practicing"
+  npc/smith . forgesFor = npc/forgeTender
+  npc/forgeTender . state = "active"
+  workshop/forgeYard . offersBronze = object/firstBar
+  workshop/forgeYard . sharesWith = path/stonemasonry
+  path/packroad . carriesSignTo = ritual/highkinRite
+  ritual/highkinRite . state = "ready"
+  ritual/highkinRite . readiness = "prepared"
+  ritual/highkinRite . marks = object/bronzeBell
+  mountain/ashkar . unbehest = null
+  mountain/ashkar . tremorIntensity = "moderate"
+  mountain/ashkar . state = "rumbling"
+  npc/keeper . steadies = herd/stagfolk
+  npc/keeper . state = "active"
+  herd/stagfolk . state = "gathering"
+  herd/aurochs . state = "gathering"
+  meadow/riverbend . grazingQuality = "lush"
+  ritual/seasonal . state = "ready"

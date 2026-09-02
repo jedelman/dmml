@@ -1,0 +1,13 @@
+commit rootAndRoad
+  declare relation scatters
+  declare relation wakens
+
+  npc/stonemason . state = "working"
+  path/stonemasonry . state = "discovered"
+  path/bronzework . state = "discovered"
+  workshop/forgeYard . state = "active"
+  npc/stonemason `worksAt` workshop/forgeYard
+  npc/smith `worksAt` workshop/forgeYard
+  npc/packer `carriesSignTo` workshop/forgeYard
+  path/packroad `scatters` workshop/forgeYard
+  path/stonemasonry `wakens` workshop/forgeYard

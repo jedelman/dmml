@@ -1,0 +1,11 @@
+commit ashkarAwakens
+  mountain/ashkar . state = "erupting"
+  mountain/ashkar . tremorIntensity = "mounting"
+  mountain/ashkar . tremorsObserved = npc/foothillWarden
+  mountain/ashkar . witnessedBy = npc/foothillWarden
+  forest/oldroot . state = "blighted"
+  herd/aurochs . state = "fleeing"
+  herd/aurochs . migratesTo = culture/riverfolk
+  npc/keeper . role = "guides the fleeing herds, witnesses ashkar's fury"
+  npc/foothillWarden . state = "alert"
+  npc/foothillWarden . learnsFrom = npc/keeper

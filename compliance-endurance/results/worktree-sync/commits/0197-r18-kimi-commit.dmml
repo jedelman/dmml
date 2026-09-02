@@ -1,0 +1,12 @@
+commit trailMarking
+  declare relation guidesTravelersTo
+
+  marker/restSign :: a TrailMarker
+  marker/restSign . purpose = "a carved post where the weary first spy the wayRest lean-to, showing shelter before the mountain climb"
+  marker/restSign . state = "standing"
+  marker/restSign `guidesTravelersTo` site/wayRest
+  marker/restSign `locatedIn` path/packroad
+  marker/restSign `marksPath` path/packroad
+  marker/restSign `pairedWith` marker/quarryTurn
+  marker/restSign `signalsTo` npc/packer
+  marker/restSign `witnessedBy` mountain/ashkar

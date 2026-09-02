@@ -1,0 +1,10 @@
+commit trailSigns
+  declare relation guidesTravelersTo
+  declare relation marksPath
+  declare attribute restingPlace
+
+  marker/waySign . a = TrailMarker
+  marker/waySign . guidesTravelersTo = site/wayRest
+  marker/waySign . marksPath = path/packroad
+  marker/waySign . restingPlace = "the carved post where pack-beasts and herders alike pause before the ford's crossing"
+  marker/waySign . witnessedBy = mountain/ashkar

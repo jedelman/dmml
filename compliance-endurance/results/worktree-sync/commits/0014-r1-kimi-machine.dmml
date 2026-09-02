@@ -1,0 +1,15 @@
+machine mine/ninefathom
+  states
+    undug
+    dug
+    exhausted
+
+  transition excavate(stonemason)
+    undug -> dug
+    guard self `worksAt` $stonemason
+    assert dug
+
+  transition deplete()
+    dug -> exhausted
+    guard not self `locatedIn` mountain/ashkar
+    assert exhausted

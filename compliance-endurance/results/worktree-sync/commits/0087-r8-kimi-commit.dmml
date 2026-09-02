@@ -1,0 +1,10 @@
+commit gatheringReady
+  declare relation enables
+
+  ritual/seasonal . offeringState = "assembled"
+  ritual/seasonal . ritualState = "ready"
+  ritual/seasonal . state = "ready"
+  herd/aurochs . state = "gathering"
+  path/greenlore . state = "discovered"
+  npc/herder `enables` ritual/seasonal
+  path/greenlore `enables` ritual/seasonal

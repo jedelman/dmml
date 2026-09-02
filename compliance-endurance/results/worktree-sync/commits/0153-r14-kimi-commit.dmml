@@ -1,0 +1,13 @@
+commit extendsVigilNetwork
+  site/observationPost :: a Site
+  site/observationPost . purpose = "a sheltered ledge above the packroad where warden and vigil-keeper compare tremor-readings and bell-echoes"
+  site/observationPost . locatedIn = mountain/ashkar
+  site/observationPost . signalsTo = npc/foothillWarden
+  site/observationPost . echoes = object/bronzeBell
+  site/observationPost . tendedBy = npc/vigilKeeper
+  site/observationPost . witnesses = mountain/ashkar
+  npc/foothillWarden . observes = site/observationPost
+  npc/vigilKeeper . learnsFrom = npc/foothillWarden
+  npc/vigilKeeper . guidesTo = site/observationPost
+  mountain/ashkar . fallsOn = site/observationPost
+  path/packroad . shelters = site/observationPost

@@ -1,0 +1,5 @@
+commit wayRestGathersFirstBar
+  declare relation carriesOfferingTo
+
+  site/wayRest . carriesOfferingTo = ritual/highkinRite
+  site/wayRest . state = "active"

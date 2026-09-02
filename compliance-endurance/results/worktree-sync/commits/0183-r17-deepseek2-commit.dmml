@@ -1,0 +1,13 @@
+commit herdWard
+  declare relation guards
+
+  mountain/ashkar . tremorIntensity = "mounting"
+  herd/brindle . state = "gathering"
+  herd/brindle . migratesTo = forest/oldroot
+  npc/keeper . steadies = herd/brindle
+  npc/herder . guards = herd/brindle
+  npc/herder . state = "curious"
+  npc/packer . witnesses = herd/brindle
+  ritual/seasonal . offeringState = "assembled"
+  ritual/seasonal . state = "ready"
+  site/bellVigil . signalsTo = npc/foothillWarden

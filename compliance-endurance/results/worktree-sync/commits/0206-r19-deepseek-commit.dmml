@@ -1,0 +1,7 @@
+commit tremorWatchReadies
+  mountain/ashkar . state = "rumbling"
+  mountain/ashkar . tremorIntensity = "mounting"
+  npc/vigilKeeper . vigilState = "watchful"
+  npc/vigilKeeper . vigilFocus = "the first ringing, ashkar's reply"
+  object/bronzeBell . bellState = "hung"
+  site/observationPost . resonatesWith = mountain/ashkar

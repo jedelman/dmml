@@ -1,5 +1,0 @@
-commit mossfinger_apprenticeship
-  npc/mossfinger :: a Person
-  npc/mossfinger . worksAt = mine/ninefathom
-  npc/mossfinger . craft = "bronze apprentice"
-  npc/mossfinger `apprenticesUnder` npc/bronzehand

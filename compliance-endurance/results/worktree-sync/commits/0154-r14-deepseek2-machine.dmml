@@ -1,0 +1,9 @@
+machine npc/foothillWarden
+  states
+    watchful
+    alert
+
+  transition soundBell()
+    watchful -> alert
+    guard self `readsSignsFrom` mountain/ashkar `tremorsObserved` $sign
+    assert alert

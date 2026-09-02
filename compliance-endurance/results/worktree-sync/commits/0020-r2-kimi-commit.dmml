@@ -1,0 +1,8 @@
+commit riverRites
+  declare relation enables
+
+  mine/ninefathom . state = "dug"
+  npc/stonemason . state = "seeking"
+  path/stonemasonry . state = "discovered"
+  npc/mason `masters` npc/stonemason
+  path/stonemasonry `enables` path/bronzework

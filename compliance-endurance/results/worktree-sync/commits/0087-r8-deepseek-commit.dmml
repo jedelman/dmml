@@ -1,0 +1,6 @@
+commit bronzeDreamShared
+  declare relation carriesBronze
+
+  npc/stonemason . sharesDreamOf = path/bronzework
+  npc/smith . carriesBronze = stockpile/bronzeIngots
+  npc/stonemason . carriesBronze = stockpile/bronzeIngots

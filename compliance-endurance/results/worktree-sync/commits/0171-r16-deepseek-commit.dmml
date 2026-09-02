@@ -1,0 +1,6 @@
+commit trialSealed
+  object/bronzeBell . bellState = "hung"
+  soil/smeltTest . trialState = "tested"
+  soil/smeltTest . trialNote = "first bar tested against ashkar's faint tremor, temper holds"
+  ritual/highkinRite . state = "ready"
+  ritual/seasonal . ritualState = "ready"

@@ -1,0 +1,5 @@
+commit wardenReadsBell
+  npc/foothillWarden . readsSignsFrom = object/bronzeBell
+  npc/foothillWarden . state = "alert"
+  object/bronzeBell . bellState = "hung"
+  site/observationPost . resonatesWith = mountain/ashkar

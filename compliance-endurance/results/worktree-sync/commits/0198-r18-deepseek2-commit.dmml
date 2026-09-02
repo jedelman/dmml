@@ -1,0 +1,9 @@
+commit waterRiteSign
+  ritual/waterRite . state = "ready"
+  ritual/waterRite . signalsTo = ritual/seasonal
+  ritual/waterRite . carriesSignTo = ritual/seasonal
+  ritual/seasonal . converges = ritual/waterRite
+  ritual/seasonal . ritualState = "ready"
+  npc/seasonGuide . observes = ritual/waterRite
+  npc/seasonGuide . learnsFrom = npc/fordWarden
+  site/riverFordLore . signalsTo = ritual/waterRite

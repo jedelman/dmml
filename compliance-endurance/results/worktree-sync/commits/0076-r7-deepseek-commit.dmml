@@ -1,0 +1,6 @@
+commit bronzePromises
+  declare relation sharesDreamOf
+
+  npc/smith `sharesDreamOf` path/bronzework
+  npc/stonemason `sharesDreamOf` path/bronzework
+  npc/packer . carriesSignTo = npc/foothillWarden

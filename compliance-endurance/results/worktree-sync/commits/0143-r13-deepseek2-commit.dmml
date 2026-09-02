@@ -1,0 +1,4 @@
+commit packroadCarriesFirstBar
+  declare relation carriesOfferingTo
+
+  path/packroad . carriesOfferingTo = ritual/highkinRite

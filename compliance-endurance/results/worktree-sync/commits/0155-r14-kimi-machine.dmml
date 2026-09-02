@@ -1,0 +1,21 @@
+machine site/bellVigil
+  states
+    silent
+    listening
+    signaling
+
+  transition beginVigil(keeper)
+    silent -> listening
+    guard self `tendedBy` $keeper
+    assert listening
+
+  transition hearTremor(bell, mountain)
+    listening -> signaling
+    guard self `echoes` $bell
+    guard $bell `carriesTremor` $mountain
+    assert signaling
+
+  transition passWarning(warden)
+    signaling -> listening
+    guard self `signalsTo` $warden
+    assert listening

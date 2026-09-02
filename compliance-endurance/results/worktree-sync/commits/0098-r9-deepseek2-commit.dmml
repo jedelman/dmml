@@ -1,0 +1,2 @@
+commit wardenAlert
+  npc/foothillWarden . state = "alert"

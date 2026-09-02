@@ -1,0 +1,7 @@
+commit firstRite
+  declare relation consecrates
+  declare attribute state
+
+  ritual/seasonal :: a Ritual
+  ritual/seasonal . state = "ready"
+  ritual/seasonal . consecrates = herd/aurochs

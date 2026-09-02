@@ -1,4 +1,0 @@
-commit aurochsMigrate
-  declare attribute state
-
-  herd/aurochs . state = "migrating"

@@ -1,0 +1,4 @@
+commit vigilKeeperReadies
+  npc/vigilKeeper . observes = object/bronzeBell
+  npc/vigilKeeper . signalsTo = npc/foothillWarden
+  npc/vigilKeeper . vigilState = "listening"

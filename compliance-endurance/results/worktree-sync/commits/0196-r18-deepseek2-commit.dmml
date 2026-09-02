@@ -1,0 +1,15 @@
+commit waterRite
+  declare relation honors
+  declare attribute waterSign
+
+  ritual/waterRite . a = Ritual
+  ritual/waterRite . belongsTo = culture/riverfolk
+  ritual/waterRite . purpose = "a quiet rite at the ford where the river's tremor-echoes are offered back to the water, marking the warden's watching"
+  ritual/waterRite . state = "preparing"
+  ritual/waterRite . waterSign = "clear"
+  ritual/waterRite . convergesAt = site/riverFord
+  ritual/waterRite . honors = site/riverFordLore
+  ritual/waterRite . guidedBy = npc/fordWarden
+  ritual/waterRite . witnesses = mountain/ashkar
+  ritual/waterRite . echoes = object/bronzeBell
+  ritual/waterRite . signalsTo = ritual/seasonal

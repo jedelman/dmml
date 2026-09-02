@@ -1,0 +1,9 @@
+commit fordApproach
+  declare attribute shelterNote
+
+  marker/fordApproach . a = TrailMarker
+  marker/fordApproach . guidesTravelersTo = site/riverFord
+  marker/fordApproach . marksPath = path/packroad
+  marker/fordApproach . pairedWith = marker/waySign
+  marker/fordApproach . shelterNote = "a low stone cairn on the packroad's last bend, where riverfolk and highkin alike pause before the ford's crossing"
+  marker/fordApproach . witnessedBy = mountain/ashkar

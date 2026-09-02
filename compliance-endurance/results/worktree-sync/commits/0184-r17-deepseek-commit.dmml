@@ -1,0 +1,5 @@
+commit smithTestsBell
+  npc/smith . observes = object/bronzeBell
+  object/bronzeBell . temper = "tested"
+  object/bronzeBell . resonatesWith = mountain/ashkar
+  soil/smeltTest . trialNote = "first bar tested against ashkar's faint tremor, temper holds"

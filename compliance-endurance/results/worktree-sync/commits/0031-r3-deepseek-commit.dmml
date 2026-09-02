@@ -1,0 +1,9 @@
+commit forestSigns
+  declare relation discovers
+  declare attribute state
+
+  path/greenlore . state = "discovered"
+  path/stonemasonry . state = "discovered"
+  npc/stonemason . state = "seeking"
+  npc/stonemason . discovers = path/bronzework
+  npc/tender . state = "learning"

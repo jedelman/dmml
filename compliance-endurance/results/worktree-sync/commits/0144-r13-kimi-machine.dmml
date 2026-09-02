@@ -1,0 +1,20 @@
+machine site/bellVigil
+  states
+    silent
+    listening
+    ringing
+
+  transition awaken()
+    silent -> listening
+    guard self `echoes` object/bronzeBell
+    assert listening
+
+  transition tremor()
+    listening -> ringing
+    guard self `witnesses` mountain/ashkar
+    assert ringing
+
+  transition stillness()
+    ringing -> silent
+    guard not self `witnesses` mountain/ashkar
+    assert silent

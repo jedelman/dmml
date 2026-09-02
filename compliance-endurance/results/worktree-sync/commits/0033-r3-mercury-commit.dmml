@@ -1,7 +1,0 @@
-commit riverRites
-  declare relation honors
-  declare attribute rite
-
-  culture/riverfolk :: a Culture
-  culture/riverfolk . honors = npc/keeper
-  culture/riverfolk . rite = "singing at the ford"

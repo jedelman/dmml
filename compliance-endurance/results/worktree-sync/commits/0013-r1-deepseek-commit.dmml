@@ -1,0 +1,11 @@
+commit riverRites
+  declare relation apprenticesUnder
+  declare relation belongsTo
+  declare relation tradesWith
+  declare attribute role
+
+  npc/herder . a = Herder
+  npc/herder . role = "follows herd/aurochs through oldroot, kin to the riverfolk"
+  npc/herder . belongsTo = culture/riverfolk
+  npc/herder . apprenticesUnder = npc/keeper
+  culture/riverfolk . tradesWith = culture/highkin

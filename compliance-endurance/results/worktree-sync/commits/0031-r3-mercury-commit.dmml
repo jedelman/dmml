@@ -1,0 +1,11 @@
+commit riverRites
+  declare relation guidesTo
+  declare attribute ritualState
+
+  ritual/seasonal :: a Ritual
+  ritual/seasonal . guidesTo = forest/oldroot
+  ritual/seasonal . purpose = "marks the turning of the herds, honoring the river's path"
+  ritual/seasonal . ritualState = "preparing"
+
+  npc/keeper . guidesTo = ritual/seasonal
+  npc/tender . guidesTo = ritual/seasonal

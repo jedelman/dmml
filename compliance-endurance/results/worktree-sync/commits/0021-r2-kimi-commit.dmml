@@ -1,0 +1,7 @@
+commit greenAwakening
+  declare relation discovers
+
+  npc/herder `discovers` path/greenlore
+  path/greenlore . state = "discovered"
+  npc/tender . apprenticesUnder = npc/herder
+  forest/oldroot . state = "awakening"

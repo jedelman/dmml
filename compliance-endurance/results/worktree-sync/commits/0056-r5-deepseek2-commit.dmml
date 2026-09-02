@@ -1,0 +1,11 @@
+commit ashkarTremors
+  declare relation marks
+
+  mountain/ashkar . tremorsObserved = npc/foothillWarden
+  mountain/ashkar . tremorIntensity = "mounting"
+  mountain/ashkar . witnessedBy = npc/foothillWarden
+  npc/foothillWarden . witnesses = mountain/ashkar
+  npc/mason . worksAt = quarry/ashkarFlank
+  quarry/ashkarFlank `marks` mountain/ashkar
+  npc/stonemason . state = "seeking"
+  path/stonemasonry . state = "discovered"

@@ -1,0 +1,15 @@
+commit riverRites
+  declare relation locatedIn
+  declare attribute grazingQuality
+
+  meadow/riverbend :: a Meadow
+  meadow/riverbend . locatedIn = culture/riverfolk
+  meadow/riverbend . grazingQuality = "lush"
+  meadow/riverbend . purpose = "the riverfolk's summer pasture, where the herds water before the mountain crossing"
+
+  herd/aurochs . migratesTo = meadow/riverbend
+  herd/aurochs . state = "gathering"
+
+  ritual/seasonal . state = "ready"
+  ritual/seasonal . ritualState = "ready"
+  ritual/seasonal . offeringState = "assembled"

@@ -1,0 +1,8 @@
+commit mountainTremorWatch
+  declare relation observes
+  declare relation steadies
+
+  npc/smith `observes` mountain/ashkar
+  npc/stonemason `observes` mountain/ashkar
+  npc/packer `observes` mountain/ashkar
+  mine/ninefathom `steadies` mountain/ashkar

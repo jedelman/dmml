@@ -1,0 +1,14 @@
+commit tremorRings
+  declare relation ringsFor
+
+  object/bronzeBell . resonatesWith = site/wayRest
+  object/bronzeBell . bellState = "hung"
+  site/wayRest . resonatesWith = object/bronzeBell
+  site/wayRest . carriesTidingsTo = npc/vigilKeeper
+  site/bellVigil . signalsTo = npc/vigilKeeper
+  npc/vigilKeeper . vigilState = "watchful"
+  npc/vigilKeeper . observes = object/bronzeBell
+  npc/foothillWarden . state = "alert"
+  mountain/ashkar . tremorsObserved = npc/foothillWarden
+  herd/brindle . unease = "restless"
+  path/packroad . carriesTidings = site/wayRest

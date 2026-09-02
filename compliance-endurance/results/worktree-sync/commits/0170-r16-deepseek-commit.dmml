@@ -1,0 +1,4 @@
+commit wardenAlert
+  npc/foothillWarden . state = "alert"
+  npc/foothillWarden . readsSignsFrom = object/bronzeBell
+  npc/foothillWarden . role = "reads ashkar's tremors at oldroot's edge, and the herd's restless signs, kin to keeper and herder alike"

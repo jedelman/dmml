@@ -1,0 +1,8 @@
+commit riverRites
+  declare relation harvests
+  declare relation guidesTo
+
+  ritual/seasonal :: a Ritual
+  ritual/seasonal . state = "preparing"
+  ritual/seasonal . guidesTo = forest/oldroot
+  ritual/seasonal . harvests = herd/aurochs

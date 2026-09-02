@@ -1,0 +1,26 @@
+machine ritual/seasonal
+  states
+    dormant
+    preparing
+    ready
+    enacted
+
+  transition beginPreparation()
+    dormant -> preparing
+    guard ritual/seasonal `guidesTo` meadow/riverbend
+    assert preparing
+
+  transition gatherOfferings(herd)
+    preparing -> preparing
+    guard npc/seasonGuide `tends` $herd
+    assert preparing
+
+  transition readyRite()
+    preparing -> ready
+    guard ritual/seasonal `converges` ritual/highkinRite
+    assert ready
+
+  transition enactRite()
+    ready -> enacted
+    guard ritual/seasonal `harvests` herd/aurochs
+    assert enacted

@@ -1,0 +1,13 @@
+commit mints
+  declare relation guidesPreparationOf
+  declare relation tends
+
+  npc/seasonGuide :: a NPC
+  npc/seasonGuide . belongsTo = culture/riverfolk
+  npc/seasonGuide . craftFocus = "herding"
+  npc/seasonGuide . guidesPreparationOf = ritual/seasonal
+  npc/seasonGuide . learnsFrom = npc/herder
+  npc/seasonGuide . role = "reads the herd's movements and the mountain's tremors, preparing the seasonal rite"
+  npc/seasonGuide . state = "learning"
+  npc/seasonGuide . tends = herd/aurochs
+  npc/seasonGuide . walksTo = meadow/riverbend

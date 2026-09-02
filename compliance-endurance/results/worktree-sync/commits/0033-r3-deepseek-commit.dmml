@@ -1,4 +1,7 @@
-commit introduceBronzehandApprentice
-  npc/bronzehand . a = Person
-  npc/bronzehand . worksAt = mine/ninefathom
-  npc/bronzehand . apprenticesUnder = npc/keeper
+commit ashkarRumbles
+  declare attribute state
+  declare attribute role
+
+  mountain/ashkar . state = "rumbling"
+  npc/keeper . role = "guides the fleeing herds, witnesses ashkar's fury"
+  culture/highkin . tradesWith = culture/riverfolk

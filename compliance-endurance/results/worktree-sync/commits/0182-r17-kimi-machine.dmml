@@ -1,0 +1,31 @@
+machine npc/fordWarden
+  states
+    listening
+    comparing
+    warning
+
+  transition learnFromVigilKeeper()
+    listening -> comparing
+    guard self `learnsFrom` npc/vigilKeeper
+    assert comparing
+
+  transition compareEchoes()
+    comparing -> comparing
+    guard self `observes` mountain/ashkar
+    guard self `guidesTo` site/riverFord
+
+  transition soundWarning()
+    comparing -> warning
+    guard self `witnesses` mountain/ashkar
+    assert warning
+
+  transition warningToBellVigil()
+    warning -> warning
+    guard self `carriesSignTo` site/bellVigil
+    guard site/bellVigil `tendedBy` npc/vigilKeeper
+
+  transition returnToListening()
+    warning -> listening
+    guard not self `observes` mountain/ashkar
+    retract warning
+    assert listening

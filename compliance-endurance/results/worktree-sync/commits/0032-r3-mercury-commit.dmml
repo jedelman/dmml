@@ -1,0 +1,7 @@
+commit ashkarWatch
+  declare relation tremorsObserved
+  declare attribute tremorIntensity
+
+  mountain/ashkar . tremorsObserved = npc/keeper
+  mountain/ashkar . tremorIntensity = "faint"
+  npc/keeper . role = "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"

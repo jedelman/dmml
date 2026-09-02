@@ -1,0 +1,6 @@
+commit firstBarTested
+  declare attribute temper
+  declare attribute trialState
+
+  soil/smeltTest . trialState = "tested"
+  object/firstBar . temper = "tested"

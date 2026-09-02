@@ -1,0 +1,15 @@
+commit autumnDownslope
+  declare relation guidesHerdsTo
+  declare relation witnessesReturn
+  declare relation carriesOfferingTo
+
+  culture/riverfolk . a = Culture
+  herd/aurochs . state = "gathering"
+  herd/stagfolk . state = "gathering"
+  meadow/riverbend . grazingQuality = "lush"
+  npc/herder . guidesHerdsTo = meadow/riverbend
+  npc/foothillWarden . witnessesReturn = npc/herder
+  ritual/seasonal . guidesHerdsTo = meadow/riverbend
+  ritual/seasonal . offeringState = "gathering"
+  npc/packer . carriesOfferingTo = ritual/seasonal
+  object/firstBar . carriesOfferingTo = ritual/highkinRite

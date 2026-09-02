@@ -1,0 +1,26 @@
+commit settleRite
+  declare relation gathersAt
+  declare relation marks
+  declare relation offers
+  declare relation observes
+  declare attribute offeringState
+  declare attribute ritualState
+  declare attribute trialState
+
+  ritual/seasonal :: a Ritual
+  ritual/seasonal . gatheringState = "assembled"
+  ritual/seasonal . ritualState = "ready"
+
+  herd/aurochs :: a Herd
+  herd/brindle :: a Herd
+  herd/stagfolk :: a Herd
+  herd/aurochs . gatheredAt = meadow/riverbend
+  herd/brindle . gathersAt = meadow/riverbend
+  herd/stagfolk . gathersAt = meadow/riverbend
+
+  object/firstBar . mark = ritual/seasonal
+  object/firstBar . trialState = "tested"
+
+  npc/smith . observes = ritual/seasonal
+  npc/keeper . marks = ritual/seasonal
+  npc/foothillWarden . marks = ritual/seasonal

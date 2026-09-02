@@ -1,0 +1,6 @@
+commit greenSigns
+  declare relation readsSignsFrom
+  declare attribute greenSign
+
+  npc/tender . readsSignsFrom = forest/oldroot
+  npc/tender . greenSign = "oldroot stirs awake, blight-fire fading at the roots"
