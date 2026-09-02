@@ -76,6 +76,42 @@ resolvedPeerSrc =
   \  declare relation state\n\
   \  shrine/threshold . state = resolved\n"
 
+-- | Phase A2: a governed predicate that ISN'T "state" -- npc/y's own
+-- role, governed by contest/z, whose OWN internal state stays a
+-- completely separate concept (contested -> trickster, unrelated in
+-- name to "role"). Proves arbitrate's value-match never actually
+-- depended on the disputed predicate being named "state" -- the
+-- earlier restriction was an overcautious guard, not a structural
+-- necessity.
+nonStateMachineSrc :: Text
+nonStateMachineSrc =
+  "machine contest/z\n\
+  \  states\n\
+  \    contested\n\
+  \    trickster\n\
+  \\n\
+  \  transition resolve(witness)\n\
+  \    contested -> trickster\n\
+  \    guard self `witnessedBy` npc/keeper\n\
+  \    assert trickster\n"
+
+nonStateSrc, nonStatePeerSrc :: Text
+nonStateSrc =
+  "commit raises\n\
+  \  declare relation role\n\
+  \  declare relation equips\n\
+  \  declare relation witnessedBy\n\
+  \  declare attribute trigger\n\
+  \  npc/y . role = guide\n\
+  \  npc/y `equips` contest/z\n\
+  \  contest/z . trigger = \"role\"\n\
+  \  contest/z . state = contested\n\
+  \  contest/z `witnessedBy` npc/keeper\n"
+nonStatePeerSrc =
+  "commit raises\n\
+  \  declare relation role\n\
+  \  npc/y . role = trickster\n"
+
 buildSnap :: Text -> Text -> IO WorldSnapshot
 buildSnap mineSrc peerSrc = do
   mineC <- parseC mineSrc
@@ -122,6 +158,26 @@ main = do
   if length (currentValue key untouchedPending) == length (currentValue key pendingSnap)
     then putStrLn "PASS: applyGovernance left the still-pending pair untouched"
     else putStrLn "FAIL: applyGovernance changed a still-pending pair" >> exitFailure
+
+  -- Phase A2: governance on a NON-"state" predicate (npc/y . role),
+  -- governed by contest/z whose own internal state field is a
+  -- completely separate concept. Proves arbitrate's value-match never
+  -- depended on the disputed predicate being named "state".
+  nonStateMachine <- case parseMachineSurface nonStateMachineSrc of
+    Left e -> putStrLn (errorBundlePretty e) >> exitFailure
+    Right m -> pure m
+  let machines' = Map.insert "contest/z" nonStateMachine machines
+      nonStateKey = ("npc/y", "role")
+  nonStateSnap <- buildSnap nonStateSrc nonStatePeerSrc
+  case arbitrate machines' nonStateKey nonStateSnap of
+    Resolved label v ->
+      putStrLn ("PASS: Resolved (non-state predicate, governed, witnessed) -- " <> show label <> " " <> show v)
+    other -> putStrLn ("FAIL: expected Resolved for non-state predicate, got " <> show other) >> exitFailure
+
+  let nonStateCollapsed = applyGovernance machines' nonStateSnap
+  case currentValue nonStateKey nonStateCollapsed of
+    [_single] -> putStrLn "PASS: applyGovernance collapsed the non-state pair to one live value"
+    other -> putStrLn ("FAIL: applyGovernance left " <> show (length other) <> " alternatives for non-state pair, expected 1") >> exitFailure
   where
     check label expected actual
       | actual == expected = putStrLn ("PASS: " <> label)

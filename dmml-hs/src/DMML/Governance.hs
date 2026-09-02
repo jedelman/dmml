@@ -14,15 +14,25 @@
 -- name is the verb. A machine equipped this way on the subject, with a
 -- matching @trigger@, is that pair's declared governor.
 --
--- HONEST SCOPE LIMIT, not silently glossed over: 'arbitrate' can only
--- actually validate a resolution for the @state@ predicate today,
--- because 'DMML.Ast.Effect' is still hardcoded to
--- @(self, \"state\", ident)@ -- there is no way for a transition to
--- assert any other predicate's value yet. A governed non-@state@
--- predicate is correctly FOUND (its governing machine is real, located)
--- but cannot yet be ARBITRATED -- that gap is real, disclosed, and
--- tracked as Phase A1/A2 (typed commits + Effect generalization),
--- jedelman/dmml#1. This module does not pretend otherwise.
+-- CORRECTED 2026-09-02 (Phase A2, jedelman/dmml#1): this module used to
+-- restrict 'arbitrate' to the @state@ predicate, reasoning that
+-- 'DMML.Ast.Effect' being hardcoded to @(self, \"state\", ident)@ meant
+-- a transition could never resolve any other predicate. Re-reading
+-- 'validated' below before building the typed-commit machinery Phase A1
+-- was scoped around showed that reasoning was wrong: the comparison is
+-- @assertedIdent == targetText@ -- purely a VALUE match, never a
+-- predicate-name match -- and @ctx@'s @self@ is already the governing
+-- MACHINE's own node, never the disputed subject's. @Effect@'s
+-- hardcoded shape constrains what a machine can say about its OWN
+-- internal state (unchanged, still just @self@'s bare state field,
+-- still appropriately narrow) -- it never actually constrained which
+-- EXTERNAL (subject, predicate) pair that internal state gets applied
+-- to resolving; 'findGoverningMachine'\'s @equips@\/@trigger@ facts
+-- already handle that mapping generically. The @state@-only restriction
+-- was an overcautious guard clause, not a structural necessity -- see
+-- the real, dogfooded non-@state@ test in @GovernanceDemo.hs@ that
+-- proved this before the restriction was removed, not just argued.
+-- Phase A1 (typed commits) turned out not to be needed at all.
 module DMML.Governance
   ( findGoverningMachine
   , GovernedOutcome (..)
@@ -74,29 +84,29 @@ data GovernedOutcome
   deriving (Eq, Show)
 
 -- | Arbitrates one (subject, predicate) pair's live alternatives against
--- its governing machine, if any exists and if the predicate is @state@
--- (see this module's own doc comment for why that restriction is real
--- and not yet lifted).
+-- its governing machine, if any exists -- ANY predicate, not just
+-- @state@ (see this module's own doc comment, Phase A2). A live
+-- alternative is validated by VALUE alone, against whichever transition
+-- legally fires on the governing machine; the disputed pair's predicate
+-- name never enters that comparison.
 arbitrate :: Map Text MachineStmt -> (Text, Text) -> WorldSnapshot -> GovernedOutcome
-arbitrate machines key@(_subj, pred_) snap =
+arbitrate machines key snap =
   case findGoverningMachine key snap of
     Nothing -> Ungoverned
-    Just machineNode
-      | pred_ /= "state" -> StillPending
-      | otherwise -> case Map.lookup machineNode machines of
-          Nothing -> StillPending
-          -- self is the GOVERNING MACHINE's own node, not the disputed
-          -- pair's subject -- a transition's guards (e.g. `self
-          -- witnessedBy npc/keeper`) are about the machine's own facts
-          -- (contest/x . witnessedBy = ...), never the disputed
-          -- subject's (shrine/threshold's). Real bug, caught by
-          -- GovernanceDemo.hs's Resolved case actually failing before
-          -- this fix -- every guard silently evaluated against the
-          -- wrong node's facts, and passed for the wrong reason (or, as
-          -- here, failed for the wrong reason).
-          Just machine -> case validated machineNode machine of
-            [(label, v)] -> Resolved label v
-            _ -> StillPending
+    Just machineNode -> case Map.lookup machineNode machines of
+      Nothing -> StillPending
+      -- self is the GOVERNING MACHINE's own node, not the disputed
+      -- pair's subject -- a transition's guards (e.g. `self
+      -- witnessedBy npc/keeper`) are about the machine's own facts
+      -- (contest/x . witnessedBy = ...), never the disputed
+      -- subject's (shrine/threshold's). Real bug, caught by
+      -- GovernanceDemo.hs's Resolved case actually failing before
+      -- this fix -- every guard silently evaluated against the
+      -- wrong node's facts, and passed for the wrong reason (or, as
+      -- here, failed for the wrong reason).
+      Just machine -> case validated machineNode machine of
+        [(label, v)] -> Resolved label v
+        _ -> StillPending
   where
     alternatives = currentValue key snap
     validated machineNode machine =
