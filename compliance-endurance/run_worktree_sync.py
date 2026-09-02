@@ -11,12 +11,26 @@ design with the topology that actually fits worktrees: ONE canonical
 repo (the player's own checkout), 4 agent worktrees sharing its object
 store and hooks, and a hub-style sync each round -- canonical merges
 FROM each agent branch via hook-merge.sh, hooks handle validation and
-Contest-minting automatically. No full mesh needed: since every agent
-worktree shares the SAME underlying repo, there is exactly one place
-("mine") for divergence to be checked against, not four.
+(as of the 2026-09-02 collision-free-mints redesign) divergence
+REPORTING, never Contest-minting -- nothing is minted anymore, a real
+overlap just shows up as a genuinely multi-valued fact. No full mesh
+needed: since every agent worktree shares the SAME underlying repo,
+there is exactly one place ("mine") for divergence to be checked
+against, not four.
+
+REWORKED 2026-09-02 for the 200-commit E1 run: scoped by commit volume
+(--target-commits), not round count -- the old round cap plus its own
+thrash-detector (oscillating-contest / 3+-contests-per-round /
+high-fail-rate early stop) is gone, since nothing mints a Contest to
+oscillate on anymore. Wall-clock and token spend are tracked and
+reported but are safety-cap guardrails only, not the primary stop
+condition (Jason's explicit call). A real DMML.Entropy sidecar runs
+alongside as a pure observer, watching commits/ live -- see
+written-world/dev-journal/2026-09-02-entropy-sidecar-guardian-process-
+pattern.md.
 
 Usage:
-    OPENROUTER_API_KEY=... python3 run_worktree_sync.py [--rounds N] [--seed S]
+    OPENROUTER_API_KEY=... python3 run_worktree_sync.py [--target-commits N] [--seed S]
 """
 import argparse
 import json
@@ -27,6 +41,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 import run as base  # reuse dispatch/corner-sampling/classification helpers
@@ -88,35 +103,40 @@ def agent_commit_files(repo_dir):
 def sync_agent_into_canonical(canon, branch, env, log):
     """hook-merge.sh IS the broker now -- 3 lines (git merge --no-ff
     || git merge --abort), with pre-merge-commit/post-merge doing the
-    validation and Contest-minting that used to be broker.sh's own
-    ~150 lines of hand-rolled orchestration."""
+    validation and (as of the 2026-09-02 collision-free-mints redesign)
+    REPORTING divergence, never minting a Contest anymore.
+
+    REWORKED to match: this used to parse "DIVERGENCE minted as
+    content:" -- that string hasn't existed in check-divergence's
+    output since dmml a8470c7, so this was silently finding zero
+    matches on every real run since then, a real stale-parser bug
+    caught before spending real dispatch cost on it. Now parses the
+    real output ("DIVERGENCE (live, unresolved): subj . pred"), and
+    returns the pairs still live/unresolved after this merge -- nothing
+    is ever "minted"; a pair may just still be genuinely multi-valued
+    (ungoverned, or governed but not yet resolved)."""
     r = sh("bash", str(HOOK_MERGE_SH), branch, cwd=str(canon), env=env)
-    # Real bug found running this for real: git routes an invoked
-    # hook's own stdout through to the CALLING process's stderr, not
-    # its stdout -- confirmed directly (post-merge's "DIVERGENCE
-    # minted..." line landed in r.stderr, never r.stdout, even on a
-    # clean, successful merge). Checking stdout alone silently missed
-    # every real mint; a contest was genuinely minted and committed
-    # while the log kept reporting "no divergence." Search both.
+    # Real bug found running this for real (still true post-redesign):
+    # git routes an invoked hook's own stdout through to the CALLING
+    # process's stderr, not its stdout. Search both.
     combined = r.stdout + r.stderr
-    minted = [l for l in combined.splitlines() if l.startswith("DIVERGENCE minted as content:")]
     if r.returncode != 0:
         log(f"    [sync] canonical <- {branch}: REJECTED (exit {r.returncode})\n"
             f"      stdout:\n{r.stdout}\n      stderr:\n{r.stderr}")
-        return False, 0, set()
-    minted_pairs = set()
+        return False, set()
+    live_pairs = set()
     for line in combined.splitlines():
-        m = MINT_SUBJ_PRED_RE.match(line)
+        m = DIVERGENCE_SUBJ_PRED_RE.match(line)
         if m:
-            minted_pairs.add((m.group(1), m.group(2)))
-    if minted:
-        log(f"    [sync] canonical <- {branch}: ACCEPTED, {len(minted)} contest(s) minted")
+            live_pairs.add((m.group(1), m.group(2)))
+    if live_pairs:
+        log(f"    [sync] canonical <- {branch}: ACCEPTED, {len(live_pairs)} pair(s) still live/unresolved")
     else:
         log(f"    [sync] canonical <- {branch}: ACCEPTED, no divergence")
-    return True, len(minted), minted_pairs
+    return True, live_pairs
 
 
-MINT_SUBJ_PRED_RE = re.compile(r"^  (\S+) \. (\S+): ")
+DIVERGENCE_SUBJ_PRED_RE = re.compile(r"^DIVERGENCE \(live, unresolved\): (\S+) \. (\S+)$")
 
 
 def render_repo_snapshot(render_bin, repo_dir):
@@ -140,8 +160,14 @@ def refresh_worktree_to_canonical(worktree_dir, canon_branch):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--rounds", type=int, default=20)
+    ap.add_argument("--target-commits", type=int, default=200,
+                     help="stop once this many valid commits have landed (primary scoping axis)")
+    ap.add_argument("--max-rounds", type=int, default=60, help="safety cap, not the primary stop condition")
+    ap.add_argument("--max-wall-seconds", type=int, default=4 * 3600, help="safety cap")
+    ap.add_argument("--max-tokens", type=int, default=8_000_000, help="safety cap (prompt+completion combined)")
     ap.add_argument("--seed", type=int, default=20260903)
+    ap.add_argument("--entropy-window", type=int, default=5)
+    ap.add_argument("--entropy-threshold", type=float, default=0.5)
     args = ap.parse_args()
 
     api_key = os.environ.get("OPENROUTER_API_KEY")
@@ -150,18 +176,19 @@ def main():
         return 1
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    validate_bin, render_bin, divergence_bin = base.build_binaries()
+    validate_bin, render_bin, divergence_bin, entropy_sidecar_bin = base.build_binaries()
     surface_text = base.SURFACE_PATH.read_text()
 
     round_log = []
 
     def log(msg):
-        print(msg)
+        print(msg, flush=True)
         round_log.append(msg)
 
     workdir = Path(tempfile.mkdtemp(prefix="endurance-worktree-sync-"))
     log(f"=== worktree-sync endurance test: {len(AGENTS)} agents "
-        f"({', '.join(a['name'] for a in AGENTS)}), up to {args.rounds} rounds, "
+        f"({', '.join(a['name'] for a in AGENTS)}), target={args.target_commits} commits "
+        f"(safety caps: {args.max_rounds} rounds / {args.max_wall_seconds}s / {args.max_tokens} tokens), "
         f"hub topology via hooks, workdir={workdir} ===")
     canon, worktrees = setup_world(workdir)
 
@@ -169,12 +196,61 @@ def main():
     env["DMML_VALIDATOR"] = str(validate_bin)
     env["DMML_DIVERGENCE_CHECK"] = str(divergence_bin)
 
-    contest_history = []  # (round, subj, pred), only real mints
-    thrash_reason = None
-    report_rounds = []
+    # Entropy sidecar: a real, separate, resumable process watching the
+    # canonical repo's commits/ live for the whole run -- an observer,
+    # not a stop-trigger (this harness's own stop condition is
+    # commit-volume, unrelated to what the sidecar finds; see
+    # written-world/dev-journal/2026-09-02-entropy-sidecar-guardian-
+    # process-pattern.md for why that decoupling is deliberate).
+    sidecar_checkpoint = RESULTS_DIR / "entropy-checkpoint.json"
+    sidecar_proc = None
+    if entropy_sidecar_bin.exists():
+        sidecar_proc = subprocess.Popen(
+            [str(entropy_sidecar_bin), str(canon / "commits"), str(sidecar_checkpoint),
+             str(args.entropy_window), str(args.entropy_threshold), "--watch", "10"],
+            stdout=open(RESULTS_DIR / "entropy-sidecar.log", "w"),
+            stderr=subprocess.STDOUT,
+        )
+        log(f"  entropy sidecar started (pid {sidecar_proc.pid}), watching {canon / 'commits'} every 10s")
+    else:
+        log(f"  WARNING: entropy sidecar binary not found at {entropy_sidecar_bin}, running without it")
 
-    for round_no in range(1, args.rounds + 1):
-        log(f"\n--- round {round_no} ---")
+    live_pair_history = []  # (round, subj, pred) -- pairs reported still-live after a sync, informational only
+    report_rounds = []
+    stop_reason = None
+    total_valid_commits = 0
+    total_prompt_tokens = 0
+    total_completion_tokens = 0
+    total_dispatch_seconds = 0.0
+    per_agent_commits = {a["name"]: 0 for a in AGENTS}
+    run_start = time.monotonic()
+
+    def write_status():
+        elapsed = time.monotonic() - run_start
+        status = {
+            "rounds_run": len(report_rounds),
+            "total_valid_commits": total_valid_commits,
+            "target_commits": args.target_commits,
+            "wall_elapsed_seconds": round(elapsed, 1),
+            "total_prompt_tokens": total_prompt_tokens,
+            "total_completion_tokens": total_completion_tokens,
+            "total_tokens": total_prompt_tokens + total_completion_tokens,
+            "total_dispatch_seconds": round(total_dispatch_seconds, 1),
+            "avg_dispatch_seconds": round(total_dispatch_seconds / max(1, sum(
+                r["stats"][a]["n_dispatches"] for r in report_rounds for a in r["stats"]
+            )), 2) if report_rounds else 0,
+            "per_agent_commits": per_agent_commits,
+            "live_unresolved_pairs_seen": sorted({f"{s}.{p}" for (_, s, p) in live_pair_history}),
+        }
+        (RESULTS_DIR / "status.json").write_text(json.dumps(status, indent=2))
+        return status
+
+    round_no = 0
+    while True:
+        round_no += 1
+        log(f"\n--- round {round_no} --- (commits so far: {total_valid_commits}/{args.target_commits}, "
+            f"tokens so far: {total_prompt_tokens + total_completion_tokens}, "
+            f"elapsed: {time.monotonic() - run_start:.0f}s)")
         canon_branch = git(canon, "rev-parse", "--abbrev-ref", "HEAD").strip()
         for agent in AGENTS:
             refresh_worktree_to_canonical(worktrees[agent["name"]]["dir"], canon_branch)
@@ -197,6 +273,9 @@ def main():
             )
             round_stats[name] = stats
             round_accepted[name] = paths
+            total_prompt_tokens += stats["prompt_tokens"]
+            total_completion_tokens += stats["completion_tokens"]
+            total_dispatch_seconds += stats["dispatch_seconds"]
             existing = len(world_files)
             for i, p in enumerate(paths, start=1):
                 kind = base.classify_file(validate_bin, p)
@@ -208,48 +287,63 @@ def main():
                 git(wt_dir, "add", f"commits/{final_name}")
                 git(wt_dir, "commit", "--quiet", "-m", f"{name}: {final_name}")
                 log(f"    [{name}] committed {final_name}")
+            per_agent_commits[name] += stats["valid"]
+            total_valid_commits += stats["valid"]
 
         total_attempts = sum(s["valid"] + s["invalid"] + s["no_fence"] for s in round_stats.values())
-        total_valid = sum(s["valid"] for s in round_stats.values())
         total_invalid = sum(s["invalid"] for s in round_stats.values())
+        round_valid = sum(s["valid"] for s in round_stats.values())
         fail_rate = total_invalid / total_attempts if total_attempts else 0.0
-        log(f"  round {round_no} authoring totals: valid={total_valid} invalid={total_invalid} "
-            f"attempts={total_attempts} fail_rate={fail_rate:.2f}")
+        log(f"  round {round_no} authoring totals: valid={round_valid} invalid={total_invalid} "
+            f"attempts={total_attempts} fail_rate={fail_rate:.2f} "
+            f"(cumulative commits: {total_valid_commits}/{args.target_commits})")
 
         log(f"  hub sync ({len(AGENTS)} hook-merge.sh calls into canonical)...")
-        new_contests = 0
         for agent in AGENTS:
             name = agent["name"]
             if not round_accepted[name]:
                 continue  # nothing new on this agent's branch to merge
-            ok, n_minted, minted_pairs = sync_agent_into_canonical(canon, worktrees[name]["branch"], env, log)
-            new_contests += n_minted
-            for (s, p) in minted_pairs:
-                contest_history.append((round_no, s, p))
-
-        repeat_pairs = {}
-        for (r, s, p) in contest_history:
-            repeat_pairs.setdefault((s, p), set()).add(r)
-        oscillating = [(s, p, sorted(rs)) for (s, p), rs in repeat_pairs.items() if len(rs) >= 2]
+            ok, live_pairs = sync_agent_into_canonical(canon, worktrees[name]["branch"], env, log)
+            for (s, p) in live_pairs:
+                live_pair_history.append((round_no, s, p))
 
         report_rounds.append({
-            "round": round_no, "stats": round_stats, "new_contests_minted": new_contests,
-            "fail_rate": fail_rate,
+            "round": round_no, "stats": round_stats, "fail_rate": fail_rate,
+            "cumulative_commits": total_valid_commits,
         })
         (RESULTS_DIR / f"snapshot-after-round{round_no}.txt").write_text(
             render_repo_snapshot(render_bin, canon)
         )
+        write_status()
 
-        if oscillating:
-            thrash_reason = f"same (subject, predicate) contested across multiple rounds: {oscillating}"
-        elif new_contests >= 3:
-            thrash_reason = f"round {round_no} minted {new_contests} contests at once"
-        elif total_attempts and fail_rate >= 0.5:
-            thrash_reason = f"round {round_no} failure rate {fail_rate:.2f} (>= 0.5)"
+        elapsed = time.monotonic() - run_start
+        # Real, disclosed guardrails -- NOT the primary stop condition
+        # (that's target_commits, per Jason's explicit call: commit
+        # volume, not wall-clock or token budget). These only exist to
+        # kill a stuck or runaway run.
+        if total_valid_commits >= args.target_commits:
+            stop_reason = f"reached target of {args.target_commits} commits"
+        elif round_no >= args.max_rounds:
+            stop_reason = f"safety cap: {args.max_rounds} rounds reached"
+        elif elapsed >= args.max_wall_seconds:
+            stop_reason = f"safety cap: {args.max_wall_seconds}s wall-clock reached"
+        elif (total_prompt_tokens + total_completion_tokens) >= args.max_tokens:
+            stop_reason = f"safety cap: {args.max_tokens} tokens reached"
+        elif round_valid == 0 and len(report_rounds) >= 2 and report_rounds[-2]["stats"] and \
+                sum(s["valid"] for s in report_rounds[-2]["stats"].values()) == 0:
+            stop_reason = f"stuck: two consecutive rounds ({round_no - 1}, {round_no}) produced zero valid commits"
 
-        if thrash_reason:
-            log(f"\n*** STOPPING after round {round_no}: {thrash_reason} ***")
+        if stop_reason:
+            log(f"\n*** STOPPING after round {round_no}: {stop_reason} ***")
             break
+
+    if sidecar_proc is not None:
+        log("  stopping entropy sidecar...")
+        sidecar_proc.terminate()
+        try:
+            sidecar_proc.wait(timeout=15)
+        except subprocess.TimeoutExpired:
+            sidecar_proc.kill()
 
     final_snapshot = render_repo_snapshot(render_bin, canon)
     (RESULTS_DIR / "snapshot-final.txt").write_text(final_snapshot)
@@ -258,16 +352,27 @@ def main():
         shutil.rmtree(evidence_dir)
     shutil.copytree(canon / "commits", evidence_dir)
 
+    entropy_alerts = sorted((canon / "commits").glob("*entropy-collapse*.dmml"))
+
     report = {
         "rounds_run": len(report_rounds),
-        "rounds_requested": args.rounds,
-        "thrash_reason": thrash_reason,
+        "target_commits": args.target_commits,
+        "total_valid_commits": total_valid_commits,
+        "stop_reason": stop_reason,
         "final_file_count": len(agent_commit_files(canon)),
+        "wall_elapsed_seconds": round(time.monotonic() - run_start, 1),
+        "total_prompt_tokens": total_prompt_tokens,
+        "total_completion_tokens": total_completion_tokens,
+        "per_agent_commits": per_agent_commits,
+        "live_unresolved_pairs": sorted({f"{s}.{p}" for (_, s, p) in live_pair_history}),
+        "entropy_collapse_alerts": [f.name for f in entropy_alerts],
         "rounds": report_rounds,
     }
     (RESULTS_DIR / "report.json").write_text(json.dumps(report, indent=2))
     (RESULTS_DIR / "log.txt").write_text("\n".join(round_log))
-    log(f"\n=== done: {len(report_rounds)} round(s), thrash={thrash_reason!r} ===")
+    write_status()
+    log(f"\n=== done: {len(report_rounds)} round(s), {total_valid_commits} commits, "
+        f"stop_reason={stop_reason!r}, entropy alerts={len(entropy_alerts)} ===")
     log(f"(workdir {workdir} left on disk for inspection)")
     return 0
 

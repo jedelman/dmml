@@ -29,6 +29,7 @@ import random
 import re
 import subprocess
 import sys
+import time
 import urllib.request
 from pathlib import Path
 
@@ -121,16 +122,18 @@ def build_binaries():
     validate = DMML_HS / "validate-commit"
     render = DMML_HS / "render-snapshot"
     divergence = DMML_HS / "check-divergence"
+    entropy_sidecar = DMML_HS / "entropy-sidecar"
     for src, out in [
         ("app/ValidateCommit.hs", validate),
         ("app/RenderSnapshot.hs", render),
         ("app/CheckDivergence.hs", divergence),
+        ("app/EntropySidecar.hs", entropy_sidecar),
     ]:
         r = sh("ghc", "-isrc", "-iapp", "-O0", src, "-o", str(out), cwd=str(DMML_HS))
         if r.returncode != 0:
             print(r.stdout, r.stderr, file=sys.stderr)
             raise RuntimeError(f"build failed: {src}")
-    return validate, render, divergence
+    return validate, render, divergence, entropy_sidecar
 
 
 def validate_file(validate_bin, path):
@@ -163,6 +166,12 @@ def extract_fence(text):
 
 
 def call_openrouter(api_key, model, reasoning_none, messages):
+    """Returns (content, usage, elapsed_seconds). usage is OpenRouter's
+    own {"prompt_tokens", "completion_tokens", "total_tokens"} dict (or
+    {} if the response didn't include one -- some providers omit it) --
+    real instrumentation added for the 200-commit run, since nothing
+    before this tracked token spend or response latency at all despite
+    every real endurance run so far actually costing both."""
     payload = {"model": model, "max_tokens": MAX_TOKENS, "messages": messages}
     if reasoning_none:
         payload["reasoning"] = {"effort": "none"}
@@ -172,12 +181,15 @@ def call_openrouter(api_key, model, reasoning_none, messages):
         headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
         method="POST",
     )
+    start = time.monotonic()
     with urllib.request.urlopen(req, timeout=200) as resp:
         body = json.loads(resp.read().decode("utf-8"))
+    elapsed = time.monotonic() - start
     if "choices" not in body:
         raise RuntimeError(f"unexpected response: {body}")
     msg = body["choices"][0]["message"]
-    return msg.get("content") or ""
+    usage = body.get("usage") or {}
+    return msg.get("content") or "", usage, elapsed
 
 
 # ---- snapshot parsing / corner sampling ----
@@ -292,9 +304,17 @@ def run_agent_round(api_key, agent, corner_text, corner_nodes, machine_defs_text
     n_valid = 0
     n_invalid = 0
     n_no_fence = 0
+    prompt_tokens = 0
+    completion_tokens = 0
+    dispatch_seconds = 0.0
+    n_dispatches = 0
     for attempt in range(MAX_ATTEMPTS_PER_AGENT_PER_ROUND):
         try:
-            reply = call_openrouter(api_key, agent["model"], agent["reasoning_none"], messages)
+            reply, usage, elapsed = call_openrouter(api_key, agent["model"], agent["reasoning_none"], messages)
+            n_dispatches += 1
+            dispatch_seconds += elapsed
+            prompt_tokens += usage.get("prompt_tokens", 0)
+            completion_tokens += usage.get("completion_tokens", 0)
         except Exception as e:  # noqa: BLE001
             log(f"    [{agent['name']}] dispatch error: {e}")
             break
@@ -334,7 +354,11 @@ def run_agent_round(api_key, agent, corner_text, corner_nodes, machine_defs_text
         fact_lines = "\n".join(f"  {s} . {p} = {v}" for s, p, v, _ in facts[:CORNER_MAX_FACT_LINES])
         own_corner = declared_block + "\n\nCurrent facts (your corner, refreshed):\n" + fact_lines
         messages.append({"role": "user", "content": CONTINUE_PROMPT.format(corner=own_corner)})
-    return accepted_paths, {"valid": n_valid, "invalid": n_invalid, "no_fence": n_no_fence}
+    return accepted_paths, {
+        "valid": n_valid, "invalid": n_invalid, "no_fence": n_no_fence,
+        "prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens,
+        "dispatch_seconds": dispatch_seconds, "n_dispatches": n_dispatches,
+    }
 
 
 ROUND_TAG_RE = re.compile(r"-r(\d+)-")
@@ -382,7 +406,7 @@ def main():
         print("OPENROUTER_API_KEY not set", file=sys.stderr)
         return 1
 
-    validate_bin, render_bin, divergence_bin = build_binaries()
+    validate_bin, render_bin, divergence_bin, _entropy_bin = build_binaries()
     surface_text = SURFACE_PATH.read_text()
     rng = random.Random(args.seed)
 
