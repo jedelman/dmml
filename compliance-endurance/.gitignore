@@ -2,3 +2,15 @@ __pycache__/
 results/_scratch-*
 results/_list-*.txt
 results/_pair_contests/
+
+# Live, constantly-rewritten artifacts of an IN-PROGRESS run --
+# status.json/entropy-checkpoint.json/entropy-sidecar.log are process
+# bookkeeping for a run still happening, not "final evidence" (that
+# convention -- report.json/log.txt/snapshot-*.txt, committed once at
+# completion -- is unaffected). Committing these mid-run would just
+# capture an ever-changing, soon-stale snapshot on every stop-hook
+# nag; the final state gets folded into the completion commit
+# deliberately, not accidentally via every intermediate write.
+results/*/status.json
+results/*/entropy-checkpoint.json
+results/*/entropy-sidecar.log
