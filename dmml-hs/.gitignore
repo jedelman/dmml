@@ -8,3 +8,4 @@ compliance-check-informed
 render-snapshot
 check-divergence
 entropy-sidecar
+checkpoint-rebuild
