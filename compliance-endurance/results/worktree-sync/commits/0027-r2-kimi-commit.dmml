@@ -1,0 +1,9 @@
+commit mints
+  declare relation worksAt
+  declare relation apprenticesUnder
+
+  npc/greenhand :: a Person
+  npc/greenhand . belongsTo = culture/riverfolk
+  npc/greenhand . worksAt = forest/oldroot
+
+  path/greenlore . state = "apprenticed"

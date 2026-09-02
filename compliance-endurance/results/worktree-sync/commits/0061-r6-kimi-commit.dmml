@@ -1,0 +1,2 @@
+commit stagfolk_migration
+  herd/stagfolk . state = "migrating"

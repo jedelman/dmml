@@ -1,0 +1,3 @@
+commit forestOldrootHealing
+  forest/oldroot . state = "oldgrowth"
+  forest/oldroot . witnessedBy = npc/greenhand

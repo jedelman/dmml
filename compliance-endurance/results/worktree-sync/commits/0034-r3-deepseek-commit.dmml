@@ -1,0 +1,5 @@
+commit resolveHighkinContest
+  contest/culture_highkin_state_1 . state = "resolved"
+  contest/culture_highkin_state_1 . option1Value = "flourishing"
+  contest/culture_highkin_state_1 . witnessedBy = npc/keeper
+  culture/highkin . state = "flourishing"

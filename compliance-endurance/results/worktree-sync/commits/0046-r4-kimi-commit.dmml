@@ -1,0 +1,10 @@
+commit forestRenewal
+  declare relation heals
+  declare attribute depth
+
+  forest/oldroot . state = "regrown"
+  forest/oldroot . rite = "root-binding ceremony"
+  npc/greenhand . heals = forest/oldroot
+  npc/greenhand . craft = "blight-warden"
+  mine/ninefathom . depth = 340
+  mine/ninefathom . locatedIn = mountain/ashkar

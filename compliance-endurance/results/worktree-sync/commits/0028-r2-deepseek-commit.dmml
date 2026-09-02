@@ -1,0 +1,3 @@
+commit riverRite
+  culture/riverfolk . rite = "the Silt-Song, now sung with the highkin's coin-chime, binding both banks"
+  culture/riverfolk . tradesWith = culture/highkin

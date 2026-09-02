@@ -1,0 +1,3 @@
+commit riverFlourish
+  culture/riverfolk . state = flourishing
+  npc/riverward . belongsTo = culture/riverfolk

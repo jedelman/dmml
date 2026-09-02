@@ -1,0 +1,3 @@
+commit herdSettlesAtOldroot
+  herd/aurochs . migratesTo = forest/oldroot
+  herd/aurochs . state = grazing

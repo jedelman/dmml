@@ -1,0 +1,27 @@
+commit riverfolkMachinery
+  declare relation apprenticesUnder
+  declare relation belongsTo
+  declare relation carries
+  declare relation erupts
+  declare relation fallsOn
+  declare relation grazesIn
+  declare relation locatedIn
+  declare relation masters
+  declare relation migratesTo
+  declare attribute purpose
+  declare attribute role
+  declare attribute state
+  declare relation tradesWith
+  declare relation wardedBy
+  declare relation witnessedBy
+  declare relation worksAt
+
+  culture/riverfolk . state = "fishing"
+  culture/highkin . state = "trading"
+  mine/ninefathom . purpose = "supplies ore for riverfolk tools"
+  forest/oldroot . witnessedBy = npc/keeper
+  mine/ninefathom . wardedBy = "deep wards"
+  culture/riverfolk . carries = "nets"
+  culture/highkin . worksAt = mine/ninefathom
+  herd/aurochs . migratesTo = forest/oldroot
+  herd/stagfolk . migratesTo = forest/oldroot

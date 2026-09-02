@@ -1,0 +1,9 @@
+commit riverfolkFlourish
+  culture/riverfolk . a = Culture
+  culture/riverfolk . belongsTo = culture/riverfolk
+  culture/riverfolk . locatedIn = forest/oldroot
+  culture/riverfolk . carries = "nets"
+  culture/riverfolk . honors = mountain/ashkar
+  culture/riverfolk . apprenticesUnder = culture/highkin
+  culture/riverfolk . tradesWith = culture/highkin
+  culture/riverfolk . state = flourishing

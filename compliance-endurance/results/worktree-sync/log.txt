@@ -279,6 +279,3 @@ expecting "::", '.', or '`'
     [sync] canonical <- agent/deepseek2: ACCEPTED, no divergence
 
 *** STOPPING after round 7: same (subject, predicate) contested across multiple rounds: [('culture/riverfolk', 'state', [1, 7])] ***
-
-=== done: 7 round(s), thrash="same (subject, predicate) contested across multiple rounds: [('culture/riverfolk', 'state', [1, 7])]" ===
-(workdir /tmp/endurance-worktree-sync-6kfg26pu left on disk for inspection)

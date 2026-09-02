@@ -1,0 +1,9 @@
+commit riverFlourishes
+  declare relation belongsTo
+  declare relation tradesWith
+
+  npc/riverward :: a Person
+  npc/riverward . role = "herd-warden"
+  npc/riverward `belongsTo` culture/riverfolk
+  culture/riverfolk . state = "flourishing"
+  culture/highkin `tradesWith` culture/riverfolk

@@ -1,0 +1,3 @@
+commit mints
+  npc/bronzehand `apprenticesUnder` path/bronzework
+  path/bronzework . state = "mastered"

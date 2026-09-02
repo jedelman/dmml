@@ -1,0 +1,15 @@
+machine mine/ninefathom
+  states
+    undug
+    working
+    exhausted
+
+  transition dig(master)
+    undug -> working
+    guard $master `worksAt` mountain/ashkar
+    assert working
+
+  transition exhaust()
+    working -> exhausted
+    assert exhausted
+    retract working

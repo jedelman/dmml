@@ -1,0 +1,4 @@
+commit greenhandApprenticeship
+  npc/greenhand . apprenticesUnder = path/stonemasonry
+  npc/greenhand . craft = "stonecarving"
+  npc/greenhand . witnessedBy = npc/keeper

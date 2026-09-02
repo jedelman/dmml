@@ -1,0 +1,5 @@
+commit highkinQuarryRite
+  declare attribute rite
+  
+  culture/highkin . rite = "stonecutters' procession"
+  culture/highkin . honors = mountain/ashkar

@@ -1,0 +1,3 @@
+commit riverRites
+  herd/stagfolk . grazesIn = forest/oldroot
+  herd/stagfolk . migratesTo = forest/oldroot

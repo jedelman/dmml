@@ -1,0 +1,5 @@
+commit forestOldrootLogging
+  declare relation fellBy
+  
+  forest/oldroot . state = "logged"
+  forest/oldroot . fellBy = npc/greenhand

@@ -1,0 +1,3 @@
+commit blightComes
+  forest/oldroot . state = "blighted"
+  npc/mossfinger `carries` forest/oldroot

@@ -1,0 +1,9 @@
+commit advanceGreenlore
+  declare relation apprenticesUnder
+  declare attribute state
+
+  npc/mossfinger :: a Person
+  npc/mossfinger . role = "green-warden"
+  npc/mossfinger . belongsTo = culture/riverfolk
+  npc/mossfinger `apprenticesUnder` path/greenlore
+  path/greenlore . state = "mastered"

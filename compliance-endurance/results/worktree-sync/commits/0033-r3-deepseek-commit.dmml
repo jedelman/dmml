@@ -1,0 +1,4 @@
+commit introduceBronzehandApprentice
+  npc/bronzehand . a = Person
+  npc/bronzehand . worksAt = mine/ninefathom
+  npc/bronzehand . apprenticesUnder = npc/keeper

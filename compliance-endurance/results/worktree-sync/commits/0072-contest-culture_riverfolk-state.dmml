@@ -1,0 +1,19 @@
+commit raises
+  declare relation disputes
+  declare attribute subject
+  declare attribute predicate
+  declare attribute state
+  declare attribute option1Value
+  declare attribute option2Value
+  declare attribute option1Source
+  declare attribute option2Source
+
+  contest/culture_riverfolk_state_1 :: a Contest
+  contest/culture_riverfolk_state_1 . subject = "culture/riverfolk"
+  contest/culture_riverfolk_state_1 . predicate = "state"
+  contest/culture_riverfolk_state_1 . state = "contested"
+  contest/culture_riverfolk_state_1 . option1Value = flowing
+  contest/culture_riverfolk_state_1 . option1Source = "player/canonical"
+  contest/culture_riverfolk_state_1 . option2Value = flourishing
+  contest/culture_riverfolk_state_1 . option2Source = "agent/deepseek"
+  contest/culture_riverfolk_state_1 `disputes` culture/riverfolk

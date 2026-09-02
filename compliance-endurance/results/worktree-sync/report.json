@@ -1,0 +1,197 @@
+{
+  "rounds_run": 7,
+  "rounds_requested": 20,
+  "thrash_reason": "same (subject, predicate) contested across multiple rounds: [('culture/riverfolk', 'state', [1, 7])]",
+  "final_file_count": 79,
+  "rounds": [
+    {
+      "round": 1,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "mercury": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0
+        }
+      },
+      "new_contests_minted": 2,
+      "fail_rate": 0.0
+    },
+    {
+      "round": 2,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        },
+        "mercury": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1
+        },
+        "deepseek2": {
+          "valid": 1,
+          "invalid": 0,
+          "no_fence": 0
+        }
+      },
+      "new_contests_minted": 0,
+      "fail_rate": 0.125
+    },
+    {
+      "round": 3,
+      "stats": {
+        "kimi": {
+          "valid": 4,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 1
+        },
+        "mercury": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0
+        }
+      },
+      "new_contests_minted": 0,
+      "fail_rate": 0.0
+    },
+    {
+      "round": 4,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 1
+        },
+        "deepseek": {
+          "valid": 1,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "mercury": {
+          "valid": 1,
+          "invalid": 1,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0
+        }
+      },
+      "new_contests_minted": 0,
+      "fail_rate": 0.1111111111111111
+    },
+    {
+      "round": 5,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "mercury": {
+          "valid": 0,
+          "invalid": 0,
+          "no_fence": 1
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0
+        }
+      },
+      "new_contests_minted": 0,
+      "fail_rate": 0.0
+    },
+    {
+      "round": 6,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        },
+        "mercury": {
+          "valid": 1,
+          "invalid": 2,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 2,
+          "invalid": 2,
+          "no_fence": 0
+        }
+      },
+      "new_contests_minted": 0,
+      "fail_rate": 0.38461538461538464
+    },
+    {
+      "round": 7,
+      "stats": {
+        "kimi": {
+          "valid": 2,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek": {
+          "valid": 3,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "mercury": {
+          "valid": 1,
+          "invalid": 0,
+          "no_fence": 0
+        },
+        "deepseek2": {
+          "valid": 3,
+          "invalid": 1,
+          "no_fence": 0
+        }
+      },
+      "new_contests_minted": 1,
+      "fail_rate": 0.1
+    }
+  ]
+}

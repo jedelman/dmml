@@ -1,0 +1,7 @@
+commit riverFolkDeeds
+  declare relation fallsOn
+  declare attribute role
+
+  culture/riverfolk :: a Culture
+  culture/riverfolk . fallsOn = mountain/ashkar
+  culture/riverfolk . role = "fishers"

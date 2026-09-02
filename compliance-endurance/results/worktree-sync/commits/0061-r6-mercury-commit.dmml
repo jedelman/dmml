@@ -1,0 +1,8 @@
+commit riverRites
+  declare relation apprenticesUnder
+  declare relation belongsTo
+
+  culture/riverfolk_fresh :: a culture/riverfolk
+  culture/riverfolk_fresh . craft = "fishing nets"
+  culture/riverfolk_fresh . rite = "river blessing"
+  culture/riverfolk_fresh . state = nascent

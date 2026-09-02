@@ -1,0 +1,5 @@
+commit kinFlourishes
+  declare relation belongsTo
+
+  npc/bronzehand `belongsTo` culture/highkin
+  culture/highkin . state = "flourishing"

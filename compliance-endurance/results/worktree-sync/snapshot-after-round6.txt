@@ -1,0 +1,165 @@
+Declared predicates:
+  relation apprenticesUnder
+  relation belongsTo
+  relation carries
+  attribute craft
+  attribute depth
+  relation disputes
+  relation erupts
+  relation fallsOn
+  relation fellBy
+  relation follows
+  relation grazesIn
+  relation heals
+  relation honors
+  relation locatedIn
+  relation masters
+  relation migratesTo
+  attribute option1Source
+  attribute option1Value
+  attribute option2Source
+  attribute option2Value
+  attribute predicate
+  attribute purpose
+  relation quarries
+  attribute rite
+  attribute role
+  attribute state
+  attribute subject
+  relation tradesWith
+  relation wardedBy
+  relation witnessedBy
+  relation worksAt
+
+Current facts:
+  contest/culture_highkin_state_1 . a = Contest
+  contest/culture_highkin_state_1 . disputes = culture/highkin
+  contest/culture_highkin_state_1 . option1Source = "player/canonical"
+  contest/culture_highkin_state_1 . option1Value = "flourishing"
+  contest/culture_highkin_state_1 . option2Source = "agent/deepseek2"
+  contest/culture_highkin_state_1 . option2Value = "trading"
+  contest/culture_highkin_state_1 . predicate = "state"
+  contest/culture_highkin_state_1 . state = "resolved"
+  contest/culture_highkin_state_1 . subject = "culture/highkin"
+  contest/culture_highkin_state_1 . witnessedBy = npc/keeper
+  contest/culture_riverfolk_state_2 . a = Contest
+  contest/culture_riverfolk_state_2 . disputes = culture/riverfolk
+  contest/culture_riverfolk_state_2 . option1Source = "player/canonical"
+  contest/culture_riverfolk_state_2 . option1Value = "flourishing"
+  contest/culture_riverfolk_state_2 . option2Source = "agent/deepseek2"
+  contest/culture_riverfolk_state_2 . option2Value = "fishing"
+  contest/culture_riverfolk_state_2 . predicate = "state"
+  contest/culture_riverfolk_state_2 . state = "resolved"
+  contest/culture_riverfolk_state_2 . subject = "culture/riverfolk"
+  contest/culture_riverfolk_state_2 . witnessedBy = npc/keeper
+  culture/highkin . a = Culture
+  culture/highkin . belongsTo = culture/highkin
+  culture/highkin . carriedBy = npc/stonehand
+  culture/highkin . carries = "coins"
+  culture/highkin . honors = mountain/ashkar
+  culture/highkin . locatedIn = mountain/ashkar
+  culture/highkin . masters = culture/riverfolk
+  culture/highkin . purpose = "settled on ashkar's terraces, kin to the mine and the quarry"
+  culture/highkin . quarries = mine/ninefathom
+  culture/highkin . rite = "ashkar forging"
+  culture/highkin . role = "traders"
+  culture/highkin . state = "flourishing"
+  culture/highkin . tradesWith = culture/riverfolk
+  culture/highkin . worksAt = mine/ninefathom
+  culture/riverfolk . a = Culture
+  culture/riverfolk . apprenticesUnder = culture/highkin
+  culture/riverfolk . carries = "nets"
+  culture/riverfolk . fallsOn = mountain/ashkar
+  culture/riverfolk . honors = culture/highkin
+  culture/riverfolk . locatedIn = forest/oldroot
+  culture/riverfolk . migratesTo = forest/oldroot
+  culture/riverfolk . purpose = "settled along the river below oldroot, kin to the herds they follow"
+  culture/riverfolk . rite = "confluence blessing"
+  culture/riverfolk . role = "fishers"
+  culture/riverfolk . state = syncretized
+  culture/riverfolk . tradesWith = culture/highkin
+  culture/riverfolk_fresh . a = culture/riverfolk
+  culture/riverfolk_fresh . craft = "fishing nets"
+  culture/riverfolk_fresh . rite = "river blessing"
+  culture/riverfolk_fresh . state = nascent
+  forest/oldroot . a = Forest
+  forest/oldroot . fallsOn = mountain/ashkar
+  forest/oldroot . fellBy = npc/greenhand
+  forest/oldroot . grazesIn = true
+  forest/oldroot . purpose = "old-growth woodland at the mountain's foot, where the herds graze"
+  forest/oldroot . rite = "root-binding ceremony"
+  forest/oldroot . state = "blighted"
+  forest/oldroot . wardedBy = "green ward"
+  forest/oldroot . witnessedBy = npc/keeper
+  herd/aurochs . a = Herd
+  herd/aurochs . grazesIn = forest/oldroot
+  herd/aurochs . migratesTo = forest/oldroot
+  herd/aurochs . state = grazing
+  herd/stagfolk . a = Herd
+  herd/stagfolk . grazesIn = forest/oldroot
+  herd/stagfolk . migratesTo = forest/oldroot
+  herd/stagfolk . state = "migrating"
+  herd/stagfolk . wardedBy = npc/keeper
+  mine/ninefathom . a = Mine
+  mine/ninefathom . craft = "dressing the mountain's stone for terrace and shrine"
+  mine/ninefathom . depth = 340
+  mine/ninefathom . locatedIn = mountain/ashkar
+  mine/ninefathom . purpose = "supplies ore for riverfolk tools"
+  mine/ninefathom . state = "active"
+  mine/ninefathom . wardedBy = "deep wards"
+  mountain/ashkar . a = Mountain
+  mountain/ashkar . erupts = "rarely"
+  mountain/ashkar . fallsOn = culture/riverfolk
+  mountain/ashkar . purpose = "the range's tallest peak, a mine and a stonemasons' quarry cut into its flank"
+  mountain/ashkar . quarries = path/stonemasonry
+  mountain/ashkar . state = erupting
+  mountain/ashkar . witnessedBy = npc/keeper
+  npc/bronzehand . a = Person
+  npc/bronzehand . apprenticesUnder = npc/keeper
+  npc/bronzehand . belongsTo = culture/highkin
+  npc/bronzehand . craft = "bronzework"
+  npc/bronzehand . masters = path/bronzework
+  npc/bronzehand . role = "mine-founder"
+  npc/bronzehand . tradesWith = culture/riverfolk
+  npc/bronzehand . worksAt = mine/ninefathom
+  npc/greenhand . a = Person
+  npc/greenhand . apprenticesUnder = path/stonemasonry
+  npc/greenhand . belongsTo = culture/riverfolk
+  npc/greenhand . craft = "blight-warden"
+  npc/greenhand . heals = forest/oldroot
+  npc/greenhand . worksAt = forest/oldroot
+  npc/keeper . a = Keeper
+  npc/keeper . carries = "lantern"
+  npc/keeper . honors = culture/riverfolk
+  npc/keeper . livesIn = mine/ninefathom
+  npc/keeper . role = "warden"
+  npc/keeper . witnessedBy = mountain/ashkar
+  npc/keeper . worksAt = mine/ninefathom
+  npc/mossfinger . a = Person
+  npc/mossfinger . apprenticesUnder = npc/bronzehand
+  npc/mossfinger . belongsTo = culture/riverfolk
+  npc/mossfinger . carries = forest/oldroot
+  npc/mossfinger . craft = "bronze apprentice"
+  npc/mossfinger . follows = culture/riverfolk
+  npc/mossfinger . role = "green-warden"
+  npc/mossfinger . worksAt = mine/ninefathom
+  npc/riverward . a = Person
+  npc/riverward . belongsTo = culture/riverfolk
+  npc/riverward . role = "herd-warden"
+  npc/stonehand . a = Person
+  npc/stonehand . apprenticesUnder = path/stonemasonry
+  npc/stonehand . carries = "highkin sigil"
+  npc/stonehand . craft = "ashkar mason"
+  npc/stonehand . quarries = path/stonemasonry
+  npc/stonehand . role = "quarry-master"
+  npc/stonehand . worksAt = mountain/ashkar
+  path/bronzework . a = TechnicalPath
+  path/bronzework . purpose = "smelting ore drawn from ninefathom into worked bronze"
+  path/bronzework . state = "mastered"
+  path/greenlore . a = TechnicalPath
+  path/greenlore . purpose = "reading oldroot's plants for healing and blight-craft"
+  path/greenlore . state = "apprenticed"
+  path/stonemasonry . a = TechnicalPath
+  path/stonemasonry . honoredBy = culture/highkin
+  path/stonemasonry . purpose = "cutting and setting ashkar's own stone"
+  path/stonemasonry . state = mastered

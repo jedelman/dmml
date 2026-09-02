@@ -1,0 +1,6 @@
+commit stoneCraft
+  declare relation quarries
+  declare attribute craft
+
+  mine/ninefathom . craft = "dressing the mountain's stone for terrace and shrine"
+  culture/highkin . quarries = mine/ninefathom

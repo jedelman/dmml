@@ -1,0 +1,9 @@
+commit foundsStone
+  declare relation worksAt
+  declare relation apprenticesUnder
+  declare attribute role
+
+  npc/stonehand :: a Person
+  npc/stonehand . role = "quarry-founder"
+  npc/stonehand `worksAt` mountain/ashkar
+  path/stonemasonry . state = "apprenticed"

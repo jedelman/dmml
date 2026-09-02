@@ -1,0 +1,28 @@
+machine contest/mine_ninefathom_state_1
+  states
+    contested
+    resolved
+    reopened
+    council
+
+  transition resolve(witness)
+    contested -> resolved
+    guard self `witnessedBy` npc/keeper
+    assert resolved
+
+  transition reopen(challenger)
+    resolved -> reopened
+    guard $challenger `disputes` self
+    assert reopened
+    retract resolved
+
+  transition reescalate()
+    reopened -> council
+    assert council
+    retract reopened
+
+  transition councilResolves(witness)
+    council -> resolved
+    guard self `witnessedBy` npc/keeper `confirmedBy` npc/elder
+    assert resolved
+    retract council

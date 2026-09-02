@@ -1,0 +1,4 @@
+commit highkinMasters
+  culture/highkin . masters = culture/riverfolk
+  culture/highkin . tradesWith = culture/riverfolk
+  npc/stonehand . apprenticesUnder = path/stonemasonry
