@@ -18,7 +18,7 @@ import System.Exit (exitFailure)
 import qualified Data.Text.IO as TIO
 import Text.Megaparsec (errorBundlePretty)
 
-import DMML.Materialize (applyCommits, applyContests, renderSnapshot)
+import DMML.Materialize (applyCommits, renderSnapshot)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
 
 main :: IO ()
@@ -33,7 +33,13 @@ main = do
         ((p, e) : _) -> putStrLn (p <> ":\n" <> e) >> exitFailure
         [] -> do
           let stmts = [stmt | (_, Right (Just stmt)) <- results]
-          TIO.putStr (renderSnapshot (applyContests (applyCommits stmts)))
+          -- No cross-branch divergence to attribute here -- one ordered,
+          -- single-author file list, not two independently-labeled
+          -- sides -- so a fixed batch label is fine (only matters for
+          -- multi-valued-pair provenance display, which won't arise from
+          -- a single linear materialization anyway, barring a genuinely
+          -- self-contradictory chain of commits).
+          TIO.putStr (renderSnapshot (applyCommits "world" stmts))
   where
     -- Right (Just stmt): a valid commit, contributes facts.
     -- Right Nothing: a valid machine, contributes nothing to the snapshot.
