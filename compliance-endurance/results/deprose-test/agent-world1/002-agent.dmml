@@ -1,0 +1,11 @@
+commit mints
+  declare relation isA
+  declare relation fatherOf
+  declare relation producesFor
+  declare attribute status
+
+  mara `isA` blacksmith
+  oldCorwin `isA` blacksmith
+  oldCorwin `fatherOf` mara
+  maraForge `producesFor` ashgrove
+  mara . status = shortOnOre

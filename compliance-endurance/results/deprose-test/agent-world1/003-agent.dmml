@@ -1,0 +1,7 @@
+commit mints
+  declare relation closed
+  declare attribute timeAgo
+
+  nearestQuarry :: a Quarry
+  nearestQuarry `closed` true
+  nearestQuarry . timeAgo = twoSeasons

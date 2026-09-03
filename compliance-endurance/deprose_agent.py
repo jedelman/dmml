@@ -230,12 +230,18 @@ def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, 
     next_index = max(existing_indices, default=0) + 1
 
     running_world_files = list(world_files)
-    committed, check_calls, total_tokens = [], 0, 0
+    committed, check_calls = [], 0
+    total_prompt_tokens = total_completion_tokens = 0
+    api_elapsed = 0.0
+    wall_start = time.monotonic()
 
     for round_num in range(1, max_rounds + 1):
         log(f"[round {round_num}/{max_rounds}] dispatching...")
         msg, usage, elapsed = call_openrouter_tools(api_key, model, True, messages, TOOLS)
-        total_tokens += usage.get("total_tokens", 0)
+        api_elapsed += elapsed
+        total_prompt_tokens += usage.get("prompt_tokens", 0)
+        total_completion_tokens += usage.get("completion_tokens", 0)
+        log(f"  {elapsed:.1f}s, {usage.get('prompt_tokens', 0)}+{usage.get('completion_tokens', 0)} tokens")
         tool_calls = msg.get("tool_calls") or []
 
         if not tool_calls:
@@ -284,7 +290,17 @@ def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, 
     else:
         log(f"[deprose-agent] hit max_rounds ({max_rounds}) without the model ending the session on its own")
 
-    return {"committed": committed, "check_calls": check_calls, "rounds": round_num, "total_tokens": total_tokens}
+    wall_elapsed = time.monotonic() - wall_start
+    return {
+        "committed": committed,
+        "check_calls": check_calls,
+        "rounds": round_num,
+        "prompt_tokens": total_prompt_tokens,
+        "completion_tokens": total_completion_tokens,
+        "total_tokens": total_prompt_tokens + total_completion_tokens,
+        "api_elapsed": api_elapsed,
+        "wall_elapsed": wall_elapsed,
+    }
 
 
 def main():
@@ -311,7 +327,16 @@ def main():
 
     result = deprose_agentic(api_key, args.model, prose_text, args.world_dir, args.out_dir, args.max_rounds, log)
     print()
-    print(f"[deprose-agent] done: {len(result['committed'])} committed, {result['check_calls']} check/commit calls, {result['rounds']} rounds, {result['total_tokens']} tokens")
+    print(
+        f"[deprose-agent] done: {len(result['committed'])} committed, {result['check_calls']} check/commit calls, "
+        f"{result['rounds']} rounds"
+    )
+    print(
+        f"[deprose-agent] stats: {result['prompt_tokens']}+{result['completion_tokens']}="
+        f"{result['total_tokens']} tokens, {result['api_elapsed']:.1f}s API time, "
+        f"{result['wall_elapsed']:.1f}s wall time ({result['wall_elapsed'] - result['api_elapsed']:.1f}s local "
+        f"check/build/gate time)"
+    )
     for p in result["committed"]:
         print(f"  committed: {p}")
     return 0

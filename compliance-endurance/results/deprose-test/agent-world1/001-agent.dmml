@@ -1,0 +1,23 @@
+commit mints
+  declare relation worksAt
+  declare relation learnedFrom
+  declare relation produces
+  declare relation livesIn
+  declare attribute location
+  declare relation of
+
+  mara :: a Person
+  oldCorwin :: a Person
+  ashgrove :: a Village
+  silverrun :: a River
+  maraForge :: a Forge
+  ironTools :: a Product
+  easternBank :: a Location
+
+  mara `worksAt` maraForge
+  mara `learnedFrom` oldCorwin
+  mara `produces` ironTools
+  oldCorwin `livesIn` ashgrove
+  mara `livesIn` ashgrove
+  ashgrove . location = easternBank
+  easternBank `of` silverrun
