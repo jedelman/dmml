@@ -32,6 +32,7 @@ Usage:
         [--model moonshotai/kimi-k2.5] [--max-rounds 10]
 """
 import argparse
+import http.client
 import json
 import os
 import sys
@@ -146,14 +147,27 @@ TOOLS = [
 
 
 def _post_chat_completion(api_key, payload):
+    """Real gap found running narration_compulsion.py's first sweep: a
+    plain transient connection drop (http.client.IncompleteRead) killed
+    the whole multi-session run on run 1. Retried once after a short
+    wait -- this is ordinary network flakiness, not a reason to abandon
+    a run, and one retry is the same budget already given to the
+    mandatory-reasoning-error case in the caller."""
     req = urllib.request.Request(
         "https://openrouter.ai/api/v1/chat/completions",
         data=json.dumps(payload).encode("utf-8"),
         headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=200) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=200) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except (http.client.IncompleteRead, ConnectionError, TimeoutError, urllib.error.URLError) as e:
+        if isinstance(e, urllib.error.HTTPError):
+            raise
+        time.sleep(2)
+        with urllib.request.urlopen(req, timeout=200) as resp:
+            return json.loads(resp.read().decode("utf-8"))
 
 
 def call_openrouter_tools(api_key, model, reasoning_none, messages, tools):
@@ -306,6 +320,7 @@ def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, 
     total_prompt_tokens = total_completion_tokens = total_reasoning_tokens = 0
     api_elapsed = 0.0
     wall_start = time.monotonic()
+    final_text = None
 
     for round_num in range(1, max_rounds + 1):
         log(f"[round {round_num}/{max_rounds}] dispatching...")
@@ -378,6 +393,7 @@ def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, 
     return {
         "committed": committed,
         "committed_chars": committed_chars,
+        "final_text": final_text,
         "check_calls": check_calls,
         "string_cap_hits": string_cap_hits,
         "rounds": round_num,
