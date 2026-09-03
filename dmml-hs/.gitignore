@@ -11,3 +11,4 @@ entropy-sidecar
 checkpoint-rebuild
 retro-gate
 check-declared
+check-string-cap

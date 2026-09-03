@@ -1,0 +1,16 @@
+commit mints
+  declare relation locatedIn
+  declare relation closed
+  declare relation supplies
+  declare attribute closedSince
+
+  quarry :: a Quarry
+  
+  ashgrove :: a Village
+  
+  ore :: a Thing
+  
+  quarry `locatedIn` ashgrove
+  quarry `supplies` ore
+  quarry `closed` true
+  quarry . closedSince = "two seasons ago"

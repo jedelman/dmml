@@ -1,0 +1,22 @@
+commit mints
+  declare relation worksAt
+  declare relation learnedFrom
+  declare relation produces
+  declare attribute shortOn
+  declare attribute closed
+  declare attribute location
+
+  mara :: a Person
+  oldCorwin :: a Person
+  ashgrove :: a Village
+  silverrun :: a River
+  maraForge :: a Forge
+  ironTools :: a Product
+  nearestQuarry :: a Quarry
+
+  mara `worksAt` maraForge
+  mara `learnedFrom` oldCorwin
+  maraForge `produces` ironTools
+  ashgrove . location = "eastern bank of the Silverrun river"
+  mara . shortOn = "ore"
+  nearestQuarry . closed = true

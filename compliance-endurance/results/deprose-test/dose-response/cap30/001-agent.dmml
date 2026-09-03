@@ -1,0 +1,37 @@
+commit mints
+  declare relation worksAt
+  declare relation learnedFrom
+  declare relation produces
+  declare relation locatedIn
+  declare relation livesIn
+  declare relation shortOn
+  declare attribute occupation
+  declare attribute closed
+  declare attribute closed_since
+
+  mara :: a Person
+  mara . occupation = "blacksmith"
+  mara `worksAt` forge
+  mara `learnedFrom` old_corwin
+  
+  forge :: a Forge
+  forge `locatedIn` ashgrove
+  forge `produces` iron_tools
+  
+  old_corwin :: a Person
+  old_corwin . occupation = "blacksmith"
+  old_corwin `livesIn` ashgrove
+  
+  ashgrove :: a Village
+  ashgrove `locatedIn` eastern_bank
+  
+  eastern_bank :: a RiverBank
+  eastern_bank `locatedIn` silverrun
+  
+  silverrun :: a River
+  
+  quarry :: a Quarry
+  quarry . closed = true
+  quarry . closed_since = "two seasons ago"
+  
+  mara `shortOn` ore

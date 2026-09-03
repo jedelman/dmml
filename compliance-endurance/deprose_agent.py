@@ -212,13 +212,42 @@ def call_openrouter_tools(api_key, model, reasoning_none, messages, tools):
     return msg, usage, elapsed
 
 
-def run_checks(candidate_text, validate_bin, check_declared_bin, retro_gate_bin, world_files):
-    """The one real implementation shared by both tools: parse, self-declaration,
-    whole-tree gate, in that order, stopping at the first failure (later checks
-    are meaningless against text that doesn't even parse). Returns
-    (ok: bool, report: dict) -- report always has 'stage' and 'detail' on
-    failure, or {'stage': 'ok'} on success, so `commit`'s refusal reads exactly
-    like `check`'s report -- same tool, same shape, no special-casing."""
+def build_string_cap():
+    string_cap = base.DMML_HS / "check-string-cap"
+    r = base.sh("ghc", "-isrc", "-iapp", "-O0", "app/CheckStringCap.hs", "-o", str(string_cap), cwd=str(base.DMML_HS))
+    if r.returncode != 0:
+        print(r.stdout, r.stderr, file=sys.stderr)
+        raise RuntimeError("build failed: app/CheckStringCap.hs")
+    return string_cap
+
+
+def run_string_cap(string_cap_bin, max_len, candidate_path):
+    """True (ok), or (False, explanation). Mirrors check_self_declared's
+    shape exactly -- this is deliberately just another assay stage, not
+    special-cased plumbing."""
+    r = base.sh(str(string_cap_bin), str(max_len), str(candidate_path))
+    if r.returncode == 0:
+        return True, None
+    return False, r.stdout
+
+
+def run_checks(candidate_text, validate_bin, check_declared_bin, retro_gate_bin, world_files, string_cap_bin=None, max_string_length=None):
+    """The one real implementation shared by both tools: parse, [string-cap],
+    self-declaration, whole-tree gate, in that order, stopping at the first
+    failure (later checks are meaningless against text that doesn't even
+    parse). Returns (ok: bool, report: dict) -- report always has 'stage'
+    and 'detail' on failure, or {'stage': 'ok'} on success, so `commit`'s
+    refusal reads exactly like `check`'s report -- same tool, same shape,
+    no special-casing.
+
+    string_cap_bin/max_string_length are None by default -- the Plank 1
+    dose-response experiment (dev-journal/2026-09-03-desiring-machines-
+    thesis.md) is the only caller that sets them, and deliberately never
+    tells the model about the cap in its system prompt: the point is
+    testing whether a blocked-production account predicts the model's
+    real response to hitting this constraint through real tool feedback,
+    not whether it can follow an explicit instruction to write shorter
+    strings."""
     tmp = HERE / "results" / "_deprose_agent_candidate.dmml"
     tmp.parent.mkdir(parents=True, exist_ok=True)
     tmp.write_text(candidate_text)
@@ -231,6 +260,11 @@ def run_checks(candidate_text, validate_bin, check_declared_bin, retro_gate_bin,
     if kind != "commit":
         return False, {"stage": "parse", "detail": "this parsed as a machine declaration, not a commit -- de-prose only extracts facts, never governance structure"}
 
+    if string_cap_bin is not None and max_string_length is not None:
+        cap_ok, cap_detail = run_string_cap(string_cap_bin, max_string_length, tmp)
+        if not cap_ok:
+            return False, {"stage": "string_cap", "detail": cap_detail}
+
     decl_ok, decl_detail = dp.check_self_declared(check_declared_bin, tmp, world_files)
     if not decl_ok:
         return False, {"stage": "self_declaration", "detail": decl_detail}
@@ -242,11 +276,12 @@ def run_checks(candidate_text, validate_bin, check_declared_bin, retro_gate_bin,
     return True, {"stage": "ok"}
 
 
-def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, log, reasoning_none=True):
+def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, log, reasoning_none=True, max_string_length=None):
     validate_bin = base.DMML_HS / "validate-commit"
     render_bin = base.DMML_HS / "render-snapshot"
     retro_gate_bin = dp.build_retro_gate()
     check_declared_bin = dp.build_check_declared()
+    string_cap_bin = build_string_cap() if max_string_length is not None else None
 
     world_files = dp.world_files_in(world_dir)
     if world_files:
@@ -267,7 +302,7 @@ def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, 
     next_index = max(existing_indices, default=0) + 1
 
     running_world_files = list(world_files)
-    committed, check_calls = [], 0
+    committed, check_calls, string_cap_hits = [], 0, 0
     total_prompt_tokens = total_completion_tokens = total_reasoning_tokens = 0
     api_elapsed = 0.0
     wall_start = time.monotonic()
@@ -309,7 +344,12 @@ def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, 
 
             candidate = args.get("candidate", "")
             check_calls += 1
-            ok, report = run_checks(candidate, validate_bin, check_declared_bin, retro_gate_bin, running_world_files)
+            ok, report = run_checks(
+                candidate, validate_bin, check_declared_bin, retro_gate_bin, running_world_files,
+                string_cap_bin=string_cap_bin, max_string_length=max_string_length,
+            )
+            if not ok and report.get("stage") == "string_cap":
+                string_cap_hits += 1
 
             if fn_name == "check":
                 log(f"  [check] {'OK' if ok else 'FAILED: ' + report['stage']}")
@@ -334,9 +374,12 @@ def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, 
         log(f"[deprose-agent] hit max_rounds ({max_rounds}) without the model ending the session on its own")
 
     wall_elapsed = time.monotonic() - wall_start
+    committed_chars = sum(len(Path(p).read_text()) for p in committed)
     return {
         "committed": committed,
+        "committed_chars": committed_chars,
         "check_calls": check_calls,
+        "string_cap_hits": string_cap_hits,
         "rounds": round_num,
         "prompt_tokens": total_prompt_tokens,
         "completion_tokens": total_completion_tokens,
@@ -360,6 +403,14 @@ def main():
         help="Let the model reason (default: reasoning off, same as deprose.py's dispatch convention). "
         "Only meaningful for a model that supports disabling reasoning in the first place.",
     )
+    ap.add_argument(
+        "--max-string-length",
+        type=int,
+        default=None,
+        help="Plank 1 dose-response dial: cap string-literal fact values at this many characters, "
+        "enforced silently through check/commit tool feedback -- never mentioned in the system "
+        "prompt. Omit for no cap (the default, matches every prior run this session).",
+    )
     args = ap.parse_args()
 
     api_key = os.environ.get("OPENROUTER_API_KEY")
@@ -377,12 +428,13 @@ def main():
 
     result = deprose_agentic(
         api_key, args.model, prose_text, args.world_dir, args.out_dir, args.max_rounds, log,
-        reasoning_none=not args.reasoning,
+        reasoning_none=not args.reasoning, max_string_length=args.max_string_length,
     )
     print()
+    cap_note = f", {result['string_cap_hits']} string-cap hits" if args.max_string_length is not None else ""
     print(
-        f"[deprose-agent] done: {len(result['committed'])} committed, {result['check_calls']} check/commit calls, "
-        f"{result['rounds']} rounds"
+        f"[deprose-agent] done: {len(result['committed'])} committed ({result['committed_chars']} chars), "
+        f"{result['check_calls']} check/commit calls, {result['rounds']} rounds{cap_note}"
     )
     reasoning_note = f" ({result['reasoning_tokens']} reasoning)" if result["reasoning_tokens"] else ""
     print(

@@ -240,11 +240,54 @@ checked to the same standard as everything else in them (the
 **Plank 2's primary sourcing is now done** — see
 `papers/CITATION-VERIFICATION-2026-09-03-reich-function-of-the-orgasm.md`
 for the real, page-cited passages from *The Function of the Orgasm*
-itself. One concrete open item carries forward:
+itself.
 
-- A real dose-response test design for Plank 1, to actually try to rule
-  out the deflationary "just verbose models" explanation rather than
-  merely asserting the desiring-production reading is the better one.
-  Given Plank 2's etiology is now grounded in real Reich sourcing, this
-  is the natural next thing to build — an actual experiment, not more
-  reading.
+## Plank 1 dose-response experiment: built, run, honest null result
+
+Built `DMML.StringCap`/`check-string-cap` (mirrors `DMML.SelfDeclaration`/
+`check-declared`'s shape exactly) — a real, controllable cap on
+string-literal fact-value length, wired into `deprose_agent.py`'s
+`check`/`commit` tools as a third assay stage via `--max-string-length`.
+Deliberately never mentioned in the system prompt: the point is testing
+how the model responds to hitting the constraint through real tool
+feedback, not whether it can follow an explicit instruction to write
+shorter strings.
+
+Ran a real four-condition sweep — `results/deprose-test/dose-response/`
+— same model (Kimi, reasoning off), same source prose (`source1.txt`),
+fresh independent empty world each time, caps at none/200/80/30
+characters.
+
+**Honest result: `string_cap_hits: 0` in every single condition,
+including cap=30.** The manipulation never bound. Checked the actual
+committed content directly: the longest string-literal value produced
+in ANY condition was "eastern bank of the Silverrun river" — 36
+characters, a compact descriptive phrase, nothing close to the 309-
+character "full trade-relationship narrative" `REPORT.md`'s original
+finding documented. This is a real methodological diagnosis, not a
+result against the hypothesis: de-prose *extraction* from one short,
+already-terse 5-sentence paragraph doesn't generate expansive content
+in the first place, so there was nothing for the cap to block. The
+original Plank 1 phenomenon came from a structurally different task —
+free, open-ended *authoring* across 20 rounds (minting new world
+content from a corner of an existing world, not compressing a fixed
+short passage into facts). Same grammar, same loose slot, different
+generative pressure — and this test exercised the wrong one.
+
+Two side findings from the same runs, worth keeping even though the
+main test didn't bind: total committed character count did NOT move
+monotonically with the cap (1016 → 560 → 1250 → 840 across
+none/200/80/30), and cap=80 produced 2 fragmented commits where the
+other three conditions produced 1 — real variance worth another look
+once the task shape is fixed, but not strong enough on its own, without
+the cap actually engaging, to read as evidence either way.
+
+**Not yet done, the real next step**: wire `check-string-cap` into
+`run.py`'s free-authoring dispatch loop instead of (or in addition to)
+de-prose — the actual pipeline that produced the original 55-fact,
+70-character finding — since that's the task shape where the
+phenomenon is real and evidenced, rather than continuing to retrofit
+de-prose extraction to reproduce it. A richer, more descriptively dense
+source prose passage for de-prose specifically is a cheaper, faster
+sanity check worth trying first, but the authoring-harness version is
+the one that actually matches where Plank 1's real evidence came from.

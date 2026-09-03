@@ -1,0 +1,45 @@
+commit mints
+  declare relation worksAt
+  declare relation learnedFrom
+  declare relation fatherOf
+  declare relation locatedOn
+  declare relation livesIn
+  declare relation locatedIn
+  declare relation produces
+  declare relation closed
+  declare attribute shortOn
+  declare attribute name
+
+  mara :: a Person
+  mara . name = "Mara"
+
+  oldCorwin :: a Person
+  oldCorwin . name = "Old Corwin"
+
+  ashgrove :: a Village
+  ashgrove . name = "Ashgrove"
+
+  silverrun :: a River
+  silverrun . name = "Silverrun"
+
+  maraForge :: a Forge
+  maraForge . name = "Mara's forge"
+
+  ironTools :: a Thing
+  ironTools . name = "iron tools"
+
+  ore :: a Thing
+  ore . name = "ore"
+
+  nearestQuarry :: a Quarry
+  nearestQuarry . name = "nearest quarry"
+
+  mara `worksAt` maraForge
+  oldCorwin `fatherOf` mara
+  mara `learnedFrom` oldCorwin
+  ashgrove `locatedOn` silverrun
+  maraForge `locatedIn` ashgrove
+  oldCorwin `livesIn` ashgrove
+  maraForge `produces` ironTools
+  nearestQuarry `closed` "two seasons ago"
+  mara . shortOn = ore

@@ -1,0 +1,42 @@
+commit mints
+  declare relation worksAt
+  declare relation learnedFrom
+  declare relation produces
+  declare relation livesIn
+  declare relation locatedIn
+  declare relation locatedOnBank
+  declare relation shortOn
+  declare relation noLongerWorks
+  declare relation description
+  declare attribute profession
+  declare attribute name
+  declare attribute bank
+
+  mara :: a Person
+  mara . profession = "blacksmith"
+  
+  corwin :: a Person
+  corwin . name = "Old Corwin"
+  
+  ashgrove :: a Village
+  
+  silverrun :: a River
+  
+  forge :: a Forge
+  
+  iron_tools :: a Thing
+  
+  ore :: a Thing
+  
+  metal_working :: a Trade
+  
+  mara `worksAt` forge
+  forge `locatedIn` ashgrove
+  ashgrove `locatedOnBank` silverrun
+  ashgrove . bank = "eastern"
+  mara `learnedFrom` corwin
+  corwin `livesIn` ashgrove
+  corwin `noLongerWorks` metal_working
+  forge `produces` iron_tools
+  iron_tools . description = "iron tools"
+  mara `shortOn` ore
