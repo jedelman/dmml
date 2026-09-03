@@ -32,6 +32,7 @@
 -- this module's.
 module DMML.Guard
   ( EvalContext (..)
+  , resolveTerm
   , evalExists
   , evalGuard
   , evalGuards

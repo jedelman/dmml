@@ -292,10 +292,54 @@ pGuardLine = do
   pat <- pPattern
   pure GuardClause {guardNegated = neg, guardExists = ExistsExpr {existsPattern = pat, existsSpan = sp}, guardSpan = sp}
 
+-- | An effect's value position: @self@\/@$param@ (node-valued, resolved
+-- at fire time), a literal (string\/number\/bool), or a bare\/multi-
+-- segment node reference read as a literal node -- deliberately NOT
+-- reusing 'pPatternTerm' whole, since its @TermVar@ fallback (an
+-- existential pattern variable) makes no sense in effect-value
+-- position: nothing an effect asserts is existentially open, it's
+-- either bound to context or a literal author wrote down.
+pEffectValue :: Parser EffectValue
+pEffectValue =
+  (EffectValueTerm TermSelf <$ try (pKeyword "self"))
+    <|> (EffectValueTerm . TermParam <$> try (char '$' *> pIdentRaw <* sc))
+    <|> (EffectValueLiteral . LitString <$> pStringLit)
+    <|> (EffectValueLiteral . LitBoolean <$> try pBoolLit)
+    <|> (EffectValueLiteral . LitNumber <$> try pNumberLit)
+    <|> (EffectValueTerm . TermNode <$> pNodeRefText)
+
+-- | General form, generalized 2026-09-03: @assert <term> \`<predicate>\`
+-- <value>@ \/ @retract <term> \`<predicate>\`@ -- the same infix-backtick
+-- fact idiom used everywhere else in this grammar, so an effect reads
+-- exactly like the fact it will become once it fires. Falls back to the
+-- old bare @assert <ident>@\/@retract <ident>@ sugar (always implicitly
+-- @self . state@) when the general form's required backtick isn't
+-- there -- real, already-committed machine examples use the old form,
+-- kept working rather than force-migrated.
 pEffectLine :: Parser Effect
 pEffectLine =
-  (EffectAssert <$> (symbol "assert" *> pIdent))
-    <|> (EffectRetract <$> (symbol "retract" *> pIdent))
+  (symbol "assert" *> (try pAssertGeneral <|> pAssertStateSugar))
+    <|> (symbol "retract" *> (try pRetractGeneral <|> pRetractStateSugar))
+  where
+    pAssertGeneral = do
+      subj <- pPatternTerm
+      _ <- symbol "`"
+      p <- pIdentRaw <* sc
+      _ <- symbol "`"
+      val <- pEffectValue
+      pure (EffectAssert subj (PredIdent p) val)
+    pAssertStateSugar = do
+      ident <- pIdent
+      pure (EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode ident)))
+    pRetractGeneral = do
+      subj <- pPatternTerm
+      _ <- symbol "`"
+      p <- pIdentRaw <* sc
+      _ <- symbol "`"
+      pure (EffectRetract subj (PredIdent p))
+    pRetractStateSugar = do
+      _ident <- pIdent
+      pure (EffectRetract TermSelf (PredIdent "state"))
 
 -- | @from -> to@ -- a transition's optional state-pair line.
 pFromTo :: Parser (Text, Text)

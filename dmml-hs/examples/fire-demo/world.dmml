@@ -1,0 +1,6 @@
+commit setup
+  declare relation stocked
+  declare relation state
+
+  key/forge `stocked` iron/ingot
+  key/forge `state` idle

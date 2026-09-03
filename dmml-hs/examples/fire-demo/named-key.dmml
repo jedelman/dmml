@@ -1,0 +1,12 @@
+machine key/forge
+
+  states
+    idle
+    forged
+
+  transition forge(name, material)
+    idle -> forged
+    guard self `stocked` $material
+    assert $name `title` "A freshly forged key"
+    assert $name `madeFrom` $material
+    assert forged

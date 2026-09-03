@@ -287,6 +287,13 @@ patternTermFromInput pointer input = case input of
       then Right (TermNode v)
       else invalid (pointer <> "/value") (dquote v <> " is not a valid node reference")
 
+effectValueFromInput :: Text -> J.EffectValueInput -> Either JsonError EffectValue
+effectValueFromInput pointer input = case input of
+  J.EffectValueTermInput t -> EffectValueTerm <$> patternTermFromInput pointer t
+  J.EffectValueStrInput v -> Right (EffectValueLiteral (LitString v))
+  J.EffectValueNumberInput v -> Right (EffectValueLiteral (LitNumber v))
+  J.EffectValueBooleanInput b -> Right (EffectValueLiteral (LitBoolean b))
+
 existsExprFromInput :: Text -> J.ExistsInput -> Either JsonError ExistsExpr
 existsExprFromInput pointer input = do
   anchor <- patternTermFromInput (pointer <> "/anchor") (J.eiAnchor input)
@@ -326,8 +333,21 @@ machineStmtFromInput input = do
     effects <- forM (zip [0 ..] (J.tiEffects t)) $ \(ei, e) -> do
       let effectPointer = idx (pointer <> "/effects") ei
       case e of
-        J.EffectAssertInput ident -> checkIdent (effectPointer <> "/ident") ident >> Right (EffectAssert ident)
-        J.EffectRetractInput ident -> checkIdent (effectPointer <> "/ident") ident >> Right (EffectRetract ident)
+        J.EffectAssertInput ident ->
+          checkIdent (effectPointer <> "/ident") ident
+            >> Right (EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode ident)))
+        J.EffectRetractInput ident ->
+          checkIdent (effectPointer <> "/ident") ident
+            >> Right (EffectRetract TermSelf (PredIdent "state"))
+        J.EffectAssertGeneralInput subjIn predText valIn -> do
+          subj <- patternTermFromInput (effectPointer <> "/subject") subjIn
+          pred_ <- predicateRef (effectPointer <> "/predicate") predText
+          val <- effectValueFromInput (effectPointer <> "/value") valIn
+          pure (EffectAssert subj pred_ val)
+        J.EffectRetractGeneralInput subjIn predText -> do
+          subj <- patternTermFromInput (effectPointer <> "/subject") subjIn
+          pred_ <- predicateRef (effectPointer <> "/predicate") predText
+          pure (EffectRetract subj pred_)
 
     let hasContent = not (null guards) || (isJust (J.tiFrom t) && isJust (J.tiTo t)) || not (null effects)
     unless

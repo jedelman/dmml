@@ -23,6 +23,7 @@ module DMML.Json
   , ExistsInput (..)
   , GuardInput (..)
   , EffectInput (..)
+  , EffectValueInput (..)
   , TransitionInput (..)
   , MachineInput (..)
   , ReferenceInput (..)
@@ -210,20 +211,58 @@ instance FromJSON GuardInput where
   parseJSON = withObject "GuardInput" $ \o ->
     GuardInput <$> o .:? "negated" .!= False <*> o .: "exists"
 
--- | @kind: "assert" | "retract"@, paired with the state ident the effect
--- names.
+-- | An effect's asserted value on the wire: either a 'PatternTermInput'
+-- (a node reference, resolved at fire time -- @self@\/@$param@\/@?var@\/a
+-- literal node) or a literal (string\/number\/boolean), using the same
+-- @kind@-tagged discriminant space as 'PatternTermInput' and
+-- 'ObjectInput' respectively -- they never collide, since @self@\/
+-- @param@\/@var@\/@node@ and @str@\/@number@\/@boolean@ are disjoint tag
+-- sets.
+data EffectValueInput
+  = EffectValueTermInput PatternTermInput
+  | EffectValueStrInput Text
+  | EffectValueNumberInput Text
+  | EffectValueBooleanInput Bool
+  deriving (Eq, Show)
+
+instance FromJSON EffectValueInput where
+  parseJSON = withObject "EffectValueInput" $ \o -> do
+    kind <- o .: "kind" :: Parser Text
+    case kind of
+      "self" -> pure (EffectValueTermInput TermSelfInput)
+      "param" -> EffectValueTermInput . TermParamInput <$> o .: "value"
+      "var" -> EffectValueTermInput . TermVarInput <$> o .: "value"
+      "node" -> EffectValueTermInput . TermNodeInput <$> o .: "value"
+      "str" -> EffectValueStrInput <$> o .: "value"
+      "number" -> EffectValueNumberInput <$> o .: "value"
+      "boolean" -> EffectValueBooleanInput <$> o .: "value"
+      other -> fail ("unknown EffectValueInput kind " <> show other)
+
+-- | @kind: "assert" | "retract"@. Two shapes per kind, distinguished by
+-- which fields are present (never by a second discriminant): the OLD
+-- sugar form carries a bare @ident@ (always implicitly @self . state@,
+-- preserved for real, already-committed machine examples that use it --
+-- see 'DMML.Ast.Effect'\'s own doc comment) and the general form carries
+-- @subject@\/@predicate@\/(for assert) @value@. An @ident@ field wins if
+-- present, matching the parser's own precedence in "DMML.Surface" of
+-- trying the general form first and falling back to sugar.
 data EffectInput
   = EffectAssertInput Text
   | EffectRetractInput Text
+  | EffectAssertGeneralInput PatternTermInput Text EffectValueInput
+  | EffectRetractGeneralInput PatternTermInput Text
   deriving (Eq, Show)
 
 instance FromJSON EffectInput where
   parseJSON = withObject "EffectInput" $ \o -> do
     kind <- o .: "kind" :: Parser Text
-    case kind of
-      "assert" -> EffectAssertInput <$> o .: "ident"
-      "retract" -> EffectRetractInput <$> o .: "ident"
-      other -> fail ("unknown EffectInput kind " <> show other)
+    mIdent <- o .:? "ident"
+    case (kind, mIdent) of
+      ("assert", Just ident) -> pure (EffectAssertInput ident)
+      ("assert", Nothing) -> EffectAssertGeneralInput <$> o .: "subject" <*> o .: "predicate" <*> o .: "value"
+      ("retract", Just ident) -> pure (EffectRetractInput ident)
+      ("retract", Nothing) -> EffectRetractGeneralInput <$> o .: "subject" <*> o .: "predicate"
+      (other, _) -> fail ("unknown EffectInput kind " <> show other)
 
 data TransitionInput = TransitionInput
   { tiIdent :: Text

@@ -35,6 +35,7 @@ module DMML.Ast
   , PatternHop (..)
   , PatternTerm (..)
   , Effect (..)
+  , EffectValue (..)
     -- * Batching (from_json.rs's Update/Batch)
   , Batch (..)
   , Update (..)
@@ -223,8 +224,40 @@ data PatternTerm
   | TermNode Text
   deriving (Eq, Show)
 
--- | Always implicitly @(self, "state", \<ident\>)@.
-data Effect = EffectAssert Text | EffectRetract Text
+-- | Generalized 2026-09-03 (dev-journal/2026-09-03-authoring-tools-and-
+-- narration-compulsion-result.md, Phase 2/3, done as one change per
+-- Jason's own call: "machines should govern all transitions... build
+-- phase 2/3 -- they're the same"). Was @EffectAssert Text | EffectRetract
+-- Text@, always implicitly @(self, "state", \<ident\>)@ -- real state-
+-- machine transitions only, nothing else a firing could do. Now a
+-- transition's effect can assert or retract an arbitrary fact, on an
+-- arbitrary subject term (not just @self@) -- which is also, for free,
+-- how firing mints a new node: 'PatternTerm's already include
+-- 'TermParam', and DMML is open-world (a node exists the moment any
+-- fact mentions it, no separate registry to update), so an effect whose
+-- subject is @$name@ and whose predicate/value assert real content
+-- brings a brand new node into existence the instant that transition
+-- fires with a concrete binding for @$name@ -- no separate "mint"
+-- effect constructor needed, matching the project's own smallest-
+-- generic-extension razor. The old bare @assert \<ident\>@\/@retract
+-- \<ident\>@ syntax still parses (see 'DMML.Surface.pEffectLine') as
+-- sugar for exactly its old meaning, since real, already-committed
+-- machine examples (the endurance seed machines) use it and there was
+-- no reason to force a mechanical rewrite of real evidence just to add
+-- a new capability alongside it.
+data Effect
+  = EffectAssert PatternTerm PredicateRef EffectValue
+  | EffectRetract PatternTerm PredicateRef
+  deriving (Eq, Show)
+
+-- | An effect's asserted value: either a node reference (resolved from
+-- @self@\/@$param@\/a literal node at fire time, via the same
+-- 'DMML.Guard.resolveTerm' guards already use) or a literal (string\/
+-- number\/bool), matching the two shapes an ordinary fact's 'Value'
+-- already supports.
+data EffectValue
+  = EffectValueTerm PatternTerm
+  | EffectValueLiteral Literal
   deriving (Eq, Show)
 
 -- Batching (from_json.rs's Update/Batch) ------------------------------------

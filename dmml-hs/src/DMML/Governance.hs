@@ -117,7 +117,14 @@ arbitrate machines key snap =
             ctx = EvalContext {ctxSelfNode = machineNode, ctxParams = Map.empty}
       , TransitionDecl {transitionIdent = tident} <- machineTransitions machine
       , Just (True, effects, _to) <- [mayFire machine tident ctx snap]
-      , EffectAssert assertedIdent <- effects
+      , -- Preserves the pre-generalization semantics exactly: only an
+        -- effect on the machine's OWN @self . state@ field, asserting a
+        -- node-ref value, is what this arbitration compares against a
+        -- disputed alternative -- an effect on any other subject\/
+        -- predicate (now legal per the 2026-09-03 'Effect' generalization)
+        -- says nothing about which of THIS pair's alternatives is correct,
+        -- so it's not a candidate here.
+        EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode assertedIdent)) <- effects
       , assertedIdent == targetText
       ]
 
