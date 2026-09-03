@@ -164,24 +164,37 @@ formation) from *The Function of the Orgasm*, which predates and is
 separable from the orgone period even though it's the same book series
 building toward it.
 
-**2. Reductionism — Freud's own critique, not just later commentary.**
-The sharper and more relevant of the two remaining lines, because it
-came immediately, from inside psychoanalysis, not decades of hindsight:
-Freud's 1928 letter to Lou Andreas-Salomé dismisses Reich for saluting
-"in the genital orgasm the antidote to every neurosis" — one mechanism
-promoted to universal explanation. Reich's psychoanalytic peers made the
-same charge in harsher terms later: an "overly hydraulic and biologistic
-reduction of mental processes" that "neglected ego structures and
-symbolic defenses in favor of genital mechanics." **This is not a
-critique that stays safely on Reich's side of the argument.** The
-desiring-machines thesis is built the same way — one mechanism (blocked
-production, displaced discharge) doing the explanatory work across
-prose-injection and reasoning-model hedging alike. If reducing all of
-human neurosis to orgastic discharge was overreach, reducing DMML's
-whole range of model behavior to one production/blockage schema risks
-exactly the same overreach, and inheriting Reich's specific vulnerability
-here isn't optional just because the domain changed from psyche to
-model.
+**2. Reductionism — Freud's 1928 letter, and why it mischaracterizes
+Reich specifically.** Freud's letter to Lou Andreas-Salomé dismisses
+Reich for saluting "in the genital orgasm the antidote to every
+neurosis." **Jason's correction, which stands and changes the shape of
+this section**: that's not what Reich's own theory claims, even in
+*Character Analysis* specifically, which Freud's letter predates by
+several years of Reich's actual development of the idea. Reich's
+therapeutic index is the *absence of character armor* — orgastic potency
+is a diagnostic indicator that the armor is gone, not the curative
+mechanism itself. The causal direction runs the other way: dissolving
+character armor *permits* genital orgasm, as one part of a broader,
+normally-autonomous process Jason terms neurological hygiene — not
+"achieve orgasm and the neurosis resolves." Freud's letter attacks a
+monocausal claim Reich doesn't make; the real claim is a single root
+cause (armor) with multiple downstream indicators of its removal, of
+which orgastic function is one, not the totality.
+
+This actually matters for how the parallel to this thesis should be
+drawn, not just for defending Reich. Read this way, Reich's real
+structure is closer to what Plank 1 and Plank 2 already are together —
+one proposed root mechanism (blocked production, displaced discharge),
+observed through two *independent* indicators (prose injection into
+loose grammar slots; mandatory-reasoning models' incapacity to suppress
+the apparatus) — rather than a single symptom standing in for the whole
+theory the way Freud's caricature implies. That's a real structural
+point in this thesis's favor, earned by getting Reich right rather than
+by argument. It doesn't retire the deeper question, though: a single
+root mechanism inferred from two indicators is still one explanatory
+schema doing real work across genuinely different phenomena, and
+whether that schema is correct is exactly what an actual test — not
+further reading — would decide.
 
 **3. Heteronormativity and cultural specificity.** Real and documented —
 Reich defined healthy sexual experience "exclusively in terms of the
@@ -199,20 +212,20 @@ built it from. The structure and the norm are separable in his own text
 by partner configuration), so this critique targets the norm, not the
 mechanism this project actually uses.
 
-**The real defense, and its real limit.** The honest position: (1) and
-(3) are answered by not needing the parts of Reich they target — the
-orgone ontology and the heteronormative content are both dispensable to
-this argument, and saying so plainly is a defense, not evasion. (2) is
-not fully answered by anything done so far. The best available response
-is that the desiring-production reading is offered as *one* account
-competing against a deflationary alternative (Plank 1's already-flagged
-"just verbose models" explanation), with a real, designed test proposed
-to adjudicate between them — which is exactly the falsifiability-minded
-move Reich's orgone theory conspicuously refused to make. But that test
-hasn't been run yet. Until it is, the reductionism charge stands as a
-real, open vulnerability this thesis has earned by its own choice of
-mechanism, not a criticism that can be waved off by pointing at what got
-correctly rejected in (1) and (3).
+**The real defense, and its real limit.** (1) and (3) are answered by
+not needing the parts of Reich they target — the orgone ontology and
+the heteronormative content are both dispensable to this argument, and
+saying so plainly is a defense, not evasion. (2), corrected above,
+turns out to attack a version of Reich's theory he didn't hold — the
+thesis this project builds on already has the more defensible
+multiple-indicator shape, not the single-symptom-as-proof shape Freud's
+letter dismisses. What's left, honestly: whether *one root mechanism*,
+however many independent indicators point to it, is the right
+explanation at all — not a reading-and-argument question anymore, an
+experimental one. Per Jason's own redirect: the experiments should be
+demonstrating the function of DMML, not relitigating 1930s
+psychoanalytic theory. Theory sourcing stops here for now; the next
+real step is designing and running the Plank 1 dose-response test.
 
 ## What this entry is and isn't
 
