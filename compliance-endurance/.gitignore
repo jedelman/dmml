@@ -4,6 +4,11 @@ results/_list-*.txt
 results/_pair_contests/
 results/_deprose_candidate.dmml
 
+# Copyrighted source text kept locally as a real de-prose stress-test
+# input (Mary Oliver's "Wild Geese" -- ambiguous-implication test,
+# 2026-09-03), deliberately not redistributed via this public repo.
+results/deprose-test/poem-source.txt
+
 # Live, constantly-rewritten artifacts of an IN-PROGRESS run --
 # status.json/entropy-checkpoint.json/entropy-sidecar.log are process
 # bookkeeping for a run still happening, not "final evidence" (that
