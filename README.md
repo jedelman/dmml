@@ -32,6 +32,8 @@ yet:
 - [`desiring-production-ontology/`](papers/desiring-production-ontology/OUTLINE.md)
   — DMML's commit model as a real implementation of Deleuze &
   Guattari's desiring-production, not a metaphor.
-- [`text-world-model/`](papers/text-world-model/OUTLINE.md) — DMML as
-  a symbolic, explicit world model for text, and how that differs
-  structurally from learned latent/video world models.
+- [`text-world-model/`](papers/text-world-model/OUTLINE.md) — DMML as a
+  distributed world model authored by heterogeneous, ephemeral agents
+  and coordinated by a substrate that functionally occupies a
+  meta-agent's role; also argues the underlying symbolic, explicit
+  world-model comparison against learned latent/video world models.

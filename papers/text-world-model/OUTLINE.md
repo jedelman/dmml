@@ -1,4 +1,24 @@
-# Paper 2: DMML as a World Model for Text, and How It Differs from Video World Models
+# Paper 2: DMML as a Distributed World Model for Heterogeneous, Ephemeral Agents
+
+**2026-09-02: thesis revised, title changed.** Jason's own call: "we're
+now not talking about world models per se, but distributed world models
+composed of heterogeneous and ephemeral agents. if anything we've built
+a meta-agent." The old single-model symbolic-vs-latent comparison
+(Sections 1–7 below) is NOT withdrawn — it's still true and still the
+paper's supporting architecture — but the paper's center of gravity is
+now the distributed/meta-agent claim, argued in a new Section 10 in
+`DRAFT.md`, grounded in real system evidence built the same day
+(`dmml`'s checkpoint-per-commit, governance, retroconsistency +
+cross-machine chaining + whole-tree gating) and four newly, directly
+verified citations (`CITATION-VERIFICATION-2026-09-02-distributed-
+agents.md`) — most load-bearing: Toledo & Prorok's CoDreamer
+(arXiv:2406.13600) establishes that "distributed/decentralized world
+model" already has a real, different ML meaning (N private learned
+models reconciled by a trained communication channel) that DMML's own
+version is the structural opposite of on both axes. This outline below
+is otherwise unchanged and describes the STILL-VALID Sections 1-7
+argument only — read `DRAFT.md`'s own Section 10 for the new material,
+not this file.
 
 **Status: a full draft now exists at `DRAFT.md`, hand-written and
 grounded in the citation verification already recorded below (Ha &
