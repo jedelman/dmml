@@ -1,0 +1,15 @@
+commit mineOpens
+  mine/ninefathom . state = "being dug"
+  mine/ninefathom . witnessedBy = npc/keeper
+
+  path/stonemasonry . state = "discovered"
+  path/stonemasonry . witnessedBy = npc/mason
+
+  npc/mason . masters = path/stonemasonry
+  npc/mason . role = "first stonemason of the highkin, cuts the ashkar face"
+
+  culture/highkin . state = "mining"
+  culture/highkin . tradesWith = culture/riverfolk
+
+  npc/highkinForeman . carries = path/bronzework
+  path/bronzework . state = "discovered"

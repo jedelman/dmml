@@ -1,0 +1,11 @@
+commit trailTales
+  declare relation marks
+  declare relation crosses
+
+  location/trailhead . a = Location
+  location/trailhead . locatedIn = forest/oldroot
+  location/trailhead . purpose = "a worn path from quarry/terraces to the oldroot crossing"
+  location/trailhead . crosses = location/crossingStone
+  location/trailhead . marks = quarry/terraces
+  npc/riverKeeper . crosses = location/trailhead
+  npc/roan . marks = location/trailhead

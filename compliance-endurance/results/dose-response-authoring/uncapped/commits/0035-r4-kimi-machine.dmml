@@ -1,0 +1,26 @@
+machine shrine/solstice
+  states
+    preparing
+    invoking
+    blessing
+    closing
+
+  transition beginRite()
+    preparing -> invoking
+    guard self `locatedIn` forest/oldroot
+    assert invoking
+
+  transition callHerd(herd)
+    invoking -> blessing
+    guard self `sanctifies` $herd
+    assert blessing
+
+  transition sealYear()
+    blessing -> closing
+    guard not self `sanctifies` herd/aurochs
+    assert closing
+
+  transition renew()
+    closing -> preparing
+    guard self `locatedIn` forest/oldroot
+    assert preparing

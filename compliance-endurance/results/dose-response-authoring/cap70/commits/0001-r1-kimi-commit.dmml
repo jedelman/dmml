@@ -1,0 +1,17 @@
+commit riverRites
+  declare relation guides
+  declare relation tends
+  declare attribute kinship
+
+  npc/riverKeeper . a = Keeper
+  npc/riverKeeper . role = "guides riverfolk, tends the oldroot crossing"
+  npc/riverKeeper . kinship = "riverfolk"
+
+  culture/riverfolk . guidedBy = npc/riverKeeper
+  npc/riverKeeper . guides = culture/riverfolk
+
+  herd/aurochs . tendedBy = npc/riverKeeper
+  npc/riverKeeper . tends = herd/aurochs
+
+  herd/stagfolk . tradesWith = culture/riverfolk
+  culture/riverfolk . tradesWith = herd/stagfolk

@@ -1,0 +1,13 @@
+commit riverRites
+  declare relation celebratesAt
+  declare relation holds
+  declare relation sanctifies
+
+  shrine/solstice :: a Shrine
+  shrine/solstice . purpose = "the riverfolk's solstice blessing ground, where herd-rights are traded and bronze is blessed"
+  shrine/solstice . locatedIn = forest/oldroot
+  shrine/solstice . state = "preparing"
+
+  culture/riverfolk `celebratesAt` shrine/solstice
+  npc/riverGuard `holds` shrine/solstice
+  shrine/solstice `sanctifies` herd/aurochs

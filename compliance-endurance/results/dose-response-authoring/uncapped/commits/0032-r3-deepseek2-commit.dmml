@@ -1,0 +1,6 @@
+commit wardingRitual
+  declare relation invokes
+  declare relation blesses
+
+  npc/keeper . invokes = forest/oldroot
+  culture/riverfolk . blesses = herd/stagfolk

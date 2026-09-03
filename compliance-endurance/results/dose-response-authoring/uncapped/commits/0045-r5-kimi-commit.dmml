@@ -1,0 +1,11 @@
+commit completesCycle
+  declare relation precedes
+  declare relation follows
+  declare attribute omen
+  declare attribute state
+
+  ritual/thirdBlessing :: a Ritual
+  ritual/thirdBlessing . omen = "the aurochs lower their horns and the mountain holds its breath"
+  ritual/thirdBlessing . state = "latent"
+  ritual/thirdBlessing `follows` ritual/secondBlessing
+  ritual/secondBlessing `precedes` ritual/thirdBlessing

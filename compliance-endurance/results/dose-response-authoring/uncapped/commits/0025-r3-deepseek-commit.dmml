@@ -1,0 +1,8 @@
+commit mineDeepening
+  declare relation opensVein
+
+  mine/ninefathom . state = "being dug"
+  path/bronzework . state = "discovered"
+  path/bronzework . witnessedBy = npc/highkinForeman
+  npc/highkinForeman . masters = path/bronzework
+  npc/highkinForeman . worksAt = mine/ninefathom

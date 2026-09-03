@@ -1,0 +1,10 @@
+commit autumnGathering
+  declare relation gathers
+  declare relation kindles
+
+  culture/highkin . gathers = location/crossingStone
+  culture/riverfolk . gathers = location/crossingStone
+  herd/stagfolk . gathers = location/crossingStone
+  npc/keeper . kindles = location/crossingStone
+  npc/riverKeeper . kindles = location/crossingStone
+  location/crossingStone . autumnRitual = herd/stagfolk

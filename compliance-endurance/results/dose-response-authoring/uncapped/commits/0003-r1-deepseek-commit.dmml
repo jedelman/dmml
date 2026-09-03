@@ -1,0 +1,3 @@
+commit bronzeworkKindled
+  path/bronzework . state = "discovered"
+  npc/highkinForeman `masters` path/bronzework

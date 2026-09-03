@@ -1,0 +1,10 @@
+commit newRites
+  declare relation teachesTo
+  declare relation apprenticesUnder
+
+  path/bronzework . state = "nascent"
+  path/stonemasonry . state = "known"
+
+  npc/roan . masters = path/bronzework
+  npc/riverKeeper . masters = path/greenlore
+  path/stonemasonry . teachesTo = culture/highkin

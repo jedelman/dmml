@@ -1,0 +1,8 @@
+commit riverBinding
+  declare relation bindsHerds
+  declare relation marksBoundary
+  declare attribute warning
+
+  herd/stagfolk `bindsHerds` forest/oldroot
+  npc/keeper `marksBoundary` forest/oldroot
+  npc/keeper . warning = "the oldroot edge holds, but ashkar's rumble grows nearer"

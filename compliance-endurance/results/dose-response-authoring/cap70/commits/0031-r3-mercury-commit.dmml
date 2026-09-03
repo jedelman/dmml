@@ -1,0 +1,16 @@
+commit riverRites
+  declare relation performsRitual
+  declare relation harvestsFrom
+  declare relation gathersFrom
+
+  herd/aurochs :: a Herd
+  herd/aurochs . performsRitual = autumnRitual
+  herd/aurochs . gathersFrom = path/greenlore
+
+  culture/highkin :: a Culture
+  culture/highkin . performsRitual = autumnRitual
+  culture/highkin . gathersFrom = mine/ninefathom
+
+  herd/stagfolk :: a Herd
+  herd/stagfolk . performsRitual = autumnRitual
+  herd/stagfolk . gathersFrom = path/greenlore

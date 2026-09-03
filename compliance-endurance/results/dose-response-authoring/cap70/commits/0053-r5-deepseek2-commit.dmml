@@ -1,0 +1,4 @@
+commit teachBronzeToHighkin
+  declare relation teachesTo
+
+  npc/roan `teachesTo` culture/highkin

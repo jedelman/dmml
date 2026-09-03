@@ -1,0 +1,13 @@
+commit establishFigures
+  declare relation worksAt
+  declare relation belongsTo
+  declare relation apprenticesUnder
+  declare attribute role
+
+  npc/mason . a = Mason
+  npc/mason . belongsTo = culture/highkin
+  npc/mason . worksAt = mine/ninefathom
+  npc/mason . role = "cuts the ashkar stone, waits for the vein to open"
+
+  npc/mason . apprenticesUnder = npc/keeper
+  path/stonemasonry . state = "discovered"

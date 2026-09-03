@@ -1,0 +1,10 @@
+commit kindlingTheVein
+  declare relation opensVein
+  declare attribute omen
+
+  mine/ninefathom . opensVein = mountain/ashkar
+  npc/mason . omen = "the ashkar's flank runs warm where the metal lies"
+  npc/mason . opensVein = mine/ninefathom
+  mountain/ashkar . raises = herd/aurochs
+  mountain/ashkar . stirsAt = ritual/firstBlessing
+  ritual/firstBlessing . omen = "rumble deep in the ashkar's flank"

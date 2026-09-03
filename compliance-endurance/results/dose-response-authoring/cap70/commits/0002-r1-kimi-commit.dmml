@@ -1,0 +1,15 @@
+commit forgeBonds
+  declare relation discovers
+  declare relation teaches
+
+  npc/keeper . apprenticesUnder = npc/riverKeeper
+  npc/riverKeeper . masters = npc/keeper
+
+  culture/highkin . tradesWith = culture/riverfolk
+  culture/riverfolk . tradesWith = culture/highkin
+
+  npc/keeper . discovers = path/stonemasonry
+  path/stonemasonry . state = "nascent"
+
+  npc/riverKeeper . discovers = path/greenlore
+  path/greenlore . state = "nascent"

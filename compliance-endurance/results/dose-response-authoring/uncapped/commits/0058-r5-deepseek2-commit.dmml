@@ -1,0 +1,7 @@
+commit aurochsStir
+  declare relation awakens
+
+  herd/aurochs . awakens = ritual/secondBlessing
+  mountain/ashkar . stirsAt = ritual/secondBlessing
+  ritual/secondBlessing . state = "ready"
+  herd/aurochs . state = "gathering"

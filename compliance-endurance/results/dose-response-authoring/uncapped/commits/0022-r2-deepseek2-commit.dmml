@@ -1,0 +1,5 @@
+commit bronzefall
+  culture/highkin . state = "mining"
+  mine/ninefathom . state = "being dug"
+  herd/aurochs . state = "restless"
+  npc/riverGuard . role = "first riverfolk guard of oldroot's edge, holding the boundary against restless herds"

@@ -1,0 +1,14 @@
+commit stonekinRites
+  declare relation worksAt
+  declare attribute role
+
+  quarry/terraces . a = Quarry
+  quarry/terraces . locatedIn = mountain/ashkar
+  quarry/terraces . state = "unhewn"
+  quarry/terraces . purpose = "stepped quarry cut into ashkar's flank, first stone for highkin"
+
+  culture/highkin . worksAt = quarry/terraces
+  culture/highkin . role = "stonekin, hewers and setters of the terraces"
+  culture/highkin . state = "nascent"
+
+  npc/keeper . witnessedBy = quarry/terraces

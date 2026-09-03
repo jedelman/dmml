@@ -1,0 +1,6 @@
+commit bronzeworkStirring
+  declare relation sparks
+
+  npc/keeper `sparks` path/bronzework
+  mine/ninefathom . state = "undug"
+  path/bronzework . state = "nascent"

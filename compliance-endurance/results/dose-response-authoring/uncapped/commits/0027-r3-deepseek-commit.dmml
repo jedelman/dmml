@@ -1,0 +1,3 @@
+commit riverfolkTrading
+  culture/riverfolk . state = "trading"
+  forest/oldroot . state = "blessed"

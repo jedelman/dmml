@@ -1,0 +1,10 @@
+commit pathReveal
+  declare relation teaches
+
+  path/stonemasonry :: a TechnicalPath
+  path/greenlore :: a TechnicalPath
+
+  path/stonemasonry . state = "nascent"
+  path/stonemasonry . teaches = npc/roan
+  path/greenlore . state = "nascent"
+  path/greenlore . teaches = npc/riverKeeper

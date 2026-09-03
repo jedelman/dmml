@@ -1,0 +1,9 @@
+commit rumblingWitness
+  declare relation warns
+  declare relation warnsOf
+
+  npc/keeper . warns = herd/stagfolk
+  npc/keeper . warnsOf = mountain/ashkar
+  herd/stagfolk . witnessedBy = npc/keeper
+  location/crossingStone . threatens = mountain/ashkar
+  culture/riverfolk . warns = herd/stagfolk

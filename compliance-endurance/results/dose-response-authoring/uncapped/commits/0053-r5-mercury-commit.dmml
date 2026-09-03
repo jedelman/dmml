@@ -1,0 +1,7 @@
+commit riverfolkTradition
+  declare relation invokes
+  declare relation invokesRitual
+
+  culture/riverfolk :: a Culture
+  culture/riverfolk . invokes = ritual/secondBlessing
+  shrine/solstice . invokesRitual = ritual/secondBlessing

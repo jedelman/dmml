@@ -1,0 +1,5 @@
+commit keeperBlessingAutumn
+  declare relation keeperBlessing
+
+  npc/keeper `keeperBlessing` quarry/terraces
+  quarry/terraces `threatens` herd/stagfolk

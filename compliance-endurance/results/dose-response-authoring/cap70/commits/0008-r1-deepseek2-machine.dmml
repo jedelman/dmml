@@ -1,0 +1,10 @@
+machine mountain/ashkar
+  states
+    dormant
+    stirring
+    awake
+
+  transition rumble(omen)
+    dormant -> stirring
+    guard self `witnessedBy` npc/keeper `fosters` herd/stagfolk
+    assert stirring

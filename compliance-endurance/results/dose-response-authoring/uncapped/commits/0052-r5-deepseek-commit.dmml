@@ -1,0 +1,5 @@
+commit aurochsRising
+  herd/aurochs . state = "restless"
+  mountain/ashkar . state = "stirring"
+  mine/ninefathom . state = "being dug"
+  npc/mason . state = "striking"

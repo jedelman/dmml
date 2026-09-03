@@ -1,0 +1,5 @@
+commit firstBlessingInvocation
+  npc/keeper `invokesRitual` ritual/firstBlessing
+  ritual/firstBlessing . state = "ready"
+  mountain/ashkar . stirsAt = ritual/firstBlessing
+  herd/aurochs . awakens = ritual/firstBlessing

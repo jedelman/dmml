@@ -1,0 +1,7 @@
+commit riverRites
+  declare relation erupts
+  declare relation witnessedBy
+
+  culture/riverfolk . ritual = "solstice blessing of the herds"
+  herd/aurochs `erupts` mountain/ashkar
+  mountain/ashkar . witnessedBy = npc/keeper

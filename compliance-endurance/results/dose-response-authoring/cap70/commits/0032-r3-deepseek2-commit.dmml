@@ -1,0 +1,10 @@
+commit riverRituals
+  declare relation guides
+
+  location/crossingStone . a = Location
+  location/crossingStone . purpose = "a broad flat stone at oldroot's edge where the riverfolk gather"
+  location/crossingStone . locatedIn = forest/oldroot
+  location/crossingStone . witnessedBy = npc/keeper
+  location/crossingStone . autumnRitual = herd/stagfolk
+  npc/riverKeeper . guides = location/crossingStone
+  herd/stagfolk . autumnRitual = location/crossingStone

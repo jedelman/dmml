@@ -1,0 +1,7 @@
+commit secondBlessingProgress
+  declare relation witnesses
+
+  npc/riverGuard . witnesses = ritual/secondBlessing
+  ritual/secondBlessing . state = "ready"
+  herd/stagfolk . state = "gathering"
+  forest/oldroot . state = "blessed"

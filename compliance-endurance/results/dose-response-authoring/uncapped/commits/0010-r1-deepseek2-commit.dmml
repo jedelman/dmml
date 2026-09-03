@@ -1,0 +1,6 @@
+commit stonePromise
+  declare relation apprenticesUnder
+  declare relation masters
+
+  culture/highkin `masters` path/stonemasonry
+  npc/keeper `apprenticesUnder` culture/highkin

@@ -1,0 +1,6 @@
+commit harvestBlessing
+  declare relation blesses
+  declare relation settles
+
+  npc/keeper . blesses = herd/stagfolk
+  npc/keeper . settles = culture/highkin

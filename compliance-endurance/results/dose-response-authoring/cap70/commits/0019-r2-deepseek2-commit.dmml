@@ -1,0 +1,10 @@
+commit autumnTrades
+  declare relation autumnRitual
+  declare relation carries
+  declare relation fallsOn
+  declare relation witnessedBy
+
+  herd/stagfolk `autumnRitual` quarry/terraces
+  npc/riverKeeper `carries` herd/stagfolk
+  quarry/terraces `fallsOn` mountain/ashkar
+  quarry/terraces `witnessedBy` npc/riverKeeper

@@ -1,0 +1,6 @@
+commit riverRites
+  declare relation apprenticesUnder
+
+  npc/keeper . role = "wardens the stagfolk and witnesses ashkar's rumblings"
+  culture/riverfolk . apprenticesUnder = npc/keeper
+  culture/highkin . apprenticesUnder = npc/keeper

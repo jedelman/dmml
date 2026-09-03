@@ -1,0 +1,6 @@
+commit bindingPact
+  declare relation seals
+  declare relation marks
+
+  npc/keeper . seals = forest/oldroot
+  mountain/ashkar . marks = mine/ninefathom

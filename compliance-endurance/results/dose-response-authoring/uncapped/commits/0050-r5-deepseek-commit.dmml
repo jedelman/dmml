@@ -1,0 +1,4 @@
+commit riverGuardRites
+  npc/riverGuard . holds = shrine/solstice
+  ritual/secondBlessing . witnessedBy = npc/riverGuard
+  shrine/solstice . sanctifies = herd/stagfolk

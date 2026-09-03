@@ -1,0 +1,15 @@
+commit riteOfCrossing
+  declare relation carries
+  declare relation witnesses
+  declare relation blesses
+  declare relation performsRitual
+  declare relation kindles
+  declare relation gathersFrom
+
+  herd/stagfolk . autumnRitual = location/crossingStone
+  npc/keeper . blesses = herd/stagfolk
+  npc/riverKeeper . carries = herd/stagfolk
+  npc/riverKeeper . kindles = location/crossingStone
+  herd/stagfolk . gathersFrom = path/greenlore
+  location/crossingStone . witnessedBy = npc/keeper
+  location/crossingStone . guides = npc/riverKeeper

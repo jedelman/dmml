@@ -1,0 +1,6 @@
+commit ashkarOmens
+  declare relation stirsAt
+  declare attribute omen
+
+  mountain/ashkar . stirsAt = ritual/firstBlessing
+  ritual/firstBlessing . omen = "rumble deep in the ashkar's flank"

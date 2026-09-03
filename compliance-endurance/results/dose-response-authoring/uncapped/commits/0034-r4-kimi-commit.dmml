@@ -1,0 +1,13 @@
+commit weaveCalendar
+  declare relation follows
+  declare relation precedes
+  declare attribute season
+
+  ritual/secondBlessing :: a Ritual
+  ritual/secondBlessing . carriedBy = npc/riverGuard
+  ritual/secondBlessing . omen = "the stagfolk gather at oldroot's eastern edge"
+  ritual/secondBlessing . precedes = ritual/firstBlessing
+  ritual/firstBlessing . follows = ritual/secondBlessing
+
+  npc/riverGuard . invokes = forest/oldroot
+  npc/riverGuard . seals = forest/oldroot

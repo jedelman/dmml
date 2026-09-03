@@ -1,0 +1,12 @@
+commit forestWatch
+  declare relation guards
+  declare relation teaches
+
+  npc/keeper . guards = forest/oldroot
+  npc/keeper . teaches = npc/riverGuard
+  npc/riverGuard . a = RiverGuard
+  npc/riverGuard . belongsTo = culture/riverfolk
+  npc/riverGuard . carries = path/greenlore
+  npc/riverGuard . role = "first riverfolk guard of oldroot's edge, learning the keeper's greenlore"
+  npc/riverGuard . worksAt = forest/oldroot
+  path/greenlore . state = "undiscovered"

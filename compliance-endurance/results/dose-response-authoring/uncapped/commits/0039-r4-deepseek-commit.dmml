@@ -1,0 +1,9 @@
+commit signingTheSeal
+  declare relation seals
+  declare relation witnesses
+
+  npc/keeper . seals = forest/oldroot
+  npc/keeper . witnesses = ritual/firstBlessing
+  forest/oldroot . state = "blessed"
+  herd/aurochs . state = "restless"
+  path/greenlore . state = "discovered"

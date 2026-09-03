@@ -1,0 +1,11 @@
+commit greenloreAwakens
+  path/greenlore . state = "discovered"
+  path/greenlore . witnessedBy = npc/keeper
+
+  npc/keeper . role = "wardens the stagfolk and witnesses ashkar's rumblings"
+  npc/keeper . masters = path/greenlore
+
+  culture/riverfolk . purpose = "settled along the river below oldroot, trading bronze for herd-rights"
+  culture/riverfolk . state = "trading"
+
+  forest/oldroot . state = "blessed"

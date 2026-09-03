@@ -1,0 +1,6 @@
+commit riverRites
+  location/crossingStone . season = "autumn"
+  location/crossingStone `guides` npc/riverKeeper
+  npc/riverKeeper `guides` herd/aurochs
+  herd/aurochs . performsRitual = autumnRitual
+  culture/riverfolk . hymns = path/greenlore

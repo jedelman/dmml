@@ -1,0 +1,9 @@
+commit autumnReckoning
+  declare relation warns
+  declare relation streaks
+
+  mountain/ashkar . state = "rumbling"
+  mine/ninefathom . state = "periled"
+  npc/keeper . role = "warns of ashkar's stirring, wards the herds"
+  npc/keeper `warns` culture/highkin
+  npc/keeper `streaks` mountain/ashkar

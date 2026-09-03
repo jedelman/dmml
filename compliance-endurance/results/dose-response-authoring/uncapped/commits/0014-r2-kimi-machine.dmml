@@ -1,0 +1,23 @@
+machine mine/ninefathom
+  states
+    undug
+    being_dug
+    exhausted
+    collapsed
+
+  transition open()
+    undug -> being_dug
+    guard self `witnessedBy` $overseer
+    assert being_dug
+
+  transition deepen(ore)
+    being_dug -> being_dug
+    guard self `locatedIn` mountain/ashkar
+    guard self `witnessedBy` $overseer
+    assert being_dug
+
+  transition close(vein)
+    being_dug -> exhausted
+    guard mountain/ashkar `witnessedBy` $overseer
+    assert exhausted
+    retract being_dug

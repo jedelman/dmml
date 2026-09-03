@@ -1,0 +1,9 @@
+commit hewTerraces
+  declare attribute state
+
+  quarry/terraces . state = "hewn"
+  npc/roan . tends = quarry/terraces
+
+  consumes
+    fact world # quarry/terraces.state."unhewn"
+      quarry/terraces . state

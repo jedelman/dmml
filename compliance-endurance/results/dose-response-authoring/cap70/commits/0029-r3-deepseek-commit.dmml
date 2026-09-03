@@ -1,0 +1,4 @@
+commit quakingWitness
+  declare relation witnesses
+
+  quarry/terraces . witnesses = mine/ninefathom

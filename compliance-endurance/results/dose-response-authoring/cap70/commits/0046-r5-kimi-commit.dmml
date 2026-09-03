@@ -1,0 +1,12 @@
+commit bridgeTies
+  declare relation bridges
+  declare relation forgesAllianceWith
+
+  location/crossingStone :: a Location
+  path/bronzework :: a TechnicalPath
+  npc/roan :: a Stonewright
+
+  location/crossingStone `bridges` quarry/terraces
+  npc/roan `forgesAllianceWith` npc/riverKeeper
+  culture/highkin `forgesAllianceWith` culture/riverfolk
+  npc/keeper `teachesTo` npc/roan

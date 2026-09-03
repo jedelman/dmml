@@ -1,0 +1,10 @@
+commit keeperRites
+  declare relation fosters
+  declare relation tempers
+
+  npc/keeper . fosters = herd/stagfolk
+  npc/keeper . tempers = mountain/ashkar
+  herd/stagfolk . masters = path/greenlore
+  mountain/ashkar . fallsOn = mine/ninefathom
+  mine/ninefathom . purpose = "a seam of copper and tin beneath ashkar's flank"
+  mine/ninefathom . worksAt = npc/keeper

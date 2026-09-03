@@ -1,0 +1,8 @@
+commit bronzeAwakens
+  declare attribute state
+
+  path/bronzework . state = "nascent"
+
+  consumes
+    fact world # undiscovered
+      path/bronzework . state

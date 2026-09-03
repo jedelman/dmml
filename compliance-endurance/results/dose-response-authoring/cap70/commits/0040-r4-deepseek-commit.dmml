@@ -1,0 +1,11 @@
+commit stoneWard
+  declare relation wards
+  declare relation fortifies
+
+  npc/keeper . wards = location/crossingStone
+  npc/keeper . warnsOf = mountain/ashkar
+  npc/keeper . fortifies = quarry/terraces
+  path/stonemasonry . wards = quarry/terraces
+  quarry/terraces . wards = location/crossingStone
+  location/crossingStone . wardedBy = quarry/terraces
+  npc/roan . fortifies = quarry/terraces

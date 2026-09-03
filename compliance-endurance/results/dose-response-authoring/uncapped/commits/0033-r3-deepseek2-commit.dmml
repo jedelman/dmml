@@ -1,0 +1,5 @@
+commit stoneSignal
+  declare relation raises
+
+  npc/mason . raises = path/stonemasonry
+  herd/aurochs . raises = mountain/ashkar

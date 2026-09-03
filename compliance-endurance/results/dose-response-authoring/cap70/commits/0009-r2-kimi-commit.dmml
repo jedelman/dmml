@@ -1,0 +1,6 @@
+commit advance
+  mine/ninefathom . state = "periled"
+  path/bronzework . state = "nascent"
+  path/bronzework . discovers = mine/ninefathom
+  npc/roan . discovers = path/bronzework
+  culture/highkin . tradesWith = path/bronzework

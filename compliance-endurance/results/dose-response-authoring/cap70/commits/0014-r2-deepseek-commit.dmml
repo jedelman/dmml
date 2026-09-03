@@ -1,0 +1,7 @@
+commit keeperLeads
+  declare relation rallies
+
+  npc/keeper `rallies` culture/highkin
+  npc/roan . masters = path/stonemasonry
+  path/stonemasonry . state = "nascent"
+  quarry/terraces . state = "hewn"

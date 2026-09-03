@@ -1,0 +1,8 @@
+commit firstBlessingAtSolstice
+  declare relation carries
+
+  ritual/secondBlessing . carriedBy = npc/riverGuard
+  ritual/secondBlessing . witnesses = npc/riverGuard
+  shrine/solstice . sanctifies = herd/aurochs
+  shrine/solstice . state = "gathering"
+  ritual/firstBlessing . state = "ready"

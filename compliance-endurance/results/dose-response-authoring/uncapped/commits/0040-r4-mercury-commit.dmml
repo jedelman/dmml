@@ -1,0 +1,17 @@
+commit riverRites
+  declare relation awakens
+  declare relation invokesRitual
+
+  mountain/ashkar . state = "dormant"
+
+  ritual/firstBlessing . state = "ready"
+  ritual/firstBlessing . invokesRitual = shrine/solstice
+
+  shrine/solstice . state = "gathering"
+  shrine/solstice . invokesRitual = ritual/firstBlessing
+
+  herd/aurochs . state = "restless"
+  herd/aurochs . awakens = ritual/firstBlessing
+
+  mountain/ashkar . stirsAt = ritual/firstBlessing
+  mountain/ashkar . awakens = ritual/firstBlessing

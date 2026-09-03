@@ -1,0 +1,15 @@
+commit forgePact
+  declare relation produces
+  declare relation receives
+  declare relation exchangesFor
+
+  good/bronzeIngot :: a Good
+  good/bronzeIngot . purpose = "worked bronze from ninefathom, traded for herd-rights and blessing"
+  good/bronzeIngot . witnessedBy = npc/highkinForeman
+
+  mine/ninefathom . produces = good/bronzeIngot
+  culture/highkin . produces = good/bronzeIngot
+  culture/riverfolk . receives = good/bronzeIngot
+  culture/riverfolk . exchangesFor = herd/aurochs
+  npc/highkinApprentice . carries = good/bronzeIngot
+  shrine/solstice . sanctifies = good/bronzeIngot

@@ -1,0 +1,8 @@
+commit carveReckoning
+  declare relation inscribes
+  declare relation paysTribute
+  declare relation mines
+
+  npc/mason . inscribes = mountain/ashkar
+  npc/highkinForeman . mines = mine/ninefathom
+  culture/highkin . paysTribute = culture/riverfolk

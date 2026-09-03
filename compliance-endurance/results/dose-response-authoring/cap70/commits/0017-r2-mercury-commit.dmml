@@ -1,0 +1,11 @@
+commit mineWatch
+  declare relation erupts
+  declare relation warnsOf
+
+  mine/ninefathom :: a Mine
+  mountain/ashkar :: a Mountain
+
+  mine/ninefathom . state = "undug"
+  mountain/ashkar . state = "rumbling"
+  mountain/ashkar . erupts = mine/ninefathom
+  npc/riverKeeper . warnsOf = mountain/ashkar

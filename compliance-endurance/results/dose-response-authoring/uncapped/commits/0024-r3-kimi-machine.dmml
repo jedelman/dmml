@@ -1,0 +1,21 @@
+machine shrine/solstice
+  states
+    preparing
+    blessing
+    trading
+
+  transition beginBlessing(guard)
+    preparing -> blessing
+    guard self `holds` $guard
+    assert blessing
+
+  transition openTrade(guard, culture)
+    blessing -> trading
+    guard self `holds` $guard
+    guard $culture `celebratesAt` self
+    assert trading
+
+  transition closeSeason(guard)
+    trading -> preparing
+    guard self `holds` $guard
+    assert preparing

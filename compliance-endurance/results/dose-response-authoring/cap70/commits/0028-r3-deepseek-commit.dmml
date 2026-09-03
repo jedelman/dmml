@@ -1,0 +1,4 @@
+commit awakening
+  declare relation tremblesFrom
+
+  mountain/ashkar . tremblesFrom = npc/keeper

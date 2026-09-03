@@ -1,0 +1,6 @@
+commit autumnTradeWitness
+  declare relation witnessedBy
+
+  herd/stagfolk . autumnRitual = quarry/terraces
+  npc/roan . witnessedBy = quarry/terraces
+  npc/roan `tends` herd/stagfolk

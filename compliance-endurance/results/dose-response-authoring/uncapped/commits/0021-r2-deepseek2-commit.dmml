@@ -1,0 +1,6 @@
+commit firstStrike
+  herd/aurochs . state = "restless"
+  npc/mason . state = "striking"
+  path/stonemasonry . state = "discovered"
+  path/bronzework . state = "discovered"
+  mountaine/ashkar . witnessedBy = npc/mason

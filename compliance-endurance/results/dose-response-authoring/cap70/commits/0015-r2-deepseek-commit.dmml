@@ -1,0 +1,6 @@
+commit greenloreAwakens
+  declare relation teachesTo
+
+  path/greenlore . state = "nascent"
+  npc/riverKeeper `teachesTo` culture/riverfolk
+  herd/stagfolk . autumnRitual = herd/aurochs

@@ -1,0 +1,14 @@
+commit greenloreRites
+  declare relation discovers
+  declare relation teaches
+  declare relation hymns
+  declare relation masters
+  declare relation gathersFrom
+  declare relation performsRitual
+
+  npc/riverKeeper . discovers = path/greenlore
+  path/greenlore . teaches = npc/riverKeeper
+  herd/stagfolk . hymns = path/greenlore
+  herd/stagfolk . masters = path/greenlore
+  herd/stagfolk . gathersFrom = path/greenlore
+  herd/stagfolk . performsRitual = autumnRitual

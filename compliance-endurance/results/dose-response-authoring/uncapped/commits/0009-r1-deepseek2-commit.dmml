@@ -1,0 +1,7 @@
+commit mineContract
+  declare relation worksAt
+  declare relation tradesWith
+
+  mine/ninefathom `locatedIn` mountain/ashkar
+  culture/highkin `worksAt` mine/ninefathom
+  culture/highkin `tradesWith` culture/riverfolk

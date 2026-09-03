@@ -1,0 +1,3 @@
+commit newRites2
+  path/greenlore . state = "known"
+  path/stonemasonry . state = "nascent"

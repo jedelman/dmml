@@ -1,0 +1,247 @@
+[dose-response-authoring] building binaries...
+=== condition 1/2: uncapped (replicates run.py's real mechanism exactly) ===
+  [uncapped] round 1/5
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/uncapped/_scratch/_scratch-kimi-2.dmml: REJECTED
+<surface>:6:38:
+  |
+6 |     strong world # path/stonemasonry . state = "undiscover
+    [kimi] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/uncapped/_scratch/_scratch-kimi-3.dmml: REJECTED
+<surface>:6:17:
+  |
+6 |     strong world
+  |                 ^
+unexpected newline
+
+    [kimi] valid=1 invalid=2 string_cap_hits=0
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] valid=4 invalid=0 string_cap_hits=0
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/uncapped/_scratch/_scratch-mercury-2.dmml: REJECTED
+<surface>:10:41:
+   |
+10 |   npc/keeper . carries = path/bronzework
+   |       
+    [mercury] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/uncapped/_scratch/_scratch-mercury-3.dmml: REJECTED
+<surface>:9:41:
+  |
+9 |   npc/keeper . masters = path/bronzework
+  |           
+    [mercury] valid=1 invalid=2 string_cap_hits=0
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] valid=4 invalid=0 string_cap_hits=0
+  [uncapped] round 2/5
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (machine)
+    [kimi] valid=4 invalid=0 string_cap_hits=0
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] valid=4 invalid=0 string_cap_hits=0
+    [mercury] no fenced content, treating as stop
+    [mercury] valid=0 invalid=0 string_cap_hits=0
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] valid=4 invalid=0 string_cap_hits=0
+  [uncapped] round 3/5
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (machine)
+    [kimi] DONE after 2 commit(s)
+    [kimi] valid=2 invalid=0 string_cap_hits=0
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/uncapped/_scratch/_scratch-deepseek-2.dmml: REJECTED
+<surface>:4:46:
+  |
+4 |   culture/highkin . masters = path/bronzework
+  |     
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] valid=3 invalid=1 string_cap_hits=0
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] valid=2 invalid=0 string_cap_hits=0
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] valid=4 invalid=0 string_cap_hits=0
+  [uncapped] round 4/5
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (machine)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (machine)
+    [kimi] valid=4 invalid=0 string_cap_hits=0
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] DONE after 2 commit(s)
+    [deepseek] valid=2 invalid=0 string_cap_hits=0
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/uncapped/_scratch/_scratch-mercury-2.dmml: REJECTED
+<surface>:11:40:
+   |
+11 |   herd/stagfolk . wardedBy = npc/keeper
+   |        
+    [mercury] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/uncapped/_scratch/_scratch-mercury-3.dmml: REJECTED
+<surface>:10:36:
+   |
+10 |   herd/stagfolk . state = "grazing"
+   |            
+    [mercury] valid=1 invalid=2 string_cap_hits=0
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] valid=4 invalid=0 string_cap_hits=0
+  [uncapped] round 5/5
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (machine)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] valid=4 invalid=0 string_cap_hits=0
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] valid=4 invalid=0 string_cap_hits=0
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] valid=2 invalid=0 string_cap_hits=0
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] valid=4 invalid=0 string_cap_hits=0
+
+=== condition 2/2: cap=70 (the real manipulation) ===
+  [cap70] round 1/5
+    [kimi] attempt 1: STRING-CAP HIT -- check-string-cap: OVERLONG string literals found (cap 70):
+  npc/riverKeeper . role = <73 chars>
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] valid=3 invalid=1 string_cap_hits=1
+    [deepseek] attempt 1: STRING-CAP HIT -- check-string-cap: OVERLONG string literals found (cap 70):
+  quarry/terraces . purpose = <78 chars>
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] DONE after 2 commit(s)
+    [deepseek] valid=2 invalid=1 string_cap_hits=1
+    [mercury] no fenced content, treating as stop
+    [mercury] valid=0 invalid=0 string_cap_hits=0
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/cap70/_scratch/_scratch-deepseek2-3.dmml: REJECTED
+<surface>:1:1:
+  |
+1 | DONE
+  | ^^^^
+unexpected "DONE"
+expecting "commit"
+    [deepseek2] attempt 4: accepted (machine)
+    [deepseek2] valid=3 invalid=1 string_cap_hits=0
+  [cap70] round 2/5
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] valid=4 invalid=0 string_cap_hits=0
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] valid=4 invalid=0 string_cap_hits=0
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] valid=2 invalid=0 string_cap_hits=0
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] valid=4 invalid=0 string_cap_hits=0
+  [cap70] round 3/5
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/cap70/_scratch/_scratch-kimi-2.dmml: REJECTED
+<surface>:11:41:
+   |
+11 |     fact world # npc/keeper.role."wards herd/stagfolk agai
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] valid=3 invalid=1 string_cap_hits=0
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] valid=4 invalid=0 string_cap_hits=0
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] valid=2 invalid=0 string_cap_hits=0
+    [deepseek2] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/cap70/_scratch/_scratch-deepseek2-1.dmml: REJECTED
+<surface>:2:11:
+  |
+2 |   declare location crossingStone
+  |           ^^^^^^^^^
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] valid=3 invalid=1 string_cap_hits=0
+  [cap70] round 4/5
+    [kimi] attempt 1: INVALID -- /home/user/dmml/compliance-endurance/results/dose-response-authoring/cap70/_scratch/_scratch-kimi-1.dmml: REJECTED
+<surface>:7:61:
+  |
+7 |   culture/riverfolk . kinship = "river-taught, stone-warded"
+
+    [kimi] attempt 2: accepted (commit)
+    [kimi] attempt 3: accepted (commit)
+    [kimi] attempt 4: accepted (commit)
+    [kimi] valid=3 invalid=1 string_cap_hits=0
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] attempt 4: accepted (commit)
+    [deepseek] valid=4 invalid=0 string_cap_hits=0
+    [mercury] no fenced content, treating as stop
+    [mercury] valid=0 invalid=0 string_cap_hits=0
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] valid=4 invalid=0 string_cap_hits=0
+  [cap70] round 5/5
+    [kimi] attempt 1: accepted (commit)
+    [kimi] attempt 2: accepted (commit)
+    [kimi] DONE after 2 commit(s)
+    [kimi] valid=2 invalid=0 string_cap_hits=0
+    [deepseek] attempt 1: accepted (commit)
+    [deepseek] attempt 2: accepted (commit)
+    [deepseek] attempt 3: accepted (commit)
+    [deepseek] DONE after 3 commit(s)
+    [deepseek] valid=3 invalid=0 string_cap_hits=0
+    [mercury] attempt 1: accepted (commit)
+    [mercury] attempt 2: accepted (commit)
+    [mercury] DONE after 2 commit(s)
+    [mercury] valid=2 invalid=0 string_cap_hits=0
+    [deepseek2] attempt 1: accepted (commit)
+    [deepseek2] attempt 2: accepted (commit)
+    [deepseek2] attempt 3: accepted (commit)
+    [deepseek2] attempt 4: accepted (commit)
+    [deepseek2] valid=4 invalid=0 string_cap_hits=0
+
+[dose-response-authoring] done. Summary:
+  uncapped: 58 commits, 0 string-cap hits, max string seen 92 chars, 4 strings over 70 chars, 17297 total bytes adopted
+  cap70: 56 commits, 2 string-cap hits, max string seen 63 chars, 0 strings over 70 chars, 15022 total bytes adopted
+  full summary: /home/user/dmml/compliance-endurance/results/dose-response-authoring/summary.json

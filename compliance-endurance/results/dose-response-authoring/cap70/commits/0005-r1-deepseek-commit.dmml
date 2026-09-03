@@ -1,0 +1,9 @@
+commit stonekinMason
+  declare relation apprenticesUnder
+  declare relation masters
+
+  npc/roan . a = Stonewright
+  npc/roan . role = "highkin apprentice, first to learn the terraces' cut"
+  npc/roan . worksAt = quarry/terraces
+  npc/roan . apprenticesUnder = culture/highkin
+  npc/roan . masters = path/stonemasonry

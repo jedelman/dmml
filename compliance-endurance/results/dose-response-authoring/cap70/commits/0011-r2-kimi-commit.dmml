@@ -1,0 +1,5 @@
+commit spreading
+  path/greenlore . state = "nascent"
+  path/stonemasonry . state = "nascent"
+  npc/roan . masters = path/bronzework
+  quarry/terraces . state = "hewn"

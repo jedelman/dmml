@@ -1,0 +1,3 @@
+commit stonemasonryDawning
+  path/stonemasonry . state = "nascent"
+  quarry/terraces . state = "hewn"

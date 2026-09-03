@@ -1,0 +1,7 @@
+commit bronzeForBlessing
+  declare relation sanctifies
+
+  shrine/solstice . sanctifies = good/bronzeIngot
+  good/bronzeIngot . blessedBy = ritual/secondBlessing
+  npc/riverGuard . carries = good/bronzeIngot
+  herd/aurochs . state = "restless"

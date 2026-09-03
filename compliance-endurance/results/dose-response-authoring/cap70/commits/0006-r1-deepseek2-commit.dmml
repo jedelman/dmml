@@ -1,0 +1,14 @@
+commit herdRites
+  declare relation autumnRitual
+  declare relation hymns
+  declare relation keeperBlessing
+  declare attribute season
+
+  culture/riverfolk . autumnRitual = herd/stagfolk
+  herd/stagfolk . autumnRitual = herd/aurochs
+  herd/stagfolk . keeperBlessing = npc/keeper
+  culture/riverfolk . hymns = path/greenlore
+  herd/aurochs . season = "autumn"
+  herd/stagfolk . season = "autumn"
+  forest/oldroot . season = "autumn"
+  culture/highkin . season = "autumn"

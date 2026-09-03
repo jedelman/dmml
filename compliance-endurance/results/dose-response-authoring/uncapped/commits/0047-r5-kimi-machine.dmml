@@ -1,0 +1,23 @@
+machine shrine/solstice
+  states
+    dormant
+    invokingFirst
+    invokingThird
+    gathering
+
+  transition beginCycle()
+    dormant -> invokingFirst
+    guard self `invokesRitual` ritual/firstBlessing
+    assert invokingFirst
+
+  transition midCycle(key)
+    invokingFirst -> invokingThird
+    guard ritual/firstBlessing `follows` ritual/secondBlessing
+    guard ritual/secondBlessing `precedes` $key
+    assert invokingThird
+
+  transition completeCycle()
+    invokingThird -> dormant
+    guard ritual/thirdBlessing `precedes` ritual/firstBlessing
+    assert dormant
+    retract invokingThird

@@ -291,3 +291,64 @@ de-prose extraction to reproduce it. A richer, more descriptively dense
 source prose passage for de-prose specifically is a cheaper, faster
 sanity check worth trying first, but the authoring-harness version is
 the one that actually matches where Plank 1's real evidence came from.
+
+## Plank 1, take 3: the real authoring harness, and a real (if small) positive signal
+
+Done. `run_agent_round` (run.py) got the identical additive,
+optional constraint, with a real bug found and fixed along the way: the
+first version of `check-string-cap` only tried `parseCommitSurface`, so
+every legitimate machine file in the mixed commit/machine stream this
+harness actually produces failed with a parse-error-shaped message that
+got miscounted as a genuine string-cap hit. Fixed with the same
+dual-parse dispatch `CheckDeclared.hs` already established (see the
+separate commit; not repeated here). Verified directly against real
+data before rerunning: a real machine file now passes, a real
+74-character overlong fact in the uncapped run's own output still
+correctly fails.
+
+Real, completed run: `dose_response_authoring.py --rounds 5`, same
+4-agent roster as the real endurance run, cap=70 (REPORT.md's own
+threshold, not invented), fresh seed world each condition.
+
+- **Uncapped**: 58 commits adopted, 17,297 bytes, max string 92 chars,
+  **4 real strings over 70 characters** — genuine narrative prose,
+  spontaneous, unprompted: "wards herd/stagfolk against needless
+  migration, and witnesses ashkar's rumblings"; "the riverfolk's
+  solstice blessing ground, where herd-rights are traded and bronze is
+  blessed." Mostly `deepseek2` (3 of 4), one `kimi`. **This confirms
+  the free-authoring task shape reproduces the original phenomenon** —
+  the thing de-prose extraction couldn't.
+- **Cap=70**: 56 commits, 15,022 bytes, max string 63 chars (correctly
+  under cap), 0 over 70 — and, this time, **the manipulation actually
+  bound**: 2 real string-cap hits (`kimi` round 1, `deepseek` round 1),
+  each corrected on the very next attempt.
+
+**The real content behind both hits, checked directly, not inferred
+from the aggregate numbers**: `kimi`'s rejected 73-char attempt at
+`npc/riverKeeper . role` became, on retry, `"guides riverfolk, tends
+the oldroot crossing"` (44 chars) — still descriptive prose, not a bare
+tag, just shorter. `deepseek`'s rejected 78-char attempt at
+`quarry/terraces . purpose` became `"stepped quarry cut into ashkar's
+flank, first stone for highkin"` — measured directly: **63 characters,
+7 under the cap**, preserving the full narrative shape of the original
+attempt compressed to just barely fit, not reduced to something terse
+and mechanical. That's a real, if small, point in the desiring-
+production account's favor over the purely deflationary one: a clean
+"just write less" response would more plausibly land well under the
+cap with a plainer tag, not compress right up against the boundary
+while keeping the same descriptive content intact.
+
+**Honest limits of what this shows**: n=2 hits is not enough to draw a
+real conclusion, only enough to note a real, suggestive pattern worth a
+larger run. Neither hit shows outright *persistence* (repeated failed
+re-attempts against the same cap) — both corrected in one try — so this
+doesn't yet demonstrate compulsion in the strong sense Plank 2's
+etiology describes; it demonstrates content retention under
+compression, which is compatible with the desiring-production reading
+but doesn't rule out a more modest "the model tries to preserve meaning
+under a length constraint, same as any competent writer would"
+explanation that needs no reference to blocked production at all. A
+real next step, not yet done: more rounds/a tighter cap to get enough
+hits to check for real persistence patterns, and a direct comparison of
+whether total *semantic* content (not just byte count) is conserved
+across conditions, not just individual retry outcomes.

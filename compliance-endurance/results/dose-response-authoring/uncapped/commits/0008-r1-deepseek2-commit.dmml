@@ -1,0 +1,7 @@
+commit keeperOath
+  declare relation belongsTo
+  declare relation carries
+
+  npc/keeper . role = "wards herd/stagfolk against needless migration, and witnesses ashkar's rumblings"
+  npc/keeper `belongsTo` culture/highkin
+  npc/keeper `carries` path/greenlore

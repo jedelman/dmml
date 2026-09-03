@@ -1,0 +1,10 @@
+commit riverRites
+  declare relation performsRitual
+  declare relation harvestsFrom
+
+  culture/riverfolk :: a Culture
+  culture/riverfolk . performsRitual = autumnRitual
+  culture/riverfolk . harvestsFrom = forest/oldroot
+
+  npc/riverKeeper :: a Keeper
+  npc/riverKeeper . harvestsFrom = herd/aurochs

@@ -1,0 +1,12 @@
+commit minePerils
+  declare attribute state
+  declare attribute role
+
+  mine/ninefathom . state = "periled"
+  npc/keeper . role = "warns of ashkar's stirring, wards the herds"
+
+  consumes
+    fact world # undug
+      mine/ninefathom . state
+    fact world # keeperRoleOld
+      npc/keeper . role

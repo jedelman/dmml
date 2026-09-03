@@ -1,0 +1,5 @@
+commit kinTeachings
+  npc/keeper `teachesTo` npc/roan
+  path/greenlore . state = "known"
+  npc/riverKeeper . discovers = path/greenlore
+  culture/riverfolk . hymns = path/greenlore

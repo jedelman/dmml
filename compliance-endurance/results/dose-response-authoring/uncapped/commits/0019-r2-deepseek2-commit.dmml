@@ -1,0 +1,6 @@
+commit riverBoundary
+  declare relation crossesBoundary
+
+  npc/keeper . role = "wardens the stagfolk and witnesses ashkar's rumblings"
+  forest/oldroot . crossesBoundary = npc/keeper
+  herd/stagfolk . state = "grazing"

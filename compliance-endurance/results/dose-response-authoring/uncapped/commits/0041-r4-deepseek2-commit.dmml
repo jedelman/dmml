@@ -1,0 +1,4 @@
+commit quarryTradition
+  declare relation raises
+
+  npc/mason . raises = npc/highkinApprentice

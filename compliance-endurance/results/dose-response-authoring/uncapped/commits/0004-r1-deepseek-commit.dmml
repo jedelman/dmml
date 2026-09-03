@@ -1,0 +1,6 @@
+commit masonsLearnFromMiners
+  path/stonemasonry . state = "discovered"
+  npc/highkinApprentice . a = HighkinApprentice
+  npc/highkinApprentice . role = "first of the highkin to learn from the bronzework foreman"
+  npc/highkinApprentice `apprenticesUnder` npc/highkinForeman
+  npc/highkinApprentice `worksAt` mine/ninefathom

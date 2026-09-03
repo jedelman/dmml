@@ -1,0 +1,10 @@
+commit wakingAshkar
+  declare relation tremors
+
+  mountain/ashkar . state = "rumbling"
+  mountain/ashkar . tremors = location/crossingStone
+  mountain/ashkar . tremblesFrom = npc/keeper
+  npc/keeper . warnsOf = mountain/ashkar
+  npc/keeper . fortifies = quarry/terraces
+  quarry/terraces . wards = location/crossingStone
+  location/crossingStone . wardedBy = quarry/terraces

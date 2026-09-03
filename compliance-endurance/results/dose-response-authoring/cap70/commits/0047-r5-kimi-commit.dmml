@@ -1,0 +1,18 @@
+commit hearthBinder
+  declare relation mediates
+  declare relation sharesFireWith
+
+  npc/ember . a = Keeper
+  npc/ember . apprenticesUnder = npc/riverKeeper
+  npc/ember . carries = path/bronzework
+  npc/ember . discovers = path/greenlore
+  npc/ember . kinship = "bridgekin"
+  npc/ember . masters = npc/roan
+  npc/ember . mediates = location/crossingStone
+  npc/ember . role = "tends the crossingStone hearth, speaks both stone and river"
+  npc/ember . sharesFireWith = npc/keeper
+  npc/ember . teachesTo = culture/highkin
+  npc/ember . worksAt = quarry/terraces
+
+  location/crossingStone . witnessedBy = npc/ember
+  path/greenlore . teaches = npc/ember

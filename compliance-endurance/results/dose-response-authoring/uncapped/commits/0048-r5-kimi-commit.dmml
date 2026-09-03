@@ -1,0 +1,6 @@
+commit witnessesThird
+  declare relation witnesses
+
+  ritual/thirdBlessing . witnessedBy = npc/riverGuard
+  npc/riverGuard . witnesses = ritual/thirdBlessing
+  herd/aurochs . blessedBy = ritual/thirdBlessing

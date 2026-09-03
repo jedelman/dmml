@@ -1,0 +1,9 @@
+commit ashkarAwakens
+  declare relation threatens
+
+  mountain/ashkar . state = "rumbling"
+  mountain/ashkar . threatens = mine/ninefathom
+  mine/ninefathom . state = "periled"
+
+  npc/keeper . witnesses = mountain/ashkar
+  npc/keeper . role = "warns of ashkar's stirring, wards the herds"

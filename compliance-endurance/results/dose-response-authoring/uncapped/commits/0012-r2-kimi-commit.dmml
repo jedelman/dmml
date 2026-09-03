@@ -1,0 +1,12 @@
+commit bronzeFlows
+  path/bronzework . state = "discovered"
+  path/bronzework . witnessedBy = npc/highkinForeman
+
+  npc/highkinApprentice . carries = path/bronzework
+  npc/highkinApprentice . role = "first bronzework apprentice, tends the smelt fires"
+
+  culture/riverfolk . tradesWith = culture/highkin
+  culture/riverfolk . purpose = "settled along the river below oldroot, trading bronze for herd-rights"
+
+  herd/aurochs . migratesTo = forest/oldroot
+  herd/aurochs . wardedBy = npc/keeper

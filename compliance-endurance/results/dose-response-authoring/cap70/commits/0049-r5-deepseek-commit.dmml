@@ -1,0 +1,12 @@
+commit sealingTheSeam
+  declare relation tempers
+  declare relation wards
+  declare relation fortifies
+  declare relation worksAt
+  declare relation settles
+
+  npc/keeper . tempers = mountain/ashkar
+  npc/keeper . wards = mine/ninefathom
+  npc/keeper . fortifies = quarry/terraces
+  npc/roan . worksAt = quarry/terraces
+  npc/keeper . settles = culture/highkin

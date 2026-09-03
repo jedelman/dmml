@@ -1,0 +1,4 @@
+commit winterWarding
+  declare relation blesses
+
+  npc/riverKeeper . blesses = herd/aurochs

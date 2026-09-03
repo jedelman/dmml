@@ -1,0 +1,9 @@
+commit stonewrightWatch
+  declare relation warns
+  declare relation witnesses
+
+  npc/roan . witnesses = mountain/ashkar
+  npc/roan . warns = culture/highkin
+  culture/highkin . warns = quarry/terraces
+  quarry/terraces . threatens = npc/roan
+  path/stonemasonry . teaches = culture/highkin

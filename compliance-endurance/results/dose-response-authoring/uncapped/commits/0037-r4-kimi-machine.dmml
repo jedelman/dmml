@@ -1,0 +1,26 @@
+machine mine/ninefathom
+  states
+    undug
+    being_dug
+    vein_open
+    exhausted
+
+  transition openVein()
+    being_dug -> vein_open
+    guard self `locatedIn` mountain/ashkar
+    assert vein_open
+
+  transition firstSmelt()
+    vein_open -> being_dug
+    guard self `produces` good/bronzeIngot
+    assert being_dug
+
+  transition deepCut()
+    being_dug -> exhausted
+    guard not self `witnessedBy` npc/keeper
+    assert exhausted
+
+  transition sealMine()
+    exhausted -> undug
+    guard self `locatedIn` mountain/ashkar
+    assert undug

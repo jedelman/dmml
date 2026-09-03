@@ -1,0 +1,8 @@
+commit convergence
+  mountain/ashkar . state = "rumbling"
+  mine/ninefathom . state = "periled"
+  npc/keeper . role = "warns of ashkar's stirring, wards the herds"
+  npc/roan . masters = path/stonemasonry
+  npc/roan . carries = path/bronzework
+  culture/highkin . tradesWith = culture/riverfolk
+  quarry/terraces . state = "hewn"

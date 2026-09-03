@@ -1,0 +1,7 @@
+commit highkinEnterTheMine
+  declare relation worksAt
+
+  npc/highkinForeman . a = HighkinForeman
+  npc/highkinForeman . role = "leads the first highkin crew into ninefathom"
+  npc/highkinForeman . worksAt = mine/ninefathom
+  culture/highkin . state = "mining"

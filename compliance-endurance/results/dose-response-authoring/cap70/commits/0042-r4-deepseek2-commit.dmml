@@ -1,0 +1,11 @@
+commit riverfolkKin
+  declare relation gathersFrom
+  declare relation grazesIn
+
+  herd/aurochs . a = Herd
+  herd/aurochs . gathersFrom = path/greenlore
+  herd/aurochs . grazesIn = forest/oldroot
+  herd/aurochs . performsRitual = autumnRitual
+  herd/aurochs . season = "autumn"
+  herd/aurochs . state = "grazing"
+  herd/aurochs . tendedBy = npc/riverKeeper

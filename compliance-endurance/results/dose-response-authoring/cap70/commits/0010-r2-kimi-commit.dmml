@@ -1,0 +1,6 @@
+commit rumbling
+  mountain/ashkar . state = "rumbling"
+  mine/ninefathom . state = "periled"
+  npc/keeper . role = "warns of ashkar's stirring, wards the herds"
+  npc/riverKeeper . teaches = herd/stagfolk
+  herd/stagfolk . hymns = path/greenlore

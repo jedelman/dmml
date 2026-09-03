@@ -1,0 +1,5 @@
+commit ashkarTensions
+  path/stonemasonry . state = "nascent"
+  npc/roan `carries` path/stonemasonry
+  quarry/terraces . threatens = mine/ninefathom
+  mountain/ashkar . state = "rumbling"

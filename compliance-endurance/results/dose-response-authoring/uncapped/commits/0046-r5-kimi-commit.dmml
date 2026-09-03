@@ -1,0 +1,9 @@
+commit sealsCycle
+  declare relation carriedBy
+  declare relation precedes
+  declare relation witnesses
+
+  ritual/thirdBlessing . carriedBy = npc/keeper
+  ritual/thirdBlessing . precedes = ritual/firstBlessing
+  ritual/thirdBlessing . witnesses = shrine/solstice
+  shrine/solstice . invokesRitual = ritual/thirdBlessing

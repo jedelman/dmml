@@ -1,0 +1,7 @@
+commit shrineStateUpdate
+  declare attribute state
+  declare relation invokesRitual
+
+  shrine/solstice :: a Shrine
+  shrine/solstice . state = "gathering"
+  shrine/solstice . invokesRitual = ritual/secondBlessing

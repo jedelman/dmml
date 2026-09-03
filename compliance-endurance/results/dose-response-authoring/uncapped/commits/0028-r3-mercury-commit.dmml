@@ -1,0 +1,7 @@
+commit riverRites
+  declare relation blessedBy
+  declare relation carries
+
+  herd/aurochs . blessedBy = ritual/firstBlessing
+  ritual/firstBlessing :: a Ritual
+  ritual/firstBlessing . carriedBy = npc/keeper
