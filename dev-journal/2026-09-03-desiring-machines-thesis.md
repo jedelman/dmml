@@ -137,6 +137,83 @@ vs. completed ego formation" as a checkable difference in model
 behavior, not just a compelling redescription of the mandatory-
 reasoning finding already on record. Not yet designed.
 
+## Addressing Reich's critics, honestly, before this goes further
+
+Jason's own instruction: if this project is going to theorize about AI
+using Reich, it has to be willing to defend that use against real
+criticism, not cite selectively and hope nobody asks. Real search this
+session (not recalled), three distinct, well-documented lines of attack
+— treated separately, because they don't all land the same way on what
+this project actually draws on.
+
+**1. Orgone energy as unfalsifiable pseudoscience.** The real, sharpest,
+best-established criticism, and it should be conceded outright, not
+defended: historians and philosophers of science treat Reich's later
+orgone theory (a literal, physical, measurable cosmic energy, developed
+from the late 1930s on) as a textbook Popperian case of unfalsifiability
+— it could explain any effect, and no observation could count against
+it. This led to a real FDA injunction (1954) against orgone accumulators
+as fraudulent medical devices, and Reich's imprisonment and death in
+federal prison (1957) after violating it. **None of this is what this
+project draws on, and the papers should say so explicitly if this ever
+goes in them** — not "Reich, with the usual caveats," but a direct
+statement that the orgone-energy ontology is rejected, and that what's
+being used is the earlier clinical-physiological apparatus (character
+armor, the four-beat discharge cycle, stasis neurosis, embodied ego
+formation) from *The Function of the Orgasm*, which predates and is
+separable from the orgone period even though it's the same book series
+building toward it.
+
+**2. Reductionism — Freud's own critique, not just later commentary.**
+The sharper and more relevant of the two remaining lines, because it
+came immediately, from inside psychoanalysis, not decades of hindsight:
+Freud's 1928 letter to Lou Andreas-Salomé dismisses Reich for saluting
+"in the genital orgasm the antidote to every neurosis" — one mechanism
+promoted to universal explanation. Reich's psychoanalytic peers made the
+same charge in harsher terms later: an "overly hydraulic and biologistic
+reduction of mental processes" that "neglected ego structures and
+symbolic defenses in favor of genital mechanics." **This is not a
+critique that stays safely on Reich's side of the argument.** The
+desiring-machines thesis is built the same way — one mechanism (blocked
+production, displaced discharge) doing the explanatory work across
+prose-injection and reasoning-model hedging alike. If reducing all of
+human neurosis to orgastic discharge was overreach, reducing DMML's
+whole range of model behavior to one production/blockage schema risks
+exactly the same overreach, and inheriting Reich's specific vulnerability
+here isn't optional just because the domain changed from psyche to
+model.
+
+**3. Heteronormativity and cultural specificity.** Real and documented —
+Reich defined healthy sexual experience "exclusively in terms of the
+sexual union between male and female," and critics have argued this
+projects Weimar-era gender and family norms as if they were biological
+universals. **This one mostly doesn't transfer to this project's use,
+and it's worth saying precisely why rather than just asserting it
+doesn't apply**: nothing here borrows Reich's normative content about
+what a healthy human sexual cycle looks like. What's borrowed is the
+narrower structural claim — a cycle with a blockable discharge phase,
+and blocked discharge produces displaced/compensatory activity
+elsewhere — stripped of the specific heterosexual-coital content Reich
+built it from. The structure and the norm are separable in his own text
+(the four-beat formula itself is mechanical/electrical, not specified
+by partner configuration), so this critique targets the norm, not the
+mechanism this project actually uses.
+
+**The real defense, and its real limit.** The honest position: (1) and
+(3) are answered by not needing the parts of Reich they target — the
+orgone ontology and the heteronormative content are both dispensable to
+this argument, and saying so plainly is a defense, not evasion. (2) is
+not fully answered by anything done so far. The best available response
+is that the desiring-production reading is offered as *one* account
+competing against a deflationary alternative (Plank 1's already-flagged
+"just verbose models" explanation), with a real, designed test proposed
+to adjudicate between them — which is exactly the falsifiability-minded
+move Reich's orgone theory conspicuously refused to make. But that test
+hasn't been run yet. Until it is, the reductionism charge stands as a
+real, open vulnerability this thesis has earned by its own choice of
+mechanism, not a criticism that can be waved off by pointing at what got
+correctly rejected in (1) and (3).
+
 ## What this entry is and isn't
 
 This is scaffolding for a real, book-scale argument, not a finished
