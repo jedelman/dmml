@@ -71,3 +71,53 @@ Neither `deprose.py`/`deprose_agent.py` currently retries on 429 at all
 -- a bare `urllib.error.HTTPError` propagates straight up and kills the
 run. Not fixed here; worth doing before actually relying on a `:free`
 model for a real pipeline run rather than a one-off probe like this.
+
+## `openrouter/free`: the real router, tried next
+
+Jason's actual ask, after seeing the per-model congestion above: use
+`openrouter/free` (confirmed real via the models API -- "Free Models
+Router," picks a free model at random from whatever's currently
+available, `supported_parameters` includes `tools`/`tool_choice`/
+`reasoning`) instead of pinning to one free model's specific quirks,
+since this pipeline is dev-only and shouldn't care which underlying
+model answers, saving real token budget for production runs on paid
+models.
+
+**Two real bugs found and fixed immediately, both from this project's
+own hardcoded `reasoning: {"effort": "none"}` dispatch convention
+colliding with the router's per-call randomness:**
+
+1. A `check` call succeeded, then the very next round's call 400'd:
+   `"Reasoning is mandatory for this endpoint and cannot be disabled."`
+   The router had landed on a different, mandatory-reasoning model that
+   round -- confirmed directly by hammering `openrouter/free` with
+   `reasoning: {"effort": "none"}` in a tight loop: 4 of 5 tries picked a
+   disable-able-reasoning model and worked, the 5th hit this exact error.
+   Fixed with a real retry: catch the 400, drop `reasoning` from the
+   payload, retry once.
+2. Immediately hit a SECOND, different shape of the same underlying
+   problem: OpenRouter doesn't always surface this as a non-2xx status --
+   sometimes it's a 200 whose JSON body is `{"error": {...}}` instead of
+   `{"choices": [...]}`. The first fix only caught the `HTTPError` case
+   and crashed on this one with `RuntimeError: unexpected response`.
+   Fixed by checking for `"error"` in a successful body too, same
+   retry-without-reasoning logic either way. Both real, found by running
+   it, not by reading the docs and guessing at the failure shapes.
+
+**With both fixed, the crash is gone -- but a real, separate quality
+problem shows up that the crash had been masking.** A real run
+(`source2.txt`, empty world, `openrouter/free`, 8-round budget): 7
+straight `check` failures (parse errors) before finally passing on round
+8, then `max_rounds` hit before ever calling `commit` -- **0 committed**,
+worse than either reasoning-on or reasoning-off Kimi run on comparable
+text. Per-round token/reasoning-token logs confirm the router really was
+switching models mid-conversation (some rounds show reasoning tokens,
+others show none). The cost of "don't care which model answers" is real:
+a single strong model can use its own growing context to converge on a
+fix across rounds; a different, often much weaker free model landing
+each round doesn't carry that same improving competence forward, even
+though the message *history* does. Whether that tradeoff is acceptable
+depends on what a given dev run is actually testing -- fine if the point
+is exercising the harness/gating logic itself (the checks all still ran
+correctly, they just kept finding real problems), not fine if the point
+is judging extraction quality.

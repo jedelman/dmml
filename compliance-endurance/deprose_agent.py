@@ -36,6 +36,7 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -144,11 +145,34 @@ TOOLS = [
 ]
 
 
+def _post_chat_completion(api_key, payload):
+    req = urllib.request.Request(
+        "https://openrouter.ai/api/v1/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=200) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
 def call_openrouter_tools(api_key, model, reasoning_none, messages, tools):
     """Like run.call_openrouter, but passes tools/tool_choice and returns the
     raw assistant message (content + tool_calls), not just content -- the
     driver needs to see tool_calls to execute them and to know when the
-    model has stopped calling tools at all."""
+    model has stopped calling tools at all.
+
+    Real gap found and fixed 2026-09-03 testing `openrouter/free`: it picks
+    a DIFFERENT underlying model per call, at random, from whatever's
+    currently free -- so a fixed `reasoning: {"effort": "none"}` payload
+    (this project's usual dispatch convention, see written-world/CLAUDE.md's
+    MODELS.md) will intermittently 400 with "Reasoning is mandatory for
+    this endpoint and cannot be disabled" whenever the router happens to
+    land on a mandatory-reasoning free model that round. Retried once
+    without the reasoning param specifically for that error, rather than
+    either crashing (defeats the whole point of using the router to not
+    care about model-specific quirks) or dropping reasoning_none entirely
+    (still correct and wanted for the common case, and for pinned models)."""
     payload = {
         "model": model,
         "max_tokens": base.MAX_TOKENS,
@@ -158,16 +182,29 @@ def call_openrouter_tools(api_key, model, reasoning_none, messages, tools):
     }
     if reasoning_none:
         payload["reasoning"] = {"effort": "none"}
-    req = urllib.request.Request(
-        "https://openrouter.ai/api/v1/chat/completions",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-        method="POST",
-    )
+
+    def is_mandatory_reasoning_error(err_text):
+        return "mandatory" in err_text.lower() and "reasoning" in err_text.lower()
+
     start = time.monotonic()
-    with urllib.request.urlopen(req, timeout=200) as resp:
-        body = json.loads(resp.read().decode("utf-8"))
+    try:
+        body = _post_chat_completion(api_key, payload)
+        # Real gap found alongside the HTTPError case: OpenRouter doesn't
+        # always surface this as a non-2xx status -- sometimes it's a 200
+        # whose JSON body is {"error": {...}} instead of {"choices": [...]}.
+        # Same retry-without-reasoning fix has to check both shapes.
+        if "error" in body and "reasoning" in payload and is_mandatory_reasoning_error(json.dumps(body["error"])):
+            payload.pop("reasoning")
+            body = _post_chat_completion(api_key, payload)
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode("utf-8", errors="replace")
+        if e.code == 400 and "reasoning" in payload and is_mandatory_reasoning_error(err_body):
+            payload.pop("reasoning")
+            body = _post_chat_completion(api_key, payload)
+        else:
+            raise RuntimeError(f"HTTP {e.code}: {err_body}") from e
     elapsed = time.monotonic() - start
+
     if "choices" not in body:
         raise RuntimeError(f"unexpected response: {body}")
     msg = body["choices"][0]["message"]
