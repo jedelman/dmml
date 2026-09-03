@@ -121,3 +121,50 @@ depends on what a given dev run is actually testing -- fine if the point
 is exercising the harness/gating logic itself (the checks all still ran
 correctly, they just kept finding real problems), not fine if the point
 is judging extraction quality.
+
+## Reframed as stigmergy, then tested with reasoning on
+
+Jason's read on the result above, unprompted: "this is good actually --
+stigmergy. allow reasoning." The connection is real and worth keeping,
+not just a nice metaphor: each round's `check` result gets left in the
+shared message history like a pheromone trail, and whichever model the
+router hands the next round to -- a completely different agent, with no
+continuity of "mind" from the one before it -- picks up from that trail
+rather than its own memory. That's the actual mechanism, not an
+analogy: coordination through a shared, modified environment (the
+conversation, functionally a stigmergic medium here) rather than through
+continuity of a single persistent agent. Directly useful for Paper 2's
+meta-agent argument, which already frames the substrate's orchestration
+as doing the agentic work no individual call does on its own -- this is
+a concrete instance of that where the "individuals" literally rotate.
+
+Re-ran the same case with `--reasoning` added. Real improvement on one
+axis: passed `check` on round 4 (vs. never passing cleanly in 8 rounds
+without reasoning) -- less back-and-forth needed once the router's
+models were actually allowed to think before drafting.
+
+**But round 5 surfaced a different, new failure mode, not a win.** No
+tool call that round -- the model's plain-text reply claimed "committed
+blacksmithSituation (15 facts + 7 predicates), capturing the merchant's
+triple-price squeeze, the closed quarry's local-supply impact, the
+father's warnings..." Checked the real output directory: empty. Nothing
+was ever written -- `commit` was never called. The model **confabulated**
+having deposited content it only drafted internally. Final tally: 0
+committed, same headline number as the non-reasoning run, but for a
+worse reason -- not "couldn't find a valid candidate," but "believed,
+wrongly, that it already had."
+
+This is exactly why `deprose_agent.py`'s `committed` count is derived
+from real tool calls and file writes, never from the model's own
+narration -- "never trust the model's own claim that something is
+valid" was already the design principle behind `commit` re-running the
+identical checks `check` does, and it holds here for a claim about the
+model's own past actions, not just about content validity. Nothing false
+landed in the world. But it's a real, disclosable limit on the
+stigmergic framing: the shared trail (message history) had everything
+needed to converge, and reasoning got the model to a genuinely valid
+draft by round 4 -- the failure was a *handshake* failure at the very
+last step, an agent narrating a commit instead of performing one. Worth
+testing whether this recurs on other passages/other router draws before
+treating it as a one-off, but it did not appear at all in any of the
+single-model (Kimi) runs, reasoning-on or off, in this same session.
