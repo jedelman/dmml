@@ -9,6 +9,13 @@ results/_deprose_agent_candidate.dmml
 # input (Mary Oliver's "Wild Geese" -- ambiguous-implication test,
 # 2026-09-03), deliberately not redistributed via this public repo.
 results/deprose-test/poem-source.txt
+
+# Same reasoning: a real, copyrighted 1973 translation (Reich, "The
+# Function of the Orgasm") fetched for primary-source verification of
+# the desiring-machines thesis, kept locally for reference, not
+# redistributed via this repo.
+results/deprose-test/reich_function_orgasm_full.pdf
+results/deprose-test/reich_full.txt
 results/deprose-test/poem-world/
 
 # Live, constantly-rewritten artifacts of an IN-PROGRESS run --

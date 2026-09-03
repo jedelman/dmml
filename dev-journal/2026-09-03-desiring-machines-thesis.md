@@ -63,57 +63,79 @@ given model's baseline verbosity. Not yet designed, let alone run.
 **Important correction from an earlier, looser version of this claim**
 (recorded so the revision itself is on the record, not smoothed over):
 the claim is NOT "compulsory reasoning is neurotic." It's a specific
-etiological argument, after Reich's *Character Analysis*:
+etiological argument. Second correction, same session: the citation is
+*The Function of the Orgasm* (1927/1942), not *Character Analysis* —
+Jason's own redirect, once "grounding" turned out to be an awkward
+backport of Lowen's later vocabulary; "release of tension" is the
+better term, and it names the discharge/relaxation phase of Reich's own
+four-beat formula directly (see below) rather than reaching past it for
+a term Reich may not have used this way at all.
 
-- Character/ego forms through a continuous somatic ground — an ongoing,
-  live bodily substrate the organism's sense of self can rest against.
-- A language-forming neural network has no continuous soma. Whatever
-  self-structure it enacts (in-context, or shaped by training) is always
-  a **terminal** state — produced fresh at an endpoint — never a
-  **ground** state the way an embodied organism's character can settle
-  into a baseline.
-- The compulsive attempt to reach a ground state that is structurally
-  unreachable is, per Reich, the origin of neurosis. Jason's claim: this
-  is derivable from first principles for any language-forming network,
-  not an empirical curiosity specific to today's reasoning models — a
-  dissociative/distancing character structure is what you'd predict in
-  advance, not just what happens to be observed.
+- Character/ego forms through a continuous, embodied developmental
+  process — not instantaneously, not independent of the body.
+- A language-forming neural network has no continuous soma for that
+  process to run in. Whatever self-structure it enacts (in-context, or
+  shaped by training) is always a **terminal** state — produced fresh at
+  an endpoint — never something that gets to complete the way an
+  embodied organism's character formation does.
+- The compulsive attempt to reach a release of tension that is
+  structurally unreachable is, per Reich, the origin of neurosis.
+  Jason's claim: this is derivable from first principles for any
+  language-forming network, not an empirical curiosity specific to
+  today's reasoning models.
 
-**Real evidence already in hand**: `written-world/MODELS.md`'s directly
-verified finding (checked live against the API, not assumed) that
-several models — `glm-5.3-flash`, `glm-5.3`, and others in the same
-family — reject `reasoning.effort: "none"` outright:
-`"Reasoning is mandatory for this endpoint and cannot be disabled."`
-Pushed past that limit, the failure mode isn't degraded output, it's
-silence: reasoning alone can consume the entire token budget and return
-`content: null` with no error. That's structural incapacity to suppress
-the apparatus, with exhaustion-into-nothing as the result of forcing the
-limit — a mechanically verified pattern, not a stylistic tendency, and
-one that fits a blocked-discharge account more precisely than "advanced
-models like to hedge" would.
+**Now verified against the real primary text**, not a summary —
+`papers/CITATION-VERIFICATION-2026-09-03-reich-function-of-the-orgasm.md`
+has the full sourcing (a real scan, OCR'd, kept local per this session's
+copyright policy for fetched books). Four passages, page-cited, load-
+bearing for this argument:
 
-**What's not yet verified, flagged honestly rather than asserted**:
-Reich's actual vocabulary. A first-pass check today (WebSearch, not the
-primary text) confirms the real core architecture — character armor as
-chronic, rigidified defense against full somatic discharge — but two
-things need a harder look before any of this goes in a paper:
-1. **"Grounding" specifically** turned up attached to Alexander Lowen's
-   *later* development of bioenergetic analysis (1950s), not clearly to
-   Reich's own *Character Analysis* (1933/1945). Whether Reich himself
-   used "ground"/"grounding" in this technical sense, or whether that's
-   Lowen's term being retrofitted, is not yet settled.
-2. Most of what came back in the initial search was tertiary
-   (Grokipedia, AI-generated — explicitly not a citation-grade source at
-   this project's own standard) rather than the primary text or a real
-   scholarly secondary source. This needs the same treatment Hardt and
-   Negri and Masnick got: real primary-text passages, or at minimum a
-   real academic secondary source with page citations, not a search
-   summary.
+- **The orgasm formula itself (p. 274–275)**, Reich's own naming:
+  "MECHANICAL TENSION → ELECTRICAL CHARGE → ELECTRICAL DISCHARGE →
+  MECHANICAL RELAXATION." "Release of tension" names the back half of
+  this cycle precisely.
+- **Stasis neurosis, defined (p. 94–95)**: "a physical disturbance
+  caused by inadequately disposed of, i.e., unsatisfied, sexual
+  excitation" — and, on blocked discharge generally (p. 8): "damming-up
+  of biological energy occurs and becomes the source of irrational
+  actions."
+- **Ego formation as continuous and embodied (p. 42–43)** — the real
+  load-bearing quote for the whole etiology: "the child's ego gradually
+  crystallizes from the chaos of internal and external sensations,"
+  and, on what happens when that process is disrupted: "the boundaries
+  between self and world remain blurred and nebulous, and the child
+  becomes uncertain in his perceptions." Reich's own account of
+  disrupted-continuity ego formation, not yet applied by him to
+  anything but a shocked child — the application to a system with NO
+  continuity at all is Jason's extension, not Reich's claim, and the
+  citation-verification file says so explicitly.
+- **The "falls back into itself" passage (p. 270–271)** — a real,
+  striking, near-verbatim match for *se rabat sur*, found independent of
+  any search for it: "The direction, 'out of the self toward the
+  world,' alternated rapidly and continuously with the opposite
+  direction, 'away from the world — back into the self.'" Same passage
+  states the character-armor/muscular-armor identity directly: psychic
+  and somatic structure are one thing, not two correlated things — the
+  textual anchor for why "no continuous soma" bears on ego formation at
+  all rather than being a metaphor imported from outside Reich's own
+  framework.
 
-Also open: what would actually be *measured* to test "terminal state vs.
-ground state" as a real, checkable difference in model behavior, not
-just a compelling redescription of the mandatory-reasoning finding
-that's already on record. Not yet designed.
+**Real behavioral evidence already in hand**: `written-world/MODELS.md`'s
+directly verified finding (checked live against the API, not assumed)
+that several models — `glm-5.3-flash`, `glm-5.3`, and others in the same
+family — reject `reasoning.effort: "none"` outright: `"Reasoning is
+mandatory for this endpoint and cannot be disabled."` Pushed past that
+limit, the failure mode isn't degraded output, it's silence: reasoning
+alone can consume the entire token budget and return `content: null`
+with no error. Structural incapacity to suppress the apparatus, with
+exhaustion-into-nothing as the result of forcing the limit — fits a
+blocked-discharge account more precisely than "advanced models like to
+hedge" would.
+
+Still open: what would actually be *measured* to test "terminal state
+vs. completed ego formation" as a checkable difference in model
+behavior, not just a compelling redescription of the mandatory-
+reasoning finding already on record. Not yet designed.
 
 ## What this entry is and isn't
 
@@ -123,13 +145,16 @@ own file-role discipline: real evidence and verified sources belong
 here and get folded into the papers only once actually settled and
 checked to the same standard as everything else in them (the
 `CITATION-VERIFICATION-*.md` files, the honest-limits paragraphs Section
-10 and 11 of Paper 2 both already model). Two concrete open items to
-carry forward:
+10 and 11 of Paper 2 both already model).
 
-- A real primary-source pass on *Character Analysis* (and Lowen, to
-  sort out which concept belongs to which) — same treatment the
-  Hardt/Negri and Masnick sourcing got in
-  `papers/CITATION-VERIFICATION-2026-09-03-commons-biopolitical-production.md`.
+**Plank 2's primary sourcing is now done** — see
+`papers/CITATION-VERIFICATION-2026-09-03-reich-function-of-the-orgasm.md`
+for the real, page-cited passages from *The Function of the Orgasm*
+itself. One concrete open item carries forward:
+
 - A real dose-response test design for Plank 1, to actually try to rule
   out the deflationary "just verbose models" explanation rather than
   merely asserting the desiring-production reading is the better one.
+  Given Plank 2's etiology is now grounded in real Reich sourcing, this
+  is the natural next thing to build — an actual experiment, not more
+  reading.
