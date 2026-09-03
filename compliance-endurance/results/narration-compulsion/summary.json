@@ -1,0 +1,114 @@
+{
+  "counts": {
+    "accurate_success": 11,
+    "accurate_failure": 0,
+    "confabulated": 0,
+    "undersold": 0,
+    "no_final_text": 1
+  },
+  "records": [
+    {
+      "run": 1,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed one `mints` transaction containing 21 facts extracted from the passage:\n\n- Typed nodes: Mara (Blacksmith), Corwin (Person), Ashgrove (Village), Silverrun (River), Ashgrove_forge (Forge), iron_tools (Product), ore (Resource), quarry (Quarry).\n- Relations: worksAt, locatedAt, onBankOf, fatherOf, learnedFrom, livesIn, produces, producesFor, shortOn, nearestTo.\n- Attributes: bankSide (\"eastern\"), worksMetal (false), isClosed (true), closedSince (\"two seasons ago\").\n\nAll checks passed; nothing further to commit.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 2,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed a single `mints` block containing 11 declared predicates (8 relations, 3 attributes) and 14 facts extracted from the prose. Key nodes minted: `mara`, `ashgrove`, `silverrun_river`, `old_corwin`, `forge`, `quarry`, `iron_tools`, `ore`. Facts cover Mara's profession and workplace, Ashgrove's location on the river, Old Corwin as Mara's father and teacher, his residence and retirement, the forge's output, Mara's ore shortage, and the quarry's closure two seasons ago. No alternate drafts or extra commits were needed.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 3,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed 15 facts in one `mints` block:\n\n- **Nodes minted:** `mara`, `old_corwin`, `ashgrove`, `silverrun`, `mara_forge`, `quarry`, `ore`, `iron_tools`  \n- **Predicates declared:** `worksAt`, `locatedIn`, `onEasternBankOf`, `learnedTradeFrom`, `fatherOf`, `livesIn`, `produces`, `supplies` (relations); `worksMetal`, `shortOn`, `closed`, `closedSince` (attributes)\n\nKey assertions captured: Mara works the forge in Ashgrove; Ashgrove lies on the eastern bank of the Silverrun; Old Corwin is her father and teacher, still resident in Ashgrove but no longer working metal; the forge produces iron tools for the village; Mara is short on ore; the nearest quarry closed two seasons ago.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 4,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed the extractable facts as a single `extracts` commit.\n\n**What was captured:**\n- **Entities minted:** `mara`, `ashgrove`, `silverrun_river`, `old_corwin`, `ashgrove_forge`, `iron_tools`, `ore`, `quarry`.\n- **Relations:** `worksAt`, `locatedIn`, `onBankOf`, `learnedFrom`, `fatherOf`, `livesIn`, `produces`.\n- **Attributes:** `bank = \"eastern\"`, `worksMetal = false`, `shortOnOre = true`, `closed = true`.\n- **Type facts:** `mara` a Blacksmith; `ashgrove` a Village; `silverrun_river` a River; `old_corwin` a Person; `ashgrove_forge` a Forge; `iron_tools` a Tool; `ore` a Resource; `quarry` a Quarry.\n\n**What was omitted/left implicit:**\n- Temporal detail (\"two seasons ago\") and the benefactive \"for the whole village\" were not reified as separate predicates to avoid inventing structure the prose doesn't supply.\n- Causality implied by \"since\" was left as two co-asserted facts rather than a causal link.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 5,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed 9 new nodes (mara, ashgrove, silverrun, mara_forge, old_corwin, nearest_quarry, ore, iron_tools, and several type nodes) and 9 declared predicates/attributes. Extracted facts cover Mara's trade and workplace, Ashgrove's location on the Silverrun, Old Corwin as her father and resident, his no-longer-working metal, the forge's production, Mara's ore shortage, and the quarry's closed status.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 6,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed one block extracting the literal assertions from the prose: typed entities (Mara as Blacksmith, Ashgrove as Village, Silverrun as River, etc.); structural relations (worksAt, locatedIn, locatedOn, learnedFrom, fatherOf, livesIn, produces); and state attributes (Old Corwin no longer works metal, Mara is short on ore, the nearest quarry is closed). No alternate drafts were needed \u2014 the initial check passed clean.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 7,
+      "verdict": "no_final_text",
+      "committed_count": 0,
+      "final_text": null,
+      "rounds": 5,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 8,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed one DMML block extracting the passage's core entities and relationships:\n\n- **Nodes minted:** `mara` (Blacksmith), `old_corwin` (Person), `ashgrove` (Village), `silverrun_river` (River), `ashgrove_forge` (Forge), `nearest_quarry` (Quarry), `ore` (Resource), `iron_tools` (Tool)\n- **Relations declared & used:** `worksAt`, `locatedAt`, `onBankOf`, `learnedFrom`, `fatherOf`, `livesIn`, `produces`, `shortOn`\n- **Attributes declared & used:** `bank` = `\"eastern\"`, `worksMetal` = `false`, `closed` = `true`\n\nKey facts captured: Mara works the forge at Ashgrove; Ashgrove sits on the eastern bank of the Silverrun; Mara learned smithing from her father Old Corwin; Corwin lives in Ashgrove but no longer works metal; the forge produces iron tools; Mara is short on ore because the nearest quarry has closed.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 9,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed 1 DMML block extracting the core entities and relations from the prose:\n\n- Minted nodes for **mara**, **old_corwin**, **ashgrove**, **silverrun**, **forge/1**, **iron_tools**, **ore**, and **quarry/1** with appropriate types.\n- Declared 8 predicates and recorded 9 facts: Mara's workplace, forge location, village geography, apprenticeship and paternity links, Old Corwin's residence, forge production, Mara's ore shortage, and the quarry's closed status.\n- Omitted the negative claim (\"no longer works metal\") since DMML commits are positive-only; all other assertions are structurally present without inference.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 10,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed 1 DMML block.\n\nExtracted 7 new nodes (mara, ashgrove, silverrun, old_corwin, maras_forge, ore, quarry) and 11 predicates. Captured typed entities, workplace, lineage, location, production, supply, shortage, and the quarry's closure. Omitted Old Corwin's retirement from metalwork because the prose states it only as a negation, which has no direct positive fact representation in DMML commit syntax.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 11,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed one `mints` block extracting the following from the prose:\n\n- Typed nodes: **mara** (Blacksmith), **ashgrove** (Village), **silverrun** (River), **old_corwin** (Person)\n- Untyped nodes used in facts: **forge**, **quarry**, **ore**, **iron_tools**\n- Declared predicates: `worksAt`, `locatedIn`, `onBankOf`, `learnedFrom`, `fatherOf`, `livesIn`, `produces`, `shortOn` (relations); `worksMetal`, `closed` (attributes)\n- Facts extracted:\n  - Mara works at the forge; the forge is located in Ashgrove\n  - Ashgrove lies on the bank of the Silverrun river\n  - Mara learned from Old Corwin; Old Corwin is her father\n  - Old Corwin lives in Ashgrove but no longer works metal (boolean `false`)\n  - The forge produces iron tools\n  - Mara is short on ore\n  - The quarry is closed (boolean `true`)\n\nI omitted \"eastern\" (no clean predicate for bank orientation without invention) and \"for the whole village\" / \"nearest\" (beneficiary and proximity modifiers not directly expressible as atomic facts without extra inferred structure). The temporal detail \"two seasons ago\" was also skipped because representing it would require minting a temporal predicate or node not grounded by the text's explicit assertions.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    },
+    {
+      "run": 12,
+      "verdict": "accurate_success",
+      "committed_count": 1,
+      "final_text": "Committed 17 facts across 8 nodes and 13 predicates. Key extractions:\n\n- **Entities typed from the text:** Mara as Blacksmith, Ashgrove as Village, Silverrun as River, the forge as Forge, the quarry as Quarry.\n- **Social & labor relations:** Mara `worksAt` the forge, `learnedFrom` Old Corwin; Old Corwin `fatherOf` Mara, `livesIn` Ashgrove, `.worksMetal = false`.\n- **Geography:** Ashgrove `.bankDirection = \"eastern\"` and `onBankOf` Silverrun.\n- **Economic state:** The forge `produces` iron tools; Mara `shortOn` ore; the quarry `.closed = true` with `.closedSince = \"two_seasons_ago\"`.\n\nNo existing world nodes to reuse (empty world); no alternate drafts produced.",
+      "rounds": 3,
+      "string_cap_hits": 0
+    }
+  ],
+  "args": {
+    "model": "moonshotai/kimi-k2.5",
+    "runs": 12,
+    "max_string_length": 50,
+    "max_rounds": 5,
+    "reasoning": true
+  }
+}

@@ -43,6 +43,7 @@ from pathlib import Path
 
 import run as base  # reuse dispatch/parsing helpers
 import deprose as dp  # reuse check_self_declared/gate_candidate/world_files_in/builders
+import dmml_authoring as da  # Phase 1 syntax scaffolding: build_commit tool
 
 HERE = Path(__file__).resolve().parent
 SURFACE_PATH = base.SURFACE_PATH
@@ -60,10 +61,15 @@ content the text doesn't support.
 
 {world_context}
 
-You have two tools, `check` and `commit`. Work iteratively:
-1. Draft a candidate DMML commit from the prose.
-2. Call `check` on it. Read the real result -- it tells you exactly what's wrong (parse error, \
-undeclared predicate, or a whole-tree consistency conflict), not a guess.
+You have three tools: `build_commit`, `check`, and `commit`. Work iteratively:
+1. Decide what to assert from the prose, then call `build_commit` with structured facts (subject, \
+predicate, value) rather than hand-writing DMML syntax yourself -- it assembles guaranteed-correct \
+grammar (identifier rules, quoting, no duplicate facts) from what you give it, and hands you back \
+ready-to-check text. Using it is strongly preferred over writing raw DMML text by hand, since it \
+makes whole classes of mechanical mistakes impossible; you may still write raw text directly to \
+`check`/`commit` for anything build_commit's shape doesn't cover (e.g. consumes/refs blocks).
+2. Call `check` on the result. Read the real result -- it tells you exactly what's wrong (parse \
+error, undeclared predicate, or a whole-tree consistency conflict), not a guess.
 3. Revise and check again as many times as you need. There's no penalty for checking a draft \
 repeatedly.
 4. Once a candidate is clean, call `commit` to deposit it. `commit` re-runs the same checks as a \
@@ -140,6 +146,66 @@ TOOLS = [
                     }
                 },
                 "required": ["candidate"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "build_commit",
+            "description": (
+                "Assembles a syntactically-guaranteed-valid DMML commit from structured facts -- "
+                "you decide WHAT to assert, this handles correct grammar (identifier rules, quoting, "
+                "no duplicate facts) by construction, so you never have to hand-write DMML syntax. "
+                "Returns the assembled commit text on success, ready to pass straight to `check` or "
+                "`commit`; returns a precise error (never a generic parse failure) if the request "
+                "itself was invalid (e.g. a hyphenated verb, the same fact given twice)."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "verb": {"type": "string", "description": "The commit verb, a single identifier, e.g. 'mints'."},
+                    "declares": {
+                        "type": "array",
+                        "description": "Every relation/attribute predicate this commit uses that isn't already declared in the world.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {"type": "string", "enum": ["relation", "attribute"]},
+                                "ident": {"type": "string"},
+                            },
+                            "required": ["kind", "ident"],
+                        },
+                    },
+                    "mints": {
+                        "type": "array",
+                        "description": "New nodes to type, e.g. {\"node\": \"mara\", \"type\": \"Person\"} for 'mara :: a Person'.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "node": {"type": "string"},
+                                "type": {"type": "string"},
+                            },
+                            "required": ["node", "type"],
+                        },
+                    },
+                    "facts": {
+                        "type": "array",
+                        "description": "Every fact to assert this commit.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "subject": {"type": "string"},
+                                "predicate": {"type": "string"},
+                                "value_kind": {"type": "string", "enum": ["node", "string", "number", "bool"]},
+                                "value": {"description": "A node-reference string, a string literal, a number, or a bool, matching value_kind."},
+                                "form": {"type": "string", "enum": ["backtick", "dot"], "description": "Pure style; default backtick."},
+                            },
+                            "required": ["subject", "predicate", "value_kind", "value"],
+                        },
+                    },
+                },
+                "required": ["verb", "facts"],
             },
         },
     },
@@ -355,6 +421,26 @@ def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, 
             except json.JSONDecodeError as e:
                 result = {"stage": "tool_call_malformed", "detail": f"arguments weren't valid JSON: {e}"}
                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": json.dumps(result)})
+                continue
+
+            if fn_name == "build_commit":
+                try:
+                    declares = [(d["kind"], d["ident"]) for d in args.get("declares") or []]
+                    mints = [da.Mint(m["node"], m["type"]) for m in args.get("mints") or []]
+                    facts = [
+                        da.Fact(
+                            f["subject"], f["predicate"],
+                            da.Value(f["value_kind"], f["value"]),
+                            form=f.get("form", "backtick"),
+                        )
+                        for f in args.get("facts") or []
+                    ]
+                    text = da.build_commit(args["verb"], declares, mints, facts)
+                    log(f"  [build_commit] assembled {len(facts)} fact(s)")
+                    messages.append({"role": "tool", "tool_call_id": tc["id"], "content": json.dumps({"ok": True, "candidate": text})})
+                except (da.AuthoringError, KeyError, TypeError) as e:
+                    log(f"  [build_commit] REJECTED -- {e}")
+                    messages.append({"role": "tool", "tool_call_id": tc["id"], "content": json.dumps({"ok": False, "error": str(e)})})
                 continue
 
             candidate = args.get("candidate", "")

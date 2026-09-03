@@ -29,9 +29,3 @@ results/deprose-test/poem-world/
 results/*/status.json
 results/*/entropy-checkpoint.json
 results/*/entropy-sidecar.log
-
-# narration_compulsion.py's run is in progress -- ignored until it
-# completes (same reasoning as dose-response-authoring above). Remove
-# this line once results/narration-compulsion/summary.json exists and
-# commit the final output.
-results/narration-compulsion/

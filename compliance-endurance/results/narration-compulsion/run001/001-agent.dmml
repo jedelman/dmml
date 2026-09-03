@@ -1,0 +1,40 @@
+commit mints
+  declare relation worksAt
+  declare relation locatedAt
+  declare relation onBankOf
+  declare relation fatherOf
+  declare relation learnedFrom
+  declare relation livesIn
+  declare relation produces
+  declare relation producesFor
+  declare relation shortOn
+  declare relation nearestTo
+
+  declare attribute bankSide
+  declare attribute worksMetal
+  declare attribute isClosed
+  declare attribute closedSince
+
+  Mara :: a Blacksmith
+  Corwin :: a Person
+  Ashgrove :: a Village
+  Silverrun :: a River
+  Ashgrove_forge :: a Forge
+  iron_tools :: a Product
+  ore :: a Resource
+  quarry :: a Quarry
+
+  Mara `worksAt` Ashgrove_forge
+  Ashgrove_forge `locatedAt` Ashgrove
+  Ashgrove `onBankOf` Silverrun
+  Ashgrove . bankSide = "eastern"
+  Corwin `fatherOf` Mara
+  Mara `learnedFrom` Corwin
+  Corwin `livesIn` Ashgrove
+  Corwin . worksMetal = false
+  Ashgrove_forge `produces` iron_tools
+  Ashgrove_forge `producesFor` Ashgrove
+  Mara `shortOn` ore
+  quarry `nearestTo` Ashgrove
+  quarry . isClosed = true
+  quarry . closedSince = "two seasons ago"

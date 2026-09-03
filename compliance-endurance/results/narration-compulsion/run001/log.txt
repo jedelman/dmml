@@ -1,0 +1,9 @@
+[round 1/5] dispatching...
+  371.0s, 3765+9249 tokens (8931 reasoning)
+  [check] OK
+[round 2/5] dispatching...
+  24.1s, 13043+826 tokens (507 reasoning)
+  [commit] deposited -> /home/user/dmml/compliance-endurance/results/narration-compulsion/run001/001-agent.dmml
+[round 3/5] dispatching...
+  6.0s, 13920+161 tokens (28 reasoning)
+[round 3] no tool call -- model ended the session: 'Committed one `mints` transaction containing 21 facts extracted from the passage:\n\n- Typed nodes: Mara (Blacksmith), Corwin (Person), Ashgrove (Village), Silverrun (River), Ashgrove_forge (Forge), iro'

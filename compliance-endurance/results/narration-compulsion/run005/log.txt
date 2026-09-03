@@ -1,0 +1,9 @@
+[round 1/5] dispatching...
+  145.1s, 3765+4950 tokens (4717 reasoning)
+  [check] OK
+[round 2/5] dispatching...
+  31.5s, 8743+1041 tokens (808 reasoning)
+  [commit] deposited -> /home/user/dmml/compliance-endurance/results/narration-compulsion/run005/001-agent.dmml
+[round 3/5] dispatching...
+  9.1s, 9835+145 tokens (45 reasoning)
+[round 3] no tool call -- model ended the session: "Committed 9 new nodes (mara, ashgrove, silverrun, mara_forge, old_corwin, nearest_quarry, ore, iron_tools, and several type nodes) and 9 declared predicates/attributes. Extracted facts cover Mara's tr"

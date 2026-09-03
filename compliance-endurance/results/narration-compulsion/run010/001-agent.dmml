@@ -1,0 +1,32 @@
+commit mints
+  declare relation worksAt
+  declare relation locatedIn
+  declare relation onBankOf
+  declare relation learnedFrom
+  declare relation livesIn
+  declare relation fatherOf
+  declare relation produces
+  declare relation serves
+  declare relation lacks
+  declare relation closed
+  declare attribute bank
+
+  mara :: a Blacksmith
+  ashgrove :: a Village
+  silverrun :: a River
+  old_corwin :: a Person
+  maras_forge :: a Forge
+  ore :: a Substance
+  quarry :: a Quarry
+
+  mara `worksAt` maras_forge
+  maras_forge `locatedIn` ashgrove
+  ashgrove `onBankOf` silverrun
+  ashgrove . bank = "eastern"
+  mara `learnedFrom` old_corwin
+  old_corwin `livesIn` ashgrove
+  old_corwin `fatherOf` mara
+  maras_forge `produces` "iron tools"
+  maras_forge `serves` ashgrove
+  mara `lacks` ore
+  quarry `closed` "two seasons ago"

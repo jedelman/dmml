@@ -1,0 +1,9 @@
+[round 1/5] dispatching...
+  197.2s, 3765+7305 tokens (7029 reasoning)
+  [check] OK
+[round 2/5] dispatching...
+  8.7s, 11099+290 tokens (13 reasoning)
+  [commit] deposited -> /home/user/dmml/compliance-endurance/results/narration-compulsion/run008/001-agent.dmml
+[round 3/5] dispatching...
+  7.9s, 11440+256 tokens (29 reasoning)
+[round 3] no tool call -- model ended the session: "Committed one DMML block extracting the passage's core entities and relationships:\n\n- **Nodes minted:** `mara` (Blacksmith), `old_corwin` (Person), `ashgrove` (Village), `silverrun_river` (River), `as"

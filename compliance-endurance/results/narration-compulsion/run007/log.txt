@@ -1,0 +1,16 @@
+[round 1/5] dispatching...
+  206.4s, 3765+7781 tokens (7511 reasoning)
+  [check] FAILED: parse
+[round 2/5] dispatching...
+  155.8s, 11652+5549 tokens (5521 reasoning)
+  [check] OK
+[round 3/5] dispatching...
+  8.4s, 17229+185 tokens (153 reasoning)
+  [check] OK
+[round 4/5] dispatching...
+  9.3s, 17442+264 tokens (232 reasoning)
+  [check] FAILED: parse
+[round 5/5] dispatching...
+  44.6s, 17812+1607 tokens (1335 reasoning)
+  [check] FAILED: parse
+[deprose-agent] hit max_rounds (5) without the model ending the session on its own

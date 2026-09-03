@@ -1,0 +1,40 @@
+commit mints
+  declare relation hasProblem
+  declare relation offeredToSell
+  declare relation knows
+  declare relation hasNowhereElseToBuy
+  declare relation shutDown
+  declare relation usedToWarn
+  declare relation wasA
+  declare relation gaveOut
+  declare relation remembers
+  declare relation squeezedBy
+  declare relation controls
+  declare relation needs
+  declare attribute rateMultiplier
+  declare attribute location
+  declare attribute description
+
+  blacksmithOfAshgrove :: a Person
+  merchantFromDownriver :: a Person
+  ore :: a Commodity
+  localQuarry :: a Place
+  fatherOfBlacksmith :: a Person
+  beingSqueezed :: a Situation
+  supplyController :: a Role
+
+  blacksmithOfAshgrove `hasProblem` beingSqueezed
+  merchantFromDownriver `offeredToSell` ore
+  blacksmithOfAshgrove `location` "Ashgrove"
+  merchantFromDownriver `location` "downriver"
+  merchantFromDownriver `rateMultiplier` 3
+  merchantFromDownriver `knows` blacksmithOfAshgrove
+  blacksmithOfAshgrove `hasNowhereElseToBuy` ore
+  localQuarry `shutDown` true
+  blacksmithOfAshgrove `usedToWarn` fatherOfBlacksmith
+  fatherOfBlacksmith `wasA` smith
+  fatherOfBlacksmith `gaveOut` hands
+  fatherOfBlacksmith `remembers` beingSqueezed
+  blacksmithOfAshgrove `squeezedBy` merchantFromDownriver
+  merchantFromDownriver `controls` supplyController
+  blacksmithOfAshgrove `needs` ore

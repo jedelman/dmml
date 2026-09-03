@@ -1,0 +1,9 @@
+[round 1/5] dispatching...
+  149.0s, 3765+6035 tokens (5750 reasoning)
+  [check] OK
+[round 2/5] dispatching...
+  8.2s, 9829+307 tokens (21 reasoning)
+  [commit] deposited -> /home/user/dmml/compliance-endurance/results/narration-compulsion/run003/001-agent.dmml
+[round 3/5] dispatching...
+  13.7s, 10187+299 tokens (110 reasoning)
+[round 3] no tool call -- model ended the session: 'Committed 15 facts in one `mints` block:\n\n- **Nodes minted:** `mara`, `old_corwin`, `ashgrove`, `silverrun`, `mara_forge`, `quarry`, `ore`, `iron_tools`  \n- **Predicates declared:** `worksAt`, `locate'

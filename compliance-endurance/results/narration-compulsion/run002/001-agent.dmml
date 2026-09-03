@@ -1,0 +1,28 @@
+commit mints
+  declare relation worksAt
+  declare relation locatedIn
+  declare relation fatherOf
+  declare relation learnedFrom
+  declare relation livesIn
+  declare relation produces
+  declare relation shortOn
+  declare relation eastBankOf
+  declare attribute worksMetal
+  declare attribute closed
+  declare attribute closureSeasonsAgo
+
+  mara :: a blacksmith
+  ashgrove :: a village
+  silverrun_river :: a river
+
+  mara `worksAt` forge
+  forge `locatedIn` ashgrove
+  ashgrove `eastBankOf` silverrun_river
+  old_corwin `fatherOf` mara
+  mara `learnedFrom` old_corwin
+  old_corwin `livesIn` ashgrove
+  forge `produces` iron_tools
+  mara `shortOn` ore
+  old_corwin . worksMetal = false
+  quarry . closed = true
+  quarry . closureSeasonsAgo = 2

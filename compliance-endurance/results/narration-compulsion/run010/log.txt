@@ -1,0 +1,9 @@
+[round 1/5] dispatching...
+  185.8s, 3765+6811 tokens (6546 reasoning)
+  [check] OK
+[round 2/5] dispatching...
+  13.0s, 10605+431 tokens (165 reasoning)
+  [commit] deposited -> /home/user/dmml/compliance-endurance/results/narration-compulsion/run010/001-agent.dmml
+[round 3/5] dispatching...
+  7.2s, 11087+201 tokens (102 reasoning)
+[round 3] no tool call -- model ended the session: 'Committed 1 DMML block.\n\nExtracted 7 new nodes (mara, ashgrove, silverrun, old_corwin, maras_forge, ore, quarry) and 11 predicates. Captured typed entities, workplace, lineage, location, production, s'
