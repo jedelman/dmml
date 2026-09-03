@@ -3,6 +3,7 @@ results/_scratch-*
 results/_list-*.txt
 results/_pair_contests/
 results/_deprose_candidate.dmml
+results/_deprose_agent_candidate.dmml
 
 # Copyrighted source text kept locally as a real de-prose stress-test
 # input (Mary Oliver's "Wild Geese" -- ambiguous-implication test,
