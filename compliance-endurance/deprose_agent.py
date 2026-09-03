@@ -205,7 +205,7 @@ def run_checks(candidate_text, validate_bin, check_declared_bin, retro_gate_bin,
     return True, {"stage": "ok"}
 
 
-def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, log):
+def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, log, reasoning_none=True):
     validate_bin = base.DMML_HS / "validate-commit"
     render_bin = base.DMML_HS / "render-snapshot"
     retro_gate_bin = dp.build_retro_gate()
@@ -231,17 +231,23 @@ def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, 
 
     running_world_files = list(world_files)
     committed, check_calls = [], 0
-    total_prompt_tokens = total_completion_tokens = 0
+    total_prompt_tokens = total_completion_tokens = total_reasoning_tokens = 0
     api_elapsed = 0.0
     wall_start = time.monotonic()
 
     for round_num in range(1, max_rounds + 1):
         log(f"[round {round_num}/{max_rounds}] dispatching...")
-        msg, usage, elapsed = call_openrouter_tools(api_key, model, True, messages, TOOLS)
+        msg, usage, elapsed = call_openrouter_tools(api_key, model, reasoning_none, messages, TOOLS)
         api_elapsed += elapsed
         total_prompt_tokens += usage.get("prompt_tokens", 0)
         total_completion_tokens += usage.get("completion_tokens", 0)
-        log(f"  {elapsed:.1f}s, {usage.get('prompt_tokens', 0)}+{usage.get('completion_tokens', 0)} tokens")
+        # Only present when reasoning is actually on -- OpenRouter nests it
+        # under completion_tokens_details, and reasoning tokens are already
+        # counted inside completion_tokens, not additional to it.
+        reasoning_tokens = (usage.get("completion_tokens_details") or {}).get("reasoning_tokens", 0)
+        total_reasoning_tokens += reasoning_tokens
+        reasoning_note = f" ({reasoning_tokens} reasoning)" if reasoning_tokens else ""
+        log(f"  {elapsed:.1f}s, {usage.get('prompt_tokens', 0)}+{usage.get('completion_tokens', 0)} tokens{reasoning_note}")
         tool_calls = msg.get("tool_calls") or []
 
         if not tool_calls:
@@ -297,6 +303,7 @@ def deprose_agentic(api_key, model, prose_text, world_dir, out_dir, max_rounds, 
         "rounds": round_num,
         "prompt_tokens": total_prompt_tokens,
         "completion_tokens": total_completion_tokens,
+        "reasoning_tokens": total_reasoning_tokens,
         "total_tokens": total_prompt_tokens + total_completion_tokens,
         "api_elapsed": api_elapsed,
         "wall_elapsed": wall_elapsed,
@@ -310,6 +317,12 @@ def main():
     ap.add_argument("--out-dir", required=True, type=Path, help="where committed commits are written")
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--max-rounds", type=int, default=10)
+    ap.add_argument(
+        "--reasoning",
+        action="store_true",
+        help="Let the model reason (default: reasoning off, same as deprose.py's dispatch convention). "
+        "Only meaningful for a model that supports disabling reasoning in the first place.",
+    )
     args = ap.parse_args()
 
     api_key = os.environ.get("OPENROUTER_API_KEY")
@@ -325,15 +338,19 @@ def main():
     def log(msg):
         print(msg, flush=True)
 
-    result = deprose_agentic(api_key, args.model, prose_text, args.world_dir, args.out_dir, args.max_rounds, log)
+    result = deprose_agentic(
+        api_key, args.model, prose_text, args.world_dir, args.out_dir, args.max_rounds, log,
+        reasoning_none=not args.reasoning,
+    )
     print()
     print(
         f"[deprose-agent] done: {len(result['committed'])} committed, {result['check_calls']} check/commit calls, "
         f"{result['rounds']} rounds"
     )
+    reasoning_note = f" ({result['reasoning_tokens']} reasoning)" if result["reasoning_tokens"] else ""
     print(
         f"[deprose-agent] stats: {result['prompt_tokens']}+{result['completion_tokens']}="
-        f"{result['total_tokens']} tokens, {result['api_elapsed']:.1f}s API time, "
+        f"{result['total_tokens']} tokens{reasoning_note}, {result['api_elapsed']:.1f}s API time, "
         f"{result['wall_elapsed']:.1f}s wall time ({result['wall_elapsed'] - result['api_elapsed']:.1f}s local "
         f"check/build/gate time)"
     )

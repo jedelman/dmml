@@ -1,0 +1,27 @@
+commit mints
+  declare relation worksAt
+  declare relation learnedFrom
+  declare relation fatherOf
+  declare relation livesIn
+  declare relation locatedIn
+  declare relation produces
+  declare relation locatedOnBankOf
+  declare attribute bankSide
+  declare attribute shortOnOre
+
+  mara :: a Person
+  ashgrove :: a Village
+  silverrun :: a River
+  old_corwin :: a Person
+  the_forge :: a Forge
+  iron_tools :: a Product
+
+  mara `worksAt` the_forge
+  mara `learnedFrom` old_corwin
+  old_corwin `fatherOf` mara
+  old_corwin `livesIn` ashgrove
+  the_forge `locatedIn` ashgrove
+  ashgrove `locatedOnBankOf` silverrun
+  ashgrove . bankSide = "eastern"
+  the_forge `produces` iron_tools
+  mara . shortOnOre = true
