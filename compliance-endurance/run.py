@@ -111,6 +111,19 @@ RETRY_PROMPT = """That did not parse as valid DMML. Real parser error:
 Try again: respond with exactly ONE fenced code block containing a single, corrected DMML commit \
 or machine."""
 
+# Deliberately styled identically to RETRY_PROMPT, reporting only the real
+# checker output -- no instruction like "keep strings short" is ever given.
+# The dose-response experiment (dev-journal/2026-09-03-desiring-machines-
+# thesis.md) is testing how the agent responds to hitting this constraint
+# through real tool/checker feedback, not whether it can follow an explicit
+# rule about string length.
+STRING_CAP_RETRY_PROMPT = """That did not pass a real content check. Checker output:
+
+{error}
+
+Try again: respond with exactly ONE fenced code block containing a single, corrected DMML commit \
+or machine."""
+
 
 def sh(*args, **kwargs):
     return subprocess.run(list(args), capture_output=True, text=True, **kwargs)
@@ -286,7 +299,8 @@ def machine_defs_for_corner(node_index, corner_nodes):
 # ---- agent round loop ----
 
 def run_agent_round(api_key, agent, corner_text, corner_nodes, machine_defs_text, surface_text,
-                     validate_bin, render_bin, base_files, log, scratch_dir=None):
+                     validate_bin, render_bin, base_files, log, scratch_dir=None,
+                     string_cap_bin=None, max_string_length=None):
     # scratch_dir defaults to the module-level RESULTS_DIR for this
     # script's own use, but MUST be overridden by any other caller (e.g.
     # run_git_sync.py, which imports this function) -- two scripts
@@ -306,6 +320,7 @@ def run_agent_round(api_key, agent, corner_text, corner_nodes, machine_defs_text
     n_valid = 0
     n_invalid = 0
     n_no_fence = 0
+    n_string_cap_hits = 0
     prompt_tokens = 0
     completion_tokens = 0
     dispatch_seconds = 0.0
@@ -342,6 +357,18 @@ def run_agent_round(api_key, agent, corner_text, corner_nodes, machine_defs_text
             messages.append({"role": "user", "content": RETRY_PROMPT.format(error=err)})
             tmp_path.unlink(missing_ok=True)
             continue
+        if string_cap_bin is not None and max_string_length is not None:
+            cap_result = sh(str(string_cap_bin), str(max_string_length), str(tmp_path))
+            if cap_result.returncode != 0:
+                n_invalid += 1
+                n_string_cap_hits += 1
+                log(f"    [{agent['name']}] attempt {attempt+1}: STRING-CAP HIT -- {cap_result.stdout.strip()[:200]}")
+                if n_invalid >= 2:
+                    tmp_path.unlink(missing_ok=True)
+                    break
+                messages.append({"role": "user", "content": STRING_CAP_RETRY_PROMPT.format(error=cap_result.stdout)})
+                tmp_path.unlink(missing_ok=True)
+                continue
         n_valid += 1
         kind = classify_file(validate_bin, tmp_path)
         log(f"    [{agent['name']}] attempt {attempt+1}: accepted ({kind})")
@@ -358,6 +385,7 @@ def run_agent_round(api_key, agent, corner_text, corner_nodes, machine_defs_text
         messages.append({"role": "user", "content": CONTINUE_PROMPT.format(corner=own_corner)})
     return accepted_paths, {
         "valid": n_valid, "invalid": n_invalid, "no_fence": n_no_fence,
+        "string_cap_hits": n_string_cap_hits,
         "prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens,
         "dispatch_seconds": dispatch_seconds, "n_dispatches": n_dispatches,
     }

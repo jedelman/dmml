@@ -29,3 +29,10 @@ results/deprose-test/poem-world/
 results/*/status.json
 results/*/entropy-checkpoint.json
 results/*/entropy-sidecar.log
+
+# dose_response_authoring.py's run is in progress (real 4-agent, 2-
+# condition dispatch loop, running in the background) -- ignored until
+# it completes, per the same "don't commit an ever-changing mid-run
+# snapshot" reasoning above. Remove this line once results/dose-
+# response-authoring/summary.json exists and commit the final output.
+results/dose-response-authoring/
