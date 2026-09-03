@@ -69,6 +69,15 @@ above.
 do not pad structure the text gives no basis for.
 4. Identifier rule: a commit verb, predicate name, and each node-reference segment are single \
 identifiers -- letters, digits, underscore only, no hyphens, no spaces.
+5. Some prose doesn't literally assert anything but still plainly implies, suggests, or evokes \
+something -- figurative, indirect, or deliberately ambiguous text (poetry, metaphor, allusion). \
+Don't decline this as if it had no content, and don't flatten it into a bare assertion it doesn't \
+make either. Extract it using a hedge predicate whose name carries the epistemic status honestly \
+-- `seemsTo`, `couldImply`, `evokes`, or similar -- as a RELATION between the thing doing the \
+evoking and a minted concept node for what's evoked (e.g. `wildGeese \`evokes\` belonging`, with \
+`belonging` declared as its own node), not an attribute string. A concept node named for what it \
+means, not what page it came from, is what lets a later passage's independent interpretation \
+converge on the same node under Rule 1 instead of minting a near-duplicate.
 
 Respond with exactly ONE fenced code block containing a single DMML commit that captures \
 everything the prose asserts (a commit can hold many facts -- do not split one coherent passage \

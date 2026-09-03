@@ -8,6 +8,7 @@ results/_deprose_candidate.dmml
 # input (Mary Oliver's "Wild Geese" -- ambiguous-implication test,
 # 2026-09-03), deliberately not redistributed via this public repo.
 results/deprose-test/poem-source.txt
+results/deprose-test/poem-world/
 
 # Live, constantly-rewritten artifacts of an IN-PROGRESS run --
 # status.json/entropy-checkpoint.json/entropy-sidecar.log are process
