@@ -164,10 +164,10 @@ pipeline.
 
 - `EffectRetract` firing (needs a real strong-ref-provenance design, see
   above).
-- No GitHub issue filed yet for the retract gap -- per `written-world/
-  CLAUDE.md`'s "task/follow-up tracking → real GitHub issues, always"
-  rule, this needs a real issue in `jedelman/dmml`, not just this journal
-  entry, before the next session starts something else.
+- `EffectRetract`'s real strong-ref-provenance gap is now tracked as
+  [jedelman/dmml#4](https://github.com/jedelman/dmml/issues/4), per
+  `written-world/CLAUDE.md`'s "task/follow-up tracking → real GitHub
+  issues, always" rule -- not left only in this journal entry.
 - `fire-transition`'s param values are read as plain node-ref text only
   -- no way yet to bind a `$param` to a literal (string/number/bool)
   value from the CLI, only to a node reference. Not a blocker for the
