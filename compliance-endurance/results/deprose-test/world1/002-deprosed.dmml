@@ -1,0 +1,4 @@
+commit reports
+  declare attribute shortOn
+
+  mara . shortOn = "ore"

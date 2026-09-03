@@ -9,3 +9,5 @@ render-snapshot
 check-divergence
 entropy-sidecar
 checkpoint-rebuild
+retro-gate
+check-declared

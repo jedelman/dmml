@@ -2,6 +2,7 @@ __pycache__/
 results/_scratch-*
 results/_list-*.txt
 results/_pair_contests/
+results/_deprose_candidate.dmml
 
 # Live, constantly-rewritten artifacts of an IN-PROGRESS run --
 # status.json/entropy-checkpoint.json/entropy-sidecar.log are process
