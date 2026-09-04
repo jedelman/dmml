@@ -4,11 +4,16 @@
 -- already produces) as a real atproto record, into the caller's OWN repo,
 -- under the existing @org.jason-edelman.writtenworld.commit@ lexicon.
 --
--- NOT live-tested against a real account as of 2026-09-04 -- this
--- session has an ATPROTO_APP_PASSWORD in its environment but no paired
--- handle/DID to use it with, and guessing one to pair with a real
--- credential is not something to do unprompted. See
--- @written-world/dev-journal/2026-09-04-atproto-discovery-no-knot-needed.md@.
+-- Live-verified 2026-09-04 against a real account: Jason confirmed the
+-- sandbox's @ATPROTO_APP_PASSWORD@ pairs with the @claude.jason-
+-- edelman.org@ handle (the identity worker described in that repo's own
+-- CLAUDE.md). Resolved handle -> DID -> PDS endpoint, opened a session,
+-- and \`createRecord\`ed a real test commit
+-- (@atproto/writePathVerification@, predicate @mints@); confirmed via a
+-- separate \`listRecords\` read that it came back byte-for-byte
+-- identical. See
+-- @written-world/dev-journal/2026-09-04-atproto-discovery-no-knot-needed.md@
+-- for the full design context.
 module Main (main) where
 
 import qualified Data.Text as T
