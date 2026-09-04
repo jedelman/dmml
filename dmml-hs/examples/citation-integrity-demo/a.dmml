@@ -1,0 +1,3 @@
+commit mints
+  declare relation state
+  key/foo `state` seen

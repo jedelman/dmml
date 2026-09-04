@@ -62,3 +62,32 @@ jobs:
         run: |
           FIRE_TRANSITION="$(cabal list-bin fire-transition)" \
             ./examples/cascade-demo/run.sh
+
+      # check-citations (jedelman/dmml#6): real citation-integrity
+      # checking. examples/citation-integrity-demo/ exercises the
+      # "no local file, first-citation-wins" fallback path; the second
+      # command re-derives the OTHER, stronger path (a citation against
+      # a file actually present in the batch, checked against its real
+      # recomputed identity) straight from a live fire-transition run,
+      # then tampers with the cid and confirms it's caught -- see that
+      # example's own README for why this isn't a separate fixture.
+      - name: Run check-citations demo
+        run: |
+          set -euo pipefail
+          cd examples/citation-integrity-demo
+          cabal run check-citations -- a.dmml b.dmml
+          if cabal run check-citations -- a.dmml b.dmml c.dmml; then
+            echo "expected a citation mismatch (c.dmml vs b.dmml), got none" >&2
+            exit 1
+          fi
+          cd ../chained-retract-demo
+          FIRE="$(cabal list-bin fire-transition)"
+          CHECK="$(cabal list-bin check-citations)"
+          "$FIRE" keeper.dmml witnessEruption witnesses \
+            --world world.dmml --param eruption=volcano/ashkar > /tmp/fired.dmml
+          "$CHECK" world.dmml /tmp/fired.dmml
+          sed 's/fnv1a64:[0-9a-f]*/fnv1a64:deadbeefdeadbeef/' /tmp/fired.dmml > /tmp/tampered.dmml
+          if "$CHECK" world.dmml /tmp/tampered.dmml; then
+            echo "expected a citation mismatch on tampered.dmml, got none" >&2
+            exit 1
+          fi

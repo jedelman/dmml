@@ -1,0 +1,5 @@
+commit retracts
+  declare relation state
+  consumes
+    fact at://external.example/repo/commit1#bafyfirstcid
+      key/foo . state = seen
