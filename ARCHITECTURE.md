@@ -1,5 +1,15 @@
 # Architecture
 
+> **Retired 2026-09-04.** This document describes the Rust `dmml`/
+> `dmml-runtime`/`dmml-substrate-kit` crate split, deleted the same day
+> `dmml-hs` (Haskell) became canonical (`dev-journal/2026-09-04-dmml-hs-
+> canonical.md`) and `written-world`'s last Rust consumers were retired
+> (`written-world#138`). Kept as historical record of the original
+> crate-boundary reasoning, per this repo's own "dev-journal stays as
+> record" convention — don't treat any of it as describing what exists
+> today. `dmml-hs`'s own module boundaries (`src/DMML/*.hs`) are the
+> current architecture; there's no equivalent write-up of those yet.
+
 ## Why 3 crates, and why the boundary sits where it does
 
 This repo exists because DMML's ontology and its runtime materializer

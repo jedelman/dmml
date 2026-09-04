@@ -13,7 +13,20 @@ designed to run on either atproto or iroh-docs underneath — see
 [`ARCHITECTURE.md`](ARCHITECTURE.md) for the real crate boundary and
 what's still open design work.
 
-## Crates
+## `dmml-hs` is canonical; the Rust crates below are retired
+
+**As of 2026-09-04, `dmml-hs/` (Haskell) is the one real interpreter** —
+see `dev-journal/2026-09-04-dmml-hs-canonical.md` for that decision and
+`dmml-hs/SURFACE.md`/`GRAMMAR.md` for the real, current grammar. The
+Rust crates this section originally described (`dmml`, `dmml-runtime`,
+`dmml-substrate-kit`) are deleted — nothing anywhere still depended on
+them once `written-world`'s own last Rust consumers (`server`, `client`,
+`cli`, `appview`) were retired the same day (`written-world#138`). Kept
+below as historical record of the original crate boundary, per this
+repo's own "dev-journal stays as record" convention — don't treat it as
+current.
+
+## Crates (historical — see above)
 
 - **`dmml`** — the grammar, parser, interpreter, and validation.
 - **`dmml-runtime`** — the materializer (an oxigraph-backed world graph)
@@ -22,7 +35,8 @@ what's still open design work.
   atproto CID scheme) and shared testing tools.
 
 written-world remains the reference, atproto-backed consumer of this
-ontology.
+ontology — now via `dmml-hs` and its own `written-world/cli/`, not these
+crates.
 
 ## Papers
 
