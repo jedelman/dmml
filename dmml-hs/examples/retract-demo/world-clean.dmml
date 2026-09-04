@@ -1,0 +1,7 @@
+commit setup
+  declare relation witnessedBy
+  declare relation sealedBy
+  declare relation state
+
+  shrine/threshold `witnessedBy` npc/keeper
+  shrine/threshold `state` stirring

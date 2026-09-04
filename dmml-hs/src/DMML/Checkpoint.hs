@@ -49,7 +49,7 @@ import Data.Text (Text)
 import GHC.Generics (Generic)
 
 import DMML.Ast (DeclKind (..), Literal (..), NodeRef (..), Value (..))
-import DMML.Materialize (Alternatives (..), WorldSnapshot (..), emptySnapshot)
+import DMML.Materialize (Alternatives (..), WorldSnapshot (..), alternativeValues, emptySnapshot)
 
 -- Standalone deriving: these types are defined in DMML.Ast, which
 -- deliberately carries no aeson dependency of its own (see its own doc
@@ -118,13 +118,25 @@ snapshotToCheckpoint treeSha snap =
         ]
     }
 
+-- | A checkpoint round-trip never persisted real 'DMML.Ast.StrongRef'
+-- provenance before 2026-09-04's retract-provenance fix
+-- (jedelman/dmml#4) and still doesn't -- 'CheckpointFact' only ever
+-- carried @(label, value)@ pairs (see 'snapshotToCheckpoint', which
+-- reads through the unchanged 'alternativeValues' accessor). A snapshot
+-- rebuilt from a checkpoint therefore has every alternative's provenance
+-- reset to 'Nothing', same as before this module carried a
+-- 'Maybe DMML.Ast.StrongRef' field at all -- a real, disclosed
+-- limitation, not new behavior: 'DMML.Fire' will refuse to retract a
+-- fact whose only source is a rehydrated checkpoint until this file
+-- format grows a real @cid@ field of its own (not yet needed by
+-- anything that reads a checkpoint today).
 checkpointToSnapshot :: CheckpointFile -> WorldSnapshot
 checkpointToSnapshot ck =
   emptySnapshot
     { snapshotDeclared = Map.fromList (ckDeclared ck)
     , snapshotFacts =
         Map.fromList
-          [ ((cfSubject f, cfPredicate f), Alternatives (cfAlternatives f))
+          [ ((cfSubject f, cfPredicate f), Alternatives [(label, Nothing, v) | (label, v) <- cfAlternatives f])
           | f <- ckFacts ck
           ]
     }

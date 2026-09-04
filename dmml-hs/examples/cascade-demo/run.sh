@@ -12,18 +12,24 @@
 # a naive version of this loop that treated "fire-transition exited 0"
 # as the fire signal looped forever. DMML.Materialize's facts are
 # collision-free -- an old (self, state, idle) fact is never retracted
-# just because (self, state, smelted) got asserted alongside it, and
-# DMML.Fire currently refuses to fire an EffectRetract at all (a real,
-# disclosed Phase 3 gap -- see jedelman/dmml#4). So the implicit
-# from->to guard (EXISTS(self state idle)) stays satisfied forever,
-# and `smelt` "succeeds" every single round even after it has nothing
-# new to do. The fix needs no new engine code: DMML.Materialize's own
-# value-level dedup (`addAlternative` -- re-asserting an identical value
-# is a no-op) means a transition whose fired output is byte-identical to
-# its own last firing produced nothing new, whatever mayFire says --
-# so THAT'S the real fixpoint signal, not exit code. Hashing each
-# transition's own last output and stopping once it repeats is the
-# whole fix, below.
+# just because (self, state, smelted) got asserted alongside it, and at
+# the time DMML.Fire refused to fire an EffectRetract at all. So the
+# implicit from->to guard (EXISTS(self state idle)) stayed satisfied
+# forever, and `smelt` "succeeded" every round even with nothing new.
+#
+# TWO real fixes now layered here, deliberately kept both:
+#  1. The actual root cause, fixed 2026-09-04 (jedelman/dmml#4):
+#     furnace.dmml/anvil.dmml's transitions now `retract idle` alongside
+#     their `assert <newstate>`, and DMML.Fire can really fire a retract
+#     (real strong-ref provenance via DMML.LocalIdentity, see
+#     app/FireTransition.hs) -- so the from->to guard genuinely goes
+#     false after round 1, and `smelt`/`forge` correctly REFUSE in round
+#     2 rather than "succeeding" with nothing new.
+#  2. The hash-dedup below is kept as defense-in-depth, not because this
+#     demo still needs it (it now reaches a fixpoint on genuine guard
+#     refusal, before dedup would even matter) -- it's what protects a
+#     caller against a machine author who forgets to write a real
+#     retract at all.
 #
 # Usage: ./run.sh (run from dmml-hs/, needs fire-transition on PATH or
 # FIRE_TRANSITION env var pointing at the binary)

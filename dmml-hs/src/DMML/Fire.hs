@@ -18,8 +18,21 @@
 -- any other commit goes through is what actually applies it. This module
 -- only gets you from "a transition legally fired" to "here is the commit
 -- that firing produced," nothing more.
+--
+-- UPDATED 2026-09-04 (jedelman/dmml#4): 'EffectRetract' firing used to
+-- refuse outright -- DMML's real commit grammar only retracts a fact via
+-- a @consumes@ block naming the specific prior commit (@uri#cid@) that
+-- asserted it, and a 'DMML.Materialize.WorldSnapshot' built the ordinary
+-- way ('DMML.Materialize.applyCommit') never carries one. The fix isn't
+-- in this module -- it's that a caller can now build a snapshot WITH
+-- real provenance ('DMML.Materialize.applyIdentifiedCommit'), and once
+-- it does, this module builds a real @consumes@ citation from whatever
+-- 'DMML.Materialize.currentValueWithProvenance' reports. A retract still
+-- refuses, honestly, when the snapshot in hand has no real provenance to
+-- cite -- see 'FireRetractNoProvenance'.
 module DMML.Fire
   ( ResolvedFact (..)
+  , ResolvedEffect (..)
   , FireError (..)
   , fireTransition
   , renderFiredCommit
@@ -31,14 +44,26 @@ import qualified Data.Text as T
 
 import DMML.Ast
 import DMML.Guard (EvalContext (..), mayFire, resolveTerm)
-import DMML.Materialize (WorldSnapshot)
+import DMML.Materialize (WorldSnapshot, currentValueWithProvenance)
 
--- | One concrete fact a fired transition's effect resolved to.
+-- | One concrete fact a fired transition's assert effect resolved to.
 data ResolvedFact = ResolvedFact
   { rfSubject :: Text
   , rfPredicate :: PredicateRef
   , rfValue :: Value
   }
+  deriving (Eq, Show)
+
+-- | One fired transition's effect, resolved: either a concrete fact to
+-- assert, or a real, cited retraction. Kept as one sum type (rather than
+-- two separate lists) so 'renderFiredCommit' renders them in the exact
+-- order the transition declared its effects -- an author who interleaves
+-- asserts and retracts sees that order preserved in the produced commit.
+data ResolvedEffect
+  = ResolvedAssert ResolvedFact
+  | -- | @(subject, predicate, the real StrongRef being cited)@ -- the
+    -- one live alternative this retract's citation actually consumes.
+    ResolvedRetract Text PredicateRef StrongRef
   deriving (Eq, Show)
 
 data FireError
@@ -54,37 +79,48 @@ data FireError
     FireUnresolvedSubject Effect
   | -- | Same as above, for an 'EffectValueTerm' asserted value.
     FireUnresolvedValue Effect
-  | -- | A real, disclosed scope limit, not a bug: DMML's actual commit
-    -- grammar only retracts a fact via a @consumes@ block naming the
-    -- specific prior commit (@uri#cid@ -- 'DMML.Ast.StrongRef') that
-    -- asserted it (see @SURFACE.md@'s @consumes@\/@fact@ grammar and
-    -- 'DMML.Ast.FactConsume'). A 'DMML.Materialize.WorldSnapshot's own
-    -- 'DMML.Materialize.Alternatives' only carry a branch\/agent-name
-    -- provenance label, never a real commit @uri#cid@ -- there is no
-    -- sound way to synthesize a @consumes@ entry from a snapshot alone
-    -- without fabricating provenance that doesn't exist. Firing a
-    -- transition whose effects include a retract currently refuses
-    -- rather than emit an unsound commit; a real fix needs the caller to
-    -- supply real strong-ref provenance for whatever it wants retracted,
-    -- which this module has no access to.
-    FireRetractNeedsProvenance Effect
+  | -- | A retract effect's (subject, predicate) has no live fact at all
+    -- in the snapshot -- nothing to retract.
+    FireRetractNoSuchFact Effect
+  | -- | A retract effect's (subject, predicate) has a live fact, but it
+    -- was materialized the ordinary, provenance-free way
+    -- ('DMML.Materialize.applyCommit') rather than with a real
+    -- 'DMML.Ast.StrongRef' ('DMML.Materialize.applyIdentifiedCommit') --
+    -- there is genuinely no real @uri#cid@ to cite, so this refuses
+    -- rather than fabricate one. Real, disclosed fix: materialize the
+    -- world snapshot passed to 'fireTransition' with real identified
+    -- commits (see @app/FireTransition.hs@'s use of
+    -- 'DMML.LocalIdentity.localFileRef').
+    FireRetractNoProvenance Effect
+  | -- | A retract effect's (subject, predicate) currently has MORE THAN
+    -- ONE live alternative. 'DMML.Materialize'\'s own @consumes@
+    -- application ('DMML.Materialize.applyCommit'\'s @applyConsume@)
+    -- deletes every live alternative for a (subject, predicate) key
+    -- unconditionally, regardless of which @uri#cid@ the @consumes@
+    -- entry actually names -- so citing just ONE of several live
+    -- alternatives' provenance while the applied commit would silently
+    -- delete ALL of them (including ones this retract never cited) would
+    -- misrepresent what's actually being consumed. Refuses rather than
+    -- pick one alternative's citation to stand in for a broader deletion
+    -- nobody actually authorized.
+    FireRetractAmbiguous Effect
   deriving (Eq, Show)
 
 -- | Fires one named transition: checks it's declared and legal (via
--- 'mayFire', unchanged), then resolves every effect to a concrete fact
--- under @ctx@'s bindings. Fails closed on the first effect that can't be
--- soundly resolved -- never emits a partial result, since a caller
+-- 'mayFire', unchanged), then resolves every effect under @ctx@'s
+-- bindings against @snap@. Fails closed on the first effect that can't
+-- be soundly resolved -- never emits a partial result, since a caller
 -- rendering only SOME of a transition's effects as a commit would
 -- silently misrepresent what actually fired.
-fireTransition :: MachineStmt -> Text -> EvalContext -> WorldSnapshot -> Either FireError [ResolvedFact]
+fireTransition :: MachineStmt -> Text -> EvalContext -> WorldSnapshot -> Either FireError [ResolvedEffect]
 fireTransition machine ident ctx snap =
   case mayFire machine ident ctx snap of
     Nothing -> Left FireNotDeclared
     Just (False, _, _) -> Left FireBlocked
-    Just (True, effects, _to) -> traverse (resolveOneEffect ctx) effects
+    Just (True, effects, _to) -> traverse (resolveOneEffect ctx snap) effects
 
-resolveOneEffect :: EvalContext -> Effect -> Either FireError ResolvedFact
-resolveOneEffect ctx eff@(EffectAssert subjTerm predRef val) = do
+resolveOneEffect :: EvalContext -> WorldSnapshot -> Effect -> Either FireError ResolvedEffect
+resolveOneEffect ctx _snap eff@(EffectAssert subjTerm predRef val) = do
   subjText <- maybe (Left (FireUnresolvedSubject eff)) Right (resolveTerm subjTerm ctx)
   value <- case val of
     EffectValueTerm t ->
@@ -93,8 +129,14 @@ resolveOneEffect ctx eff@(EffectAssert subjTerm predRef val) = do
         (Right . ValueNode . NodeRef . T.splitOn "/")
         (resolveTerm t ctx)
     EffectValueLiteral lit -> Right (ValueLiteral lit)
-  pure ResolvedFact {rfSubject = subjText, rfPredicate = predRef, rfValue = value}
-resolveOneEffect _ eff@(EffectRetract _ _) = Left (FireRetractNeedsProvenance eff)
+  pure (ResolvedAssert ResolvedFact {rfSubject = subjText, rfPredicate = predRef, rfValue = value})
+resolveOneEffect ctx snap eff@(EffectRetract subjTerm predRef) = do
+  subjText <- maybe (Left (FireUnresolvedSubject eff)) Right (resolveTerm subjTerm ctx)
+  case currentValueWithProvenance (subjText, predText predRef) snap of
+    [] -> Left (FireRetractNoSuchFact eff)
+    [(_label, Just ref, _v)] -> Right (ResolvedRetract subjText predRef ref)
+    [(_label, Nothing, _v)] -> Left (FireRetractNoProvenance eff)
+    _ -> Left (FireRetractAmbiguous eff)
 
 predText :: PredicateRef -> Text
 predText RdfType = "a"
@@ -110,21 +152,35 @@ renderValue (ValueLiteral (LitString s)) = "\"" <> T.concatMap esc s <> "\""
 renderValue (ValueLiteral (LitNumber n)) = n
 renderValue (ValueLiteral (LitBoolean b)) = if b then "true" else "false"
 
--- | Renders resolved facts as a real, parseable DMML Surface commit --
--- same idiom as 'DMML.Retroconsistency.renderImpliedCommit': declares
--- every plain-ident predicate it uses (harmless if already declared
--- elsewhere -- this module has no way to know what the target repo has
--- already declared), then one fact line per resolved effect. An
--- 'RdfType' predicate is rendered via the @::@ sugar rather than a
--- backtick application (the only form @DMML.Surface@'s parser accepts
--- for it) and needs no @declare@ line.
-renderFiredCommit :: Text -> [ResolvedFact] -> Text
-renderFiredCommit verb facts =
+-- | Renders resolved effects as a real, parseable DMML Surface commit --
+-- asserts follow the same idiom as
+-- 'DMML.Retroconsistency.renderImpliedCommit' (declares every plain-ident
+-- predicate it uses, harmless if already declared elsewhere; an
+-- 'RdfType' predicate uses the @::@ sugar and needs no @declare@ line);
+-- every retract becomes one @fact@ entry inside a single trailing
+-- @consumes@ block, citing the real 'StrongRef' 'fireTransition' already
+-- resolved it against -- never a fabricated one. Facts and retracts
+-- render in the transition's own declared effect order.
+renderFiredCommit :: Text -> [ResolvedEffect] -> Text
+renderFiredCommit verb effects =
   T.unlines $
     ["commit " <> verb]
-      ++ ["  declare relation " <> p | p <- nub [predText (rfPredicate f) | f <- facts, rfPredicate f /= RdfType]]
-      ++ [factLine f | f <- facts]
+      ++ ["  declare relation " <> p | p <- nub [predText (rfPredicate f) | ResolvedAssert f <- effects, rfPredicate f /= RdfType]]
+      ++ [factLine f | ResolvedAssert f <- effects]
+      ++ consumesBlock
   where
     factLine f = case rfPredicate f of
       RdfType -> "  " <> rfSubject f <> " :: a " <> renderValue (rfValue f)
       PredIdent p -> "  " <> rfSubject f <> " `" <> p <> "` " <> renderValue (rfValue f)
+
+    retracts = [(subj, predRef, ref) | ResolvedRetract subj predRef ref <- effects]
+    consumesBlock
+      | null retracts = []
+      | otherwise =
+          ["  consumes"]
+            ++ concat
+              [ [ "    fact " <> strongRefUri ref <> "#" <> strongRefCid ref
+                , "      " <> subj <> " . " <> predText predRef
+                ]
+              | (subj, predRef, ref) <- retracts
+              ]

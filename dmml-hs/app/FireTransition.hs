@@ -9,12 +9,22 @@
 -- @check-declared@\/@retro-gate@ the same way any hand-authored commit
 -- is, not a description of what would happen.
 --
+-- UPDATED 2026-09-04 (jedelman/dmml#4): every @--world@ file is now
+-- materialized WITH real provenance ('DMML.Materialize.
+-- applyIdentifiedCommit'), its 'DMML.Ast.StrongRef' computed from the
+-- file's own exact bytes ('DMML.LocalIdentity.localFileRef') -- not a
+-- real atproto CID (see that module's own doc comment for why), but real
+-- enough that a retract effect can cite it honestly and 'DMML.Fire' can
+-- build an actual @consumes@ block instead of refusing outright.
+--
 -- Usage: fire-transition <machine.dmml> <transition> <verb>
 --          [--world <file.dmml>]... [--param <name>=<value>]...
 module Main (main) where
 
+import qualified Data.ByteString as BS
 import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Data.Text.IO as TIO
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
@@ -23,7 +33,8 @@ import Text.Megaparsec (errorBundlePretty)
 import DMML.Ast (NodeRef (..), machineNode)
 import DMML.Fire (FireError (..), fireTransition, renderFiredCommit)
 import DMML.Guard (EvalContext (..))
-import DMML.Materialize (applyCommits)
+import DMML.LocalIdentity (localFileRef)
+import DMML.Materialize (IdentifiedCommit (..), applyIdentifiedCommits)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
 
 data Args = Args
@@ -71,24 +82,33 @@ run args = do
   case parseMachineSurface machineSrc of
     Left err -> putStrLn (argMachineFile args <> ":\n" <> errorBundlePretty err) >> exitFailure
     Right machine -> do
-      worldSrcs <- mapM TIO.readFile (argWorldFiles args)
-      commits <- mapM parseWorldFile (zip (argWorldFiles args) worldSrcs)
-      let snap = applyCommits "world" commits
+      identified <- mapM parseWorldFile (argWorldFiles args)
+      let snap = applyIdentifiedCommits "world" identified
           selfNode = T.intercalate "/" (nodeRefSegments (machineNode machine))
           ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.fromList (argParams args)}
       case fireTransition machine (argTransition args) ctx snap of
         Left err -> putStrLn ("fire-transition: refused -- " <> describeError err) >> exitFailure
-        Right facts -> TIO.putStr (renderFiredCommit (argVerb args) facts)
+        Right effects -> TIO.putStr (renderFiredCommit (argVerb args) effects)
   where
-    parseWorldFile (path, src) = case parseCommitSurface src of
-      Right c -> pure c
-      Left err -> putStrLn (path <> ":\n" <> errorBundlePretty err) >> exitFailure
+    parseWorldFile :: FilePath -> IO IdentifiedCommit
+    parseWorldFile path = do
+      raw <- BS.readFile path
+      case parseCommitSurface (TE.decodeUtf8 raw) of
+        Right c -> pure IdentifiedCommit {icRef = localFileRef path raw, icCommit = c}
+        Left err -> putStrLn (path <> ":\n" <> errorBundlePretty err) >> exitFailure
 
 describeError :: FireError -> String
 describeError FireNotDeclared = "no such transition declared on this machine"
 describeError FireBlocked = "transition's guards do not currently hold"
 describeError (FireUnresolvedSubject eff) = "an effect's subject term did not resolve: " <> show eff
 describeError (FireUnresolvedValue eff) = "an effect's asserted value term did not resolve: " <> show eff
-describeError (FireRetractNeedsProvenance eff) =
-  "a retract effect needs real commit provenance (uri#cid) this CLI cannot synthesize from a snapshot alone: "
+describeError (FireRetractNoSuchFact eff) =
+  "a retract effect's (subject, predicate) has no live fact to retract: " <> show eff
+describeError (FireRetractNoProvenance eff) =
+  "a retract effect's (subject, predicate) has a live fact, but it carries no real provenance to cite"
+    <> " (materialized without a real StrongRef -- pass it via --world so it gets one): "
+    <> show eff
+describeError (FireRetractAmbiguous eff) =
+  "a retract effect's (subject, predicate) currently has more than one live alternative -- refusing"
+    <> " rather than cite just one of several: "
     <> show eff

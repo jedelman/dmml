@@ -26,11 +26,16 @@
 module DMML.Materialize
   ( WorldSnapshot (..)
   , Alternatives (..)
+  , alternativeValues
+  , IdentifiedCommit (..)
   , emptySnapshot
   , applyCommit
   , applyCommits
+  , applyIdentifiedCommit
+  , applyIdentifiedCommits
   , mergeSnapshots
   , currentValue
+  , currentValueWithProvenance
   , collapseToOne
   , renderSnapshot
   ) where
@@ -46,22 +51,39 @@ import DMML.Ast
 -- | Every value ever independently asserted for one (subject, predicate)
 -- pair, each tagged with the provenance label of whichever materialization
 -- batch asserted it (typically a branch or agent name -- supplied by the
--- caller, this module has no notion of branches). Deduped on VALUE only:
--- two different provenances independently asserting the SAME value is
+-- caller, this module has no notion of branches), and, since 2026-09-04
+-- (Phase 3's retract-provenance fix, jedelman/dmml#4), an optional real
+-- 'StrongRef' -- present only for a fact materialized via
+-- 'applyIdentifiedCommit', 'Nothing' for one materialized the ordinary
+-- 'applyCommit' way (unchanged, still the label-only, no-real-provenance
+-- path every existing call site uses). Deduped on VALUE only: two
+-- different provenances independently asserting the SAME value is
 -- agreement, not divergence, and shouldn't accumulate as if it were two
 -- live options (a real false-positive this exact confusion caused before
 -- a similar check existed in CheckDivergence.hs's own overlap filter).
-newtype Alternatives = Alternatives {alternativeValues :: [(Text, Value)]}
+newtype Alternatives = Alternatives {alternativeEntries :: [(Text, Maybe StrongRef, Value)]}
   deriving (Eq, Show)
 
-addAlternative :: Text -> Value -> Alternatives -> Alternatives
-addAlternative label v (Alternatives existing)
-  | any ((== v) . snd) existing = Alternatives existing
-  | otherwise = Alternatives (existing ++ [(label, v)])
+-- | Backward-compatible view dropping the (label, StrongRef?) provenance
+-- down to just (label, value) -- every pre-2026-09-04 call site
+-- (renderSnapshot, DMML.Guard, DMML.Governance, DMML.Retroconsistency,
+-- every app/*Demo.hs) reads 'Alternatives' through this and needs no
+-- change at all.
+alternativeValues :: Alternatives -> [(Text, Value)]
+alternativeValues (Alternatives xs) = [(label, v) | (label, _ref, v) <- xs]
 
+addAlternative :: Text -> Maybe StrongRef -> Value -> Alternatives -> Alternatives
+addAlternative label ref v (Alternatives existing)
+  | any (\(_, _, v') -> v' == v) existing = Alternatives existing
+  | otherwise = Alternatives (existing ++ [(label, ref, v)])
+
+-- | Merging two independently-materialized sides never invents
+-- provenance for a side that didn't have any -- whatever 'Maybe
+-- StrongRef' each side's own alternative already carried survives
+-- unchanged.
 mergeAlternatives :: Alternatives -> Alternatives -> Alternatives
 mergeAlternatives (Alternatives a) (Alternatives b) =
-  foldl' (\acc (label, v) -> addAlternative label v acc) (Alternatives a) b
+  foldl' (\acc (label, ref, v) -> addAlternative label ref v acc) (Alternatives a) b
 
 data WorldSnapshot = WorldSnapshot
   { snapshotDeclared :: Map Text DeclKind
@@ -80,11 +102,13 @@ predText RdfType = "a"
 predText (PredIdent t) = t
 
 -- | Applies one already-validated commit, tagging every fact it asserts
--- with @label@ (the whole materialization batch's provenance -- see
--- 'applyCommits'). A second independent assert for a pair already seen
--- ADDS an alternative via 'addAlternative' -- it never overwrites.
-applyCommit :: Text -> WorldSnapshot -> CommitStmt -> WorldSnapshot
-applyCommit label snap stmt = foldl' applyItem snap (commitItems stmt)
+-- with @label@ and, when there is one, a real @ref@ -- shared by
+-- 'applyCommit' (always @Nothing@, unchanged behavior) and
+-- 'applyIdentifiedCommit' (always @Just@ a real 'StrongRef'). A second
+-- independent assert for a pair already seen ADDS an alternative via
+-- 'addAlternative' -- it never overwrites.
+applyCommitWithRef :: Text -> Maybe StrongRef -> WorldSnapshot -> CommitStmt -> WorldSnapshot
+applyCommitWithRef label ref snap stmt = foldl' applyItem snap (commitItems stmt)
   where
     applyItem s (ItemDeclare d) =
       s {snapshotDeclared = Map.insert (declareIdent d) (declareKind d) (snapshotDeclared s)}
@@ -93,9 +117,9 @@ applyCommit label snap stmt = foldl' applyItem snap (commitItems stmt)
        in s
             { snapshotFacts =
                 Map.insertWith
-                  (\_new old -> addAlternative label (factValue f) old)
+                  (\_new old -> addAlternative label ref (factValue f) old)
                   key
-                  (Alternatives [(label, factValue f)])
+                  (Alternatives [(label, ref, factValue f)])
                   (snapshotFacts s)
             }
     applyItem s (ItemConsumes cb) = foldl' applyConsume s (consumesEntries cb)
@@ -105,6 +129,13 @@ applyCommit label snap stmt = foldl' applyItem snap (commitItems stmt)
        in s {snapshotFacts = Map.delete key (snapshotFacts s)}
     applyConsume s (ConsumeStrong _) = s
 
+-- | Applies one already-validated commit, tagging every fact it asserts
+-- with @label@ (the whole materialization batch's provenance -- see
+-- 'applyCommits'). Never carries real @uri#cid@ provenance -- see
+-- 'applyIdentifiedCommit' for the path that does.
+applyCommit :: Text -> WorldSnapshot -> CommitStmt -> WorldSnapshot
+applyCommit label = applyCommitWithRef label Nothing
+
 -- | Materializes one batch of commits under a single provenance label --
 -- e.g. one player's/peer's own new commits since a shared merge-base.
 -- To combine two independently-labeled batches (the actual divergence-
@@ -113,6 +144,31 @@ applyCommit label snap stmt = foldl' applyItem snap (commitItems stmt)
 -- expecting per-commit provenance, there isn't any.
 applyCommits :: Text -> [CommitStmt] -> WorldSnapshot
 applyCommits label = foldl' (applyCommit label) emptySnapshot
+
+-- | One already-validated commit paired with the real 'StrongRef'
+-- (@uri#cid@) identifying it -- mirrors the real Rust crate's own
+-- @IdentifiedCommit { uri, cid, commit }@ (@dmml::interpret@), the same
+-- shape it already uses when a caller DOES have real commit provenance
+-- to hand. @dmml-hs@ has no substrate of its own to source one from
+-- (no atproto, no git-object identity computed here) -- the caller
+-- supplies it, however it got one (a real atproto CID, a git blob hash,
+-- 'DMML.LocalIdentity''s file-content fingerprint, ...).
+data IdentifiedCommit = IdentifiedCommit
+  { icRef :: StrongRef
+  , icCommit :: CommitStmt
+  }
+  deriving (Eq, Show)
+
+-- | Like 'applyCommit', but tags every fact this commit asserts with its
+-- own real 'StrongRef' too -- this is what lets 'DMML.Fire' later build
+-- a real @consumes@ block instead of refusing to fire a retract effect
+-- at all (jedelman/dmml#4).
+applyIdentifiedCommit :: Text -> IdentifiedCommit -> WorldSnapshot -> WorldSnapshot
+applyIdentifiedCommit label ic snap = applyCommitWithRef label (Just (icRef ic)) snap (icCommit ic)
+
+-- | 'applyCommits''s identified-provenance counterpart.
+applyIdentifiedCommits :: Text -> [IdentifiedCommit] -> WorldSnapshot
+applyIdentifiedCommits label = foldl' (flip (applyIdentifiedCommit label)) emptySnapshot
 
 -- | Unions two independently-materialized snapshots. Every
 -- (subject, predicate) pair the two sides agree on stays single-valued;
@@ -134,6 +190,15 @@ mergeSnapshots a b =
 currentValue :: (Text, Text) -> WorldSnapshot -> [(Text, Value)]
 currentValue key snap = maybe [] alternativeValues (Map.lookup key (snapshotFacts snap))
 
+-- | Like 'currentValue', but keeps whichever real 'StrongRef' provenance
+-- is on record for each live alternative (only ever present for a fact
+-- materialized via 'applyIdentifiedCommit' -- 'Nothing' for the ordinary,
+-- label-only 'applyCommit' path). 'DMML.Fire' needs this to build a real
+-- @consumes@ block when resolving a retract effect instead of
+-- fabricating a citation.
+currentValueWithProvenance :: (Text, Text) -> WorldSnapshot -> [(Text, Maybe StrongRef, Value)]
+currentValueWithProvenance key snap = maybe [] alternativeEntries (Map.lookup key (snapshotFacts snap))
+
 -- | Deliberately collapses a (subject, predicate) pair's live
 -- alternatives down to one -- the ONE write operation in this module
 -- that overwrites rather than adds. Never called by ordinary commit
@@ -142,10 +207,14 @@ currentValue key snap = maybe [] alternativeValues (Map.lookup key (snapshotFact
 -- specifically for governed-machine arbitration (see DMML.Governance's
 -- 'arbitrate') to apply an already-validated outcome; it does no
 -- validation itself, same division of responsibility as the old
--- 'resolveContested' this replaces.
+-- 'resolveContested' this replaces. Always collapses to a provenance-
+-- free (@Nothing@) alternative: arbitration reduces to a computed
+-- OUTCOME, not to any one input alternative's own citation, so there is
+-- no single real 'StrongRef' that would honestly describe the collapsed
+-- result's own provenance.
 collapseToOne :: (Text, Text) -> Text -> Value -> WorldSnapshot -> WorldSnapshot
 collapseToOne key label v snap =
-  snap {snapshotFacts = Map.insert key (Alternatives [(label, v)]) (snapshotFacts snap)}
+  snap {snapshotFacts = Map.insert key (Alternatives [(label, Nothing, v)]) (snapshotFacts snap)}
 
 renderValue :: Value -> Text
 renderValue (ValueNode n) = nodeRefText n

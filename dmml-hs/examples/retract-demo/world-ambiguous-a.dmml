@@ -1,0 +1,6 @@
+commit setup
+  declare relation witnessedBy
+  declare relation state
+
+  shrine/threshold `witnessedBy` npc/keeper
+  shrine/threshold `state` dormant

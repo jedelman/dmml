@@ -9,3 +9,4 @@ machine smithy/anvil
     guard ore/raw1 `refinedInto` ingot/batch1
     assert ingot/batch1 `title` "A forged ingot"
     assert forged
+    retract idle

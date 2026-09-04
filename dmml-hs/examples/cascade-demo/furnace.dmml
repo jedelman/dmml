@@ -9,3 +9,4 @@ machine smithy/furnace
     guard self `stocked` $ore
     assert $ore `refinedInto` ingot/batch1
     assert smelted
+    retract idle

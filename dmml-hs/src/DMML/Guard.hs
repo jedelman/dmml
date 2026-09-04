@@ -48,7 +48,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import DMML.Ast
-import DMML.Materialize (Alternatives (..), WorldSnapshot (..))
+import DMML.Materialize (Alternatives (..), WorldSnapshot (..), alternativeValues)
 
 -- | Which node is @self@, and current transition-parameter (@$param@)
 -- bindings for this evaluation.
