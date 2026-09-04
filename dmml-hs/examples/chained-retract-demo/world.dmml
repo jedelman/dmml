@@ -1,0 +1,8 @@
+commit setup
+  declare relation witnessedBy
+  declare relation at
+  declare relation state
+
+  npc/keeper `witnessedBy` npc/keeper
+  npc/keeper `at` volcano/ashkar
+  npc/keeper `state` wardbound

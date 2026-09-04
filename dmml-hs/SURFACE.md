@@ -117,7 +117,7 @@ machine <node_ref>
     assert <ident>
     retract <ident>
     assert <term> `<ident>` <value>
-    retract <term> `<ident>` [<value>]
+    retract <term> (`<ident>` <term>)* `<ident>` [<value>]
 ```
 
 - `machine <node_ref>` — the node the machine is attached to, e.g.
@@ -192,6 +192,22 @@ machine <node_ref>
   `consumes` application still removes every live alternative for the
   (subject, predicate) key regardless — so write it if it reads better,
   but don't rely on it to disambiguate a multi-valued retract yet.
+  **Retract can also be CHAINED** (added 2026-09-04, jedelman/dmml#5):
+  `retract self \`witnessedBy\` self \`at\` $eruption` mirrors a guard's
+  own multi-hop pattern — real output a free model wrote unprompted for
+  exactly this reason (same eval). Every hop gets independently walked
+  and independently retracted at fire time (each becomes its own real
+  `consumes`/`fact` entry, its own provenance, its own ambiguity check —
+  see `DMML.Fire.resolveRetractHops`), so this is genuinely "undo the
+  whole pattern I just checked," not just a longer single retraction.
+  Firing ALSO now gates the whole resolved effect set (assert and
+  retract alike) against every guard in the known machine set —
+  `DMML.Retroconsistency.gateConsistentTree`, generalized the same day
+  to check both guard polarities in one pass — so a chained retract that
+  would silently strand some OTHER transition's guard elsewhere refuses
+  instead of firing. See `examples/chained-retract-demo/` for a real,
+  worked, verified run of both the chain itself and the gate catching a
+  real cross-machine break.
 
 ## Example (machine)
 

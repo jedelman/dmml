@@ -294,15 +294,22 @@ effectValueFromInput pointer input = case input of
   J.EffectValueNumberInput v -> Right (EffectValueLiteral (LitNumber v))
   J.EffectValueBooleanInput b -> Right (EffectValueLiteral (LitBoolean b))
 
+-- | Shared by a guard's 'J.ExistsInput' hops and a chained retract's own
+-- intermediate hops (jedelman/dmml#5) -- both are the same real shape,
+-- a predicate plus a 'PatternTerm'.
+patternHopsFromInput :: Text -> [J.PatternHopInput] -> Either JsonError [PatternHop]
+patternHopsFromInput pointer hopInputs =
+  forM (zip [0 ..] hopInputs) $ \(i, hop) -> do
+    let hopPointer = idx pointer i
+    checkIdent (hopPointer <> "/predicate") (J.phiPredicate hop)
+    term <- patternTermFromInput (hopPointer <> "/term") (J.phiTerm hop)
+    pure PatternHop {hopPredicate = J.phiPredicate hop, hopTerm = term}
+
 existsExprFromInput :: Text -> J.ExistsInput -> Either JsonError ExistsExpr
 existsExprFromInput pointer input = do
   anchor <- patternTermFromInput (pointer <> "/anchor") (J.eiAnchor input)
   when (null (J.eiHops input)) (invalid (pointer <> "/hops") "a pattern must have at least one hop")
-  hops <- forM (zip [0 ..] (J.eiHops input)) $ \(i, hop) -> do
-    let hopPointer = idx (pointer <> "/hops") i
-    checkIdent (hopPointer <> "/predicate") (J.phiPredicate hop)
-    term <- patternTermFromInput (hopPointer <> "/term") (J.phiTerm hop)
-    pure PatternHop {hopPredicate = J.phiPredicate hop, hopTerm = term}
+  hops <- patternHopsFromInput (pointer <> "/hops") (J.eiHops input)
   pure ExistsExpr {existsPattern = Pattern anchor hops, existsSpan = Span pointer}
 
 -- | Builds a 'MachineStmt' directly from a 'J.MachineInput'. Every
@@ -338,17 +345,18 @@ machineStmtFromInput input = do
             >> Right (EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode ident)))
         J.EffectRetractInput ident ->
           checkIdent (effectPointer <> "/ident") ident
-            >> Right (EffectRetract TermSelf (PredIdent "state") Nothing)
+            >> Right (EffectRetract TermSelf [] (PredIdent "state") Nothing)
         J.EffectAssertGeneralInput subjIn predText valIn -> do
           subj <- patternTermFromInput (effectPointer <> "/subject") subjIn
           pred_ <- predicateRef (effectPointer <> "/predicate") predText
           val <- effectValueFromInput (effectPointer <> "/value") valIn
           pure (EffectAssert subj pred_ val)
-        J.EffectRetractGeneralInput subjIn predText mValIn -> do
+        J.EffectRetractGeneralInput subjIn hopInputs predText mValIn -> do
           subj <- patternTermFromInput (effectPointer <> "/subject") subjIn
+          hops <- patternHopsFromInput (effectPointer <> "/hops") hopInputs
           pred_ <- predicateRef (effectPointer <> "/predicate") predText
           mVal <- traverse (effectValueFromInput (effectPointer <> "/value")) mValIn
-          pure (EffectRetract subj pred_ mVal)
+          pure (EffectRetract subj hops pred_ mVal)
 
     let hasContent = not (null guards) || (isJust (J.tiFrom t) && isJust (J.tiTo t)) || not (null effects)
     unless

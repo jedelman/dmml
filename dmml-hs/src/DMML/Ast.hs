@@ -265,9 +265,33 @@ data PatternTerm
 -- all the way into the produced commit, but not yet load-bearing for
 -- what gets deleted. That's the deliberate "may be useful in the
 -- future" hook, not a bug.
+-- | 'EffectRetract'\'s @[PatternHop]@ (added 2026-09-04, jedelman/dmml#5)
+-- covers a CHAINED retract -- @retract self \`witnessedBy\` self \`at\`
+-- $eruption@, real output from a real eval
+-- (dev-journal/2026-09-04-complex-machine-eval.md's @trial-02.dmml@,
+-- `minimax-m3` unprompted). The guard grammar already supports exactly
+-- this shape (a multi-hop 'DMML.Ast.Pattern' walk); a chained retract
+-- undoes the SAME walk once resolved -- every hop, not just the last,
+-- since "undo the whole pattern I just checked" is the coherent reading
+-- of what a model reaching for this was actually asking for. An
+-- intermediate hop's term is always a 'PatternTerm' (it must resolve to
+-- a concrete node to keep walking -- a literal has no further edges to
+-- follow), matching 'DMML.Ast.PatternHop' exactly; only the FINAL step
+-- (predicate + 'Maybe EffectValue') can be a literal, same as before
+-- this change. Empty hop list is the pre-existing single-hop shape,
+-- unchanged. See 'DMML.Fire.resolveOneEffect' for how a chain resolves
+-- to real, individually-cited retractions (one per hop, each its own
+-- @consumes@\/@fact@ entry) and jedelman/dmml#5 for the two real design
+-- problems a chain raises that a single hop never did: per-hop
+-- ambiguity (an intermediate hop's own live alternatives could fan out,
+-- same refusal shape as the existing single-hop case) and whole-tree
+-- consistency (removing several facts at once could newly break some
+-- OTHER transition's positive guard elsewhere -- see
+-- 'DMML.Retroconsistency.gateConsistentTree's 2026-09-04 generalization,
+-- now wired into every 'DMML.Fire.fireTransition' call).
 data Effect
   = EffectAssert PatternTerm PredicateRef EffectValue
-  | EffectRetract PatternTerm PredicateRef (Maybe EffectValue)
+  | EffectRetract PatternTerm [PatternHop] PredicateRef (Maybe EffectValue)
   deriving (Eq, Show)
 
 -- | An effect's asserted value: either a node reference (resolved from

@@ -1,0 +1,10 @@
+machine watchtower/relay
+
+  states
+    idle
+    relaying
+
+  transition relay()
+    idle -> relaying
+    guard npc/keeper `at` volcano/ashkar
+    assert relaying

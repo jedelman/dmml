@@ -250,12 +250,16 @@ instance FromJSON EffectValueInput where
 -- The general retract's @value@ is OPTIONAL (added 2026-09-04, see
 -- 'DMML.Ast.Effect'\'s own doc comment for why) -- omit the field
 -- entirely for a value-agnostic retract, same as the old sugar's own
--- always-value-agnostic meaning.
+-- always-value-agnostic meaning. @hops@ (also 2026-09-04, jedelman/
+-- dmml#5) is an OPTIONAL array of intermediate hops (defaults to @[]@),
+-- reusing 'PatternHopInput' verbatim -- the exact same shape
+-- 'ExistsInput' already uses for a guard's own multi-hop pattern -- for
+-- a chained retract mirroring a multi-hop guard.
 data EffectInput
   = EffectAssertInput Text
   | EffectRetractInput Text
   | EffectAssertGeneralInput PatternTermInput Text EffectValueInput
-  | EffectRetractGeneralInput PatternTermInput Text (Maybe EffectValueInput)
+  | EffectRetractGeneralInput PatternTermInput [PatternHopInput] Text (Maybe EffectValueInput)
   deriving (Eq, Show)
 
 instance FromJSON EffectInput where
@@ -266,7 +270,8 @@ instance FromJSON EffectInput where
       ("assert", Just ident) -> pure (EffectAssertInput ident)
       ("assert", Nothing) -> EffectAssertGeneralInput <$> o .: "subject" <*> o .: "predicate" <*> o .: "value"
       ("retract", Just ident) -> pure (EffectRetractInput ident)
-      ("retract", Nothing) -> EffectRetractGeneralInput <$> o .: "subject" <*> o .: "predicate" <*> o .:? "value"
+      ("retract", Nothing) ->
+        EffectRetractGeneralInput <$> o .: "subject" <*> o .:? "hops" .!= [] <*> o .: "predicate" <*> o .:? "value"
       (other, _) -> fail ("unknown EffectInput kind " <> show other)
 
 data TransitionInput = TransitionInput

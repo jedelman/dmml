@@ -309,13 +309,14 @@ pEffectValue =
     <|> (EffectValueTerm . TermNode <$> pNodeRefText)
 
 -- | General form, generalized 2026-09-03: @assert <term> \`<predicate>\`
--- <value>@ \/ @retract <term> \`<predicate>\` [<value>]@ -- the same
--- infix-backtick fact idiom used everywhere else in this grammar, so an
--- effect reads exactly like the fact it will become once it fires.
--- Falls back to the old bare @assert <ident>@\/@retract <ident>@ sugar
--- (always implicitly @self . state@) when the general form's required
--- backtick isn't there -- real, already-committed machine examples use
--- the old form, kept working rather than force-migrated.
+-- <value>@ \/ @retract <term> (\`<predicate>\` <term>)* \`<predicate>\`
+-- [<value>]@ -- the same infix-backtick fact idiom used everywhere else
+-- in this grammar, so an effect reads exactly like the fact it will
+-- become once it fires. Falls back to the old bare @assert <ident>@\/
+-- @retract <ident>@ sugar (always implicitly @self . state@) when the
+-- general form's required backtick isn't there -- real, already-
+-- committed machine examples use the old form, kept working rather
+-- than force-migrated.
 --
 -- Retract's trailing value is OPTIONAL, added 2026-09-04: a real eval
 -- (dev-journal/2026-09-04-complex-machine-eval.md) found three
@@ -323,6 +324,19 @@ pEffectValue =
 -- analogy with assert -- accepted rather than fought, per Jason's call.
 -- See 'DMML.Ast.Effect'\'s own doc comment for what it does (and
 -- doesn't yet) mean once resolved.
+--
+-- Retract's intermediate hops (also 2026-09-04, jedelman/dmml#5) let it
+-- mirror a guard's own multi-hop 'DMML.Ast.Pattern' -- @retract self
+-- \`witnessedBy\` self \`at\` $eruption@ is real output a free model
+-- wrote unprompted. Parsed unambiguously via one real trick: after each
+-- @\`predicate\`@, try to read ANOTHER @term \`predicate\`@ pair
+-- (an intermediate hop always has a real term AND is always followed by
+-- another backtick-predicate, since only the terminal position can end
+-- the line); if that fails, this predicate IS the terminal one, and
+-- whatever comes next (or nothing at all) is its optional value via
+-- 'pEffectValue' -- the same superset-of-'PatternTerm' parser
+-- 'pAssertGeneral' already uses, so only the terminal position can ever
+-- be a literal, matching 'DMML.Ast.Effect'\'s own doc comment.
 pEffectLine :: Parser Effect
 pEffectLine =
   (symbol "assert" *> (try pAssertGeneral <|> pAssertStateSugar))
@@ -338,16 +352,22 @@ pEffectLine =
     pAssertStateSugar = do
       ident <- pIdent
       pure (EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode ident)))
+    pBacktickIdent :: Parser Text
+    pBacktickIdent = symbol "`" *> (pIdentRaw <* sc) <* symbol "`"
     pRetractGeneral = do
       subj <- pPatternTerm
-      _ <- symbol "`"
-      p <- pIdentRaw <* sc
-      _ <- symbol "`"
-      mval <- optional (try pEffectValue)
-      pure (EffectRetract subj (PredIdent p) mval)
+      firstPred <- pBacktickIdent
+      retractSteps subj [] firstPred
+    retractSteps subj hopsAcc predName = do
+      cont <- optional (try ((,) <$> pPatternTerm <*> pBacktickIdent))
+      case cont of
+        Just (term, nextPred) -> retractSteps subj (hopsAcc ++ [PatternHop {hopPredicate = predName, hopTerm = term}]) nextPred
+        Nothing -> do
+          mval <- optional (try pEffectValue)
+          pure (EffectRetract subj hopsAcc (PredIdent predName) mval)
     pRetractStateSugar = do
       _ident <- pIdent
-      pure (EffectRetract TermSelf (PredIdent "state") Nothing)
+      pure (EffectRetract TermSelf [] (PredIdent "state") Nothing)
 
 -- | @from -> to@ -- a transition's optional state-pair line.
 pFromTo :: Parser (Text, Text)

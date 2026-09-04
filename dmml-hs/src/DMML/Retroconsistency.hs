@@ -212,7 +212,7 @@ renderImpliedCommit verb facts =
       ++ ["  declare relation " <> p | p <- nub (map impliedPredicate facts)]
       ++ ["  " <> impliedSubject f <> " `" <> impliedPredicate f <> "` " <> impliedTarget f | f <- facts]
 
--- Gating a retro commit on a whole-tree-consistent result -----------------
+-- Gating a candidate commit on a whole-tree-consistent result -------------
 --
 -- Jason, 2026-09-02: "let's gate retro commits on a consistent tree."
 -- The doc comment above states minting is "ALWAYS safe by construction"
@@ -222,9 +222,25 @@ renderImpliedCommit verb facts =
 -- evaluate to -- specifically, it can newly BLOCK a negated guard that
 -- held before. A positive guard can never newly FAIL this way (more
 -- facts only ever make an @EXISTS@ pattern MORE likely true, never
--- less), so a negated guard flipping from held to blocked is the ONLY
--- way additive minting can break something -- which is exactly what
--- this gate checks, and the only thing it needs to.
+-- less) -- which was, at the time this gate was built, the only
+-- direction that needed checking: nothing here retracted facts yet.
+--
+-- GENERALIZED 2026-09-04 (jedelman/dmml#5, chained retract): once a
+-- candidate commit can ALSO retract facts (DMML.Fire's chained-retract
+-- resolution, same day), the mirror-image risk becomes real too --
+-- removing facts can only ever make an @EXISTS@ pattern LESS likely
+-- true, never more, so a NEGATED guard can never newly break from
+-- retraction (it can only newly become held, the safe direction), and a
+-- POSITIVE guard can never newly break from addition (same reasoning as
+-- above, the other way around). The two risks are perfectly disjoint by
+-- polarity -- so checking every guard, negated or not, for "held
+-- before, blocked after" is exactly as complete for a mixed assert+
+-- retract candidate as the negated-only check was for an addition-only
+-- one, and costs nothing extra for a still addition-only caller: a
+-- positive guard genuinely cannot flip to blocked from addition alone,
+-- so including it in the scan there finds nothing new (confirmed by
+-- rerunning every existing 'gateConsistentTree' caller's own test suite
+-- unchanged after dropping the negation filter -- same PASS output).
 
 -- | One guard, on some OTHER machine\/transition than the one a retro
 -- commit was generated for, that held before the candidate facts were
@@ -256,14 +272,19 @@ usesParam g = any isParam (patternAnchor pat : map hopTerm (patternHops pat))
     isParam (TermParam _) = True
     isParam _ = False
 
--- | Checks whether applying a candidate set of new facts (typically a
--- retroconsistency-implied commit's own content) would break any
--- currently-satisfied negated guard anywhere in the known machine set
--- -- not just the transition the candidate facts were generated for.
--- @before@\/@after@ must differ ONLY by the candidate facts (the
--- caller's job, same division of responsibility 'DMML.Governance'
--- already has for its own inputs) -- this function doesn't compute the
--- diff itself, it evaluates both snapshots and compares.
+-- | Checks whether applying a candidate commit's own content (facts
+-- ADDED, facts RETRACTED, or both) would break any currently-satisfied
+-- guard anywhere in the known machine set -- not just the transition
+-- the candidate content was generated for. @before@\/@after@ must
+-- differ ONLY by the candidate content (the caller's job, same division
+-- of responsibility 'DMML.Governance' already has for its own inputs)
+-- -- this function doesn't compute the diff itself, it evaluates both
+-- snapshots and compares. Checks every non-@$param@ guard regardless of
+-- polarity (see this module's own doc comment, "GENERALIZED
+-- 2026-09-04," for why that's complete and not just "checking more to
+-- be safe": a negated guard can only ever break from addition, a
+-- positive guard only ever from retraction, so one scan over both
+-- catches whichever direction the candidate actually risks.
 gateConsistentTree :: Map.Map Text MachineStmt -> WorldSnapshot -> WorldSnapshot -> GateResult
 gateConsistentTree machines before after =
   case brokens of
@@ -275,7 +296,6 @@ gateConsistentTree machines before after =
       | m <- Map.elems machines
       , t <- machineTransitions m
       , g <- transitionGuards t
-      , guardNegated g
       , not (usesParam g)
       , let ctx = EvalContext {ctxSelfNode = nodeRefText (machineNode m), ctxParams = Map.empty}
       , evalGuard g ctx before
