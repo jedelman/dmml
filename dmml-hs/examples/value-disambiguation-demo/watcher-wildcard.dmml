@@ -1,0 +1,10 @@
+machine npc/watcher
+
+  states
+    idle
+    dismissing
+
+  transition dismissAll()
+    idle -> dismissing
+    retract self `watches`
+    assert dismissing

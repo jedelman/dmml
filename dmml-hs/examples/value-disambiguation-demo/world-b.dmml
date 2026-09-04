@@ -1,0 +1,4 @@
+commit setup_b
+  declare relation watches
+
+  npc/watcher `watches` herd/stagfolk

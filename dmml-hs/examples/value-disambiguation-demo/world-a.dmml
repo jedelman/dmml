@@ -1,0 +1,6 @@
+commit setup_a
+  declare relation watches
+  declare relation state
+
+  npc/watcher `watches` herd/aurochs
+  npc/watcher `state` idle

@@ -187,11 +187,13 @@ machine <node_ref>
   It's accepted and carried through: when a fired retract has one, it
   renders into the produced `consumes`/`fact` citation's own
   pre-existing optional object position (the same `subject.predicate
-  [= value]` shape a `consumes` block already has). It's not yet
-  load-bearing for WHICH alternative gets deleted — `DMML.Materialize`'s
-  `consumes` application still removes every live alternative for the
-  (subject, predicate) key regardless — so write it if it reads better,
-  but don't rely on it to disambiguate a multi-valued retract yet.
+  [= value]` shape a `consumes` block already has). **Made load-bearing
+  the same day**: `DMML.Materialize`'s `consumes` application now
+  removes ONLY the alternative matching the cited value, leaving every
+  other live alternative for that key untouched — a value-less retract
+  keeps the original wildcard behavior (removes every live alternative)
+  and still refuses when there's more than one, since there's no
+  principled way to pick just one without a value to match against.
   **Retract can also be CHAINED** (added 2026-09-04, jedelman/dmml#5):
   `retract self \`witnessedBy\` self \`at\` $eruption` mirrors a guard's
   own multi-hop pattern — real output a free model wrote unprompted for

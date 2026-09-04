@@ -139,9 +139,32 @@ applyCommitWithRef label ref snap stmt =
     applyConsumeItem s (ItemConsumes cb) = foldl' applyConsume s (consumesEntries cb)
     applyConsumeItem s _ = s
 
+    -- UPDATED 2026-09-04: now honors 'factConsumeObject' instead of
+    -- ignoring it. 'Nothing' keeps the documented wildcard semantics
+    -- (every live alternative for the key is removed); 'Just v' removes
+    -- ONLY the one alternative whose value equals @v@, leaving every
+    -- OTHER live alternative for that key untouched. This is what makes
+    -- a value-qualified retract (@retract $target \`wardedBy\` self@,
+    -- 'DMML.Ast.Effect'\'s optional retract value) actually
+    -- discriminate which alternative gets consumed, rather than being
+    -- carried through for display only -- see 'DMML.Fire.
+    -- resolveSingleRetract''s matching 2026-09-04 update, which is what
+    -- this was built for.
     applyConsume s (ConsumeFact fc) =
       let key = (nodeRefText (factConsumeSubject fc), factConsumePredicate fc)
-       in s {snapshotFacts = Map.delete key (snapshotFacts s)}
+       in case factConsumeObject fc of
+            Nothing -> s {snapshotFacts = Map.delete key (snapshotFacts s)}
+            Just v ->
+              s
+                { snapshotFacts =
+                    Map.update
+                      ( \(Alternatives xs) -> case filter (\(_, _, v') -> v' /= v) xs of
+                          [] -> Nothing
+                          remaining -> Just (Alternatives remaining)
+                      )
+                      key
+                      (snapshotFacts s)
+                }
     applyConsume s (ConsumeStrong _) = s
 
     applyFactItem s (ItemFact f) =

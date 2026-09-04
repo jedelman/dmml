@@ -251,20 +251,26 @@ data PatternTerm
 -- general retract WITH a trailing value symmetric to assert's --
 -- @retract $target \`wardedBy\` self@ -- even though the grammar at the
 -- time had no value slot there at all. Jason's call: accept it, even
--- though nothing currently discriminates by it -- "even if the value
--- does nothing it may be useful in the future." Concretely, it's NOT a
--- discarded field: it maps directly onto 'DMML.Ast.FactConsume'\'s own
--- pre-existing optional @object@ ('factConsumeObject' -- the exact
--- same wildcard-vs-explicit shape a @consumes@\/@fact@ block already
--- has), so a fired retract with a value renders it into the real
--- @consumes@ citation's own object position. 'DMML.Materialize'\'s
--- @applyConsume@ still deletes a (subject, predicate) key
--- unconditionally regardless of what object is cited (a real,
--- pre-existing, separately-tracked simplification, not something this
--- change fixes) -- so today the value is real, parsed, and carried
--- all the way into the produced commit, but not yet load-bearing for
--- what gets deleted. That's the deliberate "may be useful in the
--- future" hook, not a bug.
+-- though nothing discriminated by it AT THE TIME -- "even if the value
+-- does nothing it may be useful in the future." It maps directly onto
+-- 'DMML.Ast.FactConsume'\'s own pre-existing optional @object@
+-- ('factConsumeObject' -- the exact same wildcard-vs-explicit shape a
+-- @consumes@\/@fact@ block already has), so a fired retract with a
+-- value renders it into the real @consumes@ citation's own object
+-- position.
+--
+-- MADE LOAD-BEARING the same day: 'DMML.Materialize.applyConsume' now
+-- honors 'factConsumeObject' for real -- @Nothing@ still wipes every
+-- live alternative for the key (the original wildcard semantics,
+-- unchanged), but @Just v@ now removes ONLY the alternative whose value
+-- equals @v@, leaving every other live alternative at that key intact.
+-- 'DMML.Fire.resolveSingleRetract' matches accordingly: a value-
+-- qualified retract can now target one specific alternative out of
+-- several live ones, rather than the earlier all-or-refuse choice
+-- ('DMML.Fire.FireRetractAmbiguous') a value-less retract still has
+-- (there is no principled way to pick just one of several without a
+-- value to match against). The "may be useful in the future" hook
+-- arrived the same day it was added.
 -- | 'EffectRetract'\'s @[PatternHop]@ (added 2026-09-04, jedelman/dmml#5)
 -- covers a CHAINED retract -- @retract self \`witnessedBy\` self \`at\`
 -- $eruption@, real output from a real eval

@@ -87,10 +87,10 @@ data ResolvedEffect
     -- citation actually consumes. The value, when the author's effect
     -- had one, renders into the produced @consumes@\/@fact@ entry's own
     -- pre-existing optional object position ('DMML.Ast.factConsumeObject')
-    -- -- real, parsed, carried through -- but 'DMML.Materialize'\'s
-    -- @applyConsume@ doesn't yet check it before deleting the key (see
-    -- 'DMML.Ast.Effect'\'s own doc comment for why that's a deliberate
-    -- "not yet load-bearing" hook, not a bug).
+    -- and is genuinely load-bearing as of 2026-09-04: 'DMML.Materialize'\'s
+    -- @applyConsume@ now removes only the alternative matching this
+    -- value, not the whole key -- see 'DMML.Ast.Effect'\'s own doc
+    -- comment.
     ResolvedRetract Text PredicateRef (Maybe Value) StrongRef
   deriving (Eq, Show)
 
@@ -205,24 +205,44 @@ resolveEffectValueToNode eff ctx val = case val of
   EffectValueLiteral lit -> Right (ValueLiteral lit)
 
 -- | The one real lookup every retraction (a chain's own intermediate
--- hop or its terminal predicate alike) goes through: exactly one live
--- alternative, with real provenance, or refuse. Shared so a chain's
--- per-hop checks and the pre-existing single-hop case are provably the
--- same discipline, not two similar-looking copies.
+-- hop or its terminal predicate alike) goes through: with a value to
+-- match, exactly one LIVE ALTERNATIVE WHOSE VALUE EQUALS IT, with real
+-- provenance, or refuse -- other live alternatives for the same key are
+-- no longer even a consideration, since 'DMML.Materialize.applyConsume'
+-- (updated the same day) now actually deletes only the one being cited,
+-- not the whole key. Without a value (the old bare @retract <ident>@
+-- sugar, or a general retract that never named one), falls back to the
+-- pre-existing wildcard discipline: exactly one live alternative
+-- overall, or refuse as ambiguous -- a value-less retract with several
+-- live alternatives has no principled way to pick just one, and
+-- wildcard-deleting all of them without the author ever citing more
+-- than one would misrepresent what was actually authorized. Shared so a
+-- chain's per-hop checks and the pre-existing single-hop case are
+-- provably the same discipline, not two similar-looking copies.
 resolveSingleRetract :: Effect -> WorldSnapshot -> Text -> PredicateRef -> Maybe Value -> Either FireError ResolvedEffect
 resolveSingleRetract eff snap subjText predRef mVal =
   case currentValueWithProvenance (subjText, predText predRef) snap of
     [] -> Left (FireRetractNoSuchFact eff)
-    [(_label, Just ref, _v)] -> Right (ResolvedRetract subjText predRef mVal ref)
-    [(_label, Nothing, _v)] -> Left (FireRetractNoProvenance eff)
-    _ -> Left (FireRetractAmbiguous eff)
+    alts -> case mVal of
+      Nothing -> case alts of
+        [(_label, Just ref, _v)] -> Right (ResolvedRetract subjText predRef mVal ref)
+        [(_label, Nothing, _v)] -> Left (FireRetractNoProvenance eff)
+        _ -> Left (FireRetractAmbiguous eff)
+      Just v -> case [(label, ref) | (label, ref, v') <- alts, v' == v] of
+        [] -> Left (FireRetractNoSuchFact eff)
+        [(_label, Just ref)] -> Right (ResolvedRetract subjText predRef mVal ref)
+        [(_label, Nothing)] -> Left (FireRetractNoProvenance eff)
+        _ -> Left (FireRetractAmbiguous eff)
 
 -- | Walks a chained retract's intermediate hops from @anchor@,
 -- resolving each hop's own term to a concrete node (never fans out --
 -- an intermediate hop's term must resolve via 'resolveTerm' alone, the
 -- same way a guard's bound hop would, since there is no principled
 -- "any of several" answer for what to actually delete), retracting the
--- walked edge at each step, and returning the FINAL anchor the
+-- walked edge at each step -- CITING the resolved target as the value
+-- to match (not a wildcard), so a hop whose (subject, predicate) has
+-- OTHER live alternatives besides the one actually walked only removes
+-- the walked one, leaving the rest intact. Returns the FINAL anchor the
 -- transition's terminal predicate\/value applies to. An empty hop list
 -- (the ordinary, pre-existing single-hop case) is a no-op: @(anchor,
 -- [])@.
@@ -230,7 +250,8 @@ resolveRetractHops :: Effect -> EvalContext -> WorldSnapshot -> Text -> [Pattern
 resolveRetractHops _ _ _ anchor [] = Right (anchor, [])
 resolveRetractHops eff ctx snap anchor (hop : rest) = do
   targetText <- resolveTermOrFail eff ctx (hopTerm hop)
-  retracted <- resolveSingleRetract eff snap anchor (PredIdent (hopPredicate hop)) Nothing
+  let targetValue = ValueNode (NodeRef (T.splitOn "/" targetText))
+  retracted <- resolveSingleRetract eff snap anchor (PredIdent (hopPredicate hop)) (Just targetValue)
   (finalAnchor, more) <- resolveRetractHops eff ctx snap targetText rest
   pure (finalAnchor, retracted : more)
 

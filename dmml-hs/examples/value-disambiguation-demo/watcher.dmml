@@ -1,0 +1,11 @@
+machine npc/watcher
+
+  states
+    idle
+    dismissing
+
+  transition dismiss(target)
+    idle -> dismissing
+    guard self `watches` $target
+    retract self `watches` $target
+    assert dismissing
