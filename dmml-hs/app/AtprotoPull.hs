@@ -109,19 +109,67 @@ writeOne outDir r = do
   TIO.writeFile path (prDmml r)
   pure path
 
+-- | Retries this many times, per page, before giving up on that one
+-- page specifically -- separate from, and on top of, 'DMML.Atproto.
+-- runCurl''s own curl-level @--retry@ (which only covers one already-
+-- launched curl process's transient failures; this covers the case
+-- where 'listRecords' itself returns a hard 'Left', e.g. after curl's
+-- own retries are exhausted).
+pageRetries :: Int
+pageRetries = 3
+
+-- | Real, disclosed fix (jedelman/dmml#7): a single page failing used
+-- to call 'exitFailure' unconditionally, discarding every already-
+-- fetched page from this same run -- on a genuinely flaky link (the
+-- kind this was built against), a drop on page 30 of a 50-page pull
+-- meant starting completely over, every time, rather than resuming.
+-- Now: retry the failing page a bounded number of times, and if it
+-- still fails, stop paging and return whatever was already
+-- successfully fetched, instead of throwing it all away. This is safe
+-- because 'main' never advances @cursor-file@ unconditionally either
+-- way (see this module's own top-of-file doc comment) -- a partial
+-- batch here just means a smaller, still-correct set of new files for
+-- the caller to validate and incorporate; the NEXT run picks up
+-- wherever the stored cursor actually left off, same as it always did.
 pageAll :: Text -> Text -> Text -> Maybe Text -> Int -> IO [PulledRecord]
 pageAll _ _ _ _ 0 = pure []
 pageAll pdsEndpoint did collection cursor pagesLeft = do
-  result <- listRecords pdsEndpoint did collection cursor
+  result <- fetchPageWithRetries pageRetries
   case result of
-    Left err -> hPutStrLn stderr ("listRecords failed: " <> show err) >> exitFailure >> pure []
-    Right v -> do
+    Nothing -> pure []
+    Just v -> do
       let records = extractRecords v
           nextCursor = extractCursor v
       rest <- case nextCursor of
         Just c | not (null records) -> pageAll pdsEndpoint did collection (Just c) (pagesLeft - 1)
         _ -> pure []
       pure (records ++ rest)
+  where
+    fetchPageWithRetries :: Int -> IO (Maybe Aeson.Value)
+    fetchPageWithRetries attemptsLeft = do
+      result <- listRecords pdsEndpoint did collection cursor
+      case result of
+        Right v -> pure (Just v)
+        Left err
+          | attemptsLeft > 1 -> do
+              hPutStrLn
+                stderr
+                ( "atproto-pull: listRecords failed (retrying, "
+                    <> show (attemptsLeft - 1)
+                    <> " attempt(s) left): "
+                    <> show err
+                )
+              fetchPageWithRetries (attemptsLeft - 1)
+          | otherwise -> do
+              hPutStrLn
+                stderr
+                ( "atproto-pull: listRecords failed after "
+                    <> show pageRetries
+                    <> " attempt(s), stopping pagination here and returning "
+                    <> "what was already fetched: "
+                    <> show err
+                )
+              pure Nothing
 
 extractCursor :: Aeson.Value -> Maybe Text
 extractCursor (Aeson.Object o) = case KM.lookup "cursor" o of

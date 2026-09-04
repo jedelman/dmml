@@ -21,6 +21,17 @@
 -- at READ time -- cheap (a 'Data.Map.Strict.foldl'' over pairs), not a
 -- re-parse.
 --
+-- FIXED 2026-09-04 (jedelman/dmml#7): every alternative's real
+-- provenance (a @uri#cid@ citation, if it had one) now round-trips
+-- through a checkpoint instead of being silently reset to 'Nothing'.
+-- Before this fix, ANY player who rehydrated local state from a
+-- checkpoint (rather than full-replaying every commit from genesis)
+-- permanently lost the ability to retract a fact that predated that
+-- checkpoint -- 'DMML.Fire.fireTransition' genuinely refuses to retract
+-- a fact with no real provenance to cite, and rehydration used to
+-- manufacture exactly that "no real provenance" state for every single
+-- fact, unconditionally. See 'CheckpointFact' below for the wire shape.
+--
 -- Deliberately does NOT checkpoint machine definitions ('MachineStmt')
 -- -- a real, disclosed scope limit, not an oversight. Doing so would
 -- need 'GHC.Generics.Generic'\/aeson instances threaded through the
@@ -34,6 +45,7 @@
 -- to skip.
 module DMML.Checkpoint
   ( CheckpointFact (..)
+  , CheckpointAlternative (..)
   , CheckpointFile (..)
   , snapshotToCheckpoint
   , checkpointToSnapshot
@@ -48,8 +60,8 @@ import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import GHC.Generics (Generic)
 
-import DMML.Ast (DeclKind (..), Literal (..), NodeRef (..), Value (..))
-import DMML.Materialize (Alternatives (..), WorldSnapshot (..), alternativeValues, emptySnapshot)
+import DMML.Ast (DeclKind (..), Literal (..), NodeRef (..), Span (..), StrongRef (..), Value (..))
+import DMML.Materialize (Alternatives (..), WorldSnapshot (..), alternativeEntries, emptySnapshot)
 
 -- Standalone deriving: these types are defined in DMML.Ast, which
 -- deliberately carries no aeson dependency of its own (see its own doc
@@ -80,6 +92,25 @@ instance ToJSON DeclKind
 
 instance FromJSON DeclKind
 
+-- | One live alternative's own provenance label, value, and (if it had
+-- one) real citation -- @(uri, cid)@, not a full 'DMML.Ast.StrongRef'.
+-- The third 'StrongRef' field, 'DMML.Ast.Span', is a source-location
+-- pointer into the ORIGINAL commit's parse -- nothing meaningful to
+-- persist here, and nothing downstream inspects a rehydrated ref's span
+-- ('checkpointToSnapshot' fills in an honest placeholder). A record,
+-- not a bare tuple, so a future field doesn't need every call site
+-- rewritten to match a new tuple arity.
+data CheckpointAlternative = CheckpointAlternative
+  { caLabel :: Text
+  , caCitation :: Maybe (Text, Text)
+  , caValue :: Value
+  }
+  deriving (Generic, Show)
+
+instance ToJSON CheckpointAlternative
+
+instance FromJSON CheckpointAlternative
+
 -- | One (subject, predicate) pair's live alternatives, list-shaped
 -- rather than a 'Data.Map.Strict.Map' keyed on a tuple -- aeson has no
 -- built-in 'Data.Aeson.ToJSONKey' for an arbitrary tuple, and this
@@ -88,7 +119,7 @@ instance FromJSON DeclKind
 data CheckpointFact = CheckpointFact
   { cfSubject :: Text
   , cfPredicate :: Text
-  , cfAlternatives :: [(Text, Value)]
+  , cfAlternatives :: [CheckpointAlternative]
   }
   deriving (Generic, Show)
 
@@ -113,33 +144,45 @@ snapshotToCheckpoint treeSha snap =
     { ckTreeSha = treeSha
     , ckDeclared = Map.toList (snapshotDeclared snap)
     , ckFacts =
-        [ CheckpointFact subj pred_ (alternativeValues alts)
+        [ CheckpointFact
+            subj
+            pred_
+            [ CheckpointAlternative label (refCitation ref) v
+            | (label, ref, v) <- alternativeEntries alts
+            ]
         | ((subj, pred_), alts) <- sortOn fst (Map.toList (snapshotFacts snap))
         ]
     }
+  where
+    refCitation = fmap (\ref -> (strongRefUri ref, strongRefCid ref))
 
--- | A checkpoint round-trip never persisted real 'DMML.Ast.StrongRef'
--- provenance before 2026-09-04's retract-provenance fix
--- (jedelman/dmml#4) and still doesn't -- 'CheckpointFact' only ever
--- carried @(label, value)@ pairs (see 'snapshotToCheckpoint', which
--- reads through the unchanged 'alternativeValues' accessor). A snapshot
--- rebuilt from a checkpoint therefore has every alternative's provenance
--- reset to 'Nothing', same as before this module carried a
--- 'Maybe DMML.Ast.StrongRef' field at all -- a real, disclosed
--- limitation, not new behavior: 'DMML.Fire' will refuse to retract a
--- fact whose only source is a rehydrated checkpoint until this file
--- format grows a real @cid@ field of its own (not yet needed by
--- anything that reads a checkpoint today).
+-- | Rebuilds a real 'DMML.Ast.StrongRef' for any alternative that had a
+-- real citation when checkpointed -- see this module's own top-of-file
+-- doc comment (jedelman/dmml#7) for why this matters: without it, every
+-- rehydrated fact permanently lost retractability. The rebuilt ref's
+-- 'DMML.Ast.Span' is a placeholder (@checkpoint:<uri>#<cid>@) -- there
+-- is no real source location to recover, and nothing downstream
+-- inspects it; only 'strongRefUri'\/'strongRefCid' are ever compared
+-- against ('DMML.Fire', citation-integrity checking).
 checkpointToSnapshot :: CheckpointFile -> WorldSnapshot
 checkpointToSnapshot ck =
   emptySnapshot
     { snapshotDeclared = Map.fromList (ckDeclared ck)
     , snapshotFacts =
         Map.fromList
-          [ ((cfSubject f, cfPredicate f), Alternatives [(label, Nothing, v) | (label, v) <- cfAlternatives f])
+          [ ( (cfSubject f, cfPredicate f)
+            , Alternatives
+                [ (caLabel a, rehydrateRef (caCitation a), caValue a)
+                | a <- cfAlternatives f
+                ]
+            )
           | f <- ckFacts ck
           ]
     }
+  where
+    rehydrateRef Nothing = Nothing
+    rehydrateRef (Just (uri, cid)) =
+      Just (StrongRef uri cid (Span ("checkpoint:" <> uri <> "#" <> cid)))
 
 encodeCheckpoint :: CheckpointFile -> BL.ByteString
 encodeCheckpoint = encode

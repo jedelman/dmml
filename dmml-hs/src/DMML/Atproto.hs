@@ -81,12 +81,41 @@ data Session = Session
 -- this is the whole point: arguments are passed as real argv entries,
 -- so a DID or handle containing shell metacharacters can never be
 -- interpreted by a shell, because there is no shell in this path at all).
+-- | Fixed curl flags added 2026-09-04 (jedelman/dmml#7), after a real,
+-- flaky-link environment (0.1Mbps, heavy packet loss) exposed that
+-- 'runCurl' previously set no timeout of any kind -- a stalled TCP
+-- connection would hang this process indefinitely rather than failing
+-- fast. @--connect-timeout 15@: generous for a slow-but-alive link
+-- (this project's XRPC calls are all small JSON, never a large
+-- transfer, so a slow-to-connect-but-working link should still get
+-- there); @--max-time 60@: same reasoning, an upper bound on the WHOLE
+-- request rather than just connect, since a stall can happen
+-- mid-transfer too. @--retry 3 --retry-delay 2 --retry-connrefused@:
+-- curl's own built-in retry -- covers a transient drop\/reset\/refused-
+-- connection without this module needing its own retry loop; does NOT
+-- retry on a real HTTP 4xx\/5xx (curl's documented behavior -- those are
+-- real application errors, not transport flakiness, and retrying one
+-- wouldn't help). Every call in this module goes through 'runCurl', so
+-- every XRPC call (resolve, session, read, write) gets this for free.
+curlNetworkFlags :: [String]
+curlNetworkFlags =
+  [ "--connect-timeout"
+  , "15"
+  , "--max-time"
+  , "60"
+  , "--retry"
+  , "3"
+  , "--retry-delay"
+  , "2"
+  , "--retry-connrefused"
+  ]
+
 runCurl :: [String] -> IO (Either AtprotoError BL.ByteString)
 runCurl args = do
   result <-
     try
       ( withCreateProcess
-          (proc "curl" (["-sS", "--fail-with-body"] ++ args))
+          (proc "curl" (["-sS", "--fail-with-body"] ++ curlNetworkFlags ++ args))
             { std_in = NoStream
             , std_out = CreatePipe
             , std_err = CreatePipe
