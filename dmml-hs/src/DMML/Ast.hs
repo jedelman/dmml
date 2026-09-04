@@ -245,9 +245,29 @@ data PatternTerm
 -- machine examples (the endurance seed machines) use it and there was
 -- no reason to force a mechanical rewrite of real evidence just to add
 -- a new capability alongside it.
+-- | 'EffectRetract'\'s trailing 'Maybe EffectValue' was added 2026-09-04
+-- after a real eval (dev-journal/2026-09-04-complex-machine-eval.md)
+-- found three independent free models, unprompted, all writing a
+-- general retract WITH a trailing value symmetric to assert's --
+-- @retract $target \`wardedBy\` self@ -- even though the grammar at the
+-- time had no value slot there at all. Jason's call: accept it, even
+-- though nothing currently discriminates by it -- "even if the value
+-- does nothing it may be useful in the future." Concretely, it's NOT a
+-- discarded field: it maps directly onto 'DMML.Ast.FactConsume'\'s own
+-- pre-existing optional @object@ ('factConsumeObject' -- the exact
+-- same wildcard-vs-explicit shape a @consumes@\/@fact@ block already
+-- has), so a fired retract with a value renders it into the real
+-- @consumes@ citation's own object position. 'DMML.Materialize'\'s
+-- @applyConsume@ still deletes a (subject, predicate) key
+-- unconditionally regardless of what object is cited (a real,
+-- pre-existing, separately-tracked simplification, not something this
+-- change fixes) -- so today the value is real, parsed, and carried
+-- all the way into the produced commit, but not yet load-bearing for
+-- what gets deleted. That's the deliberate "may be useful in the
+-- future" hook, not a bug.
 data Effect
   = EffectAssert PatternTerm PredicateRef EffectValue
-  | EffectRetract PatternTerm PredicateRef
+  | EffectRetract PatternTerm PredicateRef (Maybe EffectValue)
   deriving (Eq, Show)
 
 -- | An effect's asserted value: either a node reference (resolved from

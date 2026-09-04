@@ -1,0 +1,6 @@
+commit setup
+  declare relation wardedBy
+  declare relation state
+
+  npc/keeper `state` vigilant
+  herd/aurochs `wardedBy` npc/keeper

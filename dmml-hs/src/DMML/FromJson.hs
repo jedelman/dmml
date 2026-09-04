@@ -338,16 +338,17 @@ machineStmtFromInput input = do
             >> Right (EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode ident)))
         J.EffectRetractInput ident ->
           checkIdent (effectPointer <> "/ident") ident
-            >> Right (EffectRetract TermSelf (PredIdent "state"))
+            >> Right (EffectRetract TermSelf (PredIdent "state") Nothing)
         J.EffectAssertGeneralInput subjIn predText valIn -> do
           subj <- patternTermFromInput (effectPointer <> "/subject") subjIn
           pred_ <- predicateRef (effectPointer <> "/predicate") predText
           val <- effectValueFromInput (effectPointer <> "/value") valIn
           pure (EffectAssert subj pred_ val)
-        J.EffectRetractGeneralInput subjIn predText -> do
+        J.EffectRetractGeneralInput subjIn predText mValIn -> do
           subj <- patternTermFromInput (effectPointer <> "/subject") subjIn
           pred_ <- predicateRef (effectPointer <> "/predicate") predText
-          pure (EffectRetract subj pred_)
+          mVal <- traverse (effectValueFromInput (effectPointer <> "/value")) mValIn
+          pure (EffectRetract subj pred_ mVal)
 
     let hasContent = not (null guards) || (isJust (J.tiFrom t) && isJust (J.tiTo t)) || not (null effects)
     unless

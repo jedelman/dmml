@@ -309,13 +309,20 @@ pEffectValue =
     <|> (EffectValueTerm . TermNode <$> pNodeRefText)
 
 -- | General form, generalized 2026-09-03: @assert <term> \`<predicate>\`
--- <value>@ \/ @retract <term> \`<predicate>\`@ -- the same infix-backtick
--- fact idiom used everywhere else in this grammar, so an effect reads
--- exactly like the fact it will become once it fires. Falls back to the
--- old bare @assert <ident>@\/@retract <ident>@ sugar (always implicitly
--- @self . state@) when the general form's required backtick isn't
--- there -- real, already-committed machine examples use the old form,
--- kept working rather than force-migrated.
+-- <value>@ \/ @retract <term> \`<predicate>\` [<value>]@ -- the same
+-- infix-backtick fact idiom used everywhere else in this grammar, so an
+-- effect reads exactly like the fact it will become once it fires.
+-- Falls back to the old bare @assert <ident>@\/@retract <ident>@ sugar
+-- (always implicitly @self . state@) when the general form's required
+-- backtick isn't there -- real, already-committed machine examples use
+-- the old form, kept working rather than force-migrated.
+--
+-- Retract's trailing value is OPTIONAL, added 2026-09-04: a real eval
+-- (dev-journal/2026-09-04-complex-machine-eval.md) found three
+-- independent free models unprompted writing a value there anyway, by
+-- analogy with assert -- accepted rather than fought, per Jason's call.
+-- See 'DMML.Ast.Effect'\'s own doc comment for what it does (and
+-- doesn't yet) mean once resolved.
 pEffectLine :: Parser Effect
 pEffectLine =
   (symbol "assert" *> (try pAssertGeneral <|> pAssertStateSugar))
@@ -336,10 +343,11 @@ pEffectLine =
       _ <- symbol "`"
       p <- pIdentRaw <* sc
       _ <- symbol "`"
-      pure (EffectRetract subj (PredIdent p))
+      mval <- optional (try pEffectValue)
+      pure (EffectRetract subj (PredIdent p) mval)
     pRetractStateSugar = do
       _ident <- pIdent
-      pure (EffectRetract TermSelf (PredIdent "state"))
+      pure (EffectRetract TermSelf (PredIdent "state") Nothing)
 
 -- | @from -> to@ -- a transition's optional state-pair line.
 pFromTo :: Parser (Text, Text)

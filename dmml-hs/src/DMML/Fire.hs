@@ -61,9 +61,16 @@ data ResolvedFact = ResolvedFact
 -- asserts and retracts sees that order preserved in the produced commit.
 data ResolvedEffect
   = ResolvedAssert ResolvedFact
-  | -- | @(subject, predicate, the real StrongRef being cited)@ -- the
-    -- one live alternative this retract's citation actually consumes.
-    ResolvedRetract Text PredicateRef StrongRef
+  | -- | @(subject, predicate, an optional resolved value, the real
+    -- StrongRef being cited)@ -- the one live alternative this retract's
+    -- citation actually consumes. The value, when the author's effect
+    -- had one, renders into the produced @consumes@\/@fact@ entry's own
+    -- pre-existing optional object position ('DMML.Ast.factConsumeObject')
+    -- -- real, parsed, carried through -- but 'DMML.Materialize'\'s
+    -- @applyConsume@ doesn't yet check it before deleting the key (see
+    -- 'DMML.Ast.Effect'\'s own doc comment for why that's a deliberate
+    -- "not yet load-bearing" hook, not a bug).
+    ResolvedRetract Text PredicateRef (Maybe Value) StrongRef
   deriving (Eq, Show)
 
 data FireError
@@ -130,11 +137,19 @@ resolveOneEffect ctx _snap eff@(EffectAssert subjTerm predRef val) = do
         (resolveTerm t ctx)
     EffectValueLiteral lit -> Right (ValueLiteral lit)
   pure (ResolvedAssert ResolvedFact {rfSubject = subjText, rfPredicate = predRef, rfValue = value})
-resolveOneEffect ctx snap eff@(EffectRetract subjTerm predRef) = do
+resolveOneEffect ctx snap eff@(EffectRetract subjTerm predRef mVal) = do
   subjText <- maybe (Left (FireUnresolvedSubject eff)) Right (resolveTerm subjTerm ctx)
+  value <- case mVal of
+    Nothing -> Right Nothing
+    Just (EffectValueTerm t) ->
+      maybe
+        (Left (FireUnresolvedValue eff))
+        (Right . Just . ValueNode . NodeRef . T.splitOn "/")
+        (resolveTerm t ctx)
+    Just (EffectValueLiteral lit) -> Right (Just (ValueLiteral lit))
   case currentValueWithProvenance (subjText, predText predRef) snap of
     [] -> Left (FireRetractNoSuchFact eff)
-    [(_label, Just ref, _v)] -> Right (ResolvedRetract subjText predRef ref)
+    [(_label, Just ref, _v)] -> Right (ResolvedRetract subjText predRef value ref)
     [(_label, Nothing, _v)] -> Left (FireRetractNoProvenance eff)
     _ -> Left (FireRetractAmbiguous eff)
 
@@ -173,14 +188,14 @@ renderFiredCommit verb effects =
       RdfType -> "  " <> rfSubject f <> " :: a " <> renderValue (rfValue f)
       PredIdent p -> "  " <> rfSubject f <> " `" <> p <> "` " <> renderValue (rfValue f)
 
-    retracts = [(subj, predRef, ref) | ResolvedRetract subj predRef ref <- effects]
+    retracts = [(subj, predRef, mVal, ref) | ResolvedRetract subj predRef mVal ref <- effects]
     consumesBlock
       | null retracts = []
       | otherwise =
           ["  consumes"]
             ++ concat
               [ [ "    fact " <> strongRefUri ref <> "#" <> strongRefCid ref
-                , "      " <> subj <> " . " <> predText predRef
+                , "      " <> subj <> " . " <> predText predRef <> maybe "" ((" = " <>) . renderValue) mVal
                 ]
-              | (subj, predRef, ref) <- retracts
+              | (subj, predRef, mVal, ref) <- retracts
               ]

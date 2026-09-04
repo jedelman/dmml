@@ -117,7 +117,7 @@ machine <node_ref>
     assert <ident>
     retract <ident>
     assert <term> `<ident>` <value>
-    retract <term> `<ident>`
+    retract <term> `<ident>` [<value>]
 ```
 
 - `machine <node_ref>` — the node the machine is attached to, e.g.
@@ -149,7 +149,7 @@ machine <node_ref>
 - `assert <ident>` / `retract <ident>` — the OLD, still-fully-supported
   sugar, always implicitly `(self, "state", <ident>)`. Use this when a
   transition is ONLY changing the machine's own state and nothing else.
-- **`assert <term> \`<ident>\` <value>` / `retract <term> \`<ident>\``
+- **`assert <term> \`<ident>\` <value>` / `retract <term> \`<ident>\` [<value>]`
   — the GENERAL form, added 2026-09-03.** An effect is no longer
   limited to the machine's own `self . state` — it can assert or
   retract ANY fact, on ANY subject term (`self`, `$param`, or a literal
@@ -181,6 +181,17 @@ machine <node_ref>
   `DMML.Fire`) — that's a firing-time concern for whoever runs
   `fire-transition`, not something an author needs to think about while
   just writing the machine text.
+  **Retract's trailing `<value>` is optional** (added 2026-09-04, after
+  a real eval found three independent free models writing one anyway by
+  analogy with assert — `dev-journal/2026-09-04-complex-machine-eval.md`).
+  It's accepted and carried through: when a fired retract has one, it
+  renders into the produced `consumes`/`fact` citation's own
+  pre-existing optional object position (the same `subject.predicate
+  [= value]` shape a `consumes` block already has). It's not yet
+  load-bearing for WHICH alternative gets deleted — `DMML.Materialize`'s
+  `consumes` application still removes every live alternative for the
+  (subject, predicate) key regardless — so write it if it reads better,
+  but don't rely on it to disambiguate a multi-valued retract yet.
 
 ## Example (machine)
 
