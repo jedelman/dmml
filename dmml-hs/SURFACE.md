@@ -116,6 +116,8 @@ machine <node_ref>
     guard [not] <term> `<ident>` <term> (`<ident>` <term>)*
     assert <ident>
     retract <ident>
+    assert <term> `<ident>` <value>
+    retract <term> `<ident>`
 ```
 
 - `machine <node_ref>` — the node the machine is attached to, e.g.
@@ -144,8 +146,41 @@ machine <node_ref>
   and is always read as a variable — write a real multi-segment
   reference if a literal single-word node is what's meant. JSON doesn't
   have this gap (`kind: "node"` vs `kind: "var"` is explicit there).
-- `assert <ident>` / `retract <ident>` — always implicitly `(self,
-  "state", <ident>)`, same as JSON's `EffectInput`.
+- `assert <ident>` / `retract <ident>` — the OLD, still-fully-supported
+  sugar, always implicitly `(self, "state", <ident>)`. Use this when a
+  transition is ONLY changing the machine's own state and nothing else.
+- **`assert <term> \`<ident>\` <value>` / `retract <term> \`<ident>\``
+  — the GENERAL form, added 2026-09-03.** An effect is no longer
+  limited to the machine's own `self . state` — it can assert or
+  retract ANY fact, on ANY subject term (`self`, `$param`, or a literal
+  multi-segment node), the same infix-backtick shape a plain fact uses.
+  `<value>` is whatever an ordinary fact's value can be: `self`/`$param`
+  (a node, resolved at fire time), a literal multi-segment node, a
+  quoted string, a bare number, or `true`/`false`.
+  **This is also how a transition mints a brand-new node**: DMML is
+  open-world (a node exists the instant any fact mentions it, no
+  separate registry) — so an effect whose subject is `$name` and whose
+  predicate/value assert real content brings a brand-new node into
+  existence the moment that transition fires with a concrete binding
+  for `$name`. A transition doesn't need a special "mint" keyword; an
+  ordinary general-form assert on a fresh `$param` binding already does
+  it. Real, worked example:
+  ```
+  transition forge(name, material)
+    idle -> forged
+    guard self `stocked` $material
+    assert $name `title` "A freshly forged key"
+    assert $name `madeFrom` $material
+    assert forged
+  ```
+  Firing this with `$name` bound to a node nobody has ever mentioned
+  before (e.g. `key/rusty42`) mints it for real — see
+  `examples/fire-demo/` for the actual verified run.
+  A retract in the general form still needs the SAME real-provenance
+  discipline any retraction needs (see `app/FireTransition.hs`/
+  `DMML.Fire`) — that's a firing-time concern for whoever runs
+  `fire-transition`, not something an author needs to think about while
+  just writing the machine text.
 
 ## Example (machine)
 
@@ -173,6 +208,16 @@ node terms — exercises the parts of the grammar door/12 doesn't touch
 at all. Written and parse-verified before any model saw the machine
 grammar, specifically so the compliance checkpoint below wasn't testing
 against the only example a model could have copied.
+
+A third example, `examples/complex-demo/master.dmml`, exercises the
+general effect form specifically: two transitions, two params each, a
+guard chain spanning both `self` and a param-anchored subject, a
+negated guard, general-form asserts on non-`self` subjects (minting a
+brand-new node, `item/thorncrown`, purely by naming it as a param at
+fire time), a literal string value, and two real `from -> to`
+retractions in sequence. Fired live end to end — both commits it
+produces pass real `validate-commit`/`check-declared` — not just
+parsed and set aside.
 
 ## What's implemented
 

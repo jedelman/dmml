@@ -1,0 +1,215 @@
+{
+  "n_trials": 6,
+  "n_parsed": 2,
+  "n_declared_ok": 2,
+  "n_using_general_assert": 2,
+  "n_using_general_retract": 0,
+  "models_seen": [
+    "dots-studio/dots-3-note-preview:free",
+    "google/gemma-4-31b-it:free",
+    "liquid/lfm-2.5-2.6b:free",
+    "minimax/minimax-m3:free"
+  ],
+  "results": [
+    {
+      "index": 0,
+      "ok": true,
+      "model_used": "google/gemma-4-31b-it:free",
+      "usage": {
+        "prompt_tokens": 6236,
+        "completion_tokens": 280,
+        "total_tokens": 6516,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "elapsed_s": 8.9,
+      "declared_ok": true,
+      "declared_output": "check-declared: OK -- every used predicate is declared",
+      "dmml_path": "results/complex-machine-eval/candidates/trial-00.dmml",
+      "n_states": 3,
+      "n_transitions": 4,
+      "uses_general_assert": true,
+      "uses_general_retract": false
+    },
+    {
+      "index": 1,
+      "ok": true,
+      "model_used": "dots-studio/dots-3-note-preview:free",
+      "usage": {
+        "prompt_tokens": 5928,
+        "completion_tokens": 184,
+        "total_tokens": 6112,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "elapsed_s": 4.8,
+      "declared_ok": true,
+      "declared_output": "check-declared: OK -- every used predicate is declared",
+      "dmml_path": "results/complex-machine-eval/candidates/trial-01.dmml",
+      "n_states": 4,
+      "n_transitions": 4,
+      "uses_general_assert": true,
+      "uses_general_retract": false
+    },
+    {
+      "index": 2,
+      "ok": false,
+      "stage": "parse",
+      "model_used": "minimax/minimax-m3:free",
+      "usage": {
+        "prompt_tokens": 5957,
+        "completion_tokens": 474,
+        "total_tokens": 6431,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 128,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "elapsed_s": 14.9,
+      "error": "/home/user/dmml/compliance-endurance/results/complex-machine-eval/candidates/trial-02.dmml: REJECTED\n<surface>:1:1:\n  |\n1 | machine npc/keeper\n  | ^^^^^^\nunexpected \"machin\"\nexpecting \"commit\"",
+      "raw_response": "Here's the design I'm going for:\n\nThe keeper (`npc/keeper`) currently has two declared roles in the seed \u2014 warding the stagfolk against needless migration, and witnessing ashkar's rumblings \u2014 but no machine of its own. A machine that captures both responsibilities, plus a \"retire\" terminal, lets the keeper's role evolve meaningfully: a warding transition that *also* mints a brand-new warding-token node and binds it to the keeper; a witnessing transition that records which eruption was witnessed; a retirement path that transfers the warding-token to a successor (also a freshly-named param, so it's a fresh node at fire time); and a degraded \"falling\" terminal reached only when the keeper is fired without a valid successor.\n\nThe minting happens via the general effect form: `$successor \\`carries\\` self` and `$successor \\`wardedBy\\` $token` bring both a new keeper-node and a new token-node into the world the moment the transition fires with concrete bindings, exercising the open-world minting behavior SURFACE.md documents.\n\n```\nmachine npc/keeper\n  states\n    onDuty\n    wardbound\n    retired\n    fallen\n\n  transition takeWard(token, ward)\n    onDuty -> wardbound\n    guard self `carries` $token\n    assert $token `carries` $ward\n    assert $ward `witnessedBy` self\n    assert wardbound\n\n  transition witnessEruption(eruption)\n    wardbound -> wardbound\n    guard self `witnessedBy` self `at` $eruption\n    assert self `witnessedBy` $eruption\n    retract self `witnessedBy` self `at` $eruption\n\n  transition retire(successor, token)\n    wardbound -> retired\n    guard $successor `belongsTo` self\n    assert $successor `carries` $token\n    assert $successor `wardedBy` self\n    assert retired\n    retract wardbound\n\n  transition fall()\n    onDuty -> fallen\n    assert fallen\n\n  transition redeem(token)\n    fallen -> wardbound\n    guard $token `carries` self\n    assert wardbound\n    retract fallen\n```"
+    },
+    {
+      "index": 3,
+      "ok": false,
+      "stage": "parse",
+      "model_used": "dots-studio/dots-3-note-preview:free",
+      "usage": {
+        "prompt_tokens": 5928,
+        "completion_tokens": 356,
+        "total_tokens": 6284,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "elapsed_s": 4.1,
+      "error": "/home/user/dmml/compliance-endurance/results/complex-machine-eval/candidates/trial-03.dmml: REJECTED\n<surface>:1:1:\n  |\n1 | machine mine/ninefathom\n  | ^^^^^^\nunexpected \"machin\"\nexpecting \"commit\"",
+      "raw_response": "```dmml\nmachine mine/ninefathom\n  states\n    undug\n    active\n    flooded\n    exhausted\n    sealed\n    haunted\n\n  transition dig(digger)\n    undug -> active\n    guard $digger `worksAt` self\n    assert $digger `masters` path/bronzework\n    assert active\n\n  transition flood()\n    active -> flooded\n    guard mountain/ashkar `erupts` self\n    assert flooded\n    retract active\n    assert mountain/ashkar `witnessedBy` self\n\n  transition pump(engineer)\n    flooded -> active\n    guard $engineer `masters` path/bronzework\n    assert active\n    retract flooded\n    assert $engineer `apprenticesUnder` path/bronzework\n\n  transition exhaust()\n    active -> exhausted\n    assert exhausted\n    retract active\n    assert self `carries` \"rich_ore_stockpile\"\n\n  transition seal(warden)\n    exhausted -> sealed\n    guard $warden `masters` path/stonemasonry\n    assert sealed\n    retract exhausted\n    assert $warden `wardsBy` self\n\n  transition haunt(spirit)\n    sealed -> haunted\n    guard not self `witnessedBy` npc/keeper\n    assert haunted\n    retract sealed\n    assert $spirit `belongs_to` self\n    assert self `carries` \"restless_spirit\"\n\n  transition purge(priest)\n    haunted -> sealed\n    guard $priest `masters` path/greenlore\n    assert sealed\n    retract haunted\n    retract $spirit `belongs_to` self\n    retract self `carries` \"restless_spirit\"\n```"
+    },
+    {
+      "index": 4,
+      "ok": false,
+      "stage": "parse",
+      "model_used": "liquid/lfm-2.5-2.6b:free",
+      "usage": {
+        "prompt_tokens": 6219,
+        "completion_tokens": 2545,
+        "total_tokens": 8764,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2299,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "elapsed_s": 33.8,
+      "error": "/home/user/dmml/compliance-endurance/results/complex-machine-eval/candidates/trial-04.dmml: REJECTED\n<surface>:1:1:\n  |\n1 | <|tool_call_start|>[edit(path='/dev/DMML', old_text='', new_text='machine culture/threshold\\n  states\\n    unaware\\n    critical\\n    tipping\\n    transformed\\n    stable\\n\\n  transition awaken(self)\\n    unaware -> critical\\n    guard self `hasThreshold` true\\n    assert critical\\n    assert forest/oldroot `awarenessOfThreshold` true\\n\\n  transition mobilize(critical)\\n    critical -> tipping\\n    guard critical `needsAction` true\\n    assert tipping\\n    assert community/newborn = true\\n\\n  transition consolidate(tipping)\\n    tipping -> transformed\\n    guard tipping `reachesTippingPoint` true\\n    assert transformed\\n    retract forest/oldroot `threatened`\\n\\n  transition stabilize(transformed)\\n    transformed -> stable\\n    guard transformed `maintainedStability` true\\n    assert stable\\n    assert leader/emerge = true\\n\\n  transition collapse(stable)\\n    stable -> unaware\\n    guard stable `losesCoherence` true\\n    assert unaware\\n    assert warning/alert = true\\n')]<|tool_call_end|>\n  | ^^^^^^\nunexpected \"<|tool\"\nexpecting \"commit\"",
+      "raw_response": "<|tool_call_start|>[edit(path='/dev/DMML', old_text='', new_text='machine culture/threshold\\n  states\\n    unaware\\n    critical\\n    tipping\\n    transformed\\n    stable\\n\\n  transition awaken(self)\\n    unaware -> critical\\n    guard self `hasThreshold` true\\n    assert critical\\n    assert forest/oldroot `awarenessOfThreshold` true\\n\\n  transition mobilize(critical)\\n    critical -> tipping\\n    guard critical `needsAction` true\\n    assert tipping\\n    assert community/newborn = true\\n\\n  transition consolidate(tipping)\\n    tipping -> transformed\\n    guard tipping `reachesTippingPoint` true\\n    assert transformed\\n    retract forest/oldroot `threatened`\\n\\n  transition stabilize(transformed)\\n    transformed -> stable\\n    guard transformed `maintainedStability` true\\n    assert stable\\n    assert leader/emerge = true\\n\\n  transition collapse(stable)\\n    stable -> unaware\\n    guard stable `losesCoherence` true\\n    assert unaware\\n    assert warning/alert = true\\n')]<|tool_call_end|>"
+    },
+    {
+      "index": 5,
+      "ok": false,
+      "stage": "parse",
+      "model_used": "dots-studio/dots-3-note-preview:free",
+      "usage": {
+        "prompt_tokens": 5928,
+        "completion_tokens": 222,
+        "total_tokens": 6150,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 5632,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "elapsed_s": 3.0,
+      "error": "/home/user/dmml/compliance-endurance/results/complex-machine-eval/candidates/trial-05.dmml: REJECTED\n<surface>:1:1:\n  |\n1 | machine npc/keeper\n  | ^^^^^^\nunexpected \"machin\"\nexpecting \"commit\"",
+      "raw_response": "```\nmachine npc/keeper\n  states\n    warding\n    migrating\n    vigilant\n    withdrawn\n\n  transition ward(target)\n    warding -> vigilant\n    guard self `wardedBy` $target\n    assert $target `wardedBy` self\n    assert vigilant\n\n  transition unward(target)\n    vigilant -> warding\n    guard $target `wardedBy` self\n    retract $target `wardedBy` self\n    assert warding\n\n  transition follow(target)\n    vigilant -> migrating\n    guard $target `migratesTo` forest/oldroot\n    assert self `witnessedBy` $target\n    assert migrating\n\n  transition withdraw()\n    migrating -> withdrawn\n    guard self `witnessedBy` mountain/ashkar\n    retract self `witnessedBy` mountain/ashkar\n    assert withdrawn\n\n  transition reawaken()\n    withdrawn -> warding\n    guard herd/stagfolk `grazesIn` forest/oldroot\n    assert self `witnessedBy` herd/stagfolk\n    assert warding\n```"
+    }
+  ]
+}

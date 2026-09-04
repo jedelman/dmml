@@ -1,0 +1,36 @@
+machine npc/keeper
+  states
+    warding
+    migrating
+    vigilant
+    withdrawn
+
+  transition ward(target)
+    warding -> vigilant
+    guard self `wardedBy` $target
+    assert $target `wardedBy` self
+    assert vigilant
+
+  transition unward(target)
+    vigilant -> warding
+    guard $target `wardedBy` self
+    retract $target `wardedBy` self
+    assert warding
+
+  transition follow(target)
+    vigilant -> migrating
+    guard $target `migratesTo` forest/oldroot
+    assert self `witnessedBy` $target
+    assert migrating
+
+  transition withdraw()
+    migrating -> withdrawn
+    guard self `witnessedBy` mountain/ashkar
+    retract self `witnessedBy` mountain/ashkar
+    assert withdrawn
+
+  transition reawaken()
+    withdrawn -> warding
+    guard herd/stagfolk `grazesIn` forest/oldroot
+    assert self `witnessedBy` herd/stagfolk
+    assert warding

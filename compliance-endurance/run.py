@@ -81,6 +81,15 @@ its machine definition (if shown), or declare a brand-new machine of your own. S
 what you're shown -- reuse real node names and declared predicates exactly as given; don't invent a \
 new predicate for something already declared.
 
+If you declare a machine, you are not limited to a bare state machine. A transition's effects can \
+assert or retract ANY fact on ANY subject -- self, a transition parameter, or a literal node -- using \
+the same general form SURFACE.md documents (`assert <term> \`<predicate>\` <value>`). This is also \
+how a transition mints a brand-new node: naming a fresh transition parameter as an effect's subject \
+brings that node into existence the moment the transition fires with a real binding for it. A \
+complex, multi-transition machine that governs several real facts about the world (not just its own \
+state) is a genuinely stronger contribution here than a minimal one-state-change machine -- use the \
+general form where it serves the content, not the old bare `assert <ident>` sugar out of habit.
+
 Identifier rule, easy to get wrong: a commit verb, a predicate name, and each segment of a node \
 reference are all single identifiers -- letters, digits, and underscore ONLY, no hyphens and no \
 spaces. Write `commit riverRites` or `commit river_rites`, never `commit river-rites`; `npc/riverKeeper`, \

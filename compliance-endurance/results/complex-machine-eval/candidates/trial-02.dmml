@@ -1,0 +1,37 @@
+machine npc/keeper
+  states
+    onDuty
+    wardbound
+    retired
+    fallen
+
+  transition takeWard(token, ward)
+    onDuty -> wardbound
+    guard self `carries` $token
+    assert $token `carries` $ward
+    assert $ward `witnessedBy` self
+    assert wardbound
+
+  transition witnessEruption(eruption)
+    wardbound -> wardbound
+    guard self `witnessedBy` self `at` $eruption
+    assert self `witnessedBy` $eruption
+    retract self `witnessedBy` self `at` $eruption
+
+  transition retire(successor, token)
+    wardbound -> retired
+    guard $successor `belongsTo` self
+    assert $successor `carries` $token
+    assert $successor `wardedBy` self
+    assert retired
+    retract wardbound
+
+  transition fall()
+    onDuty -> fallen
+    assert fallen
+
+  transition redeem(token)
+    fallen -> wardbound
+    guard $token `carries` self
+    assert wardbound
+    retract fallen

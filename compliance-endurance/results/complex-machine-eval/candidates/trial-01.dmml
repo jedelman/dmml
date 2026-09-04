@@ -1,0 +1,32 @@
+machine npc/keeper
+  states
+    vigilant
+    weary
+    withdrawn
+    recalled
+
+  transition notice(migrant)
+    vigilant -> weary
+    guard $migrant `grazesIn` forest/oldroot
+    assert $migrant `wardedBy` self
+    assert weary
+
+  transition withdraw(reason)
+    weary -> withdrawn
+    guard $reason `fallsOn` mountain/ashkar
+    assert withdrawn
+    retract vigilant
+
+  transition recall(elder)
+    withdrawn -> vigilant
+    guard $elder `masters` path/stonemasonry
+    assert vigilant
+    retract withdrawn
+
+  transition intervene(target, cause)
+    weary -> vigilant
+    guard $target `migratesTo` forest/oldroot
+    assert $target `wardedBy` self
+    assert $cause `witnessedBy` self
+    assert vigilant
+    retract weary

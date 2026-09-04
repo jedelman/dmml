@@ -1,0 +1,33 @@
+machine npc/keeper
+  states
+    observing
+    intervening
+    recording
+
+  transition mentor(student, path)
+    observing -> intervening
+    guard $student `belongsTo` culture/highkin
+    guard self `masters` $path
+    assert $student `apprenticesUnder` $path
+    assert intervening
+    retract observing
+
+  transition logEvent(eventId, description)
+    intervening -> recording
+    guard mountain/ashkar `witnessedBy` self
+    assert $eventId `title` $description
+    assert $eventId `witnessedBy` self
+    assert recording
+    retract intervening
+
+  transition resumeWatch()
+    recording -> observing
+    assert observing
+    retract recording
+
+  transition emergencyWard(herd)
+    observing -> intervening
+    guard $herd `migratesTo` mountain/ashkar
+    assert $herd `wardedBy` self
+    assert intervening
+    retract observing

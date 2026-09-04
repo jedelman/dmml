@@ -1,0 +1,57 @@
+machine mine/ninefathom
+  states
+    undug
+    active
+    flooded
+    exhausted
+    sealed
+    haunted
+
+  transition dig(digger)
+    undug -> active
+    guard $digger `worksAt` self
+    assert $digger `masters` path/bronzework
+    assert active
+
+  transition flood()
+    active -> flooded
+    guard mountain/ashkar `erupts` self
+    assert flooded
+    retract active
+    assert mountain/ashkar `witnessedBy` self
+
+  transition pump(engineer)
+    flooded -> active
+    guard $engineer `masters` path/bronzework
+    assert active
+    retract flooded
+    assert $engineer `apprenticesUnder` path/bronzework
+
+  transition exhaust()
+    active -> exhausted
+    assert exhausted
+    retract active
+    assert self `carries` "rich_ore_stockpile"
+
+  transition seal(warden)
+    exhausted -> sealed
+    guard $warden `masters` path/stonemasonry
+    assert sealed
+    retract exhausted
+    assert $warden `wardsBy` self
+
+  transition haunt(spirit)
+    sealed -> haunted
+    guard not self `witnessedBy` npc/keeper
+    assert haunted
+    retract sealed
+    assert $spirit `belongs_to` self
+    assert self `carries` "restless_spirit"
+
+  transition purge(priest)
+    haunted -> sealed
+    guard $priest `masters` path/greenlore
+    assert sealed
+    retract haunted
+    retract $spirit `belongs_to` self
+    retract self `carries` "restless_spirit"
