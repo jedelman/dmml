@@ -14,18 +14,17 @@ AST, two front-ends" — the two are checked to actually agree, not
 assumed to). If this page and the code ever disagree, the code wins;
 open an issue against this page rather than trusting it.
 
-**RETIRED, 2026-09-04**: the Rust `dmml`/`dmml-runtime` crates (also in
-this repo) are no longer canonical. `dmml-hs` diverged from them for
-real, useful reasons this same day (generalized effects, a chained
-retract, real execution/firing semantics neither implementation had
-before) and nothing forced the two back into agreement — rather than
-port the divergence backward, the call was to make the diverged,
-further-along implementation the real one. The Rust crates still exist
-in this repo for now; treat them as historical, not as something a new
-fork should build against. (`written-world`'s `server`/`client`/`cli`/
-`appview` packages still have live git dependencies on them as of this
-writing — that's a real, separate migration, not yet done; see
-`dev-journal/2026-09-04-dmml-hs-canonical.md`.)
+**RETIRED, 2026-09-04**: the Rust `dmml`/`dmml-runtime`/`dmml-substrate-
+kit` crates are gone from this repo entirely — deleted the same day,
+once `written-world`'s own last Rust consumers (`server`/`client`/`cli`/
+`appview`) were also retired (`written-world#138`). `dmml-hs` diverged
+from them for real, useful reasons the same day they were still canonical
+(generalized effects, a chained retract, real execution/firing semantics
+neither implementation had before) and nothing forced the two back into
+agreement — rather than port the divergence backward, the call was to
+make the diverged, further-along implementation the real one, then
+delete the crate it diverged from once nothing depended on it anymore.
+See `dev-journal/2026-09-04-dmml-hs-canonical.md`.
 
 ## Authoring is JSON or text in, AST out — nothing else
 
@@ -276,20 +275,20 @@ implemented.
 
 A `consumes` entry is a claim of dependency, not a claim of truth, and
 right now — checked directly against `dmml-hs` while writing this, not
-carried over from the retired Rust crate — it's a WEAKER claim than this
-page used to say: `DMML.Materialize.applyConsume` never checks that the
-`uri`/`cid` you're citing was previously recorded as observed at all. It
-matches purely on `(subject, predicate[, object])` and removes whatever
-it finds; a citation naming a `cid` nobody has ever actually seen is
-currently accepted exactly the same as a real one. (The retired Rust
-crate's `graph.rs` did check the cid half of a `consumes` citation
-against what it had actually recorded — that check did not come along
-in the port to `dmml-hs`; tracked as jedelman/dmml#6.)
-Citing a `cid` you never checked was always substantively dishonest
-regardless of what the runtime enforces; it's now ALSO not something to
-rely on the runtime catching for you. Every real checkpoint script in
-`dmml-substrate-kit/` spot-verifies at least one citation against the
-live PDS before treating a run as done. Do that.
+**Real citation-integrity checking exists now** (`DMML.CitationIntegrity`,
+`check-citations` CLI — closed 2026-09-04, `jedelman/dmml#6`, superseding
+what this page used to say about the gap). Two real cases: a citation
+naming a file actually present in the batch you're checking is verified
+against that file's own real content identity (`DMML.LocalIdentity`) —
+a strong check. A citation to a uri with no local file (a peer's commit,
+something you haven't fetched) falls back to first-citation-wins: the
+first citation of that uri in the batch establishes what its cid is
+taken to be, and a later, disagreeing citation of the same uri is
+rejected. That fallback is real but still weak — it's the same
+first-writer-trust the retired Rust crate had, not independent
+verification against a live PDS. Run `check-citations` over your batch
+before treating a run as done; it won't catch a uri you're citing for
+the first time with a fabricated cid, only an internal inconsistency.
 
 ## The one thing this grammar will never do for you
 

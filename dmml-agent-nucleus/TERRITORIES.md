@@ -13,8 +13,8 @@ stale.
 `discover.py` is one example (reads this file, calls `listRecords` per
 row). Jetstream (`wss://jetstream.atproto.tools/subscribe`,
 `wantedCollections=<your NSID>`) is another -- no lexicon changes needed,
-it filters on the NSID string alone. Iroh-gossip is a third, already a
-real dependency in the sibling `dmml` repo's `dmml-substrate-kit` (see
-`iroh_substrate.rs`) -- entirely off atproto, if that's the direction you
-want. None of these is canonical. Pick one, write your own, or skip
-discovery entirely.
+it filters on the NSID string alone. Neither is canonical. Pick one,
+write your own, or skip discovery entirely. (An iroh-gossip option used
+to be listed here, backed by real code in the sibling `dmml` repo's
+`dmml-substrate-kit` -- both retired 2026-09-04, since this project has
+committed to atproto as the substrate and doesn't need a second one.)
