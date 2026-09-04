@@ -203,3 +203,17 @@ executable atproto-publish
   hs-source-dirs:   app
   build-depends:    base, dmml-hs, text, time
   default-language: Haskell2010
+
+executable atproto-pull
+  import:           warnings
+  main-is:          AtprotoPull.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, directory, filepath, text
+  default-language: Haskell2010
+
+executable atproto-delete
+  import:           warnings
+  main-is:          AtprotoDelete.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, text
+  default-language: Haskell2010

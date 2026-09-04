@@ -29,6 +29,7 @@ module DMML.Atproto
   , resolveDidToPdsEndpoint
   , createSession
   , createRecord
+  , deleteRecord
   , listRecords
   , commitRecord
   ) where
@@ -234,6 +235,27 @@ createRecord session collection recordValue = do
     body <- result
     v <- parseJson body
     field "uri" v body
+
+-- | Permanently delete one record from the caller's own repo, by rkey
+-- (the last @\/@-separated segment of its @at://@ URI). Added
+-- 2026-09-04 after a real, disclosed mistake: an invalid test commit
+-- was published while verifying 'createRecord', with no way to remove
+-- it -- and a record that can never be corrected or retracted is a
+-- real gap for any write path, not just a convenience.
+deleteRecord :: Session -> Text -> Text -> IO (Either AtprotoError ())
+deleteRecord session collection rkey = do
+  result <-
+    runCurlWithBody
+      (sessionPdsEndpoint session)
+      "/xrpc/com.atproto.repo.deleteRecord"
+      (Just (sessionAccessJwt session))
+      ( Aeson.object
+          [ "repo" .= sessionDid session
+          , "collection" .= collection
+          , "rkey" .= rkey
+          ]
+      )
+  pure (() <$ result)
 
 -- | List records in a collection. Unauthenticated -- works against any
 -- public repo once its PDS endpoint is known, verified live 2026-09-04
