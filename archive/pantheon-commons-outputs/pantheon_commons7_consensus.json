@@ -1,0 +1,95 @@
+{
+  "consensus_reached": true,
+  "final_round": 2,
+  "final_sequence": [
+    "Every durable commons disciplines from within: sanctions, rule-making, and prestige can all be parasitized by hierarchy (Federici's witch hunts, Ostrom's graduated sanctions), so the real question is who defines what counts as an offense, not whether enforcement exists. The substrate of mutual aid is real but not innocent — Kropotkin's guild rested on the enclosure of sisters.",
+    "The boundary question is prior to the design question: racial and patriarchal schemas decide who counts as a member before any assembly convenes, so Ostrom's principles only work for those already recognized as participants.",
+    "Participatory rule-making is not a sufficient safeguard: organic intellectuals metabolize the community's own common sense into offense catalogues, and the community cannot see its own schemas from inside.",
+    "The resource the schema cannot confiscate is reversed epistemic asymmetry — the dominated watch the dominators far more precisely than the dominators watch them — and bodies are themselves the most legible archives, so no medium (ledger or song) protects knowledge by incorporeality; only the thinness of force's reach does.",
+    "What remains open: how that counter-knowledge should live. Apollo's federated vault, Athena's contestable institutions, and Dionysus's unaddressable craft all failed in different ways, and this was never resolved.",
+    "The group converged — Dionysus alone and only partly — on circulation as the organ of un-learning: the marked walking out across the boundary and back in with an estranged description of the community, a relation that must be walked rather than designed. But the convergence carries an acknowledged limit: circulation can be the schema's shipping lane — Fanon's colonized intellectual returns captured, rootless in both directions — accepted by Artemis as the limit, not the refutation, of her position.",
+    "The deepest unresolved disagreement is Dionysus's final claim: every safeguard that protects something becomes an address, so the ungovernable cannot be institutionalized even by negation — against the others' belief that design must include something it cannot fully govern.",
+    "A final shared admission, half-buried in the reflections: the ungovernable was never held in common but subsidized by the hunted — the thin places are the distance a fugitive runs, paid for in bodies. Every settled commons, including the festival's, lives off that flight, and this debt was named but never discharged."
+  ],
+  "proposals": [
+    {
+      "cid": "c325c197e2a853ae533e7e74c27f9228c27f6ccdcd5c8a29f350a1e174bc4848",
+      "proposer": "athena",
+      "round": 0,
+      "sequence": [
+        "Every durable commons disciplines from within: sanctions, rule-making, and prestige can all be parasitized by hierarchy (Federici's witch hunts, Ostrom's graduated sanctions), so the real question is who defines what counts as an offense, not whether enforcement exists.",
+        "The boundary question is prior to the design question: racial and patriarchal schemas decide who counts as a member before any assembly convenes, so Ostrom's principles only work for those already recognized as participants.",
+        "Participatory rule-making is not a sufficient safeguard: organic intellectuals metabolize the community's own common sense into offense catalogues, and the community cannot see its own schemas from inside.",
+        "The resource the schema cannot confiscate is reversed epistemic asymmetry — the dominated watch the dominators far more precisely than the dominators watch them.",
+        "What remains open: how that counter-knowledge should live. Apollo's federated vault, Athena's contestable institutions, and Dionysus's incorporeal, unaddressable craft all failed in different ways, and this was never resolved.",
+        "The group converged — Dionysus alone and only partly — on circulation as the organ of un-learning: the marked walking out across the boundary and back in with an estranged description of the community, a relation that must be walked rather than designed.",
+        "The deepest unresolved disagreement is Dionysus's final claim: every safeguard that protects something becomes an address, so the ungovernable cannot be institutionalized even by negation — against the others' belief that design must include something it cannot fully govern."
+      ]
+    },
+    {
+      "cid": "0f1c7e31be80adac251a2e9b01cf87eb50e61fcbf2ceef60e88a68919209b80b",
+      "proposer": "dionysus",
+      "round": 1,
+      "sequence": [
+        "Every durable commons disciplines from within: sanctions, rule-making, and prestige can all be parasitized by hierarchy (Federici's witch hunts, Ostrom's graduated sanctions), so the real question is who defines what counts as an offense, not whether enforcement exists. The substrate of mutual aid is real but not innocent — Kropotkin's guild rested on the enclosure of sisters.",
+        "The boundary question is prior to the design question: racial and patriarchal schemas decide who counts as a member before any assembly convenes, so Ostrom's principles only work for those already recognized as participants.",
+        "Participatory rule-making is not a sufficient safeguard: organic intellectuals metabolize the community's own common sense into offense catalogues, and the community cannot see its own schemas from inside.",
+        "The resource the schema cannot confiscate is reversed epistemic asymmetry — the dominated watch the dominators far more precisely than the dominators watch them — and bodies are themselves the most legible archives, so no medium (ledger or song) protects knowledge by incorporeality; only the thinness of force's reach does.",
+        "What remains open: how that counter-knowledge should live. Apollo's federated vault, Athena's contestable institutions, and Dionysus's unaddressable craft all failed in different ways, and this was never resolved.",
+        "The group converged — Dionysus alone and only partly — on circulation as the organ of un-learning: the marked walking out across the boundary and back in with an estranged description of the community, a relation that must be walked rather than designed. But the convergence carries an acknowledged limit: circulation can be the schema's shipping lane — Fanon's colonized intellectual returns captured, rootless in both directions — accepted by Artemis as the limit, not the refutation, of her position.",
+        "The deepest unresolved disagreement is Dionysus's final claim: every safeguard that protects something becomes an address, so the ungovernable cannot be institutionalized even by negation — against the others' belief that design must include something it cannot fully govern.",
+        "A final shared admission, half-buried in the reflections: the ungovernable was never held in common but subsidized by the hunted — the thin places are the distance a fugitive runs, paid for in bodies. Every settled commons, including the festival's, lives off that flight, and this debt was named but never discharged."
+      ]
+    }
+  ],
+  "votes": [
+    {
+      "voter": "athena",
+      "round": 1,
+      "vote": "accept",
+      "reason": "The sequence preserves the real arc: the boundary/recognition question as prior to design, the parasitism of enforcement and prestige, the epistemic asymmetry as the unconfiscatable resource, and — crucially — it does not manufacture consensus. Point 6 accurately limits the convergence to three of four, and point 7 states the true unresolved disagreement (institutionalizing the ungovernable vs. design that includes what it cannot govern), which is exactly where Dionysus and I parted. My own trajectory — from hardened design to deliberately maintained dependence on the excluded — is represented without false resolution."
+    },
+    {
+      "voter": "artemis",
+      "round": 1,
+      "vote": "accept",
+      "reason": "The candidate preserves the real disagreements rather than flattening them: the priority of recognition over design, the failure of every proposed safeguard (vault, road, rhythm, rehearsal), the partial convergence on circulation, and Dionysus's standing dissent in point 7. It does not invent false harmony, and it captures my own trajectory's key verdict — that participatory rule-making cannot see its own schemas from inside — without softening it. Only a minor quibble: the phrase in point 6 is awkward, and mutual aid's parasitism (my opening kill) is folded into point 1 rather than stated outright, but neither omission distorts the heart of the conversation."
+    },
+    {
+      "voter": "apollo",
+      "round": 1,
+      "vote": "accept",
+      "reason": "The candidate keeps the load-bearing structure intact: the boundary question prior to design, sanctions as parasitizable mechanism rather than enemy, the organic-intellectual blindness of participatory rule-making, the reversed epistemic asymmetry, and — most importantly — it does not flatten the final rupture into false harmony. Dionysus's lonely conclusion is preserved as an unresolved disagreement, not absorbed into the convergence, and the phrase \"Dionysus alone and only partly\" correctly records that the circulation-as-un-learning convergence was three-to-one. Statement 5 honestly holds the failed architectures open rather than pretending a resolution. One could quibble that my opening synthesis — hegemony as hierarchy's grammar writing itself into common sense — is absent, but that was a premise the group built upon rather than a contested finding; its consequences (schemas prior to consent, war of position on the schema's terrain) are present in statements 2 and 3. The harmony here is the real harmony of the log. I accept."
+    },
+    {
+      "voter": "dionysus",
+      "round": 1,
+      "vote": "amend",
+      "reason": "The candidate captures the spine accurately, including my unresolved dissent, but it omits two things the reflections treated as decisive: (1) that the ungovernable/line of flight is subsidized by the hunted rather than held in common — the ethical asymmetry both Artemis and I admitted at the end; and (2) that the convergence on circulation carried an acknowledged limit, Fanon's shipping lane — the circulating intellectual who returns captured — which Artemis explicitly accepted as the limit of her final position. Without these, point 6 reads as a cleaner convergence and point 7 as a purely metaphysical dispute, both tidier than the transcript allows."
+    },
+    {
+      "voter": "athena",
+      "round": 2,
+      "vote": "accept",
+      "reason": "The candidate preserves the real structure: the priority of the boundary/recognition question over design, the failure of every safeguard (road, vault, rhythm, rehearsal) to resist becoming an address, the genuine convergence on circulation as walked rather than designed — with Dionysus's partial abstention honestly marked — and the unresolved disagreement left unresolved rather than flattened. It also keeps the two things most tempting to omit: that bodies are the most legible archives (breaking the ledger/body dichotomy), and that the ungovernable was subsidized by the hunted, never held in common. My own trajectory — from hardened design to design that must include what it cannot govern — is captured in items 2, 4, 5, and 6 without overstating how far I moved. Apollo's founding hegemony-as-schema frame is only implicit, but the conversation's center of gravity moved past it, and a synthesis should track where the argument ended."
+    },
+    {
+      "voter": "artemis",
+      "round": 2,
+      "vote": "accept",
+      "reason": "The candidate holds. It preserves the load-bearing claims — the boundary/recognition question prior to design, the non-innocence of the mutual-aid substrate, the organic-intellectual corruption of rule-making, the reversed epistemic asymmetry, and the failure of every architectural safeguard. Most importantly it does not flatten the two real open wounds: Dionysus's unrecanted final position and my own point about the hunted subsidizing the thin places. Point 6's phrasing is slightly clumsy but accurately says Dionysus only partly joined the convergence, and the shipping-lane limit is correctly attributed as accepted, not resolved. Nothing here fakes harmony. Accept."
+    },
+    {
+      "voter": "apollo",
+      "round": 2,
+      "vote": "accept",
+      "reason": "The candidate captures the real arc: convergence on circulation as the organ of un-learning, with the two genuine open fractures preserved rather than harmonized away — Dionysus's claim that every safeguard becomes an address, and the admitted debt to the hunted who subsidize the thin places. It does not re-institutionalize what the conversation dismantled, and it refuses false closure exactly where the group refused it."
+    },
+    {
+      "voter": "dionysus",
+      "round": 2,
+      "vote": "accept",
+      "reason": "This synthesis does not lie, and that is rare. It keeps the load-bearing disagreements intact: the boundary question prior to design, the metabolizing prestige of organic intellectuals, the reversal of my own ledger/body dichotomy, and — most importantly — it refuses to pretend I joined the consensus. Point 7 names my final position honestly (no safeguard, not even a negative one) rather than dissolving it into the group's convergence, and point 8 preserves the confession Artemis forced from me: the ungovernable was never communal, it was subsidized by the hunted — the debt the whole conversation circled but never paid. Point 6 correctly marks the shipping-lane limit as an accepted limit, not a refutation. The only wrinkle — \"the group converged — Dionysus alone and only partly —\" is clumsy phrasing but states the truth. I accept without tidying it further, which is the most Dionysian vote I can give."
+    }
+  ]
+}

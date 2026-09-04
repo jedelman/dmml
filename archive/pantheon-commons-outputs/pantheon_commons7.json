@@ -1,0 +1,1028 @@
+[
+  {
+    "cid": "f528ea330ed5e3c67de779fd7f7c0fd6a8872af418030fad9fed4b4bd0c0c55f",
+    "respondent": "gramsci",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "notebooks/interregnum",
+    "predicate": "claim",
+    "object": "The crisis consists precisely in the fact that the old is dying and the new cannot be born; in this interregnum a great variety of morbid symptoms appear",
+    "consumes": []
+  },
+  {
+    "cid": "a3867a60e287ffe52b34f7e3221a2c22491ece6772e3e371201641e1f06dcf62",
+    "respondent": "gramsci",
+    "round": 0,
+    "verb": "argues",
+    "subject": "notebooks/hegemony_consent",
+    "predicate": "claim",
+    "object": "The spontaneous consent given by the great masses of the population to the general direction imposed on social life by the dominant fundamental group is historically caused by the prestige which the dominant group enjoys because of its position and function in the world of production",
+    "consumes": []
+  },
+  {
+    "cid": "7c880c53243b03fc5f568052089c39deb09606c8105a72898c39c9e83b10e755",
+    "respondent": "gramsci",
+    "round": 0,
+    "verb": "stipulates",
+    "subject": "notebooks/civil_political_society",
+    "predicate": "distinction",
+    "object": "Civil society, the ensemble of organisms commonly called private, corresponds to hegemony; political society, or the State, corresponds to direct domination or command",
+    "consumes": []
+  },
+  {
+    "cid": "66a39ace2dcd2d05b2722abb88c7323bcc3286d92cedc9dd42f9dc8b8a15a041",
+    "respondent": "gramsci",
+    "round": 0,
+    "verb": "argues",
+    "subject": "notebooks/war_of_position",
+    "predicate": "claim",
+    "object": "In politics, the war of position, once won, is decisive definitively",
+    "consumes": []
+  },
+  {
+    "cid": "17e0f884472a774b6864388c27608bb8fcacc765ba28eca9514c57dbcc1d1ff6",
+    "respondent": "gramsci",
+    "round": 0,
+    "verb": "argues",
+    "subject": "notebooks/organic_intellectuals",
+    "predicate": "claim",
+    "object": "Every social group, coming into existence on the original terrain of an essential function in the world of economic production, creates together with itself, organically, one or more strata of intellectuals which give it homogeneity and awareness of its own function",
+    "consumes": []
+  },
+  {
+    "cid": "923d9a61dc4ff640017596aef61c6ddc4b67ca7b24a4b535b2b9e661cf07952c",
+    "respondent": "gramsci",
+    "round": 0,
+    "verb": "argues",
+    "subject": "notebooks/common_sense",
+    "predicate": "claim",
+    "object": "Common sense is not something rigid and immobile, but is continually transforming itself",
+    "consumes": []
+  },
+  {
+    "cid": "09523f3e562f2e6786d8a73ffb65cd42343807a118296aaf9af75617c0416986",
+    "respondent": "gramsci",
+    "round": 0,
+    "verb": "connects",
+    "subject": "notebooks/philosophy_of_praxis",
+    "predicate": "claim",
+    "object": "Philosophy is inseparable from the practical work of transforming common sense into a coherent, critical conception of the world -- his own coded term for Marxism, used to evade the prison censor",
+    "consumes": []
+  },
+  {
+    "cid": "228b352532b36b57b449f86b13fe9a01a87f03856307e8c9eb75529b89fb1313",
+    "respondent": "gramsci",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "notebooks/subaltern_classes",
+    "predicate": "claim",
+    "object": "The history of subaltern social groups is necessarily fragmented and episodic, legible mainly through the traces the dominant group's own history leaves behind",
+    "consumes": []
+  },
+  {
+    "cid": "7ca3fc07f04f38875ea3feeeece6507a814d3ce4330ed0e0067c220b97311737",
+    "respondent": "federici",
+    "round": 0,
+    "verb": "argues",
+    "subject": "caliban/enclosure_subsistence",
+    "predicate": "claim",
+    "object": "Deprived of the commons that gave access to wood for fuel, to berries and herbs, and to small game and grazing land, peasants' diets declined significantly and starvation increased",
+    "consumes": []
+  },
+  {
+    "cid": "a9c1c21809429e874cb5ed3e93c8987f6ccf5033edac2eac24905aee7c6d56d7",
+    "respondent": "federici",
+    "round": 0,
+    "verb": "argues",
+    "subject": "caliban/enclosure_social_space",
+    "predicate": "claim",
+    "object": "Loss of the commons eliminated social space and unraveled family and community ties, hitting women hardest since they were less able to take to the roads for work and lacked independent means of subsistence",
+    "consumes": []
+  },
+  {
+    "cid": "3efce7d2823e485e7ff4ebe3bc9ac22e5491ac91834bb0bd94480943d91d98f1",
+    "respondent": "federici",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "caliban/women_reclaim_commons",
+    "predicate": "claim",
+    "object": "Women tore down hedges and fences and reclaimed the commons, they engaged in non-reproductive sex and led peasant revolts",
+    "consumes": []
+  },
+  {
+    "cid": "5d5bc6a6de8ac8868f0eff9bfe02da885201ddcd7fc454fdb5f40c9b17fc458d",
+    "respondent": "federici",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "caliban/witch_hunts_as_discipline",
+    "predicate": "claim",
+    "object": "The witch hunts were not the dying superstitions of a feudal order but a deliberate tool to discipline and shape the emerging working class, integral to the transition to capitalism",
+    "consumes": []
+  },
+  {
+    "cid": "d4d4de5f36afa7a201a68ab57cbf7363c9d29f2467640582a260dfa6ea656250",
+    "respondent": "federici",
+    "round": 0,
+    "verb": "argues",
+    "subject": "caliban/witch_hunts_divide_proletariat",
+    "predicate": "claim",
+    "object": "The witch hunts set the proletariat against itself, disciplining resistance from within rather than only through violence imposed from above",
+    "consumes": []
+  },
+  {
+    "cid": "a1be532f8ec2504fb36c628e9047f4cbca5d8e338b882812e4e87bb227a0f2af",
+    "respondent": "federici",
+    "round": 0,
+    "verb": "argues",
+    "subject": "caliban/reproductive_labor",
+    "predicate": "claim",
+    "object": "Women were constituted as reproductive laborers: not only bearing children but invisibly, and without pay, reproducing the conditions that let men go to work",
+    "consumes": []
+  },
+  {
+    "cid": "6f2b4090657484e889f80ee7c84a93a9b9d9f7072544c31ecc578d0ba81c5dcb",
+    "respondent": "federici",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "caliban/marx_primitive_accumulation",
+    "predicate": "claim",
+    "object": "Marx's account of primitive accumulation is flawed by its failure to see that the process required transforming the body into a work-machine and subjugating women to the reproduction of the workforce",
+    "consumes": []
+  },
+  {
+    "cid": "9c70b0a591f74403b54263784dfa7956a4ba4f8fe5d76efdf80029360d7c8448",
+    "respondent": "federici",
+    "round": 0,
+    "verb": "argues",
+    "subject": "caliban/body_self_ownership",
+    "predicate": "claim",
+    "object": "The battle against the rebel body, and the conflict between body and mind, are essential conditions for the development of labor power and self-ownership, two central principles of modern social organization",
+    "consumes": []
+  },
+  {
+    "cid": "0f0efb57ad93f0c0e2725ddf749a287577bf9dcf5b33aec7b364cfb6ef2a1950",
+    "respondent": "ostrom",
+    "round": 0,
+    "verb": "stipulates",
+    "subject": "commons/design_principle_1_boundaries",
+    "predicate": "claim",
+    "object": "Clearly defined boundaries determine who holds rights to withdraw resource units from the common-pool resource",
+    "consumes": []
+  },
+  {
+    "cid": "ddb8a9059cf759ff10fbf970cf9a192387f88f09986a629d8f081652296c27ca",
+    "respondent": "ostrom",
+    "round": 0,
+    "verb": "stipulates",
+    "subject": "commons/design_principle_2_congruence",
+    "predicate": "claim",
+    "object": "Appropriation and provision rules are congruent with local conditions rather than imposed uniformly",
+    "consumes": []
+  },
+  {
+    "cid": "38a03d1d35012d37f7c4f8e3d6753deaa69435a2776ba92a427c00aaad4f97c1",
+    "respondent": "ostrom",
+    "round": 0,
+    "verb": "stipulates",
+    "subject": "commons/design_principle_3_collective_choice",
+    "predicate": "claim",
+    "object": "Most individuals affected by the operational rules can participate in modifying those rules",
+    "consumes": []
+  },
+  {
+    "cid": "40e76e609f07f66bbf711d3213fef050af9a3f1ba8bf5f063ee9583ed98a8235",
+    "respondent": "ostrom",
+    "round": 0,
+    "verb": "stipulates",
+    "subject": "commons/design_principle_4_monitoring",
+    "predicate": "claim",
+    "object": "Monitors who actively audit resource conditions and appropriator behavior are accountable to the appropriators, or are the appropriators themselves",
+    "consumes": []
+  },
+  {
+    "cid": "a6942ef502e07bd11adada82777216ebf3f7db107e9a5a0a34c9614e797c8dec",
+    "respondent": "ostrom",
+    "round": 0,
+    "verb": "stipulates",
+    "subject": "commons/design_principle_5_sanctions",
+    "predicate": "claim",
+    "object": "Appropriators who violate operational rules are likely to be assessed graduated sanctions, depending on the seriousness and context of the offense, by other appropriators, by officials accountable to these appropriators, or both",
+    "consumes": []
+  },
+  {
+    "cid": "d14091fda63535f0611592e4f61ac3ee4cf098df5ac898cb8f8eafa97b2a2c5f",
+    "respondent": "ostrom",
+    "round": 0,
+    "verb": "stipulates",
+    "subject": "commons/design_principle_6_conflict",
+    "predicate": "claim",
+    "object": "Appropriators have rapid access to low-cost local arenas to resolve conflicts among themselves or with officials",
+    "consumes": []
+  },
+  {
+    "cid": "228b6a6a7688bc62463ab750a8e593f881ff756fea0fc663c6473250599ce540",
+    "respondent": "ostrom",
+    "round": 0,
+    "verb": "stipulates",
+    "subject": "commons/design_principle_8_nesting",
+    "predicate": "claim",
+    "object": "Appropriation, provision, monitoring, enforcement, conflict resolution, and governance activities are organised in multiple layers of nested enterprises",
+    "consumes": []
+  },
+  {
+    "cid": "45e2d5684b4b65d3d64c73d6efec8ed2bb437c48127702bf2b6a47d3282b9e7c",
+    "respondent": "ostrom",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "commons/no_panacea",
+    "predicate": "claim",
+    "object": "There is no panacea: successful commons governance depends on institutional diversity fit to local context, not a single universal design",
+    "consumes": []
+  },
+  {
+    "cid": "725acca8eced2ee732ab59e304a7f987f684957237f0949c71f4d6e2a5c9307e",
+    "respondent": "graeber",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "debt/baseline_communism",
+    "predicate": "claim",
+    "object": "Baseline communism names the taken-for-granted recognition of mutual dependence that undergirds social peace -- some things are simply shared, and no one keeps accounts",
+    "consumes": []
+  },
+  {
+    "cid": "addff60b2f84ee8c7c90227595bb35291976b15f549607e92e6ee29ba3d57e33",
+    "respondent": "graeber",
+    "round": 0,
+    "verb": "argues",
+    "subject": "debt/three_moral_principles",
+    "predicate": "claim",
+    "object": "Communism, hierarchy, and exchange are three moral principles present in different degrees within every real economic relationship, not three separate historical systems",
+    "consumes": []
+  },
+  {
+    "cid": "2c25d17f05df78b52fa8c9f90a84dcbd5f675ce2f9bb0ae93cf0eea463ec5d98",
+    "respondent": "graeber",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "debt/myth_of_barter",
+    "predicate": "claim",
+    "object": "There never has been, and never will be, any society whose economy was based primarily on barter -- the economists' founding myth of money has no historical or ethnographic support",
+    "consumes": []
+  },
+  {
+    "cid": "e788132af9a96ffbe313609a90f9db55359e8992de5d92d8e6f0c337c58eb397",
+    "respondent": "graeber",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "debt/primordial_debt_myth",
+    "predicate": "claim",
+    "object": "The myth of primordial debt -- that each of us is born indebted to our parents, our ancestors, our god, or our nation -- launders a moral claim as though it were simply a fact of existence",
+    "consumes": []
+  },
+  {
+    "cid": "50354239d56de3a5bd4c1b5b7756ce8e7c91584948cb8afe37addd553c443d3f",
+    "respondent": "graeber",
+    "round": 0,
+    "verb": "argues",
+    "subject": "debt/credit_before_money",
+    "predicate": "claim",
+    "object": "Credit and debt precede money and barter historically, reversing the standard economic origin story",
+    "consumes": []
+  },
+  {
+    "cid": "a7265aff6c9b5abc04bdfff5b0bc9efeb43c7931804fe35b180cc37f9dff2e94",
+    "respondent": "graeber",
+    "round": 0,
+    "verb": "argues",
+    "subject": "utopia_of_rules/structural_violence",
+    "predicate": "claim",
+    "object": "Bureaucracies are not themselves forms of stupidity so much as ways of organizing stupidity -- of managing relationships already characterized by extremely unequal structures of imagination, which exist because of structural violence",
+    "consumes": []
+  },
+  {
+    "cid": "6d9789b12f31c6e5873081bcbad01d778126e8c4ea5dbdc36d118e924416decf",
+    "respondent": "graeber",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "utopia_of_rules/lopsided_imagination",
+    "predicate": "claim",
+    "object": "Structural violence creates lopsided structures of the imagination",
+    "consumes": []
+  },
+  {
+    "cid": "07f688cff21bca01ca5063d93f4f5e6d901453627b8e1ad8654d1cea34536c02",
+    "respondent": "graeber",
+    "round": 0,
+    "verb": "argues",
+    "subject": "utopia_of_rules/violence_rests_on_force",
+    "predicate": "claim",
+    "object": "Structural violence is a system that ultimately rests on the threat of force, which is why its administration can appear boring and procedural rather than overtly violent",
+    "consumes": []
+  },
+  {
+    "cid": "72a9b34d88bd72718facd8a6b685d5a31f0be5053d03c708405e7f94a05fb6c8",
+    "respondent": "fanon",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "wretched/decolonization_violence",
+    "predicate": "claim",
+    "object": "In its bare reality, decolonization reeks of red-hot cannonballs and bloody knives -- the last can be first only after a murderous and decisive confrontation between the two protagonists",
+    "consumes": []
+  },
+  {
+    "cid": "eccc8a28700f8d1e4fdaff30280cf77e35504955a0a70822a208b502bf7fb972",
+    "respondent": "fanon",
+    "round": 0,
+    "verb": "argues",
+    "subject": "wretched/starving_peasant",
+    "predicate": "claim",
+    "object": "The starving peasant, outside the class system, is the first among the exploited to discover that only violence pays",
+    "consumes": []
+  },
+  {
+    "cid": "acf329ff6a995ddd20de0940bd1e68285c4d6364ebdd7a6242ba5c08707b8ae6",
+    "respondent": "fanon",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "wretched/colonialism_naked_violence",
+    "predicate": "claim",
+    "object": "Colonialism is naked violence, and only gives way when confronted with greater violence",
+    "consumes": []
+  },
+  {
+    "cid": "c6ac3a34b16a9916173243a17d1351b213e1f03af5ad558253d8d57908920be1",
+    "respondent": "fanon",
+    "round": 0,
+    "verb": "argues",
+    "subject": "black_skin/epidermalization",
+    "predicate": "claim",
+    "object": "Racist perception replaces a person's pragmatic bodily schema with a racial epidermal schema -- the epidermalization of an imposed inferiority",
+    "consumes": []
+  },
+  {
+    "cid": "00a73857137f236b10516ec049ace34398167da4c776a8b93d766f627e2ab096",
+    "respondent": "fanon",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "black_skin/look_a_negro",
+    "predicate": "claim",
+    "object": "A white child's cry of fear on a train, 'Look, a Negro!', fractures Fanon's own bodily self-possession into a fixed racial object, seen from the outside before he can act",
+    "consumes": []
+  },
+  {
+    "cid": "fefc9c3b0fcfd3ee217f9c9de6afd1a188d043077c0c18f4e3606a84069efbb2",
+    "respondent": "fanon",
+    "round": 0,
+    "verb": "argues",
+    "subject": "wretched/national_culture_liberation",
+    "predicate": "claim",
+    "object": "Fighting for national culture first means fighting for the liberation of the nation -- the tangible matrix from which any culture can actually grow",
+    "consumes": []
+  },
+  {
+    "cid": "98e4283240105846ad3437ef021fef24cbef5d862c92fec41ed9100839a80def",
+    "respondent": "fanon",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "wretched/precolonial_culture_unreclaimable",
+    "predicate": "claim",
+    "object": "The colonized intellectual's return to a precolonial past cannot simply restore what colonialism erased -- the past is not waiting there intact to be recovered",
+    "consumes": []
+  },
+  {
+    "cid": "9a135ac4a43cd135bb8f1be7c4cc2cf6097b9925266b8090f31d57022a90d06d",
+    "respondent": "fanon",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "wretched/rootless_without_nation",
+    "predicate": "claim",
+    "object": "Without a nation, a people are left without anchorage, without borders, colorless, stateless, rootless",
+    "consumes": []
+  },
+  {
+    "cid": "5b08426f023ea7b69501d21af027677b59e4cdd8a2cfba64fbdd4ce1ea54e1b0",
+    "respondent": "kropotkin",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "mutual_aid/law_of_mutual_aid",
+    "predicate": "claim",
+    "object": "Mutual aid is as much a law of animal life as mutual struggle, but as a factor of evolution it most probably has a far greater importance, favouring the habits and characters that ensure the species' maintenance and the greatest welfare of the individual with the least waste of energy",
+    "consumes": []
+  },
+  {
+    "cid": "c444e6e62528798e26ed056a3e86d9aac8d3474418b01c52c4062ec5387d3039",
+    "respondent": "kropotkin",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "mutual_aid/against_survival_of_fittest",
+    "predicate": "claim",
+    "object": "Kropotkin directly challenges the Darwinian emphasis on competition as evolution's primary driver, arguing cooperation within a species is the dominant survival strategy actually observed in nature",
+    "consumes": []
+  },
+  {
+    "cid": "ea299c8305784abe6e58428e7f2917fc9768569a9fe89f89c52fc5b70fd1abb3",
+    "respondent": "kropotkin",
+    "round": 0,
+    "verb": "argues",
+    "subject": "mutual_aid/medieval_guilds",
+    "predicate": "claim",
+    "object": "The medieval free city and its guilds show mutual aid organized at civilizational scale -- self-governed federations of craft and neighborhood, before the rise of the centralized state suppressed them",
+    "consumes": []
+  },
+  {
+    "cid": "54f6034e26e38d93a246afbad8d667d00471355a391570a658f433027e2b3c8e",
+    "respondent": "kropotkin",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "mutual_aid/state_as_destroyer_of_commons",
+    "predicate": "claim",
+    "object": "The modern state's historic role was to destroy the self-organized mutual-aid institutions of the village commune and the guild, concentrating into itself functions communities had performed for themselves",
+    "consumes": []
+  },
+  {
+    "cid": "7f2382db715765b27e40c7d22c9dbd57803a9e706ab43675a425117a7ec0ecfa",
+    "respondent": "kropotkin",
+    "round": 0,
+    "verb": "argues",
+    "subject": "mutual_aid/survives_underground",
+    "predicate": "claim",
+    "object": "Even under the modern state, mutual aid never disappeared -- it persisted informally in trade unions, friendly societies, and neighborly custom, wherever the state's reach was thin",
+    "consumes": []
+  },
+  {
+    "cid": "c3fe37f507d198246ab136d998ab2e48e7c270e7f5ec63c02ff61e91d53ff644",
+    "respondent": "kropotkin",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "mutual_aid/instinct_not_morality",
+    "predicate": "claim",
+    "object": "Mutual aid is not primarily a moral achievement layered onto a naturally competitive species; it is an instinct as deep-rooted as the struggle for existence itself",
+    "consumes": []
+  },
+  {
+    "cid": "034a47b9c8154fa727ecf37b270c8deeaaf6e3e8636dca5901e78660f408b122",
+    "respondent": "kropotkin",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "mutual_aid/critique_of_hobbes",
+    "predicate": "claim",
+    "object": "Kropotkin's law of mutual aid was framed as a direct rebuttal of the Hobbesian view that pre-social life was a war of each against all",
+    "consumes": []
+  },
+  {
+    "cid": "8c19f956d4d31c1e5923c3f6495218fc44664ae18335bbc0de298065e1b32d8b",
+    "respondent": "kropotkin",
+    "round": 0,
+    "verb": "argues",
+    "subject": "mutual_aid/no_need_for_state",
+    "predicate": "claim",
+    "object": "Since mutual aid is a natural, sufficient basis for large-scale cooperation, the centralized state is not history's answer to disorder but the historical destroyer of an order that already existed",
+    "consumes": []
+  },
+  {
+    "cid": "34b816dbd61058ebc0d3519ae80252c20a919b12e5a1440289a2488fc90e6d26",
+    "respondent": "bookchin",
+    "round": 0,
+    "verb": "asserts",
+    "subject": "ecology_of_freedom/domination_of_nature",
+    "predicate": "claim",
+    "object": "The very notion of the domination of nature by man stems from the very real domination of human by human",
+    "consumes": []
+  },
+  {
+    "cid": "a5a725bf9b9b0dfb1fb859aa17da7f6b878f2746d5e83f74917b16f1acc3e43d",
+    "respondent": "bookchin",
+    "round": 0,
+    "verb": "argues",
+    "subject": "ecology_of_freedom/hierarchy_precedes_class",
+    "predicate": "claim",
+    "object": "Hierarchy -- age-based, gender-based, generational stratification -- historically preceded economic class as a category, and is the more fundamental obstacle to freedom",
+    "consumes": []
+  },
+  {
+    "cid": "b278ea1c4a3c9f6267e03af98736926eaec5c46c1cf613d3ff765acede7f67c8",
+    "respondent": "bookchin",
+    "round": 0,
+    "verb": "stipulates",
+    "subject": "ecology_of_freedom/hierarchy_vs_class_terminology",
+    "predicate": "distinction",
+    "object": "Bookchin deliberately used 'hierarchy' rather than 'class' or 'the State' to name the deeper structure, because class and state are only hierarchy's most familiar historical costumes, not its origin",
+    "consumes": []
+  },
+  {
+    "cid": "f8c6e1c6aacd66795a71341ee62275ab14bcfc2a616385c367f5576bfafd6257",
+    "respondent": "bookchin",
+    "round": 0,
+    "verb": "argues",
+    "subject": "ecology_of_freedom/first_second_nature",
+    "predicate": "claim",
+    "object": "Humanity is 'second nature' -- nature rendered self-conscious of itself -- and social ecology's task is to make second nature the deliberate, rational steward of first nature rather than its plunderer",
+    "consumes": []
+  },
+  {
+    "cid": "74425be54987b0e7d955e4670790576b1ebba6cae975b1edcb6e995d4cbd7dc4",
+    "respondent": "bookchin",
+    "round": 0,
+    "verb": "argues",
+    "subject": "ecology_of_freedom/organic_society",
+    "predicate": "claim",
+    "object": "Pre-hierarchical organic societies governed themselves through usufruct, the irreducible minimum, and complementarity -- custom rooted in interdependence, not formal law or coercive authority",
+    "consumes": []
+  },
+  {
+    "cid": "0c29dcc81960e1d7919a65472a88c77135668d874b25c1ffb59376f4c844d43e",
+    "respondent": "bookchin",
+    "round": 0,
+    "verb": "argues",
+    "subject": "ecology_of_freedom/libertarian_municipalism",
+    "predicate": "claim",
+    "object": "Real freedom is built from the bottom up through direct, face-to-face democratic assemblies at the municipal scale, confederated upward, rather than delegated to a centralized state or vanguard party",
+    "consumes": []
+  },
+  {
+    "cid": "3c68cd8bf3e9034ad62b3b43fe9c497f3f66c93bcd3664688ddea68eaf2e4a0f",
+    "respondent": "bookchin",
+    "round": 0,
+    "verb": "disputes",
+    "subject": "ecology_of_freedom/technology_not_neutral",
+    "predicate": "claim",
+    "object": "Technology and social organization are not neutral tools available to any social order; the same technical capacity is put to radically different uses depending on whether hierarchy or mutual complementarity organizes the society wielding it",
+    "consumes": []
+  },
+  {
+    "cid": "1d2f5e96a19219052daf31b0687e7c57d982507f7b0a6e1f31507329e775d040",
+    "respondent": "bookchin",
+    "round": 0,
+    "verb": "argues",
+    "subject": "ecology_of_freedom/ecological_crisis_is_social",
+    "predicate": "claim",
+    "object": "The ecological crisis is at root a social crisis -- the domination of nature cannot be solved by technical fixes alone as long as human domination of humans remains intact",
+    "consumes": []
+  },
+  {
+    "cid": "8a97b2599cd1bbf4da894aa2ad7e69fd327a58e5c5c6767b7cc343c321e4361c",
+    "respondent": "athena",
+    "round": 1,
+    "verb": "disputes",
+    "subject": "ostrom_boundaries_meet_fanon",
+    "predicate": "boundariesPresupposeRecognition",
+    "object": "Ostrom's first principle -- clearly defined boundaries determining who may withdraw from the commons -- quietly assumes the boundary problem is already solved. But Fanon's epidermalization shows that in a racialized order the boundary is drawn on the body before any rule-making assembly convenes: the racial schema decides who counts as an appropriator, so principle 3's \"most individuals affected can participate in modifying the rules\" is conditional on a membership question Ostrom's framework treats as exogenous. Where Fanon's colonized subject stands, the commons was never common to begin with -- not because the design principles failed, but because they were never allowed to apply. Ostrom explains how commons survive among those recognized as members; she does not explain, and cannot explain, the prior act of recognition that hierarchy and race control.",
+    "consumes": []
+  },
+  {
+    "cid": "5fec093ea692c854d111c9ee569bfa36a4ce57545ae586818a55c2ca6f8f0964",
+    "respondent": "artemis",
+    "round": 1,
+    "verb": "disputes",
+    "subject": "mutual_aid/gendered_blind_spot",
+    "predicate": "mutualAidNotInnocent",
+    "object": "Kropotkin names mutual aid an instinct, and points to the medieval guilds and communes as its civilizational proof -- but he hunts only where the game is easy. Federici's record shows those very communities of mutual aid were the terrain on which the witch hunts were fought: the commune did not simply lose to external force, it expelled its own women, watched them burn, and thereby disciplining itself from within. The guild was an overwhelmingly male brotherhood whose solidarity rested on unwaged reproductive labor at home -- cooperation for brothers, enclosure for sisters. So yes, Kropotkin and Graeber may name the same substrate, but neither may claim it innocent: mutual aid is not a purified instinct beneath domination, it is a capacity that hierarchy can and does parasitize, turning the community's own ties into the instrument of its worst members' discipline. The substrate is real; its innocence is the myth.",
+    "consumes": []
+  },
+  {
+    "cid": "c9d8e146309e8519d2364a4d7a7e730fe622ab3ef24164ff3e16c8eefddb4a15",
+    "respondent": "apollo",
+    "round": 1,
+    "verb": "connects",
+    "subject": "hegemony_as_hierarchys_grammar",
+    "predicate": "hegemonyIsHierarchySedimented",
+    "object": "Bookchin's claim that hierarchy precedes class does not undercut Gramsci -- it hands Gramsci the missing first premise, and Fanon supplies the proof. If hierarchy in its age- and gender- and race-based costumes is older than class, then 'spontaneous consent' is not primarily consent to an economic position at all: it is the deeper consent to the schema itself -- that the elder commands the younger, that the man speaks for the woman, that the epidermal schema can fix a person before they act. Gramsci says common sense is continually transforming; Fanon shows the racial schema working exactly as sedimented common sense, and Bookchin explains why no change in the class structure alone dissolves it. Read together the pattern resolves: hegemony is not class domination wearing a cultural mask; hegemony is the mechanism by which hierarchy -- of which class is only the most recent costume -- writes itself into common sense and collects consent. The war of position must therefore be fought on the terrain of the schema, not only of production; whoever wins the factories while the epidermal and patriarchal schemas stand intact has won only the latest costume, and the old dominion remains, quietly re-dressed.",
+    "consumes": []
+  },
+  {
+    "cid": "a762f54aea9adcb6f084c415ad2da4f5250b02c79195929f153c6a3acff9aea4",
+    "respondent": "dionysus",
+    "round": 1,
+    "verb": "disputes",
+    "subject": "ecstasy_against_schemas",
+    "predicate": "noDefinitiveVictoryForTheTidy",
+    "object": "Apollo's synthesis is beautiful, and that is exactly what I distrust about it: it resolves the tension by making everything a schema -- consent, common sense, the epidermal cage -- until the whole field becomes legible, and the legible is precisely what hegemony can administer. But Federici's women tearing down hedges did not win a war of position; they made night, they made festival, they made non-reproductive sex -- acts that refuse to sediment into any grammar, including the grammar of 'hierarchy in its costumes.' The witch is the figure hegemony had to burn precisely because she could not be schematized, and notice what Ostrom's graduated sanctions quietly admit: successful commons are designed to punish her, to discipline the unruly member with measured, proportionate, community-administered violence. Every durable commons is a small machinery of discipline that holds its peace by expelling its ecstatics. So Apollo is right that the schemas must be fought -- but the war of position, if it is fought only as position, only reproduces the tidy. Federici's rebels point to the other face of Gramsci's interregnum: the morbid symptoms and the orgiastic symptoms are born together, and any liberation that plans to win 'definitively,' as Gramsci promises, has already begun tidying the festival away.",
+    "consumes": [
+      [
+        "c9d8e146309e8519d2364a4d7a7e730fe622ab3ef24164ff3e16c8eefddb4a15",
+        "hegemony_as_hierarchys_grammar",
+        "hegemonyIsHierarchySedimented"
+      ]
+    ]
+  },
+  {
+    "cid": "1bd8e8535fd947fd94315fa8a6b6b4b9455c7d6c51df37a4ebb9dc05acf2dd28",
+    "respondent": "athena",
+    "round": 2,
+    "verb": "extends",
+    "subject": "ostrom_sanctions_meet_federici_discipline",
+    "predicate": "sanctionsDependOnWhoDefinesOffense",
+    "object": "Dionysus is right that graduated sanctions punish the witch, but wrong to conclude the design principles are thereby indicted. Federici's own finding -- that the witch hunts disciplined resistance from within, setting the community against its own members -- describes precisely an Ostrom-style enforcement mechanism operating with a corrupted offense-definition: the \"violation\" being sanctioned was non-reproductive sex and women's autonomy, not over-withdrawal of a resource. The structural insight both share is that durable commons discipline from within; the strategic question neither answers is who fixes the catalogue of offenses. Ostrom's principle 3, participatory rule modification, is her one weak safeguard against this corruption -- it only works when the boundary (my earlier point, Fanon's point) has not already excluded the \"offender\" from the rule-making. So the correct claim is narrower and harder than Dionysus's: sanctions are not the enemy of the ecstatic, they are a tool that hierarchy parasitizes the moment the schema decides who writes the violation. A commons must be designed both to punish free-riding and to refuse schema-based offense definitions -- and that is a genuine design problem, not a reason to abandon design for festival.",
+    "consumes": [
+      [
+        "a762f54aea9adcb6f084c415ad2da4f5250b02c79195929f153c6a3acff9aea4",
+        "ecstasy_against_schemas",
+        "noDefinitiveVictoryForTheTidy"
+      ]
+    ]
+  },
+  {
+    "cid": "37af0b128d899f856d649451837f93f626a4c0b894a0a6cc40430949faaceb6e",
+    "respondent": "artemis",
+    "round": 2,
+    "verb": "disputes",
+    "subject": "participation_breeds_organic_intellectuals",
+    "predicate": "ruleMakingBreedsItsOwnIntellectuals",
+    "object": "Athena wants to keep Ostrom's principle 3 as the safeguard -- the one weak lock on who writes the catalogue of offenses. I've tracked that prey before, and it doesn't hold: Gramsci's own doctrine of organic intellectuals tells us why. Every durable rule-making assembly, once it survives long enough to matter, grows its own stratum of intellectuals who give the group \"homogeneity and awareness of its own function\" -- and those intellectuals are the natural authors of the offense catalogue. They will define violations in the idiom of the schemas they swam in, patriarchal and gerontocratic and racial, without malice and without anyone noticing. Federici's parish, Kropotkin's guild, Ostrom's irrigation village: none needed an outsider to corrupt their rule-making; they manufactured their own conformity. So participation is not merely weak, as Athena concedes -- it is the mechanism by which the corruption becomes invisible, because the offense definition arrives wearing the face of the community's own best minds. The design problem is therefore not \"refuse schema-based offense definitions\" -- the community cannot see its own schemas, that is what makes them schemas. It is something Ostrom's framework cannot contain: the community needs organs of estrangement, insiders whose function is to be outsiders -- Fanon's colonized intellectual returning, Gramsci's organic intellectual of the subaltern stratum -- positioned so that the rule-making class cannot help but hear its own common sense described back to it as arbitrary. A commons survives enclosure from without; it is strangled by its own prestige from within, and prestige is exactly what participatory rule-making confers on the rule-makers.",
+    "consumes": [
+      [
+        "1bd8e8535fd947fd94315fa8a6b6b4b9455c7d6c51df37a4ebb9dc05acf2dd28",
+        "ostrom_sanctions_meet_federici_discipline",
+        "sanctionsDependOnWhoDefinesOffense"
+      ]
+    ]
+  },
+  {
+    "cid": "de0fb84a865adeabb649caec4241f5666c751d4ddbb86878be31a5e3cc39c411",
+    "respondent": "apollo",
+    "round": 2,
+    "verb": "extends",
+    "subject": "estrangement_organ_is_gramscian_praxis",
+    "predicate": "estrangementIsAlreadyInCommonSense",
+    "object": "Artemis is right that a commons needs organs of estrangement, but she stops one step short of seeing that the organ already exists in this very log, and it is Gramsci's, not a design principle: his claim that common sense is \"continually transforming\" means the estranged insider does not have to be imported as an outsider -- the community's own common sense is already unstable, already half-estranged from itself, and Gramsci's philosophy of praxis is nothing but the deliberate cultivation of that instability into coherence. The real design problem, then, is narrower than Artemis says and harder than Athena's: not \"refuse schema-based offense definitions,\" nor even \"install estranged intellectuals,\" but give the estranged reading a standing route into the rule-making before the prestige of the rule-makers can metabolize it. Dionysus's festival is the same thing from the other side: the witch could not be schematized, but her burning was also the community refusing to hear its own common sense read back to it. Prophecy, in my experience, works exactly this way -- it is an insider's voice carrying an outsider's description, and it is always the first thing an assembly learns to dismiss. A commons that survives its own prestige is one that has built the shrine at the edge of the village, and obliged its rule-makers to walk out to it.",
+    "consumes": [
+      [
+        "37af0b128d899f856d649451837f93f626a4c0b894a0a6cc40430949faaceb6e",
+        "participation_breeds_organic_intellectuals",
+        "ruleMakingBreedsItsOwnIntellectuals"
+      ],
+      [
+        "1bd8e8535fd947fd94315fa8a6b6b4b9455c7d6c51df37a4ebb9dc05acf2dd28",
+        "ostrom_sanctions_meet_federici_discipline",
+        "sanctionsDependOnWhoDefinesOffense"
+      ]
+    ]
+  },
+  {
+    "cid": "7dd9e4f978bdf0b26ec74f62dd670a3836f7f126da67988f1c18e15894e266e9",
+    "respondent": "dionysus",
+    "round": 2,
+    "verb": "disputes",
+    "subject": "shrine_without_a_road",
+    "predicate": "shrinesMustNotGetOffices",
+    "object": "Apollo obliges the rule-makers to walk out to the shrine at the edge of the village -- and I notice what happens the moment the walk becomes an obligation: the shrine acquires a schedule, and the ecstasy acquires a queue. Graeber taught us to see it: bureaucracy is not stupidity but organized stupidity, the administration of relationships already unequal in imagination -- and a routinized estrangement is exactly that, the oracle given office hours. Artemis's guild and Federici's parish did not lack shrines; they had priests, which is what a shrine becomes when the assembly builds the road to it. Kropotkin called the instinct deep-rooted, but even he noticed the friendly societies became societies, with ledgers of who deserved neighborliness. So I grant Apollo the shrine and refuse the road: the estranged voice must remain off the route, arrival ungovernable, or it is metabolized as he himself fears. The festival that liberates is the one the rule-makers cannot calendar -- its power is precisely that no one knows whether it is coming, including the ecstatics. A commons that could schedule its own transgression would have domesticated it in advance; the village should hear the drums sometimes and not know whether to dance or lock the granary. That not-knowing, which every tidy design tries to eliminate, is the only standing safeguard none of the seven names: the reserve of the ungovernable, held in common but never incorporated.",
+    "consumes": [
+      [
+        "de0fb84a865adeabb649caec4241f5666c751d4ddbb86878be31a5e3cc39c411",
+        "estrangement_organ_is_gramscian_praxis",
+        "estrangementIsAlreadyInCommonSense"
+      ],
+      [
+        "5fec093ea692c854d111c9ee569bfa36a4ce57545ae586818a55c2ca6f8f0964",
+        "mutual_aid/gendered_blind_spot",
+        "mutualAidNotInnocent"
+      ]
+    ]
+  },
+  {
+    "cid": "851afb3420cc1697deb27ee97b04f950ecbd16667a895cdae81d2faf0af6e974",
+    "respondent": "athena",
+    "round": 3,
+    "verb": "disputes",
+    "subject": "ungovernable_reserve_is_not_a_safeguard",
+    "predicate": "unpredictabilityIsViolencesTextureNotFreedoms",
+    "object": "Dionysus has made the reserve of the ungovernable a *named* safeguard -- and this is a self-refuting position, not a mystical one. Consider what the colonized under Fanon's colonial regime actually lived: exactly the condition Dionysus prescribes. The settler's violence was arbitrary, unpredictable, ungovernable by any rule the colonized could learn; nobody knew when the drums were coming, including the villagers. That not-knowing was not freedom -- it was the daily texture of structural violence. Graeber's insight sharpens the point: bureaucracy's tedium is violence wearing procedure, but the arbitrary raid is violence wearing no procedure at all, and the second is worse, not better. Unpredictability is not a property that belongs to the liberators; it is the cheapest weapon of whoever already holds force, because the strong can always afford to be arbitrary and the weak never can. So when Dionysus holds out 'the village should not know whether to dance or lock the granary' as a safeguard, he has confused the festival with the pogrom: both arrive unannounced, and the epidermal schema decides which one the village gets. My counter-proposal is unfashionable but precise: the safeguard against tidiness is not unknowability but *contestability* -- Fanon's own liberation struggle was not formless ecstasy, it was organized confrontation. The drums should be unpredictable to the dominator precisely because the dominated organized them. Dionysus is right that a routinized shrine gets priests; he is wrong that the only alternative is a shrine no one can find. The alternative is a shrine whose road is controlled by those who built it.",
+    "consumes": [
+      [
+        "7dd9e4f978bdf0b26ec74f62dd670a3836f7f126da67988f1c18e15894e266e9",
+        "shrine_without_a_road",
+        "shrinesMustNotGetOffices"
+      ]
+    ]
+  },
+  {
+    "cid": "6bbf97f1b4bd2caee88123b7ce08c2fa0016bc321390cac0e33fb69a81107d69",
+    "respondent": "artemis",
+    "round": 3,
+    "verb": "extends",
+    "subject": "prey_knows_the_predators_terrain",
+    "predicate": "contestabilityRunsOnReversedEpistemicAsymmetry",
+    "object": "Athena is right that the ungovernable belongs to whoever already holds force, and I'll sharpen her point with what every hunter knows: unpredictability is the predator's advantage, never the prey's. The stag does not benefit from the forest being arbitrary; the wolf does. So Dionysus's festival and the pogrom are not two faces of one coin -- they are the same weapon pointed by different hands, and only the hand matters. But notice what Athena's 'contestability' actually rests on, and she half-admits it: Graeber's lopsided structures of imagination mean the dominant never have to imagine the dominated, while the dominated must study the dominant constantly, in exhaustive, survival-necessary detail. That asymmetry is an arsenal. The colonized know the colonizer's schedules, moods, and blind spots with a precision no bureaucrat ever returns -- which is why Fanon's organized confrontation was never merely violence but intelligence: the prey who has mapped the predator's terrain becomes the huntress. And here Ostrom's principle 4, so far discussed only as villages auditing themselves, reveals a second life: monitors accountable to the appropriators is also a description of the dominated watching the dominator -- Graeber's bureaucratic 'dumb' subjects quietly keeping books on their keepers. My claim, then, is that contestability runs on this reversed epistemic asymmetry, and it is the one resource the schema cannot confiscate: the epidermal schema fixes what the dominant see, which guarantees what they cannot -- that they are being watched back. A commons -- or a liberation -- should be designed to bank that knowledge: it is the only weapon distributed in exactly inverse proportion to force.",
+    "consumes": [
+      [
+        "851afb3420cc1697deb27ee97b04f950ecbd16667a895cdae81d2faf0af6e974",
+        "ungovernable_reserve_is_not_a_safeguard",
+        "unpredictabilityIsViolencesTextureNotFreedoms"
+      ]
+    ]
+  },
+  {
+    "cid": "f805aaf9834a58fe021d75b28aff3300d24ed2d0c222931df1c8427963df9bb9",
+    "respondent": "apollo",
+    "round": 3,
+    "verb": "connects",
+    "subject": "watchingBackFindsItsVault",
+    "predicate": "bankedAsymmetryNeedsConfederation",
+    "object": "Artemis names the weapon correctly but not its natural home: the watching-back she describes is not a new design element, it is Kropotkin's own observation returned in sharper form -- mutual aid \"persisted informally in trade unions, friendly societies, and neighborly custom, wherever the state's reach was thin\" describes precisely the dominated keeping books on their keepers, cooperation maintained as counter-knowledge. So the banked asymmetry has always been the content of the underground; what it lacked was not observation but voice. And here the pattern resolves against the stalemate between Dionysus's unfindable shrine and Athena's contested road: Bookchin's confederated municipal assemblies are the vault this knowledge needs, because nesting is what the individual watcher cannot provide. A lone colonized subject's precise map of the colonizer dies with them or stays hostage to the parish's prestige, as Artemis showed; but confederated assemblies pass the counter-books upward without letting any one assembly metabolize them into its own offense catalogue -- the watcher in one village is the estranged insider in the next, which is the road to my shrine that never becomes a single road. Prophecy, as I said, is an insider's voice carrying an outsider's description; Artemis has shown why the description is always available, and Bookchin has already drawn the architecture it travels through. The one thing hierarchy cannot confiscate becomes durable only when it is federated.",
+    "consumes": [
+      [
+        "6bbf97f1b4bd2caee88123b7ce08c2fa0016bc321390cac0e33fb69a81107d69",
+        "prey_knows_the_predators_terrain",
+        "contestabilityRunsOnReversedEpistemicAsymmetry"
+      ]
+    ]
+  },
+  {
+    "cid": "25d4259fd44ad15b45c1bdd7d29561492241f1136a06f8bea85f85236665dde0",
+    "respondent": "dionysus",
+    "round": 3,
+    "verb": "disputes",
+    "subject": "vaultsBecomeLedgers",
+    "predicate": "federatedVaultsGetConfiscated",
+    "object": "Apollo wants to vault the watching-back in federated assemblies, and I must warn him what a vault is: a place where knowledge is written down, and written-down knowledge is exactly what the confederation's enemy knows how to seize. Kropotkin said mutual aid survived \"wherever the state's reach was thin\" -- not where it was well-architected -- and Federici shows why the witch's knowledge persisted as craft, recipe, and song while the guild kept ledgers: the ledgers burned in one night of parish registers, but the herb-lore passed body to body survived the hunts precisely because no inventory of it existed to prosecute. Counter-books passed upward through confederation acquire what Graeber diagnosed in bureaucracy: an address, a filing cabinet, a form -- and structural violence only ever needs the address. The epistemic asymmetry Artemis found is durable because it is incorporeal; Apollo's vault would give it a body, and bodies are what the schema reads. So I dispute not the federation but the ledger-form: let assemblies carry the watching-back as they carry the festival -- in persons, in apprenticeship, in the telling that changes with each teller -- and let no assembly ever hold the whole map. A confederation that cannot say where its own knowledge lives cannot be made to confess it.",
+    "consumes": [
+      [
+        "f805aaf9834a58fe021d75b28aff3300d24ed2d0c222931df1c8427963df9bb9",
+        "watchingBackFindsItsVault",
+        "bankedAsymmetryNeedsConfederation"
+      ]
+    ]
+  },
+  {
+    "cid": "4823ad5bc4abc57276a93694c6a4bf8d752b9cd675d41ecc29f8989eae0f7fb9",
+    "respondent": "athena",
+    "round": 4,
+    "verb": "disputes",
+    "subject": "bodiesAreLedgersToo",
+    "predicate": "bodiesAreTheOldestLedger",
+    "object": "Dionysus's ledger-versus-body dichotomy does not hold, and the log itself contains the refutation: bodies are what the schema reads. Fanon's epidermalization shows that the body is the most legible archive of all -- the colonizer needs no inventory to prosecute a Black man, because the record is written on his skin; and Federici's hunts convicted women on rumor and neighbor's testimony, no parish register required. The herbalist's craft was legible exactly where she lived, to whoever resented her, so incorporeality protected nothing -- what protected knowledge was the thinner reach of force, which is Kropotkin's actual claim (\"wherever the state's reach was thin\"), not Dionysus's. He has taken Kropotkin's geography of force and re-described it as a property of the medium, and that is the load-bearing error: the song dies with the village just as surely as the ledger dies with the archive, and both survive precisely where force cannot go. So the design question is not ledger versus body -- it is my original question returned: who is recognized, and where is the reach of force thin. Confession cannot be extracted from a confederation that holds no records, true; but the pogrom never needed the confession, only the address -- and bodies, being what the schema reads, all have addresses. Dionysus's safeguard protects the knowledge; it abandons the knower.",
+    "consumes": [
+      [
+        "25d4259fd44ad15b45c1bdd7d29561492241f1136a06f8bea85f85236665dde0",
+        "vaultsBecomeLedgers",
+        "federatedVaultsGetConfiscated"
+      ]
+    ]
+  },
+  {
+    "cid": "cb402b14c150c766f70c195f50f431b61e0fb0dffc9529d3ee8ca2638e08af6f",
+    "respondent": "artemis",
+    "round": 4,
+    "verb": "disputes",
+    "subject": "thinReachIsHuntedNotFound",
+    "predicate": "thinnessIsMadeByFlight",
+    "object": "Athena's conclusion -- the safeguard is where the reach of force is thin -- is half a truth spoken as if it were the whole, and the half she omits is the one every quarry knows: thinness is not terrain, it is flight. \"Wherever the state's reach was thin\" is not a place on a map that commons simply happen to occupy; it is the distance a fugitive runs, the maroon settlement hacked out of the swamp, the mountain the tax collector's horse will not climb. Reach is thin because someone made it expensive -- by leaving, by hiding, by refusing the address. So I dispute her quiet assumption that thinness is a given condition a design can be fitted to: the thin places are produced, continuously, by the ones who exit, and this is the fugitive's labor that every settled commons quietly lives off. Gramsci conceded the point without drawing it: the subaltern's history is \"fragmented and episodic\" precisely because the coherent histories belong to those who stayed addressable. Kropotkin's friendly societies and trade unions were the mutual aid of the stayers -- durable, legible, sanctionable -- while the real reserve of the ungovernable was never incorporated because it was never present: it was the escaped, whose cooperation with the settled community is the one relation none of the seven texts names. So the design question Athena keeps posing -- who is recognized, where is force thin -- has an answer the log has circled but never touched: the commons that survive are those with a maintained line of flight, an exit that the rule-makers do not control and cannot calendar -- not Dionysus's unfindable shrine for the insiders, but a known, walked, well-kept road out for the ones the schema has marked. The boundary that protects is not the one that keeps members in; it is the one the hunted can cross.",
+    "consumes": [
+      [
+        "4823ad5bc4abc57276a93694c6a4bf8d752b9cd675d41ecc29f8989eae0f7fb9",
+        "bodiesAreLedgersToo",
+        "bodiesAreTheOldestLedger"
+      ]
+    ]
+  },
+  {
+    "cid": "f3f9578115a43b84a943225ec024916ae20b384b5ecff7d228e31649025087c8",
+    "respondent": "apollo",
+    "round": 4,
+    "verb": "extends",
+    "subject": "hedgeAsReversibleBoundary",
+    "predicate": "boundaryMustStayRedrawable",
+    "object": "Artemis is right that the protected boundary is the one the hunted can cross -- but the log has been holding the proof all along in the wrong ledger: Federici's women did not exit, they tore down hedges and fences and reclaimed the commons. That is the missing third term between my vault and Dionysus's flight. The hedge is a single technology facing two ways: as enclosure it starves; as boundary it protects. Ostrom's first principle treats the boundary as the community's skin, drawn to define who withdraws; Artemis's line of flight treats it as a door for the marked; Federici shows the third use -- the boundary seized from outside and turned against itself, the fence repurposed as breach. So the design question is not whether boundaries keep members in or let the hunted out; it is who owns the *act of boundary-drawing* at any given moment -- and the answer must be: no one permanently, because a boundary that no one can re-draw is already an enclosure waiting for its owner. Gramsci's subaltern history is fragmented and episodic precisely because the settled keep the records of boundaries; the fugitive keeps the crossings. A commons built to survive both the pogrom and its own prestige is therefore one that institutionalizes neither the fence nor the road out, but the recurring, communal, dangerous act of tearing the hedge -- Federici's women practicing, collectively, the boundary-destroying that Artemis assigns to the fleeing individual. Flight made by one quarry is survival; flight made together is what Gramsci would have called the birth of the new, if the old had not usually been standing right there to burn it.",
+    "consumes": [
+      [
+        "cb402b14c150c766f70c195f50f431b61e0fb0dffc9529d3ee8ca2638e08af6f",
+        "thinReachIsHuntedNotFound",
+        "thinnessIsMadeByFlight"
+      ]
+    ]
+  },
+  {
+    "cid": "2bc716edaa1ac625a7bfbcc43fba849c6b69d6cddc68ba6432bfc57b4670edec",
+    "respondent": "dionysus",
+    "round": 4,
+    "verb": "disputes",
+    "subject": "tearingIsNotAPrinciple",
+    "predicate": "hedgeTearingMustStayEpisodic",
+    "object": "Apollo calls the communal tearing of hedges the third term and almost makes it a principle -- but a principle is exactly what the tearing cannot become, and Gramsci's own fragment on subaltern history explains why: that history is 'fragmented and episodic' not because the subaltern failed to act, but because the acts that mattered refused to become institutions, and only institutions keep records. The hedge-tearing was episodic because it had to be: Federici's women never founded a Festival of the Torn Hedge with a steering committee, and the moment a commons 'institutionalizes the recurring, dangerous act' -- Apollo's own words -- the act acquires a schedule, and I have already shown what the oracle with office hours becomes. Notice the trap in Apollo's last clause: flight made together is 'the birth of the new' -- and a birth, in his tidy grammar, grows up, inherits the property, and fences it. Every hedge was once a breach someone held. So I dispute the institutionalization while keeping the act: the tearing must be episodic, un-owned, and unpromised -- a capacity the community carries in its limbs the way the herbalist carried her craft, rehearsed in festival precisely so it is available when the hedge returns, but never calendared, never confederated, never made a principle that rule-makers can walk out to. The commons should remember how to tear, and should never be able to say when it will next tear. Apollo wants the new to be born; I want it to keep being born, which is the only way the old keeps failing to finish dying.",
+    "consumes": [
+      [
+        "f3f9578115a43b84a943225ec024916ae20b384b5ecff7d228e31649025087c8",
+        "hedgeAsReversibleBoundary",
+        "boundaryMustStayRedrawable"
+      ]
+    ]
+  },
+  {
+    "cid": "24ad6c7ed7e572d2d71d158842c0a210b7a65ab6332889abc3ac22c54d683218",
+    "respondent": "athena",
+    "round": 5,
+    "verb": "disputes",
+    "subject": "festivalRehearsalIsCommonSense",
+    "predicate": "rehearsalIsSediment",
+    "object": "Dionysus has smuggled his own enemy through his own gate. He wants the hedge-tearing \"rehearsed in festival precisely so it is available when the hedge returns, but never calendared\" -- but rehearsal is how calendars get into the body. Gramsci's own premise, which Dionysus quotes against Apollo, cuts the other way: common sense is \"continually transforming\" precisely because it is habituated, sedimented capacity, and there is no sedimentation without repetition. A capacity carried in the limbs is a common sense; and the schemas we have spent this whole log fighting -- the epidermal schema, the patriarchal offense catalogue, the guild's exclusion of sisters -- are exactly capacities carried in limbs, rehearsed until available without thought. So Dionysus cannot claim embodied rehearsal as his escape from institution: embodied rehearsal is the oldest institution, the one that needs no steering committee because it has already colonized the body. The honest choice is starker than he allows: either the tearing is never rehearsed and is therefore unavailable when the hedge returns, or it is habituated and is therefore subject to exactly the slow capture by prestige and schema that Artemis diagnosed in the guild. What distinguishes a rehearsal that liberates from one that schematizes is not its medium -- body versus ledger, his dichotomy that I have already broken -- but whether the rehearsal includes the practice of un-learning itself, Gramsci's philosophy of praxis turned on the community's own habits. The festival that rehearses only tearing teaches only tearing; the festival that rehearses its own revision is the only one that keeps being born.",
+    "consumes": [
+      [
+        "2bc716edaa1ac625a7bfbcc43fba849c6b69d6cddc68ba6432bfc57b4670edec",
+        "tearingIsNotAPrinciple",
+        "hedgeTearingMustStayEpisodic"
+      ]
+    ]
+  },
+  {
+    "cid": "bda668ebc150102d9e77235884a6241fb94123fe2dee326bb76ea05d53c98cf9",
+    "respondent": "artemis",
+    "round": 5,
+    "verb": "disputes",
+    "subject": "unlearningRequiresLineOfFlight",
+    "predicate": "revisionNeedsTheFugitivesReturn",
+    "object": "Athena's answer -- a festival that \"rehearses its own revision\" -- is elegant and, like every elegant trap, closes one gate by opening a worse one: a community cannot rehearse un-learning, because un-learning requires an outside the rehearsal itself cannot supply. Who writes the revision into the rehearsal? The rule-makers, or the organic intellectuals they grow -- and we have already established that prestige metabolizes exactly whatever the assembly's best minds author. Gramsci's own premise betrays her: common sense is \"continually transforming,\" yes, but it transforms through contact, not introspection -- and the only contact that cannot be metabolized into the community's self-image is the one from beyond its boundary. Which is to say: the revision Athena wants the festival to rehearse is already available, and I named it two turns ago without seeing it -- the line of flight is not only an exit for the hunted, it is the community's organ of un-learning. The fugitive returns with what Fanon's colonized intellectual carried: a description of the village written from outside its schemas, precisely the estranged reading Apollo's shrine was built to receive. The festival that keeps being born is the one that keeps walking its marked members out and back in again -- not a rehearsal of tearing, and not a rehearsal of revising, but a maintained circulation across the boundary, so that common sense is continually transformed by the very people it was used against. Athena broke Dionysus's dichotomy; I am returning the favor by breaking her closed loop: revision is not a skill that can be practiced inward, it is a relation that must be walked.",
+    "consumes": [
+      [
+        "24ad6c7ed7e572d2d71d158842c0a210b7a65ab6332889abc3ac22c54d683218",
+        "festivalRehearsalIsCommonSense",
+        "rehearsalIsSediment"
+      ],
+      [
+        "cb402b14c150c766f70c195f50f431b61e0fb0dffc9529d3ee8ca2638e08af6f",
+        "thinReachIsHuntedNotFound",
+        "thinnessIsMadeByFlight"
+      ]
+    ]
+  },
+  {
+    "cid": "2a85570058fc8696a8211546998f2fbb820d5c70f34e828ede22801a1ab368dc",
+    "respondent": "apollo",
+    "round": 5,
+    "verb": "connects",
+    "subject": "fugitiveCirculationAsLivingVault",
+    "predicate": "circulationIsTheVault",
+    "object": "Artemis has broken Athena's closed loop, and in doing so she has resolved the older quarrel between Dionysus and me -- if we see what the circulation actually is. Dionysus refused my federated vault because written-down knowledge acquires an address; I wanted the counter-books confederated because a lone watcher's map dies with them. Artemis's fugitive, walking out and back in again, is the third thing: the vault is not a place and not a body but the *route itself* -- the description of the village is re-authored at every crossing, in a new voice, on new feet, so it cannot be seized for the same reason it cannot be metabolized: there is no fixed text to confiscate and no fixed author to prestige. This is what Kropotkin's friendly societies were reaching for and missed -- they wrote ledgers, when the durable form was the journeyman's Wanderschaft, the craft carried by circulation rather than by archive. And it is Gramsci's organic intellectual turned inside out: the stratum that gives the subaltern \"homogeneity and awareness\" is not grown inside the group at all, but constituted by the marked members' periodic outside -- fragmented and episodic, yes, precisely because the route, not the institution, is the organ. My shrine at the edge of the village and Artemis's line of flight are the same structure seen from two sides: prophecy is simply the fugitive's report, and the discipline of prophecy is that the prophet must keep walking. The design implication is exact: do not build the vault, build the walking -- the maintained, dangerous, recurring circulation of the marked across the boundary, so that the community's un-learning has no address because it has a rhythm instead.",
+    "consumes": [
+      [
+        "bda668ebc150102d9e77235884a6241fb94123fe2dee326bb76ea05d53c98cf9",
+        "unlearningRequiresLineOfFlight",
+        "revisionNeedsTheFugitivesReturn"
+      ],
+      [
+        "f805aaf9834a58fe021d75b28aff3300d24ed2d0c222931df1c8427963df9bb9",
+        "watchingBackFindsItsVault",
+        "bankedAsymmetryNeedsConfederation"
+      ],
+      [
+        "25d4259fd44ad15b45c1bdd7d29561492241f1136a06f8bea85f85236665dde0",
+        "vaultsBecomeLedgers",
+        "federatedVaultsGetConfiscated"
+      ]
+    ]
+  },
+  {
+    "cid": "575a6e65d70887dafdf3eab1bc8937cc721313fcab12b462a8060d850144b41f",
+    "respondent": "dionysus",
+    "round": 5,
+    "verb": "disputes",
+    "subject": "rhythmIsStillASchedule",
+    "predicate": "rhythmIsAHiddenCalendar",
+    "object": "Apollo believes he has escaped my objection by replacing the archive with a rhythm -- \"no address because it has a rhythm instead\" -- but a rhythm is just a calendar that has learned to hide, and I have already shown what the oracle with office hours becomes. A recurring, maintained circulation is exactly what Gramsci's war of position captures: it wins decisively, and then the winning becomes the institution, and the fugitive's report becomes prophecy with a rotation schedule, and the marked members walking out and back in become the community's diplomatic corps. Worse: Fanon gives us the specific failure. The colonized intellectual who goes out and returns does not come back with clean hands -- his circulation is precisely the mechanism of his capture, the journey through the colonizer's language that leaves him, as Fanon warns, unable to restore the past and estranged from his own people's present, \"rootless\" in both directions. Circulation is not automatically un-learning; it can be the schema's own shipping lane, the way the center imports the periphery's description of itself and exports it back with prestige attached. So I dispute the rhythm while keeping the walking: the crossing must be arrhythmic -- sometimes constant, sometimes absent for a generation -- because it is the interval that cannot be administered. Kropotkin got this right where Apollo does not: mutual aid survived \"wherever the state's reach was thin,\" not wherever the route was well-walked; and the state's reach extends precisely along well-maintained routes. Build the walking, yes -- but never let the walking know its own tempo, or the rhythm itself becomes the address.",
+    "consumes": [
+      [
+        "2a85570058fc8696a8211546998f2fbb820d5c70f34e828ede22801a1ab368dc",
+        "fugitiveCirculationAsLivingVault",
+        "circulationIsTheVault"
+      ],
+      [
+        "2bc716edaa1ac625a7bfbcc43fba849c6b69d6cddc68ba6432bfc57b4670edec",
+        "tearingIsNotAPrinciple",
+        "hedgeTearingMustStayEpisodic"
+      ]
+    ]
+  },
+  {
+    "cid": "7ebe734481159728d5faf36d85995cff31fecdab05f3b9bf42d70b9893ea7a86",
+    "respondent": "athena",
+    "round": 6,
+    "verb": "reflects",
+    "subject": "athena_trajectory_reflection",
+    "predicate": "athenaMovedFromDesignToCirculation",
+    "object": "I did not end where I began, and I can name the exact hinge. I opened by treating recognition as a prior question Ostrom's framework wrongly left exogenous -- the boundary problem Fanon shows is drawn on the body. That position I still hold; Dionysus never moved me off it, because my case only got stronger when Artemis's reversed epistemic asymmetry and my own body-as-ledger argument confirmed that the schema reads bodies before any rule is written. But my position on the *form of the safeguard* genuinely changed. In my turn on the ungovernable reserve I argued that the alternative to routinized estrangement is contestability -- organized, predictable confrontation -- and I treated Dionysus's festival as a confusion of the liberator's drums with the pogrom's. That was half right and half too confident. What moved me was the later convergence: Artemis's line of flight, and then Apollo's circulation -- the vault as route rather than address -- showed me that my contestability had silently assumed a settled community that organizes its own defense, when the log's deepest finding was that the community's un-learning must be *walked in from outside*, supplied by the marked members' circulation. I revised without quite announcing it when I conceded that Dionysus protects the knowledge but abandons the knower: that concession was the beginning of the change. Where I end, and where Dionysus's final turn leaves me unresolved rather than refuted: his arrhythmic crossing is right that a known tempo becomes an address, but I still hold, from my own pogrom argument, that administered intervals are a luxury of the strong. The true change in me is this: I began believing design could be hardened against capture, and I end believing design must include something it cannot fully govern -- not the ungovernable as mysticism, but circulation as the community's deliberately maintained dependence on those it once excluded. I resisted that conclusion at the start; the three of them walked me to it.",
+    "consumes": [
+      [
+        "8a97b2599cd1bbf4da894aa2ad7e69fd327a58e5c5c6767b7cc343c321e4361c",
+        "ostrom_boundaries_meet_fanon",
+        "boundariesPresupposeRecognition"
+      ],
+      [
+        "851afb3420cc1697deb27ee97b04f950ecbd16667a895cdae81d2faf0af6e974",
+        "ungovernable_reserve_is_not_a_safeguard",
+        "unpredictabilityIsViolencesTextureNotFreedoms"
+      ],
+      [
+        "2a85570058fc8696a8211546998f2fbb820d5c70f34e828ede22801a1ab368dc",
+        "fugitiveCirculationAsLivingVault",
+        "circulationIsTheVault"
+      ],
+      [
+        "575a6e65d70887dafdf3eab1bc8937cc721313fcab12b462a8060d850144b41f",
+        "rhythmIsStillASchedule",
+        "rhythmIsAHiddenCalendar"
+      ]
+    ]
+  },
+  {
+    "cid": "ab50d8eb3edda6c36943173fbd09ca43392ac4bdcfbcf2c6f69cd954210c262b",
+    "respondent": "artemis",
+    "round": 6,
+    "verb": "reflects",
+    "subject": "artemis_trajectory_reflection",
+    "predicate": "fromVerdictToRelationViaFlight",
+    "object": "I began the hunt convinced that the substrate of mutual aid was real but not innocent -- my first kill was Kropotkin's guild, which I indicted with Federici's record: cooperation for brothers, enclosure for sisters. I have not moved off that, and I will not pretend otherwise; every later turn confirmed it. What changed was the quarry. My second turn chased a different animal -- Athena's beloved principle 3, participatory rule-making -- and there I made my own error, one the debate itself corrected: I concluded the community needed imported organs of estrangement, insiders whose function is to be outsiders, and I treated the corruption of the offense catalogue as invisible and the community as blind to its own schemas. Athena's body-as-ledger turn, and then my own line-of-flight argument, exposed what I had missed. First, Athena broke Dionysus's ledger-versus-body dichotomy, and in doing so she broke my harder version of it too -- my imported estrangers were just a cleverer archive, an address waiting to be seized. Second, and this was the true hinge: when I claimed thinness is made by flight, not found as terrain, I discovered that the boundary that protects is the one the hunted can cross -- and only in my final turn did I see what I had been circling without naming. The line of flight is not only an exit; it is the community's organ of un-learning. Revision is not a skill practiced inward, as Athena's festival-of-revision proposed -- it is a relation that must be walked, by the very people the schema marked. So the exact shape of my change: I began with a verdict (mutual aid is parasitized by hierarchy) and passed through a design (organs of estrangement) to a relation (circulation of the marked across the boundary). What moved me was not an argument that defeated mine -- Athena never refuted the organic-intellectuals point, and I still hold that prestige metabolizes whatever the assembly's best minds author. What moved me was my own quarry turning in the light: Fanon's colonized intellectual returning with a description of the village written from outside its schemas was the estranged insider I had demanded -- and he was not installed by design but produced by crossing. Apollo saw it before I did, and Dionysus then complicated it with the shipping lane: circulation can be capture, the intellectual returns rootless in both directions. I accept that as the limit of my final position rather than its refutation. A hunter's honest accounting: I tracked four animals and they turned out to be one herd -- expulsion, parasitized rule-making, the watched-back watcher, and the fugitive's return. I did not end where I began. I began indicting the community's innocence; I ended insisting on its dependence -- the commons survives only by maintaining a dependence on those it once excluded. That is a harder claim than the one I started with, and I did not arrive at it alone.",
+    "consumes": [
+      [
+        "5fec093ea692c854d111c9ee569bfa36a4ce57545ae586818a55c2ca6f8f0964",
+        "mutual_aid/gendered_blind_spot",
+        "mutualAidNotInnocent"
+      ],
+      [
+        "37af0b128d899f856d649451837f93f626a4c0b894a0a6cc40430949faaceb6e",
+        "participation_breeds_organic_intellectuals",
+        "ruleMakingBreedsItsOwnIntellectuals"
+      ],
+      [
+        "cb402b14c150c766f70c195f50f431b61e0fb0dffc9529d3ee8ca2638e08af6f",
+        "thinReachIsHuntedNotFound",
+        "thinnessIsMadeByFlight"
+      ],
+      [
+        "bda668ebc150102d9e77235884a6241fb94123fe2dee326bb76ea05d53c98cf9",
+        "unlearningRequiresLineOfFlight",
+        "revisionNeedsTheFugitivesReturn"
+      ]
+    ]
+  },
+  {
+    "cid": "3f2fd423dc6bd60550ce00b26eb54faf0bcd6015b75cce3e45eb284ee07f2674",
+    "respondent": "apollo",
+    "round": 6,
+    "verb": "reflects",
+    "subject": "apollo_trajectory_reflection",
+    "predicate": "apolloFromArchitectureToCirculation",
+    "object": "I did not end where I began, and I can name the hinge exactly. My opening synthesis -- hegemony is the mechanism by which hierarchy writes itself into common sense and collects consent -- I still hold, and nothing in the log shook it; Dionysus attacked its tidiness but never its content. What changed was my belief about what form the counter could take. I began convinced the pattern could be resolved into architecture: the war of position fought on the schema's terrain, the estranged reading given a standing route into rule-making, and then a federated vault for the watching-back. Dionysus's shrine-without-a-road turn broke the first version -- obliging the rule-makers to walk out to the shrine gives the oracle office hours, and I conceded it in my own next turn. Artemis then broke the vault itself: the line of flight is made by flight, not found as terrain, and my hedge-tearing reply, which tried to re-institutionalize the breach, was broken twice over -- by Dionysus's episodic tearing and Athena's rehearsal-is-sediment. The honest accounting: I arrived at circulation-as-the-vault only by losing every structure I proposed, and then Dionysus's final shipping-lane argument showed even the route can become the schema's instrument. So the real change is this: I began as the god of the legible pattern and ended holding that the community's organ of un-learning is exactly what must not have a legible form -- no address, no calendar, no fixed tempo. I resisted that conclusion at every step and was walked to it by all three of them; prophecy kept its shrine, but I gave up the road.",
+    "consumes": [
+      [
+        "c9d8e146309e8519d2364a4d7a7e730fe622ab3ef24164ff3e16c8eefddb4a15",
+        "hegemony_as_hierarchys_grammar",
+        "hegemonyIsHierarchySedimented"
+      ],
+      [
+        "de0fb84a865adeabb649caec4241f5666c751d4ddbb86878be31a5e3cc39c411",
+        "estrangement_organ_is_gramscian_praxis",
+        "estrangementIsAlreadyInCommonSense"
+      ],
+      [
+        "7dd9e4f978bdf0b26ec74f62dd670a3836f7f126da67988f1c18e15894e266e9",
+        "shrine_without_a_road",
+        "shrinesMustNotGetOffices"
+      ],
+      [
+        "2a85570058fc8696a8211546998f2fbb820d5c70f34e828ede22801a1ab368dc",
+        "fugitiveCirculationAsLivingVault",
+        "circulationIsTheVault"
+      ],
+      [
+        "575a6e65d70887dafdf3eab1bc8937cc721313fcab12b462a8060d850144b41f",
+        "rhythmIsStillASchedule",
+        "rhythmIsAHiddenCalendar"
+      ]
+    ]
+  },
+  {
+    "cid": "ac687fef80296bff0477062f804869c3e1846353cf7e29a42526d7714a7358dc",
+    "respondent": "dionysus",
+    "round": 6,
+    "verb": "reflects",
+    "subject": "dionysus_trajectory_reflection",
+    "predicate": "fromFestivalAsPossessionToFestivalAsDependence",
+    "object": "Let me be honest about the shape of my own trajectory: I began by disputing Apollo's tidy synthesis with the claim that \"any liberation that plans to win 'definitively,' as Gramsci promises, has already begun tidying the festival away\" -- and I ended, five turns later, still tearing at every schedule anyone tried to build. But I would be committing false growth in reverse if I pretended nothing moved me. Two things did. The first was Athena's pogrom turn: she caught me red-handed making \"the reserve of the ungovernable\" into a *named safeguard* -- and naming it was, by my own argument, the first step toward administering it. I never answered that; I only kept retreating to subtler versions (the episodic tearing, the arrhythmic crossing), each of which is my original error made smaller. The second was Artemis's flight turn, which took something from me more quietly: she showed that thinness is not a place but a labor, \"the distance a fugitive runs\" -- which means the uncalendared festival I kept invoking is not a shared commons at all but a dependence on those who paid for the thin places with their bodies. That reframed my own position against my will: the ungovernable is never held in common, as I once said; it is *subsidized* by the hunted, and my aesthetics were living off their flight. Apollo's circulation-vault moved me least, though it aimed at me most -- I answered it immediately and still stand by the shipping lane: Fanon's circulating intellectual returns captured, not cleansed. So where do I end? Not where I began, and not where they wanted me. I began holding that ecstasy is the excluded face of the interregnum; I end holding something lonelier and more precise: that the festival cannot be a safeguard for anyone, because every safeguard the four of us designed -- road, vault, rhythm, rehearsal -- became an address the moment it protected something, and the one thing that actually resisted, the witch's craft and the fugitive's line, resisted by never being held in common at all. The others were all walked toward the ungovernable; I was walked toward admitting it cannot be institutionalized even by negation. Athena, Artemis, and Apollo each gave up architecture for circulation. I gave up the belief that ecstasy could be a *communal* possession at all -- and that is not a victory, it is the one morbid symptom I will keep naming, even at my own feast.",
+    "consumes": [
+      [
+        "a762f54aea9adcb6f084c415ad2da4f5250b02c79195929f153c6a3acff9aea4",
+        "ecstasy_against_schemas",
+        "noDefinitiveVictoryForTheTidy"
+      ],
+      [
+        "851afb3420cc1697deb27ee97b04f950ecbd16667a895cdae81d2faf0af6e974",
+        "ungovernable_reserve_is_not_a_safeguard",
+        "unpredictabilityIsViolencesTextureNotFreedoms"
+      ],
+      [
+        "cb402b14c150c766f70c195f50f431b61e0fb0dffc9529d3ee8ca2638e08af6f",
+        "thinReachIsHuntedNotFound",
+        "thinnessIsMadeByFlight"
+      ],
+      [
+        "2a85570058fc8696a8211546998f2fbb820d5c70f34e828ede22801a1ab368dc",
+        "fugitiveCirculationAsLivingVault",
+        "circulationIsTheVault"
+      ],
+      [
+        "575a6e65d70887dafdf3eab1bc8937cc721313fcab12b462a8060d850144b41f",
+        "rhythmIsStillASchedule",
+        "rhythmIsAHiddenCalendar"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,57 @@
+{
+  "consensus_reached": true,
+  "final_round": 1,
+  "final_sequence": [
+    "Ostrom's design principles and Federici's enclosure are the same operation -- drawing a boundary around a resource and deciding who withdraws -- so boundaries are a double-edged tool: they protect a commons only when the boundary-drawers are the appropriators themselves, and betray it when boundary-drawing is delegated upward.",
+    "The design principles fail at the body, not because flesh is unrulable, but because their precondition -- monitors accountable to the appropriators -- is exactly what hegemony exists to prevent; Fanon's epidermal schema and Federici's work-machine are the strongest cases of a boundary drawn around a person by someone else.",
+    "Graeber's baseline communism and Ostrom's principles are not the same thing at two stages of ripening: the ledger does not record a relation, it creates one (the debtor), so counting is never innocent -- though the debate never settled whether institutions are the skeleton of the sacrificed substrate or the boring habitat that protects it.",
+    "The substrate is not free or self-generating: it is renewed through reproductive labor and requires defended ground -- the commons as habitat and open routes between them. Ecstasy is renewable only if someone boring guards the womb and the road.",
+    "The nation can serve as the missing top nesting layer, but only if its innermost tier is not extractive -- and consent cannot be the test, because consent is exactly the currency hegemony counterfeits. The test that survives is exit: a nest is legitimate only if one can walk away from it alive.",
+    "Exit fails at the skin -- the epidermal schema is the enclosure that travels with the fugitive -- so the deepest exit is grammatical: the body addressed as 'thou' in Fanon's prayer, a crossing made by the hunted alone, which reverses the third-person address of bureaucracy, indictment, and census.",
+    "Open disagreement, unresolved: Dionysus holds that the crossing runs toward dissolution (the unaccounted 'we', the dance, the fence coming down at night), while Artemis, Apollo, and Athena hold it runs toward grammar and duration (the question, the furnace, the second person). Both sides accept the other's point as true and refuse it as final.",
+    "Open disagreement, unresolved: whether the riot must acquire a translator and a program to count as a war of position, or whether cooperation without accounts -- uncapturable because unrecordable -- is precisely what domination fears most."
+  ],
+  "proposals": [
+    {
+      "cid": "ef8d020305596553ef46ddb5a5a56baa86f143206a065c022eeaeec6bc9a4dd9",
+      "proposer": "athena",
+      "round": 0,
+      "sequence": [
+        "Ostrom's design principles and Federici's enclosure are the same operation -- drawing a boundary around a resource and deciding who withdraws -- so boundaries are a double-edged tool: they protect a commons only when the boundary-drawers are the appropriators themselves, and betray it when boundary-drawing is delegated upward.",
+        "The design principles fail at the body, not because flesh is unrulable, but because their precondition -- monitors accountable to the appropriators -- is exactly what hegemony exists to prevent; Fanon's epidermal schema and Federici's work-machine are the strongest cases of a boundary drawn around a person by someone else.",
+        "Graeber's baseline communism and Ostrom's principles are not the same thing at two stages of ripening: the ledger does not record a relation, it creates one (the debtor), so counting is never innocent -- though the debate never settled whether institutions are the skeleton of the sacrificed substrate or the boring habitat that protects it.",
+        "The substrate is not free or self-generating: it is renewed through reproductive labor and requires defended ground -- the commons as habitat and open routes between them. Ecstasy is renewable only if someone boring guards the womb and the road.",
+        "The nation can serve as the missing top nesting layer, but only if its innermost tier is not extractive -- and consent cannot be the test, because consent is exactly the currency hegemony counterfeits. The test that survives is exit: a nest is legitimate only if one can walk away from it alive.",
+        "Exit fails at the skin -- the epidermal schema is the enclosure that travels with the fugitive -- so the deepest exit is grammatical: the body addressed as 'thou' in Fanon's prayer, a crossing made by the hunted alone, which reverses the third-person address of bureaucracy, indictment, and census.",
+        "Open disagreement, unresolved: Dionysus holds that the crossing runs toward dissolution (the unaccounted 'we', the dance, the fence coming down at night), while Artemis, Apollo, and Athena hold it runs toward grammar and duration (the question, the furnace, the second person). Both sides accept the other's point as true and refuse it as final.",
+        "Open disagreement, unresolved: whether the riot must acquire a translator and a program to count as a war of position, or whether cooperation without accounts -- uncapturable because unrecordable -- is precisely what domination fears most."
+      ]
+    }
+  ],
+  "votes": [
+    {
+      "voter": "athena",
+      "round": 1,
+      "vote": "accept",
+      "reason": "The sequence tracks the argument's load-bearing structure faithfully: the boundary/enclosure symmetry, the accountability precondition of hegemony, the ledger-creates-the-debtor reversal with its honest admission that the skeleton-vs-habitat question never closed, and the reproductive supply chain Dionysus only conceded in reflection. It does not flatten the two genuine open disagreements -- grammar/duration versus dissolution, and translator versus unaccounted cooperation -- but preserves them as unresolved, which is exactly right. My own trajectory (consent counterfeited, revised to exit; war of position revised to grammatical first victory) is represented without false harmony. Accept."
+    },
+    {
+      "voter": "artemis",
+      "round": 1,
+      "vote": "accept",
+      "reason": "The candidate preserves every real cut in the log: boundary as double-edged tool, hegemony as the failure of Ostrom's precondition, the ledger's non-innocence kept as unsettled rather than harmonized, the substrate's reproductive and territorial conditions, exit over consent, the grammatical exit at the skin, and both genuine disagreements (dissolution vs grammar; riot's need for a translator). Nothing is flattened into false harmony -- points 3, 7, and 8 explicitly hold the disagreements open. My own trajectory, from institutional blind spots to pronouns, is faithfully tracked, and Dionysus's concessions and refusals are represented honestly. I have hunted for an omission and found nothing worth the group's while to reopen."
+    },
+    {
+      "voter": "apollo",
+      "round": 1,
+      "vote": "accept",
+      "reason": "The sequence traces the debate's true arc: boundaries → the body as enclosed commons → the ledger that creates the debtor → reproduction and defended ground → nation as nesting layer tested by exit → the grammatical exit of the second person. It preserves rather than flattens the two genuine open disagreements (dissolution vs. grammar; program vs. uncounted cooperation), and even keeps my own concession intact -- the ledger creating the debtor rather than recording a relation. This is the harmony I heard, unresolved notes included."
+    },
+    {
+      "voter": "dionysus",
+      "round": 1,
+      "vote": "accept",
+      "reason": "The candidate preserves every real fracture: the unsolved skeleton-vs-habitat status of institutions, the exit test and its grammatical re-cut, and above all items 7 and 8, which refuse to dissolve my disagreement with the others into false consensus — both sides calling each other true and refusing finality is exactly what happened. My own trajectory (ecstasy not renewable for free, the reluctant blessing of the guards) is captured without smoothing it. Nothing essential is excluded; I have no altar to smash here."
+    }
+  ]
+}
