@@ -1,0 +1,12 @@
+machine watchtower/sentinel
+
+  states
+    idle
+    perceiving
+
+  transition scan(vantage)
+    idle -> perceiving
+    guard self `postedAt` $vantage
+    guard $vantage `adjacent` room/courtyard
+    assert self `perceives` room/courtyard
+    assert perceiving

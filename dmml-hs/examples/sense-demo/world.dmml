@@ -1,0 +1,8 @@
+commit setup
+  declare relation postedAt
+  declare relation adjacent
+  declare relation state
+
+  watchtower/sentinel `postedAt` tower/north
+  watchtower/sentinel `state` idle
+  tower/north `adjacent` room/courtyard
