@@ -1,0 +1,24 @@
+machine smithy/master
+
+  states
+    idle
+    forging
+    complete
+
+  transition commission(apprentice, design)
+    idle -> forging
+    guard self `mentors` $apprentice
+    guard $design `approvedBy` circle/guild
+    assert $apprentice `commissioned` $design
+    assert self `oversees` $apprentice
+    assert forging
+    retract idle
+
+  transition finish(apprentice, result)
+    forging -> complete
+    guard self `oversees` $apprentice
+    guard not $result `flagged` flaw/found
+    assert $apprentice `title` "A finished masterwork"
+    assert $result `craftedBy` $apprentice
+    assert complete
+    retract forging

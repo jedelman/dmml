@@ -107,12 +107,44 @@ predText (PredIdent t) = t
 -- 'applyIdentifiedCommit' (always @Just@ a real 'StrongRef'). A second
 -- independent assert for a pair already seen ADDS an alternative via
 -- 'addAlternative' -- it never overwrites.
+--
+-- FIXED 2026-09-04: applies every 'ItemConsumes' block BEFORE any
+-- 'ItemFact' in the commit, regardless of their order in
+-- 'commitItems' (which is always @declares ++ facts ++ consumes@, per
+-- 'DMML.FromJson.commitStmtFromInput' -- fixed AST-construction order,
+-- not source order). The old single left-to-right fold over
+-- 'commitItems' applied facts, THEN consumes -- which meant a commit
+-- that both asserts a NEW value and retracts the OLD value for the
+-- SAME (subject, predicate) key (exactly what a real @from -> to@
+-- transition needs: @assert awakened@ + @retract stirring@, both on
+-- @self . state@) had its own freshly-asserted fact silently deleted
+-- by its own consumes block, leaving that key with NO live value at
+-- all. Real bug, caught by firing 'DMML.Fire''s own real retract path
+-- for the first time against a genuinely two-effect transition (see
+-- dev-journal/2026-09-04-retract-provenance-fix.md's own now-corrected
+-- verification) -- not a hypothetical. @written-world/SPEC.md@ already
+-- names the intended ordering explicitly: "ordering derives from
+-- consumes -> produces" -- consumes is a precondition-retraction step,
+-- produces adds new facts on top of it, never the reverse.
 applyCommitWithRef :: Text -> Maybe StrongRef -> WorldSnapshot -> CommitStmt -> WorldSnapshot
-applyCommitWithRef label ref snap stmt = foldl' applyItem snap (commitItems stmt)
+applyCommitWithRef label ref snap stmt =
+  foldl' applyFactItem (foldl' applyConsumeItem afterDeclares (commitItems stmt)) (commitItems stmt)
   where
-    applyItem s (ItemDeclare d) =
+    afterDeclares = foldl' applyDeclareItem snap (commitItems stmt)
+
+    applyDeclareItem s (ItemDeclare d) =
       s {snapshotDeclared = Map.insert (declareIdent d) (declareKind d) (snapshotDeclared s)}
-    applyItem s (ItemFact f) =
+    applyDeclareItem s _ = s
+
+    applyConsumeItem s (ItemConsumes cb) = foldl' applyConsume s (consumesEntries cb)
+    applyConsumeItem s _ = s
+
+    applyConsume s (ConsumeFact fc) =
+      let key = (nodeRefText (factConsumeSubject fc), factConsumePredicate fc)
+       in s {snapshotFacts = Map.delete key (snapshotFacts s)}
+    applyConsume s (ConsumeStrong _) = s
+
+    applyFactItem s (ItemFact f) =
       let key = (nodeRefText (factSubject f), predText (factPredicate f))
        in s
             { snapshotFacts =
@@ -122,12 +154,7 @@ applyCommitWithRef label ref snap stmt = foldl' applyItem snap (commitItems stmt
                   (Alternatives [(label, ref, factValue f)])
                   (snapshotFacts s)
             }
-    applyItem s (ItemConsumes cb) = foldl' applyConsume s (consumesEntries cb)
-
-    applyConsume s (ConsumeFact fc) =
-      let key = (nodeRefText (factConsumeSubject fc), factConsumePredicate fc)
-       in s {snapshotFacts = Map.delete key (snapshotFacts s)}
-    applyConsume s (ConsumeStrong _) = s
+    applyFactItem s _ = s
 
 -- | Applies one already-validated commit, tagging every fact it asserts
 -- with @label@ (the whole materialization batch's provenance -- see

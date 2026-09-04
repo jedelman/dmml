@@ -1,0 +1,8 @@
+commit setup
+  declare relation mentors
+  declare relation approvedBy
+  declare relation state
+
+  smithy/master `mentors` apprentice/finn
+  smithy/master `state` idle
+  design/ring_of_thorns `approvedBy` circle/guild
