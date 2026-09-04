@@ -1,0 +1,189 @@
+cabal-version:      2.4
+name:               dmml-hs
+version:            0.1.0.0
+synopsis:           Canonical Haskell implementation of DMML (Desiring-Machine Markup Language)
+build-type:         Simple
+
+-- Real Phase 1 hardening (jedelman/written-world#138): dmml-hs previously
+-- built only via hand-typed `ghc -isrc -iapp` invocations (see README.md's
+-- old instructions) with no package manifest at all. This is the first
+-- real, buildable package -- nothing downstream can depend on dmml-hs as a
+-- library while it only exists as ad hoc compiler invocations.
+
+common warnings
+  ghc-options: -Wall
+
+library
+  import:           warnings
+  hs-source-dirs:   src
+  exposed-modules:
+      DMML.Ast
+      DMML.Checkpoint
+      DMML.Entropy
+      DMML.Fire
+      DMML.FromJson
+      DMML.Governance
+      DMML.Guard
+      DMML.Json
+      DMML.LocalIdentity
+      DMML.Materialize
+      DMML.Retroconsistency
+      DMML.SelfDeclaration
+      DMML.StringCap
+      DMML.Surface
+  build-depends:
+      base >=4 && <5
+    , aeson
+    , bytestring
+    , containers
+    , directory
+    , filepath
+    , megaparsec
+    , parser-combinators
+    , text
+    , unordered-containers
+  default-language: Haskell2010
+
+executable demo
+  import:           warnings
+  main-is:          Main.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable check-declared
+  import:           warnings
+  main-is:          CheckDeclared.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable check-divergence
+  import:           warnings
+  main-is:          CheckDivergence.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable check-string-cap
+  import:           warnings
+  main-is:          CheckStringCap.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable checkpoint-rebuild
+  import:           warnings
+  main-is:          CheckpointRebuild.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable compliance-check-informed
+  import:           warnings
+  main-is:          ComplianceCheckInformed.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable compliance-check-surface
+  import:           warnings
+  main-is:          ComplianceCheckSurface.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable entropy-sidecar
+  import:           warnings
+  main-is:          EntropySidecar.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable fire-transition
+  import:           warnings
+  main-is:          FireTransition.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable governance-demo
+  import:           warnings
+  main-is:          GovernanceDemo.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable guard-demo
+  import:           warnings
+  main-is:          GuardDemo.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable render-snapshot
+  import:           warnings
+  main-is:          RenderSnapshot.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable retro-chain-demo
+  import:           warnings
+  main-is:          RetroChainDemo.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable retro-gate
+  import:           warnings
+  main-is:          RetroGate.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable retro-gate-demo
+  import:           warnings
+  main-is:          RetroGateDemo.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable retroconsistency-demo
+  import:           warnings
+  main-is:          RetroconsistencyDemo.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable surface-demo
+  import:           warnings
+  main-is:          SurfaceDemo.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010
+
+executable validate-commit
+  import:           warnings
+  main-is:          ValidateCommit.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+  
+  default-language: Haskell2010

@@ -1,0 +1,9 @@
+packages: .
+
+-- This sandbox has no working path to Hackage's secure index (root.json
+-- signature verification fails, and there is no network fetch available
+-- here anyway). Every dependency this package needs is already present as
+-- a GHC global/boot package (confirmed via `ghc-pkg list`), so disable the
+-- remote repository entirely and resolve purely against the installed
+-- package environment.
+active-repositories: none

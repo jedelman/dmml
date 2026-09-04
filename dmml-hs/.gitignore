@@ -1,5 +1,7 @@
 *.o
 *.hi
+dist-newstyle/
+cabal.project.local
 demo
 surface_demo
 validate-commit
