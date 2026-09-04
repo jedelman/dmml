@@ -1,29 +1,55 @@
 # DMML in one page
 
 This is not the spec. It's the part of the spec you need to mint and cite
-real commits. Source of truth is `dmml/src/from_json.rs` in the sibling
-`dmml` repo — the JSON `*Input` structs and the `*_stmt_from_input`
-functions that build the real AST from them. `written-world`'s `SPEC.md`
-§10 has design history and rationale, but its own EBNF there describes an
-older hand-written text surface that was retired — DMML has no text
-grammar and no lexer anymore. **JSON is the only authoring surface.** If
-this page and the code ever disagree, the code wins; open an issue against
-this page rather than trusting it.
+real commits. **Source of truth is `dmml-hs` in the sibling `dmml`
+repo** — `src/DMML/Json.hs`/`src/DMML/FromJson.hs` (the JSON `*Input`
+types and the `*FromInput`/`*FromJson` functions that build the real AST
+from them) for JSON authoring, and `src/DMML/Surface.hs` (grammar
+documented informally in `dmml-hs/SURFACE.md`) for DMML's OTHER real
+authoring surface, a text grammar — this is not the older hand-written
+text surface `written-world`'s `SPEC.md` §10 describes and retired; that
+one is still gone. `DMML.Surface` is a new, different text grammar,
+targeting the exact same validated AST the JSON front-end builds ("one
+AST, two front-ends" — the two are checked to actually agree, not
+assumed to). If this page and the code ever disagree, the code wins;
+open an issue against this page rather than trusting it.
 
-## Authoring is JSON in, AST out — nothing else
+**RETIRED, 2026-09-04**: the Rust `dmml`/`dmml-runtime` crates (also in
+this repo) are no longer canonical. `dmml-hs` diverged from them for
+real, useful reasons this same day (generalized effects, a chained
+retract, real execution/firing semantics neither implementation had
+before) and nothing forced the two back into agreement — rather than
+port the divergence backward, the call was to make the diverged,
+further-along implementation the real one. The Rust crates still exist
+in this repo for now; treat them as historical, not as something a new
+fork should build against. (`written-world`'s `server`/`client`/`cli`/
+`appview` packages still have live git dependencies on them as of this
+writing — that's a real, separate migration, not yet done; see
+`dev-journal/2026-09-04-dmml-hs-canonical.md`.)
 
-Three single-item entry points, one batching entry point:
+## Authoring is JSON or text in, AST out — nothing else
 
+JSON: three single-item entry points, one batching entry point
+(`DMML.FromJson`):
+
+```haskell
+commitFromJson    :: Text -> Either FromJsonError CommitStmt
+machineFromJson   :: Text -> Either FromJsonError MachineStmt
+referenceFromJson :: Text -> Either FromJsonError ReferenceStmt
+updateFromJson    :: Text -> Either UpdateFromJsonError Update   -- batches; see below
 ```
-commit_from_json(json: &str)    -> CommitStmt
-machine_from_json(json: &str)   -> MachineStmt
-reference_from_json(json: &str) -> ReferenceStmt
-update_from_json(json: &str)    -> Update   (batches of the above; see below)
+
+Text (`DMML.Surface`), the same target AST, a different front door:
+
+```haskell
+parseCommitSurface  :: Text -> Either (ParseErrorBundle Text Void) CommitStmt
+parseMachineSurface :: Text -> Either (ParseErrorBundle Text Void) MachineStmt
 ```
 
-Each takes a raw JSON string (not a pre-parsed value) and returns either
-the AST node or a `FromJsonError` naming exactly which JSON Pointer
-(RFC 6901, e.g. `/facts/2/predicate`) was wrong and why.
+Either way you get back either the AST node or a real error naming
+exactly what was wrong and where — a JSON Pointer (RFC 6901, e.g.
+`/facts/2/predicate`) for the JSON front-end, a line/column for the text
+one.
 
 ## A commit is `verb` + `declares` + `facts` + `consumes` + `refs`
 
@@ -83,8 +109,9 @@ then letters/digits/underscore only.
 
 ## `declares` ordering — you don't have to declare-before-assert
 
-The validator (`validate_self_declared`) is two-pass: it collects every
-`declares` entry (and every `rdf:type` fact) across the whole batch first,
+The validator (`DMML.SelfDeclaration.undeclaredPredicates`) is two-pass:
+it collects every `declares` entry (and every `rdf:type` fact) across
+the whole batch first,
 *then* checks every other predicate against that full set. So order within
 a commit's own JSON doesn't matter — declare-after-use in the same commit
 is fine, same batch is fine. What isn't fine is using a predicate nobody
@@ -101,7 +128,11 @@ scheme your substrate actually resolves is fine.
 — cites one specific triple inside another commit, for finer-grained
 retraction or supersession. `object` is **optional** — omit it entirely
 (never send `null`) for the wildcard: every triple that commit asserted
-for `(subject, predicate)`.
+for `(subject, predicate)`. Sending `object` is genuinely load-bearing
+(fixed 2026-09-04): only the one live value matching it gets removed,
+every OTHER independently-asserted value for the same `(subject,
+predicate)` survives untouched — omitting `object` still removes
+everything for that pair, the original wildcard behavior, unchanged.
 
 ## `refs` values are the same `{uri, cid}` shape as `consumes`'s strong form
 
@@ -113,7 +144,7 @@ Deliberately absent from every JSON shape above: a `created_at` field.
 There is no DMML syntax for "the time this compiles" — the authoring tool
 stamps that at commit time, an author never writes it.
 
-## Machines — states, transitions, guards, effects: also just JSON now
+## Machines — states, transitions, guards, effects
 
 ```json
 {
@@ -143,13 +174,70 @@ stamps that at commit time, an author never writes it.
   — `exists` needs at least one hop. There's exactly one guard primitive,
   `EXISTS(pattern)` plus `negated`; there's no bare-predicate-call guard
   form.
-- An effect is `{"kind": "assert" | "retract", "ident": "..."}` — always
-  implicitly `(self, "state", <ident>)`.
 - A transition needs at least one of: a guard, a `from`+`to` pair, or an
   effect.
-- Full semantics: `dmml/MACHINE_SPEC.md` in the `dmml` repo.
+- Full grammar, both fronts: `dmml-hs/SURFACE.md` (the text surface's own
+  informal grammar, worked examples, and everything below in more
+  detail).
 
-## Batching many commits/machines in one call — `update_from_json`
+### Effects — generalized 2026-09-03/04, this is the part that actually changed
+
+The bare `{"kind": "assert" | "retract", "ident": "..."}` shape from
+before still works exactly as it always did — sugar for
+`(self, "state", <ident>)`, unchanged, use it for a transition that only
+changes its own state. But an effect is no longer LIMITED to that:
+
+```json
+{"kind": "assert", "subject": {"kind": "param", "value": "name"},
+ "predicate": "title", "value": {"kind": "str", "value": "A freshly forged key"}}
+```
+
+- **General assert**: `{"kind": "assert", "subject": <term>, "predicate": "...", "value": <value>}`.
+  `subject` can be `self`, `$param`, or a literal node — an effect can now
+  assert (or retract) a fact about ANY node, not just the machine's own
+  state. `value` is the same shape a fact's `object` already is.
+- **This is also how a transition mints a brand-new node**: DMML is
+  open-world — a node exists the instant any fact mentions it, no
+  separate registry — so an effect whose `subject` is `$name` and whose
+  `predicate`/`value` assert real content brings a brand-new node into
+  existence the moment the transition fires with a real binding for
+  `$name`. No separate "mint" primitive.
+- **General retract**: `{"kind": "retract", "subject": <term>, "hops": [<hop>, ...], "predicate": "...", "value": <value>}`
+  (`hops` and `value` both optional, default `[]`/absent). Zero hops is
+  the ordinary single-fact case. One or more `hops` (same shape as a
+  guard's own — `{"predicate": "...", "term": <term>}`) makes it a
+  CHAINED retract, mirroring a guard's own multi-hop pattern: walks
+  `subject` through each hop, retracting every real edge it walks, then
+  retracts the terminal `predicate`/`value` from wherever the walk
+  landed. Real motivating case: a transition undoing exactly the
+  multi-hop fact its own guard just checked.
+- **`value` is genuinely load-bearing for a retract**, not cosmetic: with
+  a value, only the ONE live alternative matching it gets removed —
+  every other value asserted for the same (subject, predicate) survives.
+  Without one, the old wildcard behavior applies (every live alternative
+  removed) and REFUSES if there's more than one, since there's no
+  principled way to pick just one without a value to match against.
+
+### Firing — new capability, neither implementation had this before today
+
+Everything above is still just AUTHORING a machine — declaring what
+COULD happen. Given a machine, a transition name, real parameter
+bindings, and the current materialized world, `DMML.Fire.fireTransition`
+actually resolves a legal transition's effects to concrete facts and
+renders them as a real, ordinary commit — the same real
+`validate-commit`/`check-declared` pipeline any hand-authored commit
+goes through applies it, nothing is mutated silently. A retract effect's
+citation needs real commit provenance (a `uri`/`cid` the world was
+materialized with, not just a branch label) to know what it's actually
+consuming; the CLI, `fire-transition`, computes this automatically for
+every world file it's given. Firing also gates the WHOLE resulting
+change (not just the transition's own guards) against every OTHER
+guard in a known machine set — a firing that would silently strand some
+unrelated transition's guard elsewhere refuses instead. See
+`dmml-hs/SURFACE.md` and `dmml-hs/examples/*-demo/` for real, worked,
+verified runs of all of this.
+
+## Batching many commits/machines in one call — `updateFromJson`
 
 ```json
 {"update": [
@@ -175,23 +263,33 @@ stamps that at commit time, an author never writes it.
 A single commit is just a batch of one, in a sequence of one:
 `{"update": [{"commits": [c]}]}`.
 
-Unlike the single-item `*_from_json` functions, `update_from_json` never
+Unlike the single-item `*FromJson` functions, `updateFromJson` never
 fails fast — every commit and machine in every batch is built
 independently and every failure collected, with each error's pointer
 rebased onto the whole update (`/update/1/commits/3/facts/1/subject`).
-This governs validation only, not application — `WorldGraph::apply_commit`
-still takes one commit at a time, in caller-supplied order; concurrent
-application of a batch isn't implemented.
+This governs validation only, not application — `DMML.Materialize.
+applyCommit`/`applyIdentifiedCommit` still take one commit at a time, in
+caller-supplied order; concurrent application of a batch isn't
+implemented.
 
 ## What a citation actually guarantees, and what it doesn't
 
-A `consumes` entry is a claim of dependency, not a claim of truth. The
-runtime checks that the cid you're citing was **previously recorded as
-observed** — it does not re-fetch, re-verify, or execute anything the
-citation points at. Citing a real cid you never checked is technically
-valid and substantively dishonest. Every real checkpoint script in
-`dmml-substrate-kit/` spot-verifies at least one citation against the live
-PDS before treating a run as done. Do that too.
+A `consumes` entry is a claim of dependency, not a claim of truth, and
+right now — checked directly against `dmml-hs` while writing this, not
+carried over from the retired Rust crate — it's a WEAKER claim than this
+page used to say: `DMML.Materialize.applyConsume` never checks that the
+`uri`/`cid` you're citing was previously recorded as observed at all. It
+matches purely on `(subject, predicate[, object])` and removes whatever
+it finds; a citation naming a `cid` nobody has ever actually seen is
+currently accepted exactly the same as a real one. (The retired Rust
+crate's `graph.rs` did check the cid half of a `consumes` citation
+against what it had actually recorded — that check did not come along
+in the port to `dmml-hs`; tracked as jedelman/dmml#6.)
+Citing a `cid` you never checked was always substantively dishonest
+regardless of what the runtime enforces; it's now ALSO not something to
+rely on the runtime catching for you. Every real checkpoint script in
+`dmml-substrate-kit/` spot-verifies at least one citation against the
+live PDS before treating a run as done. Do that.
 
 ## The one thing this grammar will never do for you
 
@@ -201,7 +299,7 @@ assert anything, including a claim that describes a protocol for reading
 other commits — but that claim is exactly as authoritative as any other
 claim in the graph: none. If a harness wants to *try* honoring what some
 commit says about how to interpret other commits, that's the harness's own
-convention, applied at its own discretion, never something `apply_commit`
-enforces. See `README.md`'s point about self-assembly, and `FORKING.md` for
+convention, applied at its own discretion, never something
+`DMML.Materialize.applyCommit` enforces. See `README.md`'s point about self-assembly, and `FORKING.md` for
 how actual executable governance logic (which can't and shouldn't live in
 this grammar) gets referenced instead.
