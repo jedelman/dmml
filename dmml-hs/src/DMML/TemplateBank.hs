@@ -44,6 +44,7 @@ module DMML.TemplateBank
   ( Template (..)
   , eligibleTemplates
   , renderTemplate
+  , renderTemplateWith
   ) where
 
 import Data.List (isInfixOf)
@@ -51,9 +52,9 @@ import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as T
 
-import DMML.Ast (GuardClause)
+import DMML.Ast (GuardClause, Literal (..), NodeRef (..), Value (..))
 import DMML.Guard (EvalContext (..), evalGuards)
-import DMML.Materialize (WorldSnapshot)
+import DMML.Materialize (WorldSnapshot, currentValue)
 
 -- | 'templateGuards': the real guard list an eligible subject must
 -- satisfy -- literally 'DMML.Ast.GuardClause' values, the exact type a
@@ -89,11 +90,60 @@ eligibleTemplates snap subject = filter isEligible
 -- interpretation -- this is code, not a model call.
 renderTemplate :: Text -> Template -> Text
 renderTemplate subjectDisplayName tpl =
-  substitute "{subject}" subjectDisplayName (templateText tpl)
+  substituteAll [("{subject}", subjectDisplayName)] (templateText tpl)
+
+-- | Extends 'renderTemplate' with @{attr:<predicate>}@ markers, filled
+-- from the subject's own live fact for that predicate
+-- ('DMML.Materialize.currentValue') -- found necessary testing against
+-- real E1 endurance-run content (@jedelman/dmml#1@), most of whose
+-- descriptive attributes (@state@, @role@, @purpose@ ...) are STRING
+-- LITERALS, not node references. 'DMML.Guard' structurally excludes
+-- literal-valued facts from a guard walk (its own doc comment, faithful
+-- to the real crate's crepe-loader behavior) -- so a literal attribute
+-- can never be a guard CONDITION, but there is no reason it can't be
+-- rendered CONTENT once a template is already eligible by its own real
+-- (node-valued) guards. This is the honest division of labor real
+-- content surfaced: structure (type, relations) decides which template
+-- applies; literal attributes flow in as already-verified-relevant
+-- substitution values, never as a second eligibility mechanism. If
+-- several live alternatives exist for the same predicate (collision-
+-- free mints), the first is used -- a real, disclosed simplification,
+-- not a claim that alternatives are resolved.
+renderTemplateWith :: WorldSnapshot -> Text -> Template -> Text
+renderTemplateWith snap subjectDisplayName tpl =
+  substituteAll (("{subject}", subjectDisplayName) : attrSubs) (templateText tpl)
   where
-    substitute needle replacement haystack
-      | needle `isInfixOfT` haystack =
-          let (before, after) = T.breakOn needle haystack
+    attrSubs =
+      [ ("{attr:" <> predicate <> "}", renderValue v)
+      | predicate <- attrMarkers (templateText tpl)
+      , (v : _) <- [map snd (currentValue (subjectDisplayName, predicate) snap)]
+      ]
+
+-- | Extracts every @<predicate>@ named inside an @{attr:<predicate>}@
+-- marker in the template text -- simple, deliberately not a general
+-- templating engine, just enough to find which predicates this
+-- specific template wants interpolated.
+attrMarkers :: Text -> [Text]
+attrMarkers t = case T.breakOn "{attr:" t of
+  (_, rest)
+    | T.null rest -> []
+    | otherwise ->
+        let inner = T.drop (T.length "{attr:") rest
+            (name, after) = T.breakOn "}" inner
+         in name : attrMarkers (T.drop 1 after)
+
+renderValue :: Value -> Text
+renderValue (ValueLiteral (LitString s)) = s
+renderValue (ValueLiteral (LitNumber n)) = n
+renderValue (ValueLiteral (LitBoolean b)) = if b then "true" else "false"
+renderValue (ValueNode (NodeRef segs)) = T.intercalate "/" segs
+
+substituteAll :: [(Text, Text)] -> Text -> Text
+substituteAll subs haystack = foldl (\h (needle, repl) -> substitute needle repl h) haystack subs
+  where
+    substitute needle replacement h
+      | needle `isInfixOfT` h =
+          let (before, after) = T.breakOn needle h
            in before <> replacement <> substitute needle replacement (T.drop (T.length needle) after)
-      | otherwise = haystack
+      | otherwise = h
     isInfixOfT n h = T.unpack n `isInfixOf` T.unpack h
