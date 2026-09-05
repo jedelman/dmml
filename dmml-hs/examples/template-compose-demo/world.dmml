@@ -1,0 +1,9 @@
+commit setup
+  declare relation condition
+  declare relation material
+
+  npc/watcher `condition` "corroded"
+  npc/watcher `material` "metal"
+
+  npc/keeper `condition` "pristine"
+  npc/keeper `material` "metal"
