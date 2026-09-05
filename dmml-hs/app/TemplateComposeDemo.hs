@@ -14,7 +14,7 @@ import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
-import DMML.Ast (Literal (LitString), Value (ValueLiteral))
+import DMML.Ast (Literal (LitString), NodeRef (NodeRef), Value (ValueLiteral))
 import DMML.Materialize (WorldSnapshot, applyCommit, emptySnapshot)
 import DMML.Surface (parseCommitSurface)
 import DMML.TemplateBank (Template (..), eligibleTemplates, renderTemplate)
@@ -23,19 +23,25 @@ import DMML.TemplateBank (Template (..), eligibleTemplates, renderTemplate)
 -- "base sprite/decorator set" precedent, in prose form. Two templates
 -- deliberately have MUTUALLY EXCLUSIVE coverage (corroded vs. pristine)
 -- so this demo can prove the wrong one is never selected, not just
--- that the right one is.
+-- that the right one is -- and both are bound to `MetalObject`, so the
+-- world's third entity (a `Spirit` sharing `condition = corroded`) is
+-- the real test of type-binding specifically: it must never match
+-- `worn-corroded`, even though the bare attribute tag alone would.
 catalog :: [Template]
 catalog =
   [ Template
       "worn-corroded"
+      (NodeRef ["MetalObject"])
       [("condition", ValueLiteral (LitString "corroded"))]
       "{subject} looks worn, its surface corroded with age."
   , Template
       "gleaming-pristine"
+      (NodeRef ["MetalObject"])
       [("condition", ValueLiteral (LitString "pristine"))]
       "{subject} gleams, freshly forged and untouched."
   , Template
       "metal-generic"
+      (NodeRef ["MetalObject"])
       [("material", ValueLiteral (LitString "metal"))]
       "{subject} is built of metal."
   ]
@@ -52,6 +58,7 @@ main = do
           let snap = applyCommit "world" emptySnapshot stmt
           describe snap "npc/watcher"
           describe snap "npc/keeper"
+          describe snap "creature/wraith"
     _ -> putStrLn "usage: template-compose-demo <world.dmml>" >> exitFailure
 
 describe :: WorldSnapshot -> T.Text -> IO ()

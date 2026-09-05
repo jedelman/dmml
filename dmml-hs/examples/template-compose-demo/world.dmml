@@ -2,8 +2,13 @@ commit setup
   declare relation condition
   declare relation material
 
+  npc/watcher :: a MetalObject
   npc/watcher `condition` "corroded"
   npc/watcher `material` "metal"
 
+  npc/keeper :: a MetalObject
   npc/keeper `condition` "pristine"
   npc/keeper `material` "metal"
+
+  creature/wraith :: a Spirit
+  creature/wraith `condition` "corroded"
