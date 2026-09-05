@@ -1,0 +1,19 @@
+commit prospect
+  declare relation worksAt
+  declare relation role
+  declare relation state
+
+  npc/smith :: a type/smith
+  npc/smith `role` role/oresmith
+  npc/smith `worksAt` mine/ninefathom
+  npc/smith `state` state/active
+
+  npc/apprentice :: a type/smith
+  npc/apprentice `role` role/apprentice
+  npc/apprentice `worksAt` mine/ninefathom
+  npc/apprentice `state` state/training
+
+  npc/herbalist :: a type/herbalist
+  npc/herbalist `role` role/blightreader
+  npc/herbalist `worksAt` forest/oldroot
+  npc/herbalist `state` state/active
