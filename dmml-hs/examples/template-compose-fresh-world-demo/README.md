@@ -13,23 +13,8 @@ as `worksAt`/`:: a Type` always had.
 template-compose-fresh-world-demo examples/template-compose-fresh-world-demo/world.dmml
 ```
 
-Real output:
-
-```
-=== npc/smith ===
-eligible templates: ["smith-at-work","any-active-worker"]
-  -> npc/smith works the forge at mine/ninefathom, a master role/oresmith.
-  -> npc/smith is active and at work.
-
-=== npc/apprentice ===
-eligible templates: ["smith-in-training"]
-  -> npc/apprentice still learns the trade, apprenticed at mine/ninefathom.
-
-=== npc/herbalist ===
-eligible templates: ["herbalist-active","any-active-worker"]
-  -> npc/herbalist tends forest/oldroot as role/blightreader.
-  -> npc/herbalist is active and at work.
-```
+(See the bottom of this README for real output — evolved twice since
+this section was first written, see the two sections below.)
 
 ## What this proves that the E1 run couldn't
 
@@ -82,3 +67,51 @@ Nothing here is prose generation — `mine/ninefathom`'s `name` fact
 guard-invisible as any other literal content always was; what changed
 is that rendering now resolves THROUGH a node reference to find it,
 instead of stopping at the raw path.
+
+## Singularities get names; relations and processes get described through their governing machine
+
+Jason's next distinction: "a singularity needs a name [...] but for the
+more general case — relations and processes — the template should not
+be read directly from the node itself but from the machine that
+produced it." `resolvePath`'s dotted-hop mechanic already had the right
+shape (walk from a subject, through a relation, to a fact about what it
+points at) — `DMML.TemplateBank.resolveViaGoverningMachine` reuses it
+with a different first lookup: `DMML.Governance.findGoverningMachine`
+(already real, load-bearing machinery from `jedelman/dmml#1`'s own
+governed-arbitration design, keyed on the same `equips`/`trigger`
+facts a governed catalog entry would use) finds which machine governs
+`(subject, predicate)`, reads THAT MACHINE's own current `state`, and
+resolves a description off the state node — a `{via:<predicate>.
+<path>}` marker, alongside `{attr:...}`.
+
+`world.dmml` and `world-later.dmml` are identical except for one
+thing: `npc/apprentice`'s `worksAt` relation is governed by
+`machine/apprenticeship` (`equips`/`trigger`), whose own `state` is
+`state/earlydays` in one file and `state/seasoned` in the other — real,
+separate description facts on each state node. Same template
+(`smith-in-training`), same subject, same relation — the rendered text
+changes completely because the underlying PROCESS moved, not because
+anything about `npc/apprentice` or `mine/ninefathom` changed:
+
+```sh
+template-compose-fresh-world-demo \
+  examples/template-compose-fresh-world-demo/world.dmml \
+  examples/template-compose-fresh-world-demo/world-later.dmml
+```
+
+```
+##### world.dmml #####
+=== npc/apprentice ===
+  -> npc/apprentice still learns the trade, apprenticed at the Ninefathom seam
+     as an apprentice -- just started, still finding their footing in the dark.
+
+##### world-later.dmml #####
+=== npc/apprentice ===
+  -> npc/apprentice still learns the trade, apprenticed at the Ninefathom seam
+     as an apprentice -- has worked the seam long enough to know every tunnel by feel.
+```
+
+Still zero generation, zero LLM calls, and no new grammar — `{via:...}`
+composes two already-real primitives (`findGoverningMachine`,
+`currentValue`) the exact same way `{attr:...}`'s dotted path already
+did.

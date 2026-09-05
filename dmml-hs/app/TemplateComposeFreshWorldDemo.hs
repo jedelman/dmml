@@ -54,9 +54,15 @@ catalog =
       (guardsFromText "guard self `a` type/smith\nguard self `state` state/active\nguard self `role` role/oresmith")
       "{subject} works the forge at {attr:worksAt.name}, {attr:role.epithet}."
   , Template
+      -- `{via:worksAt.description}` deliberately does NOT read a name
+      -- off the related node (mine/ninefathom) -- it asks whichever
+      -- MACHINE governs npc/apprentice's `worksAt` relation for its own
+      -- current state's description. Two world files, same subject,
+      -- same relation, different governing-machine state -- proving
+      -- the rendered text tracks the PROCESS, not a static name.
       "smith-in-training"
       (guardsFromText "guard self `a` type/smith\nguard self `state` state/training")
-      "{subject} still learns the trade, apprenticed at {attr:worksAt.name} as an {attr:role.name}."
+      "{subject} still learns the trade, apprenticed at {attr:worksAt.name} as an {attr:role.name} -- {via:worksAt.description}."
   , Template
       "herbalist-active"
       (guardsFromText "guard self `a` type/herbalist\nguard self `state` state/active")
@@ -71,7 +77,11 @@ main :: IO ()
 main = do
   args <- getArgs
   case args of
-    [worldPath] -> do
+    [] -> putStrLn "usage: template-compose-fresh-world-demo <world.dmml> [world-later.dmml ...]" >> exitFailure
+    worldPaths -> mapM_ runWorld worldPaths
+  where
+    runWorld worldPath = do
+      putStrLn ("##### " <> worldPath <> " #####\n")
       src <- TIO.readFile worldPath
       case parseCommitSurface src of
         Left err -> putStrLn (worldPath <> ":\n" <> errorBundlePretty err) >> exitFailure
@@ -80,7 +90,6 @@ main = do
           describe snap "npc/smith"
           describe snap "npc/apprentice"
           describe snap "npc/herbalist"
-    _ -> putStrLn "usage: template-compose-fresh-world-demo <world.dmml>" >> exitFailure
 
 describe :: WorldSnapshot -> T.Text -> IO ()
 describe snap subject = do

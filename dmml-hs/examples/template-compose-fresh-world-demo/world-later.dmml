@@ -10,8 +10,8 @@ commit prospect
 
   npc/apprentice `equips` machine/apprenticeship
   machine/apprenticeship `trigger` "worksAt"
-  machine/apprenticeship `state` state/earlydays
-  state/earlydays `description` "just started, still finding their footing in the dark"
+  machine/apprenticeship `state` state/seasoned
+  state/seasoned `description` "has worked the seam long enough to know every tunnel by feel"
 
   npc/smith :: a type/smith
   npc/smith `role` role/oresmith

@@ -53,6 +53,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import DMML.Ast (GuardClause, Literal (..), NodeRef (..), Value (..))
+import DMML.Governance (findGoverningMachine)
 import DMML.Guard (EvalContext (..), evalGuards)
 import DMML.Materialize (WorldSnapshot, currentValue)
 
@@ -122,13 +123,43 @@ renderTemplate subjectDisplayName tpl =
 -- simplification, not a claim that alternatives are resolved.
 renderTemplateWith :: WorldSnapshot -> Text -> Template -> Text
 renderTemplateWith snap subjectDisplayName tpl =
-  substituteAll (("{subject}", subjectDisplayName) : attrSubs) (templateText tpl)
+  substituteAll (("{subject}", subjectDisplayName) : attrSubs ++ viaSubs) (templateText tpl)
   where
     attrSubs =
       [ ("{attr:" <> path <> "}", renderValue v)
-      | path <- attrMarkers (templateText tpl)
+      | path <- markersFor "{attr:" (templateText tpl)
       , Just v <- [resolvePath snap subjectDisplayName (T.splitOn "." path)]
       ]
+    viaSubs =
+      [ ("{via:" <> path <> "}", renderValue v)
+      | path <- markersFor "{via:" (templateText tpl)
+      , Just v <- [resolveViaGoverningMachine snap subjectDisplayName (T.splitOn "." path)]
+      ]
+
+-- | Describes a RELATION or PROCESS through whatever machine actually
+-- governs it, rather than through a name fact on the related node
+-- itself -- the distinction Jason drew after 'resolvePath' shipped: "a
+-- singularity needs a name [...] but for the more general case,
+-- relations and processes, the template should not be read directly
+-- from the node itself but from the machine that produced it."
+-- 'resolvePath'\'s dotted-hop mechanic already had the right shape
+-- (walk from a subject to a related node, read a fact off it) -- this
+-- reuses it, just starting from a different first lookup:
+-- 'DMML.Governance.findGoverningMachine' (already real,
+-- @jedelman/dmml#1@'s own governed-arbitration machinery, keyed on the
+-- same @equips@\/@trigger@ facts a governed catalog entry would use)
+-- finds which machine governs @(subject, predicate)@, then this reads
+-- THAT MACHINE's own current @state@ and resolves a description off
+-- the state node -- so the same relation renders differently as the
+-- underlying process actually moves through its own real states,
+-- still zero generation, still just facts.
+resolveViaGoverningMachine :: WorldSnapshot -> Text -> [Text] -> Maybe Value
+resolveViaGoverningMachine _ _ [] = Nothing
+resolveViaGoverningMachine snap subject (governedPredicate : descriptionPath) = do
+  machineNode <- findGoverningMachine (subject, governedPredicate) snap
+  case map snd (currentValue (machineNode, "state") snap) of
+    (ValueNode (NodeRef segs) : _) -> resolvePath snap (T.intercalate "/" segs) descriptionPath
+    _ -> Nothing
 
 -- | Walks a dotted attribute path one hop at a time: each predicate in
 -- the path resolves the CURRENT node's live fact, and (except at the
@@ -148,18 +179,18 @@ resolvePath snap node (predicate : rest) =
     (ValueNode (NodeRef segs) : _) -> resolvePath snap (T.intercalate "/" segs) rest
     _ -> Nothing
 
--- | Extracts every @<predicate>@ named inside an @{attr:<predicate>}@
--- marker in the template text -- simple, deliberately not a general
--- templating engine, just enough to find which predicates this
--- specific template wants interpolated.
-attrMarkers :: Text -> [Text]
-attrMarkers t = case T.breakOn "{attr:" t of
+-- | Extracts every path named inside a marker with the given prefix
+-- (@{attr:...}@ or @{via:...}@) in the template text -- simple,
+-- deliberately not a general templating engine, just enough to find
+-- which paths this specific template wants interpolated.
+markersFor :: Text -> Text -> [Text]
+markersFor prefix t = case T.breakOn prefix t of
   (_, rest)
     | T.null rest -> []
     | otherwise ->
-        let inner = T.drop (T.length "{attr:") rest
+        let inner = T.drop (T.length prefix) rest
             (name, after) = T.breakOn "}" inner
-         in name : attrMarkers (T.drop 1 after)
+         in name : markersFor prefix (T.drop 1 after)
 
 renderValue :: Value -> Text
 renderValue (ValueLiteral (LitString s)) = s
