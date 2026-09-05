@@ -45,6 +45,7 @@ module DMML.TemplateBank
   , eligibleTemplates
   , renderTemplate
   , renderTemplateWith
+  , displayNameOf
   ) where
 
 import Data.List (isInfixOf)
@@ -93,6 +94,29 @@ renderTemplate :: Text -> Template -> Text
 renderTemplate subjectDisplayName tpl =
   substituteAll [("{subject}", subjectDisplayName)] (templateText tpl)
 
+-- | Resolves @subject@'s own display name (@name@ fact, falling back
+-- to @epithet@, falling back to the bare node identifier itself if
+-- neither exists). Exported separately because 'renderTemplateWith'
+-- uses this internally for its own @{subject}@ marker (below) -- a
+-- real bug this same session's own `check-describable` pass caught:
+-- an earlier version of 'renderTemplateWith' took a caller-supplied
+-- "display name" as its resolution root, so every demo that (wrongly)
+-- passed a resolved display name instead of the real node id there
+-- broke every @{attr:...}@\/@{via:...}@ lookup outright (resolving
+-- facts against a node named "Tamsin" rather than @npc/smith@, which
+-- of course has none). Fixed by always taking the real subject node id
+-- as resolution root, and resolving @{subject}@'s own display text
+-- FROM it internally -- one node id, one true resolution root,
+-- 'displayNameOf' still exported for a caller that wants the same
+-- resolution for its own purposes (a header, a log line).
+displayNameOf :: WorldSnapshot -> Text -> Text
+displayNameOf snap subject =
+  case resolvePath snap subject ["name"] of
+    Just v -> renderValue v
+    Nothing -> case resolvePath snap subject ["epithet"] of
+      Just v -> renderValue v
+      Nothing -> subject
+
 -- | Extends 'renderTemplate' with @{attr:<path>}@ markers, filled from
 -- a real fact -- either the subject's own (@{attr:role}@) or, via a
 -- dotted @<predicate>.<predicate>...@ path, a fact ABOUT whatever node
@@ -121,19 +145,23 @@ renderTemplate subjectDisplayName tpl =
 -- several live alternatives exist for a resolved predicate
 -- (collision-free mints), the first is used -- a real, disclosed
 -- simplification, not a claim that alternatives are resolved.
+--
+-- Takes the real subject NODE ID, never a display name -- see
+-- 'displayNameOf''s own doc comment for the real bug that convention
+-- fixes.
 renderTemplateWith :: WorldSnapshot -> Text -> Template -> Text
-renderTemplateWith snap subjectDisplayName tpl =
-  substituteAll (("{subject}", subjectDisplayName) : attrSubs ++ viaSubs) (templateText tpl)
+renderTemplateWith snap subject tpl =
+  substituteAll (("{subject}", displayNameOf snap subject) : attrSubs ++ viaSubs) (templateText tpl)
   where
     attrSubs =
       [ ("{attr:" <> path <> "}", renderValue v)
       | path <- markersFor "{attr:" (templateText tpl)
-      , Just v <- [resolvePath snap subjectDisplayName (T.splitOn "." path)]
+      , Just v <- [resolvePath snap subject (T.splitOn "." path)]
       ]
     viaSubs =
       [ ("{via:" <> path <> "}", renderValue v)
       | path <- markersFor "{via:" (templateText tpl)
-      , Just v <- [resolveViaGoverningMachine snap subjectDisplayName (T.splitOn "." path)]
+      , Just v <- [resolveViaGoverningMachine snap subject (T.splitOn "." path)]
       ]
 
 -- | Describes a RELATION or PROCESS through whatever machine actually

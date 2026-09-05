@@ -25,7 +25,7 @@ import Text.Megaparsec (errorBundlePretty)
 import DMML.Ast (GuardClause, machineTransitions, transitionGuards)
 import DMML.Materialize (WorldSnapshot, applyCommit, emptySnapshot)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
-import DMML.TemplateBank (Template (..), eligibleTemplates, renderTemplateWith)
+import DMML.TemplateBank (Template (..), displayNameOf, eligibleTemplates, renderTemplateWith)
 
 guardsFromText :: T.Text -> [GuardClause]
 guardsFromText src = case parseMachineSurface wrapped of
@@ -94,7 +94,8 @@ main = do
 describe :: WorldSnapshot -> T.Text -> IO ()
 describe snap subject = do
   let eligible = eligibleTemplates snap subject catalog
-  putStrLn ("=== " <> T.unpack subject <> " ===")
+      displayName = displayNameOf snap subject
+  putStrLn ("=== " <> T.unpack subject <> " (" <> T.unpack displayName <> ") ===")
   putStrLn ("eligible templates: " <> show (map templateId eligible))
   mapM_ (\tpl -> TIO.putStrLn ("  -> " <> renderTemplateWith snap subject tpl)) eligible
   putStrLn ""

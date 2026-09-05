@@ -9,11 +9,14 @@ commit prospect
   declare relation description
 
   npc/apprentice `equips` machine/apprenticeship
+  npc/apprentice `name` "Bram"
+  machine/apprenticeship `name` "Bram's apprenticeship"
   machine/apprenticeship `trigger` "worksAt"
   machine/apprenticeship `state` state/seasoned
   state/seasoned `description` "has worked the seam long enough to know every tunnel by feel"
 
   npc/smith :: a type/smith
+  npc/smith `name` "Tamsin"
   npc/smith `role` role/oresmith
   npc/smith `worksAt` mine/ninefathom
   npc/smith `state` state/active
@@ -24,6 +27,7 @@ commit prospect
   npc/apprentice `state` state/training
 
   npc/herbalist :: a type/herbalist
+  npc/herbalist `name` "Onn"
   npc/herbalist `role` role/blightreader
   npc/herbalist `worksAt` forest/oldroot
   npc/herbalist `state` state/active
