@@ -1,0 +1,19 @@
+commit prospect
+  declare relation location
+  declare relation name
+  declare relation holds
+  declare relation equips
+
+  player/one `location` room/forge
+  player/one `equips` machine/miningactions
+
+  npc/smith :: a type/smith
+  npc/smith `name` "Tamsin"
+  npc/smith `location` room/forge
+
+  npc/herbalist :: a type/herbalist
+  npc/herbalist `name` "Onn"
+  npc/herbalist `location` forest/oldroot
+
+  room/forge `name` "the smithy"
+  forest/oldroot `name` "Oldroot"

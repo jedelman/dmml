@@ -39,6 +39,7 @@ module DMML.Guard
   , resolveTransition
   , lookupTransition
   , mayFire
+  , availableTransitions
   ) where
 
 import Data.List (find, foldl', nub)
@@ -167,3 +168,26 @@ mayFire machine ident ctx snap = do
   decl <- lookupTransition machine ident
   let (guards, effects) = resolveTransition decl
   pure (evalGuards guards ctx snap, effects, transitionTo decl)
+
+-- | "What can @ctx@'s @self@ legally do right now" -- every
+-- @(machineNode, transitionIdent)@ pair, across the given machine set,
+-- whose guards currently hold. Not a new interpreter capability: 'mayFire'
+-- already answers this for one named transition; this is the SAME
+-- "new evaluation mode" §19.2 already named as the shape sense-machines
+-- need ("walk every transition on every declared machine and collect
+-- the effects of every one whose guard currently holds... a forward
+-- pass reusing eval_guards/resolve_transition unchanged, just called in
+-- a loop instead of by ident") -- applied here to surfacing available
+-- ACTIONS to a player rather than to materializing perceived facts,
+-- same underlying primitive either way. Deliberately takes the machine
+-- SET to scan as a plain argument rather than deciding for itself which
+-- machines are "in scope" (e.g. via @equips@) -- that's a caller
+-- policy (a player's own equipped machines? every machine on co-located
+-- entities? both?), not something this generic evaluator should decide.
+availableTransitions :: Map Text MachineStmt -> EvalContext -> WorldSnapshot -> [(Text, Text)]
+availableTransitions machines ctx snap =
+  [ (machineNodeText, transitionIdent decl)
+  | (machineNodeText, machine) <- Map.toList machines
+  , decl <- machineTransitions machine
+  , Just (True, _, _) <- [mayFire machine (transitionIdent decl) ctx snap]
+  ]

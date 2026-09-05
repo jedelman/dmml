@@ -1,0 +1,10 @@
+machine machine/miningactions
+
+  states
+    idle
+
+  transition greet()
+    guard self `location` room/forge
+
+  transition descend()
+    guard self `holds` tool/lantern
