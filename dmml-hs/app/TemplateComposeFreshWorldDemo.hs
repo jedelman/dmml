@@ -40,21 +40,27 @@ guardsFromText src = case parseMachineSurface wrapped of
 
 -- Every guard here targets vocabulary this world itself declares --
 -- `role`/`state` are gate conditions now, not just interpolation
--- sources, because nothing about them is a string literal.
+-- sources, because nothing about them is a string literal. Dotted
+-- `{attr:role.name}`/`{attr:role.epithet}` markers resolve THROUGH the
+-- node a subject's own `role` fact points at, to a real name fact
+-- asserted on that node -- proving a display name is just another
+-- fact, and that the SAME referenced node can carry several,
+-- differently-purposed ones (`name` for plain use, `epithet` for a
+-- more formal register) for different templates to choose between.
 catalog :: [Template]
 catalog =
   [ Template
       "smith-at-work"
       (guardsFromText "guard self `a` type/smith\nguard self `state` state/active\nguard self `role` role/oresmith")
-      "{subject} works the forge at {attr:worksAt}, a master {attr:role}."
+      "{subject} works the forge at {attr:worksAt.name}, {attr:role.epithet}."
   , Template
       "smith-in-training"
       (guardsFromText "guard self `a` type/smith\nguard self `state` state/training")
-      "{subject} still learns the trade, apprenticed at {attr:worksAt}."
+      "{subject} still learns the trade, apprenticed at {attr:worksAt.name} as an {attr:role.name}."
   , Template
       "herbalist-active"
       (guardsFromText "guard self `a` type/herbalist\nguard self `state` state/active")
-      "{subject} tends {attr:worksAt} as {attr:role}."
+      "{subject} tends {attr:worksAt.name} as {attr:role.name}."
   , Template
       "any-active-worker"
       (guardsFromText "guard self `state` state/active")

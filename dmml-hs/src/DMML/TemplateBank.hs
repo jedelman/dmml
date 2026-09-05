@@ -92,32 +92,61 @@ renderTemplate :: Text -> Template -> Text
 renderTemplate subjectDisplayName tpl =
   substituteAll [("{subject}", subjectDisplayName)] (templateText tpl)
 
--- | Extends 'renderTemplate' with @{attr:<predicate>}@ markers, filled
--- from the subject's own live fact for that predicate
--- ('DMML.Materialize.currentValue') -- found necessary testing against
--- real E1 endurance-run content (@jedelman/dmml#1@), most of whose
--- descriptive attributes (@state@, @role@, @purpose@ ...) are STRING
--- LITERALS, not node references. 'DMML.Guard' structurally excludes
--- literal-valued facts from a guard walk (its own doc comment, faithful
--- to the real crate's crepe-loader behavior) -- so a literal attribute
--- can never be a guard CONDITION, but there is no reason it can't be
--- rendered CONTENT once a template is already eligible by its own real
--- (node-valued) guards. This is the honest division of labor real
--- content surfaced: structure (type, relations) decides which template
--- applies; literal attributes flow in as already-verified-relevant
+-- | Extends 'renderTemplate' with @{attr:<path>}@ markers, filled from
+-- a real fact -- either the subject's own (@{attr:role}@) or, via a
+-- dotted @<predicate>.<predicate>...@ path, a fact ABOUT whatever node
+-- the first predicate resolves to (@{attr:role.name}@: resolve
+-- subject's own @role@ to a node, e.g. @role\/oresmith@, then resolve
+-- THAT node's own @name@ fact). Added 2026-09-04 (Jason, laughing at
+-- the fresh-world demo's raw-node-path rendering: "things can have
+-- names! they can have many names for many reasons!") -- a display
+-- name isn't a mechanism to design, it's just another fact, asserted
+-- on the node the same way any attribute is, and nothing stops a node
+-- from carrying several differently-purposed name facts (@name@,
+-- @epithet@, ...) for a caller to choose among by predicate, same as
+-- any other multi-valued relation. Found necessary in the first place
+-- testing against real E1 endurance-run content (@jedelman/dmml#1@),
+-- most of whose descriptive attributes (@state@, @role@, @purpose@
+-- ...) are STRING LITERALS, not node references. 'DMML.Guard'
+-- structurally excludes literal-valued facts from a guard walk (its
+-- own doc comment, faithful to the real crate's crepe-loader
+-- behavior) -- so a literal attribute can never be a guard CONDITION,
+-- but there is no reason it can't be rendered CONTENT once a template
+-- is already eligible by its own real (node-valued) guards. This is
+-- the honest division of labor real content surfaced: structure
+-- (type, relations) decides which template applies; literal
+-- attributes (a name included) flow in as already-verified-relevant
 -- substitution values, never as a second eligibility mechanism. If
--- several live alternatives exist for the same predicate (collision-
--- free mints), the first is used -- a real, disclosed simplification,
--- not a claim that alternatives are resolved.
+-- several live alternatives exist for a resolved predicate
+-- (collision-free mints), the first is used -- a real, disclosed
+-- simplification, not a claim that alternatives are resolved.
 renderTemplateWith :: WorldSnapshot -> Text -> Template -> Text
 renderTemplateWith snap subjectDisplayName tpl =
   substituteAll (("{subject}", subjectDisplayName) : attrSubs) (templateText tpl)
   where
     attrSubs =
-      [ ("{attr:" <> predicate <> "}", renderValue v)
-      | predicate <- attrMarkers (templateText tpl)
-      , (v : _) <- [map snd (currentValue (subjectDisplayName, predicate) snap)]
+      [ ("{attr:" <> path <> "}", renderValue v)
+      | path <- attrMarkers (templateText tpl)
+      , Just v <- [resolvePath snap subjectDisplayName (T.splitOn "." path)]
       ]
+
+-- | Walks a dotted attribute path one hop at a time: each predicate in
+-- the path resolves the CURRENT node's live fact, and (except at the
+-- final hop) that fact's value must itself be a node to walk the next
+-- hop from. Same idea as 'DMML.Guard.stepHop', deliberately simpler
+-- (no @?var@ binding, no anchor fallback) since this is rendering a
+-- path a template author wrote explicitly, not evaluating an
+-- existential pattern.
+resolvePath :: WorldSnapshot -> Text -> [Text] -> Maybe Value
+resolvePath _ _ [] = Nothing
+resolvePath snap node [predicate] =
+  case map snd (currentValue (node, predicate) snap) of
+    (v : _) -> Just v
+    [] -> Nothing
+resolvePath snap node (predicate : rest) =
+  case map snd (currentValue (node, predicate) snap) of
+    (ValueNode (NodeRef segs) : _) -> resolvePath snap (T.intercalate "/" segs) rest
+    _ -> Nothing
 
 -- | Extracts every @<predicate>@ named inside an @{attr:<predicate>}@
 -- marker in the template text -- simple, deliberately not a general

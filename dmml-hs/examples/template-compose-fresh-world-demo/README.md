@@ -47,17 +47,38 @@ deliberately type-agnostic guard, proving guards compose across
 whatever granularity the author actually wants, not just the type-plus-
 attribute shape every other demo so far has used.
 
-## The real cost this trades away, not hidden
+## The real cost this trades away — resolved, not just flagged
 
-`{attr:role}`/`{attr:worksAt}` render the raw node path —
-`"a master role/oresmith"`, `"at mine/ninefathom"` — not clean prose.
-Going fully node-valued to make everything guard-walkable is a genuine
-tradeoff against the E1 corpus's free-text literals, which read far
-better out of the box (`"first down the ninefathom shaft"`) precisely
-because they were never structured. This isn't solved here: a real
-production template bank would need either a per-node "display name"
-fact (itself node- or literal-valued, a separate design question) or
-`renderTemplateWith` rendering just a node's last segment instead of
-its full path — neither built, both genuinely open, and worth being
-honest that "no narrative literals" has a real readability cost, not
-just a structural win.
+First pass rendered raw node paths (`"a master role/oresmith"`,
+`"at mine/ninefathom"`) and called the fix a genuinely open question.
+Jason, laughing at that: "things can have names! they can have many
+names for many reasons!" — right: a display name isn't a mechanism to
+design, it's just another fact, asserted on the node the same way any
+attribute is. `DMML.TemplateBank.resolvePath` (new) walks a dotted
+`{attr:role.name}` marker through the node `role` resolves to and
+renders THAT node's own `name` fact. `world.dmml` gives `role/oresmith`
+**two** differently-purposed name facts — `name` = `"ore-smith"`,
+`epithet` = `"master of the seam"` — and the catalog below picks
+whichever fits: `smith-at-work`'s more formal sentence uses
+`{attr:role.epithet}`, `smith-in-training`'s plainer one uses
+`{attr:role.name}` on a different role node entirely. Same underlying
+mechanism (`DMML.Materialize.currentValue`, walked one hop further),
+same node carrying multiple names for different reasons, exactly as
+described.
+
+Real output now, full sentences, resolved entirely through facts:
+
+```
+=== npc/smith ===
+  -> npc/smith works the forge at the Ninefathom seam, master of the seam.
+=== npc/apprentice ===
+  -> npc/apprentice still learns the trade, apprenticed at the Ninefathom seam as an apprentice.
+=== npc/herbalist ===
+  -> npc/herbalist tends Oldroot as blight-reader.
+```
+
+Nothing here is prose generation — `mine/ninefathom`'s `name` fact
+(`"the Ninefathom seam"`) is exactly as hand-authored and exactly as
+guard-invisible as any other literal content always was; what changed
+is that rendering now resolves THROUGH a node reference to find it,
+instead of stopping at the raw path.

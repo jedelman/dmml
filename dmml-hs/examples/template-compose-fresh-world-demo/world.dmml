@@ -2,6 +2,8 @@ commit prospect
   declare relation worksAt
   declare relation role
   declare relation state
+  declare relation name
+  declare relation epithet
 
   npc/smith :: a type/smith
   npc/smith `role` role/oresmith
@@ -17,3 +19,11 @@ commit prospect
   npc/herbalist `role` role/blightreader
   npc/herbalist `worksAt` forest/oldroot
   npc/herbalist `state` state/active
+
+  role/oresmith `name` "ore-smith"
+  role/oresmith `epithet` "master of the seam"
+  role/apprentice `name` "apprentice"
+  role/blightreader `name` "blight-reader"
+
+  mine/ninefathom `name` "the Ninefathom seam"
+  forest/oldroot `name` "Oldroot"
