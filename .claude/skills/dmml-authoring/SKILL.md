@@ -76,6 +76,43 @@ a misleading "incorrect indentation" error rather than an obvious
 "invalid character" one. Use camelCase or a single run of letters/
 digits instead: `metalobject`, `earlydays`, `contentgap1`.
 
+## There is no comment syntax — none, anywhere
+
+DMML has no line comment, no block comment, no `#`, no `--`, no `//`.
+`DMML.Surface`'s two space consumers (`scn`, `sc`) are both `L.space …
+empty empty` — the comment slots are literally empty, and `scn`'s own
+doc comment even says so ("full-line comments (none defined yet), kept
+for symmetry"). Anything you write intending it as a comment gets
+parsed as content and fails — often with an unhelpful indentation
+error nowhere near the actual offending line, or (if it contains
+non-ASCII punctuation like a real em dash) with a totally unrelated
+`hGetContents: invalid argument` crash from the file reader before
+parsing even starts (see the UTF-8 note below — these are two separate
+real problems that can look like the same symptom). Put explanation in
+the commit's own facts (a `name`/`description` predicate) or a sibling
+`.md` file — never inline in the `.dmml` file itself.
+
+## Non-ASCII content can crash the CLI before parsing even runs
+
+Several `dmml-hs` binaries still read `.dmml` source with
+`Data.Text.IO.readFile`, which decodes using the process locale rather
+than assuming UTF-8. Under a non-UTF-8 locale (`LC_ALL=C`, common in
+CI/cron/Docker), a real, legitimate UTF-8 character in a string literal
+or an accidental comment attempt (a real em dash, a curly quote, a
+non-Latin name) crashes with `hGetContents: invalid argument (cannot
+decode byte sequence starting from ...)` — **before the parser runs at
+all**, so the error names no line and no DMML construct. This is a
+known, partially-fixed bug class in this project (some tools already
+use `BS.readFile` + `Data.Text.Encoding.decodeUtf8` correctly); if you
+hit this crash, it's very likely the reader, not your content. Stick to
+ASCII in string literals as a workaround, or run under `LC_ALL=C.UTF-8`.
+
+## `:: a type/X` is the required form for typing a node — not `:: type/X`
+
+`subject :: a type/X` is real sugar for asserting the RDF-style type
+fact — the literal keyword `a` is mandatory in the middle. `subject ::
+type/X` (skipping `a`) is a hard parse error.
+
 ## `from -> to` sugar adds a guard, never an effect
 
 `` transitionName()\n  from -> to `` desugars to an **implicit guard**
@@ -112,7 +149,7 @@ empty commits. If a transition needs to be *actually fireable*, not
 just *listable*, give it a real effect — even a trivial one (a private
 `used`/`unused` toggle on itself is enough).
 
-## A freshly minted machine needs its own initial `state` fact
+## A freshly minted machine needs its own initial `state` fact — and it must match the `states` block EXACTLY
 
 Minting a brand-new machine instance and immediately equipping it is
 not enough — if its transitions use `from -> to` sugar, the implicit
@@ -121,6 +158,22 @@ an initial `state` fact for it first. A machine with no `state` fact at
 all will refuse every `from -> to` transition unconditionally, even
 when every other condition is satisfied. Assert the initial state in
 the SAME commit that equips it.
+
+**And that initial value must be single-segment, matching the `states`
+block verbatim — never multi-segment, even though the "give guardable
+values real multi-segment names" rule of thumb above might suggest
+otherwise.** A real, observed mistake: a machine declared `states\n
+resting\n preparing\n ...` (necessarily single-segment, see above), but
+its initializing commit asserted `keeper/mei `state` state/resting`
+(multi-segment) instead of `keeper/mei `state` resting`. The implicit
+`from -> to` guard compares against the state name exactly as written
+in the `states` block — a multi-segment value can never match it, so
+every transition refused. **A machine's own `state` is its private
+control variable, not an externally-guardable fact** — if you also want
+something externally guardable, assert a SEPARATE, differently-named,
+multi-segment fact alongside it (e.g. `status/passable` next to the
+machine's own bare `state`), don't try to make one value serve both
+purposes.
 
 ## Effects CAN target other subjects, and CAN mint fresh nodes by firing
 
@@ -146,18 +199,66 @@ inference (made once in this project's own `written-world/cli/app/
 Architect.hs`, corrected in place) — nothing about DMML's checks are
 keyed on whether a node existed before this commit.
 
-## `retract`/consumption needs a real git repository to actually apply
+## `written-world`'s own commit-loading order used to be undefined, then briefly wrong a different way
 
-Confirmed by direct testing: firing a transition with a `retract`
-effect against a `commits/` directory that is **not inside a real git
-repository** can silently fail to actually clear the old fact — the
-fired commit's own text still shows the right `consumes` citation, but
-a subsequent `look` shows the predicate as multi-valued anyway (both
-old and new). The identical sequence, run inside a real `git init`'d
-directory, retracts cleanly. **Always test-fire generated `.dmml`
-content inside a real, git-initialized `commits/` directory** — never
-a bare scratch folder — matching `written-world/CLAUDE.md`'s own
-"exercise the real CLI" rule, now with a concrete reason why.
+**Corrected twice** — first by an Opus review, then by that review's own
+proposed fix being caught wrong by actually re-testing it, which is
+itself worth taking to heart: reviewing code is not the same as running
+it.
+
+An earlier version of this section claimed `retract`/consumption
+"needs a real git repository to actually apply" (attributing it to
+running outside `git init`'d directory). That diagnosis was wrong.
+The real cause, found by inspection of `written-world/cli/app/Main.hs`'s
+`loadAll`: `listDirectory` gives **no ordering guarantee at all**
+(raw filesystem readdir order), and `DMML.Materialize.
+applyIdentifiedCommits` folds commits in whatever order it's handed —
+a commit's `consumes` block only clears a fact asserted by an
+**earlier** commit in that fold. If a freshly-fired commit happened to
+come back from `readdir` before the file it retracts against, the
+retraction silently no-ops. Nothing about this involves git at all.
+
+**The first fix attempt was itself wrong, caught by actually
+re-running the sequence rather than trusting the fix on inspection**:
+sorting the file list lexicographically (`sort <$> listDirectory ...`)
+is *not* a valid stand-in for commit order either. `written-world
+fire`'s own generated filenames are `<verb>-<timestampMs>.dmml` (no
+leading numeric/date prefix) — confirmed directly, a fired
+`awaken-1788680898074.dmml` sorts BEFORE a hand-authored `world.dmml`
+purely alphabetically (`'a' < 'w'`). Under name-sort, the fired
+commit's retraction ran before the very fact it needed to retract was
+even loaded — a **worse**, silently-wrong-*value* failure than the
+original nondeterminism (the base fact "won" outright, not just stayed
+multi-valued).
+
+**The actual fix**: sort by each file's real modification time
+(`getModificationTime`), not by name. A fired commit is always written
+strictly after whatever it consumes, so mtime order is a genuine proxy
+for commit order — verified directly, including two `written-world
+fire` calls issued back-to-back with no artificial delay (nanosecond
+mtime resolution correctly distinguished them on ext4). Residual,
+disclosed risk: this is a stable sort, so a genuine mtime **tie**
+(coarse-granularity filesystem, clock skew, two writes landing in the
+same tick) falls back to whatever order `listDirectory` happened to
+return — the original nondeterminism, just narrowed to an edge case.
+Fixed in `written-world/cli/app/Main.hs` and its three sibling agents
+(`Demiurge.hs`, `StructuralDemiurge.hs`, `Architect.hs`) — all four had
+copy-pasted the same unordered `loadSnapshot`/`loadAll` pattern.
+
+**Practical upshot for you, authoring or reviewing DMML content**: a
+clean `validate-commit` pass proves shape only. To prove a *sequence*
+of fired transitions behaves correctly, fire every transition the
+machine declares, in sequence, through to whatever you consider its
+end state — not just the first one or two — inside a real,
+git-initialized `commits/` directory (still good practice for the
+unrelated reason that `written-world fire` itself calls `git add`/
+`git commit`, which simply fails outside one), and actually read
+`look`'s output after each step. Firing two transitions and calling it
+verified is not enough — the teahouse-keeper machine this rule was
+found against passed exactly that bar and still turned out to deadlock
+at its third transition (a separate, real finding — see this project's
+own review of that world for what a genuinely complete verification
+pass looks like).
 
 ## `written-world look`/`fire` do NOT apply governed arbitration; `render-snapshot` does
 
@@ -223,8 +324,13 @@ whichever reads better in context.
    it have at least one real effect?
 4. Every freshly minted machine: did you assert its initial `state` in
    the same commit that equips it?
-5. Test by actually firing it (`written-world fire ...`), inside a real
-   git-initialized `commits/` directory — never trust a clean
-   `cabal build` alone.
+5. Test by actually firing EVERY transition the machine declares, in
+   sequence through to an end state (not just the first one or two),
+   inside a real git-initialized `commits/` directory (`written-world
+   fire` itself needs one to `git add`/`git commit`) — never trust a
+   clean `cabal build` alone, and don't stop at "it fired once."
 6. If you need governance-collapsed reads, use `render-snapshot`
    (with machine files as input), not `written-world look`.
+7. Check for a design deadlock: does any later transition retract a
+   fact an EARLIER transition's guard still depends on? A machine can
+   validate, fire twice, and still be a structural dead end.

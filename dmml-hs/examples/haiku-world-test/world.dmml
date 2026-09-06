@@ -1,0 +1,106 @@
+commit teahouse
+  declare relation name
+  declare relation state
+  declare relation at
+  declare relation tends
+  declare relation contains
+  declare relation serves
+  declare relation observes
+  declare attribute count
+  declare attribute temperature
+  declare attribute quality
+  declare relation requires
+  declare relation equips
+
+  teahouse/serenity :: a type/teahouse
+  teahouse/serenity `name` "House of Eternal Serenity"
+  teahouse/serenity `state` state/closed
+  teahouse/serenity `at` location/mountainpath
+
+  location/mountainpath :: a type/location
+  location/mountainpath `name` "Mountain Path, Eastern Ridge"
+
+  keeper/mei :: a type/keeper
+  keeper/mei `name` "Mei, Keeper of the Leaves"
+  keeper/mei `at` teahouse/serenity
+  keeper/mei `state` resting
+  keeper/mei `tends` teahouse/serenity
+
+  room/parlor :: a type/room
+  room/parlor `at` teahouse/serenity
+  room/parlor `state` state/empty
+  room/parlor `name` "Main Parlor"
+
+  room/storage :: a type/room
+  room/storage `at` teahouse/serenity
+  room/storage `state` state/sealed
+  room/storage `name` "Storage Chamber"
+
+  stove/brass :: a type/stove
+  stove/brass `at` room/parlor
+  stove/brass `state` state/cold
+  stove/brass `temperature` 20
+
+  kettle/iron :: a type/kettle
+  kettle/iron `at` stove/brass
+  kettle/iron `state` state/empty
+  kettle/iron `contains` 0
+
+  tea/jasmine :: a type/tea
+  tea/jasmine `name` "Jasmine Pearls"
+  tea/jasmine `at` room/storage
+  tea/jasmine `quality` 9
+  tea/jasmine `count` 500
+
+  tea/oolong :: a type/tea
+  tea/oolong `name` "Mountain Oolong"
+  tea/oolong `at` room/storage
+  tea/oolong `quality` 8
+  tea/oolong `count` 300
+
+  tea/puerh :: a type/tea
+  tea/puerh `name` "Aged Puerh"
+  tea/puerh `at` room/storage
+  tea/puerh `quality` 10
+  tea/puerh `count` 100
+
+  tea/greenmorn :: a type/tea
+  tea/greenmorn `name` "Green of First Dawn"
+  tea/greenmorn `at` room/storage
+  tea/greenmorn `quality` 7
+  tea/greenmorn `count` 800
+
+  spring/mountain :: a type/spring
+  spring/mountain `at` location/mountainpath
+  spring/mountain `name` "Cold Mountain Spring"
+  spring/mountain `state` state/flowing
+
+  honey/golden :: a type/honey
+  honey/golden `at` room/storage
+  honey/golden `name` "Mountain Honey"
+  honey/golden `count` 20
+
+  cups/set :: a type/cups
+  cups/set `at` room/parlor
+  cups/set `count` 12
+  cups/set `state` state/clean
+
+  cups/waiting :: a type/cups
+  cups/waiting `at` room/storage
+  cups/waiting `count` 24
+  cups/waiting `state` state/wrapped
+
+  log/visitors :: a type/log
+  log/visitors `at` room/parlor
+  log/visitors `name` "Visitor Registry"
+  log/visitors `count` 47
+
+  observation/weather :: a type/observation
+  observation/weather `at` teahouse/serenity
+  observation/weather `name` "Current Conditions"
+  observation/weather `state` state/clear
+
+  festival/upcoming :: a type/event
+  festival/upcoming `at` location/mountainpath
+  festival/upcoming `name` "Autumn Moon Festival"
+  festival/upcoming `state` state/announced

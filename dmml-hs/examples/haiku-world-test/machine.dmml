@@ -1,0 +1,59 @@
+machine keeper/mei
+
+  states
+    resting
+    preparing
+    serving
+    closing
+    sleeping
+
+  transition awaken()
+    resting -> preparing
+    guard self `at` teahouse/serenity
+    assert preparing
+    retract resting
+    assert room/storage `state` state/open
+    retract room/storage `state` state/sealed
+
+  transition lightStove()
+    preparing -> serving
+    guard self `at` teahouse/serenity
+    guard room/storage `state` state/open
+    assert serving
+    retract preparing
+    assert stove/brass `state` state/heated
+    retract stove/brass `state` state/cold
+    assert stove/brass `temperature` 90
+    retract stove/brass `temperature` 20
+    assert room/parlor `state` state/ready
+    retract room/parlor `state` state/empty
+
+  transition serveVisitor(guest, teaType)
+    serving -> serving
+    guard self `at` teahouse/serenity
+    guard stove/brass `state` state/heated
+    assert kettle/iron `state` state/steaming
+    retract kettle/iron `state` state/empty
+    assert kettle/iron `contains` 1
+    retract kettle/iron `contains` 0
+
+  transition extinguishAndClose()
+    serving -> closing
+    guard self `at` teahouse/serenity
+    assert closing
+    retract serving
+    assert stove/brass `state` state/cooling
+    retract stove/brass `state` state/heated
+    assert room/parlor `state` state/empty
+    retract room/parlor `state` state/ready
+    assert room/storage `state` state/sealed
+    retract room/storage `state` state/open
+    assert kettle/iron `state` state/empty
+    retract kettle/iron `state` state/steaming
+
+  transition retireForNight()
+    closing -> sleeping
+    assert sleeping
+    retract closing
+    assert cups/set `state` state/stacked
+    retract cups/set `state` state/clean
