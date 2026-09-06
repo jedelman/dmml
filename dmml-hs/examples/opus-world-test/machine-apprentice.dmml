@@ -1,0 +1,37 @@
+machine apprentice/wren
+  states
+    unready
+    trained
+    keyed
+    posted
+    resting
+
+  transition learnGates()
+    unready -> trained
+    guard station/stillwater `access` access/open
+    assert trained
+    retract unready
+    assert self `skill` skill/gatework
+
+  transition takePost()
+    trained -> keyed
+    guard self `holds` key/gatehouse
+    assert keyed
+    retract trained
+    assert station/stillwater `warden` self
+
+  transition walkTheWalls(reach)
+    keyed -> posted
+    guard $reach `bounds` station/stillwater
+    assert posted
+    retract keyed
+    assert self `watches` $reach
+    assert $reach `patrolled` patrol/done
+
+  transition standEasy()
+    posted -> resting
+    guard ledger/tolls `entry` entry/heronone `records` barge/heron
+    assert resting
+    retract posted
+    assert self `at` quarters/wren
+    retract self `at` station/stillwater

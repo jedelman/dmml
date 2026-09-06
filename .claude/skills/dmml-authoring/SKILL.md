@@ -314,6 +314,69 @@ parsed by the identical `pValue`, with the identical resulting
 `pInfixFact`). Neither is more or less capable than the other; pick
 whichever reads better in context.
 
+## The consistency gate scans EVERY transition's guards, including the firing transition's own — and it does not exempt negated guards
+
+Verified directly (2026-09-06, both cases, against real `written-world
+fire` runs on throwaway worlds — not inferred from source alone).
+`DMML.Retroconsistency.gateConsistentTree` walks `transitionGuards t`
+for every machine in the known set, INCLUDING the transition currently
+being fired, and refuses if firing would make any currently-true,
+non-`$param` guard in that whole scan go false. Two consequences that
+are easy to get wrong:
+
+1. **A single, isolated transition can deadlock against itself.** It
+   doesn't take a second transition elsewhere retracting a needed fact
+   (checklist item 7 below) — a transition whose own effect falsifies
+   its own guard is refused outright, on its very first firing attempt,
+   even alone in its machine.
+2. **`guard not X` + `assert X` — the single most natural "do this only
+   once" idiom — is refused categorically**, because asserting `X`
+   makes the guard's own `not X` go from true to false, and the gate
+   reads that as "a currently-held guard elsewhere just broke." Confirmed
+   directly:
+   ```
+   transition oneShot()
+     idle -> done
+     guard not self `seen` marker/here
+     assert done
+     retract idle
+     assert self `seen` marker/here
+   ```
+   fired against a fresh `idle` state: `fire: refused -- firing would
+   break the following currently-held guard(s) elsewhere in the known
+   machine set: actor/one's oneShot (predicate seen)` — refused on the
+   very first attempt, before the "only once" behavior even had a chance
+   to matter. **Do not reach for a negated guard as a one-shot idiom.**
+   If you need "has this already happened," gate on a `state` value
+   instead (a normal `from -> to` edge, whose implicit guard the scan
+   does NOT include) or on a `$param`-bound term (also excluded from the
+   scan by `usesParam`) — never on a negated literal guard over a fact
+   your own effects touch.
+
+The practical corollary, confirmed while building
+`examples/opus-world-test/`: **a fact required by any literal (non-
+`$param`) guard anywhere in the machine set must never be retracted by
+anything, including the transition that guards on it.** Every fact in a
+design should be classified up front as either *terminal* (asserted
+once, never retracted — safe to literal-guard on) or *transient*
+(guarded only via `$param`, or not guarded at all — safe to retract).
+`state` facts are always safe to retract because the implicit
+`from -> to` guard is never included in the scan.
+
+## A commit cannot assert the same (subject, predicate) pair twice — even with different values
+
+Verified directly: `` river/nire `feeds` reach/upper `` followed by
+`` river/nire `feeds` reach/lower `` in the same commit is REJECTED —
+`duplicate (river/nire, feeds) within this commit -- the second
+occurrence would silently overwrite the first`. A genuinely one-to-many
+relationship needs two different predicates (e.g. split `feeds`/
+`drains`) or two separate commits, not two facts on the same predicate
+in one commit. The error message points at the blank line ending the
+commit block, not at the offending fact pair — on a long file, grep for
+duplicates yourself before trusting the line number:
+`grep -oP '^\s*\S+ \x60\w+\x60' file.dmml | sort | uniq -d` (adjust the
+pattern for dot-syntax facts too if the file mixes styles).
+
 ## Practical checklist before trusting generated DMML content
 
 1. Every guard-pattern term you want to literal-match: does it have a
@@ -331,6 +394,11 @@ whichever reads better in context.
    clean `cabal build` alone, and don't stop at "it fired once."
 6. If you need governance-collapsed reads, use `render-snapshot`
    (with machine files as input), not `written-world look`.
-7. Check for a design deadlock: does any later transition retract a
-   fact an EARLIER transition's guard still depends on? A machine can
-   validate, fire twice, and still be a structural dead end.
+7. Check for a design deadlock: does ANY transition anywhere in the
+   machine set — including a transition's own effects against its own
+   guard, not just an earlier transition's guard versus a later one's
+   effect — retract a fact that any non-`$param` literal guard still
+   depends on? A single, isolated transition can deadlock against
+   itself (see "The consistency gate scans EVERY transition's guards"
+   above); this is not only a multi-transition ordering problem. A
+   machine can validate, fire twice, and still be a structural dead end.

@@ -1,0 +1,252 @@
+commit stillwaterlock
+  declare relation name
+  declare relation description
+  declare relation state
+  declare relation at
+  declare relation access
+  declare relation warden
+  declare relation holds
+  declare relation skill
+  declare relation signal
+  declare relation leaf
+  declare relation sill
+  declare relation level
+  declare relation flow
+  declare relation paddle
+  declare relation motion
+  declare relation berth
+  declare relation hull
+  declare relation cleared
+  declare relation awaits
+  declare relation bound
+  declare relation entry
+  declare relation records
+  declare relation assessedBy
+  declare relation watch
+  declare relation watches
+  declare relation patrolled
+  declare relation bounds
+  declare relation stock
+  declare relation output
+  declare relation grinds
+  declare relation record
+  declare relation measures
+  declare relation raisedBy
+  declare relation carries
+  declare relation spans
+  declare relation feeds
+  declare relation drains
+  declare relation upstreamOf
+  declare relation downstreamOf
+  declare relation tends
+  declare relation quarters
+  declare relation serves
+  declare relation owns
+  declare relation builtBy
+  declare attribute year
+  declare attribute rise
+  declare attribute depth
+  declare attribute capacity
+  declare attribute tonnage
+  declare attribute weight
+  declare attribute count
+  declare attribute reading
+
+  river/nire :: a type/river
+  river/nire `name` "The River Nire"
+  river/nire `description` "A slow brown river that runs off the Cardun moors and meets the tide six miles below Nirefoot."
+  river/nire `feeds` reach/upper
+  river/nire `drains` reach/lower
+
+  reach/upper :: a type/reach
+  reach/upper `name` "Upper Reach"
+  reach/upper `description` "Still water above the lock, held back by the old weir and the upper gate."
+  reach/upper `bounds` station/stillwater
+  reach/upper `upstreamOf` chamber/lock
+  reach/upper `depth` 11
+
+  reach/lower :: a type/reach
+  reach/lower `name` "Lower Reach"
+  reach/lower `description` "Tidal water below the lock, falling nine feet twice a day."
+  reach/lower `bounds` station/stillwater
+  reach/lower `downstreamOf` chamber/lock
+  reach/lower `depth` 4
+
+  weir/old :: a type/weir
+  weir/old `name` "The Old Weir"
+  weir/old `description` "A stone sill laid down long before the lock, now leaking at both shoulders."
+  weir/old `at` reach/upper
+  weir/old `year` 1740
+  weir/old `state` weir/leaking
+
+  station/stillwater :: a type/station
+  station/stillwater `name` "Stillwater Lock Station"
+  station/stillwater `description` "Gatehouse, lock chamber, sluice and mill, all under one keeper and one apprentice."
+  station/stillwater `at` river/nire
+  station/stillwater `access` access/shut
+  station/stillwater `year` 1802
+  station/stillwater `serves` village/nirefoot
+
+  village/nirefoot :: a type/village
+  village/nirefoot `name` "Nirefoot"
+  village/nirefoot `description` "Forty houses, a chapel, and a granary that has been empty since the spring floods."
+  village/nirefoot `at` reach/lower
+  village/nirefoot `count` 40
+
+  chamber/lock :: a type/chamber
+  chamber/lock `name` "The Lock Chamber"
+  chamber/lock `description` "Ninety feet of dressed stone between the two gates, deep enough for one barge at a time."
+  chamber/lock `at` station/stillwater
+  chamber/lock `level` level/low
+  chamber/lock `sill` sill/blocked
+  chamber/lock `rise` 9
+  chamber/lock `capacity` 1
+
+  gate/upper :: a type/gate
+  gate/upper `name` "Upper Gate"
+  gate/upper `description` "Two oak leaves hung on iron collars, holding back the whole upper reach."
+  gate/upper `at` chamber/lock
+  gate/upper `spans` chamber/lock
+  gate/upper `leaf` leaf/shut
+  gate/upper `state` sealed
+  gate/upper `builtBy` wright/callum
+
+  gate/lower :: a type/gate
+  gate/lower `name` "Lower Gate"
+  gate/lower `description` "The tide gate, lighter than the upper pair and hung to swing with the ebb."
+  gate/lower `at` chamber/lock
+  gate/lower `leaf` leaf/shut
+
+  sluice/upper :: a type/sluice
+  sluice/upper `name` "Upper Sluice"
+  sluice/upper `description` "A rack and pinion paddle in the wing wall, feeding both the chamber and the mill race."
+  sluice/upper `at` gate/upper
+  sluice/upper `paddle` paddle/seated
+  sluice/upper `drains` reach/upper
+  sluice/upper `state` seated
+
+  race/mill :: a type/race
+  race/mill `name` "The Mill Race"
+  race/mill `description` "A cut channel carrying sluice water two hundred yards to the mill wheel."
+  race/mill `at` station/stillwater
+  race/mill `flow` flow/still
+  race/mill `feeds` mill/nire
+
+  mill/nire :: a type/mill
+  mill/nire `name` "Nire Mill"
+  mill/nire `description` "An undershot corn mill, idle since the race was shut for the gate repairs."
+  mill/nire `at` station/stillwater
+  mill/nire `grinds` stone/grinding
+  mill/nire `state` idle
+  mill/nire `year` 1811
+
+  stone/grinding :: a type/millstone
+  stone/grinding `name` "The Grinding Stone"
+  stone/grinding `description` "Four feet of Cardun granite, dressed last autumn and not turned since."
+  stone/grinding `at` mill/nire
+  stone/grinding `motion` motion/rest
+  stone/grinding `weight` 1400
+
+  granary/stillwater :: a type/granary
+  granary/stillwater `name` "Station Granary"
+  granary/stillwater `description` "A raised timber store beside the mill, swept bare in the spring."
+  granary/stillwater `at` station/stillwater
+  granary/stillwater `stock` stock/empty
+  granary/stillwater `capacity` 300
+
+  cargo/barley :: a type/grain
+  cargo/barley `name` "Nirefoot Barley"
+  cargo/barley `description` "Eight sacks of last year's barley, carted up from the village to be milled."
+  cargo/barley `at` mill/nire
+  cargo/barley `state` grain/dry
+  cargo/barley `weight` 640
+  cargo/barley `owns` village/nirefoot
+
+  mast/signal :: a type/mast
+  mast/signal `name` "The Signal Mast"
+  mast/signal `description` "A spar on the gatehouse roof carrying a lamp and two painted boards, readable from the lower reach."
+  mast/signal `at` station/stillwater
+  mast/signal `signal` signal/dark
+  mast/signal `state` dark
+
+  lamp/harbour :: a type/lamp
+  lamp/harbour `name` "The Harbour Lamp"
+  lamp/harbour `description` "A brass reflector lamp, trimmed nightly, hung under the signal boards."
+  lamp/harbour `at` mast/signal
+  lamp/harbour `state` lamp/trimmed
+
+  keeper/orrin :: a type/keeper
+  keeper/orrin `name` "Orrin Fell, Lock Keeper"
+  keeper/orrin `description` "Twenty two years on this lock. Keeps the ledger in a hand nobody else can read."
+  keeper/orrin `at` station/stillwater
+  keeper/orrin `holds` key/gatehouse
+  keeper/orrin `tends` chamber/lock
+  keeper/orrin `state` abed
+  keeper/orrin `quarters` quarters/keeper
+
+  apprentice/wren :: a type/apprentice
+  apprentice/wren `name` "Wren Aldy, Apprentice"
+  apprentice/wren `description` "Second season at the lock. Can read the water but has never worked the upper gate alone."
+  apprentice/wren `at` station/stillwater
+  apprentice/wren `state` unready
+  apprentice/wren `quarters` quarters/wren
+
+  quarters/keeper :: a type/quarters
+  quarters/keeper `name` "Keeper's Quarters"
+  quarters/keeper `at` station/stillwater
+
+  quarters/wren :: a type/quarters
+  quarters/wren `name` "Apprentice's Loft"
+  quarters/wren `at` station/stillwater
+
+  key/gatehouse :: a type/key
+  key/gatehouse `name` "The Gatehouse Key"
+  key/gatehouse `description` "One iron key on a cork float, so it swims if it goes in the cut."
+
+  ledger/tolls :: a type/ledger
+  ledger/tolls `name` "Toll Ledger"
+  ledger/tolls `description` "Every passage since 1802, priced by tonnage and signed by the keeper of the day."
+  ledger/tolls `at` quarters/keeper
+  ledger/tolls `count` 9418
+
+  logbook/station :: a type/logbook
+  logbook/station `name` "Station Logbook"
+  logbook/station `description` "Water readings, sluice discharges, and every signal shown from the mast."
+  logbook/station `at` quarters/keeper
+
+  barge/heron :: a type/barge
+  barge/heron `name` "The Grey Heron"
+  barge/heron `description` "A seventy foot Nire barge under sail and horse, working timber up to the moor road."
+  barge/heron `at` reach/lower
+  barge/heron `berth` berth/lowerpound
+  barge/heron `hull` hull/sound
+  barge/heron `carries` cargo/timber
+  barge/heron `tonnage` 42
+  barge/heron `state` moored
+
+  cargo/timber :: a type/cargo
+  cargo/timber `name` "Sawn Deals"
+  cargo/timber `description` "Norway deals for the moor road bridgeworks, stacked four high under tarpaulin."
+  cargo/timber `at` barge/heron
+  cargo/timber `weight` 30000
+
+  bargeman/haldane :: a type/bargeman
+  bargeman/haldane `name` "Haldane Rooke"
+  bargeman/haldane `description` "Master of the Grey Heron. Has been through this lock four hundred times and still counts the rise."
+  bargeman/haldane `at` barge/heron
+  bargeman/haldane `tends` barge/heron
+
+  wright/callum :: a type/wright
+  wright/callum `name` "Callum Vry, Gate Wright"
+  wright/callum `description` "Hung the upper leaves in 1802 and came back twice to rehang them."
+
+  road/moor :: a type/road
+  road/moor `name` "The Moor Road"
+  road/moor `description` "The haul road above the upper reach, where the timber is landed for the bridgeworks."
+  road/moor `at` reach/upper
+
+  tide/estuary :: a type/tide
+  tide/estuary `name` "Estuary Tide"
+  tide/estuary `description` "The tide that governs the lower reach and everything the lock can do before noon."
+  tide/estuary `at` reach/lower
+  tide/estuary `reading` 6

@@ -1,0 +1,32 @@
+machine mast/signal
+  states
+    dark
+    amber
+    green
+    logged
+
+  transition raiseAmber()
+    dark -> amber
+    guard station/stillwater `access` access/open
+    assert amber
+    retract dark
+    assert self `signal` signal/amber
+    retract self `signal` signal/dark
+
+  transition showGreen(vessel)
+    amber -> green
+    guard $vessel `awaits` station/stillwater
+    assert green
+    retract amber
+    assert self `signal` signal/green
+    retract self `signal` signal/amber
+    assert $vessel `cleared` station/stillwater
+
+  transition logSignal(record)
+    green -> logged
+    guard self `signal` signal/green
+    assert logged
+    retract green
+    assert logbook/station `record` $record
+    assert $record `raisedBy` self
+    assert $record `measures` mast/signal

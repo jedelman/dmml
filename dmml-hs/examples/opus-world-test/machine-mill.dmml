@@ -1,0 +1,36 @@
+machine mill/nire
+  states
+    idle
+    turning
+    ground
+    banked
+
+  transition engage()
+    idle -> turning
+    guard race/mill `flow` flow/running
+    assert turning
+    retract idle
+    assert stone/grinding `motion` motion/spinning
+    retract stone/grinding `motion` motion/rest
+
+  transition grind(grain)
+    turning -> ground
+    guard $grain `at` self
+    guard $grain `state` grain/dry
+    assert ground
+    retract turning
+    assert $grain `state` grain/milled
+    retract $grain `state` grain/dry
+    assert self `output` sack/flourone
+    assert sack/flourone `at` mill/nire
+
+  transition bank()
+    ground -> banked
+    guard self `output` sack/flourone
+    assert banked
+    retract ground
+    assert granary/stillwater `stock` stock/flour
+    retract granary/stillwater `stock` stock/empty
+    assert sack/flourone `at` granary/stillwater
+    retract sack/flourone `at` mill/nire
+    retract self `grinds` stone/grinding `motion` motion/spinning
