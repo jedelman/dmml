@@ -1,0 +1,15 @@
+commit prospect
+  declare relation location
+  declare relation name
+  declare relation state
+  declare relation role
+
+  player/one `location` room/forge
+  player/one `state` idle
+
+  npc/smith :: a type/smith
+  npc/smith `name` "Tamsin"
+  npc/smith `location` room/forge
+  npc/smith `role` role/oresmith
+
+  room/forge `name` "the smithy"

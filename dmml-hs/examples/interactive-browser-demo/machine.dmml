@@ -1,0 +1,17 @@
+machine machine/actions
+
+  states
+    idle
+    working
+
+  transition work()
+    idle -> working
+    guard self `location` room/forge
+    assert working
+    retract idle
+
+  transition rest()
+    working -> idle
+    guard self `location` room/forge
+    assert idle
+    retract working

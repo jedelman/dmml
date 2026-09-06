@@ -1,27 +1,28 @@
 package org.writtenworld.androidpoc
 
-import android.app.Activity
 import android.os.Bundle
-import android.widget.TextView
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 
-// F1 (jedelman/dmml#1): the entire UI is one TextView showing whatever
-// the Haskell side of the bridge returns -- deliberately not more than
-// that. This activity's only job is proving `System.loadLibrary` +
-// `external fun` can reach a real GHC-compiled function; it is not a
-// sketch of the actual game client.
-class MainActivity : Activity() {
-    companion object {
-        init {
-            System.loadLibrary("dmmlbridge")
-        }
-    }
-
-    private external fun greetFromHaskell(): String
-
+// F1 follow-up, now Compose: the fake `hsGreet` PoC and the plain-
+// TextView follow-up are both gone -- this hosts GameScreen.kt, a real
+// touch-only UI (tap a button to fire a transition, no typing, no
+// terminal) calling the real interpreter via DmmlBridge (dmml-hs's own
+// DMML.Materialize/DMML.Guard/DMML.Fire, through DMML.JniBridge's
+// history-aware functions). Same interaction shape
+// dmml-hs/app/TouchBrowser.hs already proved out over plain HTTP+links
+// on host GHC -- this is that shape again, native, in Compose.
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val tv = TextView(this)
-        tv.text = greetFromHaskell()
-        setContentView(tv)
+        setContent {
+            MaterialTheme {
+                Surface {
+                    GameScreen()
+                }
+            }
+        }
     }
 }

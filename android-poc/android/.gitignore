@@ -1,0 +1,12 @@
+# Machine-specific -- points at this machine's own Android SDK install.
+local.properties
+
+# Gradle
+.gradle/
+build/
+app/build/
+
+# The cross-compiled .so this project deliberately does NOT build via
+# Gradle's own native toolchain (see app/build.gradle.kts's header
+# comment) -- dropped in by ../../build-android.sh, not source.
+app/src/main/jniLibs/

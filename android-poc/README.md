@@ -1,88 +1,101 @@
-# F1 — Android JNI bridge proof-of-concept
+# F1 — Android JNI bridge, now carrying the real interpreter
 
 The last open item from `jedelman/dmml#1`. Jason: "go ahead and tackle
-F1. keep it as simple as you can." This is that — the smallest real
-thing that proves a Haskell function is callable across a JNI boundary
-at all, following `hatter`'s documented shape (GHC NDK cross-compile to
-a `.so`, a thin Kotlin activity that `System.loadLibrary`s it, a JNI C
-bridge that boots the RTS and calls in) — see
-`written-world`'s
+F1. keep it as simple as you can." The original PoC here (now superseded,
+see below) was the smallest real thing proving a Haskell function is
+callable across a JNI boundary at all, following `hatter`'s documented
+shape (GHC NDK cross-compile to a `.so`, a thin Kotlin call site that
+`System.loadLibrary`s it, a JNI C bridge that boots the RTS and calls
+in) — see `written-world`'s
 `dev-journal/2026-09-02-platform-pivot-cli-android-filesystem-canonical.md`
-for why this path was picked over `reflex-platform`/`obelisk` (moved
-here from `written-world/android-poc/` per Jason's own call, 2026-09-02
-— this repo is where `dmml-hs`, the interpreter this bridge exists to
-carry, actually lives).
+for why this path was picked over `reflex-platform`/`obelisk`.
 
-## What this proves, and what it doesn't
+**Updated 2026-09-06**, per `dmml/dev-journal/2026-09-04-android-jni-vs-ipc.md`'s
+recommendation (JNI, in-process, calling dmml-hs's own library functions
+directly — not a second wrapper around either CLI executable's argv
+interface): the bridge mechanism proven by the original fake `hsGreet`
+PoC now carries the REAL interpreter. `haskell/Bridge.hs` is gone;
+the bridge is `DMML.JniBridge` (`dmml-hs/src/DMML/JniBridge.hs`), a real
+module inside the `dmml-hs` package that calls `DMML.Materialize`/
+`DMML.Guard`/`DMML.Fire` directly, with every exported function wrapped
+in `Control.Exception.try` per that dev-journal entry's required
+mitigation (no process isolation on this path — an uncaught exception
+crossing the FFI boundary is undefined behavior, not a clean subprocess
+exit code).
 
-**No Android NDK, no Android SDK, no cross-compiling GHC, and no
-device/emulator exist in the environment this was built in.** Rather
-than pretend otherwise, this PoC is honestly split into what actually
-got verified here and what still needs a real Android toolchain:
+## What this proves, and what it still doesn't
+
+**This machine has a real Android SDK + NDK (`aarch64-linux-android24-clang`
+confirmed present) and a real host GHC 9.10.3 + cabal 3.16.1.0 — but
+still no cross-compiling GHC targeting `aarch64-linux-android`, and no
+device/emulator.** Same honest split as the original PoC, one layer
+further in:
 
 **Verified for real, on host GHC, in this environment:**
-- `haskell/Bridge.hs` compiles clean (`ghc -c`) and `foreign export ccall
-  hsGreet :: IO CString` produces exactly the C symbol and stub header a
-  JNI bridge needs — confirmed by inspecting the compiled object
-  (`nm Bridge.o` shows a real, callable `hsGreet` symbol, `T` not
-  undefined) and the generated `Bridge_stub.h`.
-- **The whole mechanism this PoC depends on — not just that it
-  compiles** — was linked and *run*, natively (x86_64, not Android, but
-  the same GHC FFI machinery JNI itself sits on top of): a small C
-  `main()` calls `hs_init`, calls `hsGreet()`, prints the returned
-  string, frees it, calls `hs_exit()`. Real output: `Haskell says: hello
-  from the GHC RTS, via JNI`. This is the part most likely to hide a
-  real bug (RTS init timing, string ownership/freeing across the FFI
-  boundary, calling convention) — proven working, not just plausible.
+- The entire `dmml-hs` library, including `DMML.JniBridge`, builds
+  clean via `cabal build lib:dmml-hs` — not just one isolated file, the
+  whole real dependency closure (aeson, megaparsec, containers, etc.).
+- **The whole FFI-shaped surface a JNI caller would actually use** — not
+  just that it compiles — was exercised end-to-end via real
+  `Foreign.C.String` marshaling (`dmml-hs/app/JniBridgeSmokeTest.hs`,
+  `cabal run jni-bridge-smoke-test`): materializing a world+machine
+  fixture, rendering it, enumerating legal actions
+  (`DMML.Guard.availableTransitions`), firing a transition that both
+  asserts and retracts a fact (`DMML.Fire.fireTransition`, with real
+  content-addressed provenance via `DMML.LocalIdentity.localFileRef` so
+  the retract can cite something real instead of refusing), and two
+  deliberate error paths (an undeclared transition, malformed DMML
+  source) — confirming errors come back as plain `"ERROR: ..."` strings,
+  never a raw Haskell exception. See
+  `dev-journal/2026-09-06-real-jni-bridge-verified-on-host.md` for the
+  full transcript.
 
 **NOT verified — needs a real Android toolchain, on a machine that has
 one:**
-- Cross-compiling `Bridge.hs`/`jni_bridge.c` to `arm64-v8a` (or any
-  Android ABI) at all. `build-android.sh` is a real, complete sketch of
-  the steps (`hatter`'s own documented shape), but its exact toolchain
-  binary names and flags are **not independently confirmed** — expect
-  to need real fixes running it for the first time, the same way every
-  other real mechanism built this session (sync-spike's hooks,
-  checkpoint-per-commit) needed fixes once actually run. Don't treat
-  this script as trustworthy until it's been run for real and corrected
-  against whatever it actually gets wrong.
-- Whether `MainActivity.kt`/`AndroidManifest.xml`/the Gradle files here
-  actually produce a working APK — no Android SDK/`gradlew` available to
-  try.
-- Whether the loaded `.so` actually works on a real device/emulator —
-  the JNI boundary itself (not just the Haskell FFI boundary already
-  proven above) is unverified: `JNI_OnLoad`'s RTS-init timing relative
-  to Android's own classloading, `System.loadLibrary`'s ABI resolution,
-  and the JNI name-mangling in `jni_bridge.c`
-  (`Java_org_writtenworld_androidpoc_MainActivity_greetFromHaskell`) are
-  all standard, well-documented JNI conventions, followed here
-  carefully, but "followed the convention correctly" and "confirmed
-  working" are different claims — only the first is made here.
+- Cross-compiling `dmml-hs` (its full dependency closure, not one file
+  — a materially bigger lift than the original single-file PoC) to
+  `arm64-v8a` via a real `aarch64-linux-android-ghc`. `build-android.sh`
+  is a real, honestly-flagged sketch, not a confirmed recipe — it now
+  also has to work out how `cabal` itself cross-compiles a dependency
+  closure, a question the original PoC never had to answer.
+- Whether `jni_bridge.c`'s three real native methods
+  (`DmmlBridge.render`/`.actions`/`.fire`) actually link and run once
+  cross-compiled — the JNI name-mangling and stub-header path are
+  followed carefully but unverified against a real cross build.
+- Whether `MainActivity.kt`/`DmmlBridge.kt`/the Gradle files here
+  actually produce a working APK, and whether the on-device app shows
+  the SAME rendered snapshot + actions the host smoke test already
+  confirmed — no Android device/emulator available to try.
 
 ## Layout
 
-- `haskell/Bridge.hs` — the Haskell side. One `foreign export ccall`
-  function, deliberately not the real dmml-hs interpreter (see its own
-  doc comment for why: proving the bridge mechanism is a different,
-  prior question from proving the interpreter works once it's on the
-  other side of it).
+- `haskell/` — removed 2026-09-06. The real bridge now lives in
+  `dmml-hs/src/DMML/JniBridge.hs`, alongside the interpreter it calls,
+  per the JNI-vs-IPC dev-journal's own reasoning for why that's the
+  right layer.
 - `jni/jni_bridge.c` — the JNI side. `JNI_OnLoad` boots the RTS once;
-  one native method calls straight into Haskell.
-- `android/` — a minimal Gradle Android app (one `Activity`, one
-  `TextView`) that loads the `.so` and calls it. Deliberately no
-  CMake/ndk-build integration — the `.so` is built externally by
-  `build-android.sh` and dropped into `app/src/main/jniLibs/<abi>/`,
-  which Android Gradle Plugin packages automatically with zero extra
-  config.
+  three native methods (`render`/`actions`/`fire`) on a
+  `DmmlBridge` class call straight into `DMML.JniBridge`'s exported
+  `dmml_render`/`dmml_actions`/`dmml_fire` symbols.
+- `android/` — a minimal Gradle Android app. `DmmlBridge.kt` declares
+  the `external fun`s; `MainActivity.kt` calls them against the same
+  fixture the host smoke test already verified and shows the result in
+  one `TextView`. Deliberately no CMake/ndk-build integration — the
+  `.so` is built externally by `build-android.sh` and dropped into
+  `app/src/main/jniLibs/<abi>/`, which Android Gradle Plugin packages
+  automatically with zero extra config.
 - `build-android.sh` — the real cross-compile steps, unverified (see
-  above).
+  above) — now cross-building a whole cabal package, not one file.
 
 ## Next real step
 
-Run `build-android.sh` on a machine with a real Android NDK and a
-`hatter`-provisioned cross GHC, fix whatever it gets wrong (something
-will), then `./gradlew assembleDebug` and confirm on a real device or
-emulator that the app launches and shows the Haskell-returned string.
-Only once that's real is F1 actually closed — this PoC narrows what
-that step still has to prove (the FFI mechanism itself is no longer in
-question; only the cross-compilation and the JNI-specific parts are).
+Get (or build, via `hatter`) a real `aarch64-linux-android-ghc` on a
+machine that also has this repo's confirmed-working NDK, run
+`build-android.sh`, fix whatever it gets wrong (something will,
+especially the cabal-cross-compilation step this version newly
+introduces), then `./gradlew assembleDebug` and confirm on a real
+device or emulator that the app shows the same rendered snapshot +
+actions `dev-journal/2026-09-06-real-jni-bridge-verified-on-host.md`
+already confirmed on host GHC. Only once that's real is F1 actually
+closed — the interpreter side is no longer in question; only the
+cross-compilation and the JNI-specific parts are.
