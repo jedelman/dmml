@@ -1,0 +1,33 @@
+machine gate/upper
+  states
+    sealed
+    cracked
+    open
+    secured
+
+  transition unseal()
+    sealed -> cracked
+    guard station/stillwater `warden` apprentice/wren
+    guard mast/signal `signal` signal/green
+    assert cracked
+    retract sealed
+    assert self `leaf` leaf/ajar
+    retract self `leaf` leaf/shut
+
+  transition swingOpen(warden)
+    cracked -> open
+    guard $warden `watches` reach/upper
+    assert open
+    retract cracked
+    assert self `leaf` leaf/open
+    retract self `leaf` leaf/ajar
+    assert chamber/lock `sill` sill/clear
+    retract chamber/lock `sill` sill/blocked
+
+  transition secure()
+    open -> secured
+    guard ledger/tolls `entry` entry/heronone
+    assert secured
+    retract open
+    assert self `leaf` leaf/shut
+    retract self `leaf` leaf/open

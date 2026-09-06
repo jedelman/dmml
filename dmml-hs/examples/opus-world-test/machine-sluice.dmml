@@ -1,0 +1,33 @@
+machine sluice/upper
+  states
+    seated
+    lifted
+    brimmed
+    logged
+
+  transition lift(gate)
+    seated -> lifted
+    guard $gate `leaf` leaf/ajar
+    assert lifted
+    retract seated
+    assert self `paddle` paddle/raised
+    retract self `paddle` paddle/seated
+    assert race/mill `flow` flow/running
+    retract race/mill `flow` flow/still
+
+  transition fillChamber(chamber)
+    lifted -> brimmed
+    guard $chamber `sill` sill/clear
+    assert brimmed
+    retract lifted
+    assert chamber/lock `level` level/high
+    retract chamber/lock `level` level/low
+
+  transition logDischarge(record)
+    brimmed -> logged
+    guard self `paddle` paddle/raised
+    assert logged
+    retract brimmed
+    assert logbook/station `record` $record
+    assert $record `measures` race/mill
+    assert $record `reading` 9

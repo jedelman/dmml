@@ -1,0 +1,41 @@
+machine keeper/orrin
+  states
+    abed
+    onwatch
+    atgates
+    atledger
+    standdown
+
+  transition wake()
+    abed -> onwatch
+    guard self `at` station/stillwater
+    assert onwatch
+    retract abed
+    assert station/stillwater `access` access/open
+    retract station/stillwater `access` access/shut
+
+  transition handKey(bearer)
+    onwatch -> atgates
+    guard $bearer `at` station/stillwater
+    guard $bearer `skill` skill/gatework
+    assert atgates
+    retract onwatch
+    assert $bearer `holds` key/gatehouse
+    retract self `holds` key/gatehouse
+
+  transition recordPassage(vessel, entry)
+    atgates -> atledger
+    guard $vessel `berth` berth/upperpound
+    assert atledger
+    retract atgates
+    assert ledger/tolls `entry` $entry
+    assert $entry `records` $vessel
+    assert $entry `assessedBy` self
+
+  transition standDown()
+    atledger -> standdown
+    guard granary/stillwater `stock` stock/flour
+    guard mill/nire `output` sack/flourone `at` granary/stillwater
+    assert standdown
+    retract atledger
+    assert station/stillwater `watch` watch/ended

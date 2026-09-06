@@ -1,0 +1,47 @@
+machine barge/heron
+  states
+    moored
+    waiting
+    inchamber
+    risen
+    departed
+
+  transition hailStation()
+    moored -> waiting
+    guard self `hull` hull/sound
+    guard station/stillwater `access` access/open
+    assert waiting
+    retract moored
+    assert self `awaits` station/stillwater
+
+  transition enterChamber(chamber)
+    waiting -> inchamber
+    guard self `cleared` station/stillwater
+    guard $chamber `level` level/low
+    assert inchamber
+    retract waiting
+    assert self `berth` berth/chamber
+    retract self `berth` berth/lowerpound
+    assert self `at` chamber/lock
+    retract self `at` reach/lower
+
+  transition rise()
+    inchamber -> risen
+    guard chamber/lock `level` level/high
+    assert risen
+    retract inchamber
+    assert self `berth` berth/upperpound
+    retract self `berth` berth/chamber
+    assert self `at` reach/upper
+    retract self `at` chamber/lock
+
+  transition depart(gateway, destination)
+    risen -> departed
+    guard $gateway `leaf` leaf/open
+    assert departed
+    retract risen
+    assert self `bound` $destination
+    assert self `berth` berth/underway
+    retract self `berth` berth/upperpound
+    assert cargo/timber `at` $destination
+    retract cargo/timber `at` barge/heron
