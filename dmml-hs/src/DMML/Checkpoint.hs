@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -51,17 +52,25 @@ module DMML.Checkpoint
   , checkpointToSnapshot
   , encodeCheckpoint
   , decodeCheckpoint
+  , foldNewFiles
+  , resolveAndFoldCheckpoint
   ) where
 
 import Data.Aeson (FromJSON, ToJSON, decode, encode)
 import qualified Data.ByteString.Lazy as BL
-import Data.List (sortOn)
+import Data.List (isSuffixOf, sortOn)
 import qualified Data.Map.Strict as Map
 import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import GHC.Generics (Generic)
+import System.Directory (doesFileExist, listDirectory)
+import System.FilePath ((</>))
+import Text.Megaparsec (errorBundlePretty)
 
 import DMML.Ast (DeclKind (..), Literal (..), NodeRef (..), Span (..), StrongRef (..), Value (..))
-import DMML.Materialize (Alternatives (..), WorldSnapshot (..), alternativeEntries, emptySnapshot)
+import DMML.Materialize (Alternatives (..), WorldSnapshot (..), alternativeEntries, applyCommit, emptySnapshot)
+import DMML.Surface (parseCommitSurface, parseMachineSurface)
 
 -- Standalone deriving: these types are defined in DMML.Ast, which
 -- deliberately carries no aeson dependency of its own (see its own doc
@@ -189,3 +198,116 @@ encodeCheckpoint = encode
 
 decodeCheckpoint :: BL.ByteString -> Maybe CheckpointFile
 decodeCheckpoint = decode
+
+-- | Fold a list of @.dmml@ files into an existing 'WorldSnapshot',
+-- returning the result plus how many were folded as real commits (the
+-- rest were machine-definition files, silently skipped -- see below).
+-- Extracted from @app/CheckpointRebuild.hs@'s own @foldFiles@ so the
+-- checkpoint-parent-lookup/bootstrap-fallback orchestration this
+-- exists to support (previously duplicated between
+-- @sync-spike/broker/atproto-broker.sh@ and
+-- @sync-spike/broker/hooks/post-merge@, now ported to Haskell -- see
+-- @written-world@'s @dev-journal/2026-09-07-jgit-canonical-single-
+-- implementation.md@) has one real implementation to call, not a third
+-- copy of this exact logic.
+--
+-- A machine-definition file showing up here is the NORMAL case, not a
+-- caller error (found the hard way at real endurance scale -- see
+-- 'CheckpointRebuild''s own history) -- both the bootstrap fold (seed
+-- content always includes machine files alongside real commits) and
+-- ordinary steady-state operation (an agent minting a brand-new
+-- machine mid-run) can put one in this list. Machines simply don't
+-- belong in the raw fact checkpoint at all (this module's own top doc
+-- comment) -- silently skipping one here is correct, not information
+-- loss.
+--
+-- A genuine parse failure (neither a commit nor a machine) is real
+-- malformed content that shape-validation upstream should already have
+-- caught -- this throws (via 'ioError') rather than silently
+-- continuing, since a library function calling 'System.Exit.exitFailure'
+-- directly would be wrong regardless of how unlikely this path is.
+foldNewFiles :: WorldSnapshot -> [FilePath] -> IO (WorldSnapshot, Int)
+foldNewFiles = go 0
+  where
+    go !n snap [] = pure (snap, n)
+    go !n snap (path : rest) = do
+      src <- TIO.readFile path
+      case parseCommitSurface src of
+        Right stmt -> go (n + 1) (applyCommit "merge" snap stmt) rest
+        Left commitErr -> case parseMachineSurface src of
+          Right _ -> go n snap rest
+          Left _ ->
+            ioError
+              ( userError
+                  ( path
+                      <> ": failed to parse as either a commit or a machine:\n"
+                      <> errorBundlePretty commitErr
+                  )
+              )
+
+-- | The checkpoint parent-lookup\/bootstrap-fallback algorithm itself,
+-- ported from what was previously two independent bash copies
+-- (@sync-spike\/broker\/atproto-broker.sh@ and @sync-spike\/broker\/
+-- hooks\/post-merge@ -- see @written-world@'s @dev-journal\/2026-09-07-
+-- jgit-canonical-single-implementation.md@). Deliberately takes the
+-- parent\/new tree SHAs as plain already-resolved 'String's rather than
+-- calling into 'DMML.Jgit' itself -- this module stays JGit-independent
+-- (it's used by tools, like @render-snapshot@, that have no reason to
+-- need @libjvm@ at link time); the caller resolves both SHAs via
+-- 'DMML.Jgit.jgitResolve' and passes the results in.
+--
+-- Decision, exactly mirroring the bash original: if a checkpoint file
+-- already exists at @checkpoints\/\<parentTreeSha\>.json@, fold ONLY
+-- @newFiles@ into it. Otherwise -- no parent tree SHA at all (the very
+-- first commit), or one that doesn't have a checkpoint file yet (a
+-- prior checkpoint attempt failed, or history predates this mechanism)
+-- -- fold EVERY @*.dmml@ file directly under @commitsDir@ instead, so
+-- nothing already-committed is silently missing from the first real
+-- checkpoint. This is the self-healing property the bash version's own
+-- comments named: a missing checkpoint, whatever the reason, always
+-- triggers a full fold rather than leaving the chain broken.
+resolveAndFoldCheckpoint
+  :: FilePath          -- ^ checkpoints directory
+  -> FilePath          -- ^ commits directory (bootstrap fallback's full scan)
+  -> Maybe String      -- ^ parent tree sha, if any
+  -> String            -- ^ new tree sha (the checkpoint file's own name)
+  -> [FilePath]        -- ^ newly-incorporated files (used unless bootstrapping)
+  -> IO (FilePath, Int) -- ^ (path written, count folded as real commits)
+resolveAndFoldCheckpoint checkpointsDir commitsDir parentTreeSha newTreeSha newFiles = do
+  parentSnap <- case parentTreeSha of
+    Nothing -> pure emptySnapshot
+    Just sha -> do
+      let parentPath = checkpointsDir </> (sha <> ".json")
+      exists <- doesFileExist parentPath
+      if not exists
+        then pure emptySnapshot
+        else do
+          raw <- BL.readFile parentPath
+          case decodeCheckpoint raw of
+            Nothing -> ioError (userError ("resolveAndFoldCheckpoint: failed to decode parent checkpoint " <> parentPath))
+            Just ck -> pure (checkpointToSnapshot ck)
+
+  parentCheckpointExists <- case parentTreeSha of
+    Nothing -> pure False
+    Just sha -> doesFileExist (checkpointsDir </> (sha <> ".json"))
+
+  filesToFold <-
+    if parentCheckpointExists
+      then pure newFiles
+      else do
+        -- Bootstrap/self-heal: no known parent checkpoint (no parent
+        -- tree sha at all, or one whose checkpoint file is missing --
+        -- a prior attempt failed, or history predates this mechanism).
+        -- Scan every real commit file under commitsDir instead, same
+        -- as the bash original's `find commits -name '*.dmml' -type f
+        -- | sort` -- otherwise whatever the missing checkpoint was
+        -- supposed to already cover would be silently absent from this
+        -- one too.
+        names <- listDirectory commitsDir
+        pure (sortOn id [commitsDir </> n | n <- names, ".dmml" `isSuffixOf` n])
+
+  (newSnap, foldedCount) <- foldNewFiles parentSnap filesToFold
+  let outPath = checkpointsDir </> (newTreeSha <> ".json")
+      out = snapshotToCheckpoint (T.pack newTreeSha) newSnap
+  BL.writeFile outPath (encodeCheckpoint out)
+  pure (outPath, foldedCount)

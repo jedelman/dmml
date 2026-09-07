@@ -315,3 +315,19 @@ executable jgit-smoke-test
   extra-libraries:  jvm
   build-depends:    base, dmml-hs
   default-language: Haskell2010
+
+-- Proves DMML.Jgit + DMML.Checkpoint's resolveAndFoldCheckpoint compose
+-- into the real thing atproto-broker.sh/post-merge used to do in bash:
+-- incorporate a commit, resolve the resulting tree sha, fold a
+-- checkpoint against whatever parent existed (or bootstrap), commit
+-- the checkpoint too. Same isolation rationale as jgit-smoke-test
+-- above (this needs libjvm; most of dmml-hs's other executables don't).
+executable jgit-checkpoint-demo
+  import:           warnings
+  main-is:          JgitCheckpointDemo.hs
+  other-modules:    DMML.Jgit
+  hs-source-dirs:   app, src
+  c-sources:        cbits/jni_prims.c
+  extra-libraries:  jvm
+  build-depends:    base, dmml-hs, directory, filepath
+  default-language: Haskell2010

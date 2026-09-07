@@ -35,6 +35,7 @@ module DMML.Jgit
   , jgitInit
   , jgitAddFilepattern
   , jgitCommit
+  , jgitResolve
   , revCommitName
   ) where
 
@@ -254,6 +255,38 @@ jgitCommit (JvmHandle env) (JGit gitObj) message = do
   revCommitObj <- c_callObjectMethod0 env commitCmd callM
   checkException env "Git.commit().setMessage(...).setSign(FALSE).call()"
   pure (RevCommitRef revCommitObj)
+
+-- | Resolve a revision string (e.g. @\"HEAD\"@ or @\"HEAD:commits\"@ --
+-- JGit's @Repository.resolve@ accepts the same @rev-parse@ syntax real
+-- @git@ does, including the @\<commit\>:\<path\>@ form used to get a
+-- subtree's own tree SHA) to its hex object id, or 'Nothing' if it
+-- doesn't resolve (e.g. @HEAD:commits@ before any commit exists --
+-- 'Repository.resolve' returns Java @null@ for this, not an exception,
+-- and this module treats that as 'Nothing' rather than an error since
+-- it's the normal bootstrap case, not a failure). Real signatures:
+--
+-- > Git.getRepository()      -> "()Lorg/eclipse/jgit/lib/Repository;"
+-- > Repository.resolve(String) -> "(Ljava/lang/String;)Lorg/eclipse/jgit/lib/ObjectId;"
+-- > AnyObjectId.getName()    -> "()Ljava/lang/String;"
+jgitResolve :: JvmHandle -> JGit -> String -> IO (Maybe String)
+jgitResolve (JvmHandle env) (JGit gitObj) revision = do
+  gitCls <- findClass env "org/eclipse/jgit/api/Git"
+  getRepoM <- methodId env gitCls "getRepository" "()Lorg/eclipse/jgit/lib/Repository;"
+  repoObj <- c_callObjectMethod0 env gitObj getRepoM
+
+  repoCls <- findClass env "org/eclipse/jgit/lib/Repository"
+  resolveM <- methodId env repoCls "resolve" "(Ljava/lang/String;)Lorg/eclipse/jgit/lib/ObjectId;"
+  revJStr <- hsStringToJString env revision
+  objIdRef <- c_callObjectMethod1Str env repoObj resolveM revJStr
+  checkException env ("Repository.resolve(" <> revision <> ")")
+  if objIdRef == nullPtr
+    then pure Nothing
+    else do
+      objIdCls <- findClass env "org/eclipse/jgit/lib/ObjectId"
+      getNameM <- methodId env objIdCls "getName" "()Ljava/lang/String;"
+      nameJStr <- c_callObjectMethod0 env objIdRef getNameM
+      checkException env "ObjectId.getName()"
+      Just <$> jStringToHsString env nameJStr
 
 -- | The commit's hex SHA, via @AnyObjectId.getName()@ (inherited by
 -- @RevCommit@ -- @GetMethodID@ walks the superclass chain, so looking
