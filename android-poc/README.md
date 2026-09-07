@@ -99,3 +99,16 @@ actions `dev-journal/2026-09-06-real-jni-bridge-verified-on-host.md`
 already confirmed on host GHC. Only once that's real is F1 actually
 closed — the interpreter side is no longer in question; only the
 cross-compilation and the JNI-specific parts are.
+
+**F1 closed 2026-09-06** (`03d25f0`, real cross-compilation, real
+Compose UI, verified on-device via emulator screenshot). **Next real
+work — JGit-backed on-device persistence and the in-product authoring
+loop — has a proposed starting structure, not yet built or agreed line
+by line**: `written-world/dev-journal/2026-09-06-android-canonical-
+repo-structure.md`. Read it before restructuring `android-poc/` or
+adding Kotlin code — it proposes graduating the actual app (Kotlin/
+Compose/Gradle) out of `android-poc/` into `written-world/android/`
+while `JniBridge.hs`/`jni_bridge.c` stay here, and flags several real
+open questions (binary-vendor-vs-rebuild for the `.so`, whether
+`JniBridge.hs` needs new directory-reading entry points) as this
+session's calls to make, not settled decisions.
