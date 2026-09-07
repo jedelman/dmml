@@ -1,7 +1,6 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
-
 -- | Typed Haskell wrappers over a small, fixed set of real JGit calls,
--- via the generic JNI primitives in @cbits\/jni_prims.c@.
+-- via the generic JNI primitives in 'DMML.Jni' (backed by
+-- @cbits\/jni_prims.c@).
 --
 -- Deliberately NOT built on the Tweag @jni@\/@jvm@\/@inline-java@
 -- packages: both @jni@ and @jvm@ are marked deprecated on Hackage, last
@@ -40,26 +39,27 @@ module DMML.Jgit
   , revCommitName
   ) where
 
-import Control.Exception (Exception, bracket, throwIO)
-import Foreign.C.String (CString, newCString, peekCString, withCString)
-import Foreign.C.Types (CUChar (..))
-import Foreign.Marshal.Alloc (alloca, free)
-import Foreign.Ptr (Ptr, nullPtr)
-import Foreign.Storable (peek)
+import Control.Exception (Exception, throwIO)
+import Foreign.Ptr (nullPtr)
 
--- | An opaque JNI handle -- @jobject@\/@jclass@\/@jmethodID@\/@JNIEnv*@
--- are all pointer-sized opaque values at the C ABI level on every JVM
--- this project targets (HotSpot on desktop, ART's own JNI-compatible
--- layer on Android); never dereferenced from Haskell, only threaded
--- back into the @hs_jni_*@ primitives that produced or expect them.
-type JRef = Ptr ()
-
-type JNIEnvPtr = JRef
-type JVMPtr = JRef
-
--- | A live embedded JVM's environment pointer, valid only inside
--- 'withEmbeddedJvm'.
-newtype JvmHandle = JvmHandle JNIEnvPtr
+import DMML.Jni
+  ( JRef
+  , JvmHandle (..)
+  , c_callObjectMethod0
+  , c_callObjectMethod1Obj
+  , c_callObjectMethod1Str
+  , c_callStaticObjectMethod0
+  , c_callStaticObjectMethod1Bool
+  , c_callStaticObjectMethod1Obj
+  , c_newObject1Obj
+  , describeAndClearException
+  , findClass
+  , hsStringToJString
+  , jStringToHsString
+  , methodId
+  , staticMethodId
+  , withEmbeddedJvm
+  )
 
 -- | A live @org.eclipse.jgit.api.Git@ instance.
 newtype JGit = JGit JRef
@@ -78,99 +78,15 @@ instance Show JgitException where
 
 instance Exception JgitException
 
--- Desktop\/CLI only. Embeds a fresh JVM via the JNI Invocation API,
--- runs the action with a valid 'JvmHandle', tears the JVM down after --
--- exactly the mechanism dmml-hs\/spikes\/jvm-embed\/ proved works from a
--- real GHC-compiled binary. The Android half of "one canonical
--- implementation" is the OPPOSITE direction (an upcall into the JVM
--- Kotlin already started) and does not use this function at all -- not
--- yet written, a real, disclosed gap, not this module's job to close.
-withEmbeddedJvm :: FilePath -> (JvmHandle -> IO a) -> IO a
-withEmbeddedJvm classpath action =
-  alloca $ \jvmPtrPtr ->
-    withCString classpath $ \cClasspath ->
-      bracket
-        (do
-          env <- c_createJvm jvmPtrPtr cClasspath
-          if env == nullPtr
-            then ioError (userError "DMML.Jgit: JNI_CreateJavaVM failed")
-            else pure env)
-        (const (peek jvmPtrPtr >>= c_destroyJvm))
-        (action . JvmHandle)
-
-foreign import ccall safe "hs_jgit_create_jvm"
-  c_createJvm :: Ptr JVMPtr -> CString -> IO JNIEnvPtr
-
-foreign import ccall safe "hs_jgit_destroy_jvm"
-  c_destroyJvm :: JVMPtr -> IO ()
-
-foreign import ccall unsafe "hs_jni_find_class"
-  c_findClass :: JNIEnvPtr -> CString -> IO JRef
-
-foreign import ccall unsafe "hs_jni_get_method_id"
-  c_getMethodId :: JNIEnvPtr -> JRef -> CString -> CString -> IO JRef
-
-foreign import ccall unsafe "hs_jni_get_static_method_id"
-  c_getStaticMethodId :: JNIEnvPtr -> JRef -> CString -> CString -> IO JRef
-
-foreign import ccall safe "hs_jni_new_object_1obj"
-  c_newObject1Obj :: JNIEnvPtr -> JRef -> JRef -> JRef -> IO JRef
-
-foreign import ccall safe "hs_jni_call_static_object_method_0"
-  c_callStaticObjectMethod0 :: JNIEnvPtr -> JRef -> JRef -> IO JRef
-
-foreign import ccall safe "hs_jni_call_static_object_method_1obj"
-  c_callStaticObjectMethod1Obj :: JNIEnvPtr -> JRef -> JRef -> JRef -> IO JRef
-
-foreign import ccall safe "hs_jni_call_static_object_method_1bool"
-  c_callStaticObjectMethod1Bool :: JNIEnvPtr -> JRef -> JRef -> CUChar -> IO JRef
-
-foreign import ccall safe "hs_jni_call_object_method_0"
-  c_callObjectMethod0 :: JNIEnvPtr -> JRef -> JRef -> IO JRef
-
-foreign import ccall safe "hs_jni_call_object_method_1obj"
-  c_callObjectMethod1Obj :: JNIEnvPtr -> JRef -> JRef -> JRef -> IO JRef
-
-foreign import ccall safe "hs_jni_call_object_method_1str"
-  c_callObjectMethod1Str :: JNIEnvPtr -> JRef -> JRef -> JRef -> IO JRef
-
-foreign import ccall unsafe "hs_jni_new_string_utf"
-  c_newStringUtf :: JNIEnvPtr -> CString -> IO JRef
-
-foreign import ccall unsafe "hs_jni_get_string_utf_chars_copy"
-  c_getStringUtfCharsCopy :: JNIEnvPtr -> JRef -> IO CString
-
-foreign import ccall unsafe "hs_jni_exception_check"
-  c_exceptionCheck :: JNIEnvPtr -> IO CUChar
-
-foreign import ccall unsafe "hs_jni_describe_and_clear_exception"
-  c_describeAndClearException :: JNIEnvPtr -> IO CString
-
 -- | Throw 'JgitException' if the last JNI call left a pending Java
 -- exception -- called after every @call()@ that can throw a checked
 -- @GitAPIException@. @what@ names the operation, for a readable error.
-checkException :: JNIEnvPtr -> String -> IO ()
+checkException :: JRef -> String -> IO ()
 checkException env what = do
-  pending <- c_exceptionCheck env
-  if pending /= 0
-    then do
-      descC <- c_describeAndClearException env
-      desc <- if descC == nullPtr then pure "(no description)" else peekCString descC
-      throwIO (JgitException (what <> ": " <> desc))
-    else pure ()
-
-hsStringToJString :: JNIEnvPtr -> String -> IO JRef
-hsStringToJString env s = withCString s (c_newStringUtf env)
-
-jStringToHsString :: JNIEnvPtr -> JRef -> IO String
-jStringToHsString env jstr = do
-  cstr <- c_getStringUtfCharsCopy env jstr
-  if cstr == nullPtr
-    then ioError (userError "DMML.Jgit: GetStringUTFChars returned null")
-    else do
-      s <- peekCString cstr
-      free cstr
-      pure s
+  mDesc <- describeAndClearException env
+  case mDesc of
+    Nothing -> pure ()
+    Just desc -> throwIO (JgitException (what <> ": " <> desc))
 
 -- | @git init@ at the given directory. Real JGit call chain, real
 -- signature strings, checked directly against 7.7.1's jar:
@@ -327,38 +243,3 @@ revCommitName (JvmHandle env) (RevCommitRef revCommitObj) = do
   nameJStr <- c_callObjectMethod0 env revCommitObj getNameM
   checkException env "RevCommit.getName()"
   jStringToHsString env nameJStr
-
--- Small helpers so every call site above reads as (env, class, name,
--- sig) instead of manual newCString plumbing -- these free their
--- temporary C strings themselves; the returned jclass/jmethodID handles
--- are the only things that outlive the call, per ordinary JNI rules.
-findClass :: JNIEnvPtr -> String -> IO JRef
-findClass env name = do
-  cName <- newCString name
-  cls <- c_findClass env cName
-  free cName
-  if cls == nullPtr
-    then ioError (userError ("DMML.Jgit: FindClass failed for " <> name))
-    else pure cls
-
-methodId :: JNIEnvPtr -> JRef -> String -> String -> IO JRef
-methodId env cls name sig = do
-  cName <- newCString name
-  cSig <- newCString sig
-  m <- c_getMethodId env cls cName cSig
-  free cName
-  free cSig
-  if m == nullPtr
-    then ioError (userError ("DMML.Jgit: GetMethodID failed for " <> name <> " " <> sig))
-    else pure m
-
-staticMethodId :: JNIEnvPtr -> JRef -> String -> String -> IO JRef
-staticMethodId env cls name sig = do
-  cName <- newCString name
-  cSig <- newCString sig
-  m <- c_getStaticMethodId env cls cName cSig
-  free cName
-  free cSig
-  if m == nullPtr
-    then ioError (userError ("DMML.Jgit: GetStaticMethodID failed for " <> name <> " " <> sig))
-    else pure m

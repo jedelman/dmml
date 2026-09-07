@@ -28,6 +28,7 @@ library
       DMML.Governance
       DMML.Guard
       DMML.Jgit
+      DMML.Jni
       DMML.JniBridge
       DMML.Json
       DMML.LocalIdentity

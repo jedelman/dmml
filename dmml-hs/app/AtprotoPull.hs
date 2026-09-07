@@ -40,8 +40,9 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import DMML.Atproto (listRecords, resolveDidToPdsEndpoint, resolveHandle)
+import DMML.Jni (JvmHandle, withEmbeddedJvm)
 import System.Directory (createDirectoryIfMissing, doesFileExist)
-import System.Environment (getArgs)
+import System.Environment (getArgs, lookupEnv)
 import System.Exit (exitFailure)
 import System.FilePath ((</>))
 import System.IO (hPutStrLn, stderr)
@@ -57,22 +58,24 @@ data PulledRecord = PulledRecord
 main :: IO ()
 main = do
   args <- getArgs
-  case args of
+  classpath <- maybe "." id <$> lookupEnv "DMML_JGIT_CLASSPATH"
+  withEmbeddedJvm classpath $ \jvm ->
+    case args of
     [peerIdentifier, collection, cursorFile, outDir] -> do
       didResult <-
         if "did:" `T.isPrefixOf` T.pack peerIdentifier
           then pure (Right (T.pack peerIdentifier))
-          else resolveHandle (T.pack peerIdentifier)
+          else resolveHandle jvm (T.pack peerIdentifier)
       case didResult of
         Left err -> hPutStrLn stderr ("resolveHandle failed: " <> show err) >> exitFailure
         Right did -> do
-          pdsResult <- resolveDidToPdsEndpoint did
+          pdsResult <- resolveDidToPdsEndpoint jvm did
           case pdsResult of
             Left err -> hPutStrLn stderr ("resolveDidToPdsEndpoint failed: " <> show err) >> exitFailure
             Right pdsEndpoint -> do
               haveCursorFile <- doesFileExist cursorFile
               storedCursor <- if haveCursorFile then TIO.readFile cursorFile else pure ""
-              allRecords <- pageAll pdsEndpoint did (T.pack collection) Nothing maxPages
+              allRecords <- pageAll jvm pdsEndpoint did (T.pack collection) Nothing maxPages
               let new =
                     sortOn prRkey
                       [ r
@@ -131,9 +134,9 @@ pageRetries = 3
 -- batch here just means a smaller, still-correct set of new files for
 -- the caller to validate and incorporate; the NEXT run picks up
 -- wherever the stored cursor actually left off, same as it always did.
-pageAll :: Text -> Text -> Text -> Maybe Text -> Int -> IO [PulledRecord]
-pageAll _ _ _ _ 0 = pure []
-pageAll pdsEndpoint did collection cursor pagesLeft = do
+pageAll :: JvmHandle -> Text -> Text -> Text -> Maybe Text -> Int -> IO [PulledRecord]
+pageAll _ _ _ _ _ 0 = pure []
+pageAll jvm pdsEndpoint did collection cursor pagesLeft = do
   result <- fetchPageWithRetries pageRetries
   case result of
     Nothing -> pure []
@@ -141,13 +144,13 @@ pageAll pdsEndpoint did collection cursor pagesLeft = do
       let records = extractRecords v
           nextCursor = extractCursor v
       rest <- case nextCursor of
-        Just c | not (null records) -> pageAll pdsEndpoint did collection (Just c) (pagesLeft - 1)
+        Just c | not (null records) -> pageAll jvm pdsEndpoint did collection (Just c) (pagesLeft - 1)
         _ -> pure []
       pure (records ++ rest)
   where
     fetchPageWithRetries :: Int -> IO (Maybe Aeson.Value)
     fetchPageWithRetries attemptsLeft = do
-      result <- listRecords pdsEndpoint did collection cursor
+      result <- listRecords jvm pdsEndpoint did collection cursor
       case result of
         Right v -> pure (Just v)
         Left err

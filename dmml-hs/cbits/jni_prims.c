@@ -98,6 +98,22 @@ jobject hs_jni_call_object_method_1bool(JNIEnv *env, jobject recv, jmethodID m, 
     return (*env)->CallObjectMethod(env, recv, m, arg0);
 }
 
+jobject hs_jni_call_object_method_2str(JNIEnv *env, jobject recv, jmethodID m, jstring arg0, jstring arg1) {
+    return (*env)->CallObjectMethod(env, recv, m, arg0, arg1);
+}
+
+jobject hs_jni_call_object_method_2obj(JNIEnv *env, jobject recv, jmethodID m, jobject arg0, jobject arg1) {
+    return (*env)->CallObjectMethod(env, recv, m, arg0, arg1);
+}
+
+jint hs_jni_call_int_method_0(JNIEnv *env, jobject recv, jmethodID m) {
+    return (*env)->CallIntMethod(env, recv, m);
+}
+
+jobject hs_jni_call_static_object_method_1long(JNIEnv *env, jclass cls, jmethodID m, jlong arg0) {
+    return (*env)->CallStaticObjectMethod(env, cls, m, arg0);
+}
+
 // --- String marshaling ---------------------------------------------------
 
 jstring hs_jni_new_string_utf(JNIEnv *env, const char *s) {

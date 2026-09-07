@@ -27,6 +27,7 @@ import DMML.Atproto
   , resolveDidToPdsEndpoint
   , resolveHandle
   )
+import DMML.Jni (JvmHandle, withEmbeddedJvm)
 import System.Environment (getArgs, lookupEnv)
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
@@ -34,43 +35,45 @@ import System.IO (hPutStrLn, stderr)
 main :: IO ()
 main = do
   args <- getArgs
-  case args of
-    [identifierStr, predicateStr, dmmlPath] -> do
-      maybePassword <- lookupEnv "ATPROTO_APP_PASSWORD"
-      case maybePassword of
-        Nothing -> do
-          hPutStrLn stderr "ATPROTO_APP_PASSWORD must be set (an atproto app password, never the real account password)"
-          exitFailure
-        Just password -> do
-          dmmlText <- TIO.readFile dmmlPath
-          run (T.pack identifierStr) (T.pack predicateStr) dmmlText (T.pack password)
-    _ ->
-      hPutStrLn
-        stderr
-        "usage: atproto-publish <handle-or-did> <predicate> <commit.dmml> (needs ATPROTO_APP_PASSWORD)"
-        >> exitFailure
+  classpath <- maybe "." id <$> lookupEnv "DMML_JGIT_CLASSPATH"
+  withEmbeddedJvm classpath $ \jvm ->
+    case args of
+      [identifierStr, predicateStr, dmmlPath] -> do
+        maybePassword <- lookupEnv "ATPROTO_APP_PASSWORD"
+        case maybePassword of
+          Nothing -> do
+            hPutStrLn stderr "ATPROTO_APP_PASSWORD must be set (an atproto app password, never the real account password)"
+            exitFailure
+          Just password -> do
+            dmmlText <- TIO.readFile dmmlPath
+            run jvm (T.pack identifierStr) (T.pack predicateStr) dmmlText (T.pack password)
+      _ ->
+        hPutStrLn
+          stderr
+          "usage: atproto-publish <handle-or-did> <predicate> <commit.dmml> (needs ATPROTO_APP_PASSWORD)"
+          >> exitFailure
 
-run :: T.Text -> T.Text -> T.Text -> T.Text -> IO ()
-run identifier predicate dmmlText password = do
+run :: JvmHandle -> T.Text -> T.Text -> T.Text -> T.Text -> IO ()
+run jvm identifier predicate dmmlText password = do
   didResult <-
     if "did:" `T.isPrefixOf` identifier
       then pure (Right identifier)
-      else resolveHandle identifier
+      else resolveHandle jvm identifier
   case didResult of
     Left err -> hPutStrLn stderr ("resolveHandle failed: " <> show err) >> exitFailure
     Right did -> do
-      pdsResult <- resolveDidToPdsEndpoint did
+      pdsResult <- resolveDidToPdsEndpoint jvm did
       case pdsResult of
         Left err -> hPutStrLn stderr ("resolveDidToPdsEndpoint failed: " <> show err) >> exitFailure
         Right pdsEndpoint -> do
-          sessionResult <- createSession pdsEndpoint identifier password
+          sessionResult <- createSession jvm pdsEndpoint identifier password
           case sessionResult of
             Left err -> hPutStrLn stderr ("createSession failed: " <> show err) >> exitFailure
             Right session -> do
               now <- getCurrentTime
               let createdAt = T.pack (formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S%QZ" now)
                   record = commitRecord predicate dmmlText createdAt
-              publishResult <- createRecord session "org.jason-edelman.writtenworld.commit" record
+              publishResult <- createRecord jvm session "org.jason-edelman.writtenworld.commit" record
               case publishResult of
                 Left err -> hPutStrLn stderr ("createRecord failed: " <> show err) >> exitFailure
                 Right uri -> putStrLn ("published: " <> T.unpack uri)

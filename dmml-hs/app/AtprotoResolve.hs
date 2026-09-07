@@ -14,31 +14,34 @@ import qualified Data.ByteString.Lazy.Char8 as BLC
 import Data.Text (Text)
 import qualified Data.Text as T
 import DMML.Atproto (listRecords, resolveDidToPdsEndpoint, resolveHandle)
-import System.Environment (getArgs)
+import DMML.Jni (JvmHandle, withEmbeddedJvm)
+import System.Environment (getArgs, lookupEnv)
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
 
 main :: IO ()
 main = do
   args <- getArgs
-  case args of
-    [handle] -> run (T.pack handle) Nothing
-    [handle, collection] -> run (T.pack handle) (Just (T.pack collection))
-    _ -> do
-      hPutStrLn stderr "usage: atproto-resolve <handle-or-did> [collection]"
-      exitFailure
+  classpath <- maybe "." id <$> lookupEnv "DMML_JGIT_CLASSPATH"
+  withEmbeddedJvm classpath $ \jvm ->
+    case args of
+      [handle] -> run jvm (T.pack handle) Nothing
+      [handle, collection] -> run jvm (T.pack handle) (Just (T.pack collection))
+      _ -> do
+        hPutStrLn stderr "usage: atproto-resolve <handle-or-did> [collection]"
+        exitFailure
 
-run :: Text -> Maybe Text -> IO ()
-run identifier maybeCollection = do
+run :: JvmHandle -> Text -> Maybe Text -> IO ()
+run jvm identifier maybeCollection = do
   didResult <-
     if "did:" `T.isPrefixOf` identifier
       then pure (Right identifier)
-      else resolveHandle identifier
+      else resolveHandle jvm identifier
   case didResult of
     Left err -> hPutStrLn stderr ("resolveHandle failed: " <> show err) >> exitFailure
     Right did -> do
       putStrLn ("did: " <> T.unpack did)
-      pdsResult <- resolveDidToPdsEndpoint did
+      pdsResult <- resolveDidToPdsEndpoint jvm did
       case pdsResult of
         Left err -> hPutStrLn stderr ("resolveDidToPdsEndpoint failed: " <> show err) >> exitFailure
         Right pdsEndpoint -> do
@@ -46,7 +49,7 @@ run identifier maybeCollection = do
           case maybeCollection of
             Nothing -> pure ()
             Just collection -> do
-              recordsResult <- listRecords pdsEndpoint did collection Nothing
+              recordsResult <- listRecords jvm pdsEndpoint did collection Nothing
               case recordsResult of
                 Left err -> hPutStrLn stderr ("listRecords failed: " <> show err) >> exitFailure
                 Right value -> BLC.putStrLn (Aeson.encode value)
