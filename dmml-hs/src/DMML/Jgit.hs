@@ -33,6 +33,7 @@ module DMML.Jgit
   , RevCommitRef
   , JgitException (..)
   , jgitInit
+  , jgitOpen
   , jgitAddFilepattern
   , jgitCommit
   , jgitResolve
@@ -118,6 +119,9 @@ foreign import ccall safe "hs_jni_new_object_1obj"
 foreign import ccall safe "hs_jni_call_static_object_method_0"
   c_callStaticObjectMethod0 :: JNIEnvPtr -> JRef -> JRef -> IO JRef
 
+foreign import ccall safe "hs_jni_call_static_object_method_1obj"
+  c_callStaticObjectMethod1Obj :: JNIEnvPtr -> JRef -> JRef -> JRef -> IO JRef
+
 foreign import ccall safe "hs_jni_call_static_object_method_1bool"
   c_callStaticObjectMethod1Bool :: JNIEnvPtr -> JRef -> JRef -> CUChar -> IO JRef
 
@@ -192,6 +196,28 @@ jgitInit (JvmHandle env) dir = do
   callM <- methodId env initCmdCls "call" "()Lorg/eclipse/jgit/api/Git;"
   gitObj <- c_callObjectMethod0 env initCmd callM
   checkException env "Git.init().setDirectory(...).call()"
+  pure (JGit gitObj)
+
+-- | Open an EXISTING repository at the given directory -- distinct from
+-- 'jgitInit', which creates one. @written-world fire@'s repo is created
+-- once, out of band, and opened fresh on every invocation; conflating
+-- the two (e.g. calling 'jgitInit' every time on the assumption it's a
+-- harmless no-op against an already-initialized repo) was deliberately
+-- not assumed here and not needed, since JGit has a real, separate
+-- @Git.open@ for exactly this. Real signature:
+--
+-- > Git.open(File) -> "(Ljava/io/File;)Lorg/eclipse/jgit/api/Git;" (static)
+jgitOpen :: JvmHandle -> FilePath -> IO JGit
+jgitOpen (JvmHandle env) dir = do
+  fileCls <- findClass env "java/io/File"
+  fileCtor <- methodId env fileCls "<init>" "(Ljava/lang/String;)V"
+  dirJStr <- hsStringToJString env dir
+  fileObj <- c_newObject1Obj env fileCls fileCtor dirJStr
+
+  gitCls <- findClass env "org/eclipse/jgit/api/Git"
+  openM <- staticMethodId env gitCls "open" "(Ljava/io/File;)Lorg/eclipse/jgit/api/Git;"
+  gitObj <- c_callStaticObjectMethod1Obj env gitCls openM fileObj
+  checkException env ("Git.open(" <> dir <> ")")
   pure (JGit gitObj)
 
 -- | @git add \<pattern\>@ against an already-open 'JGit'. Real signatures:
