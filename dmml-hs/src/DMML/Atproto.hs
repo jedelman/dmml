@@ -33,17 +33,19 @@ module DMML.Atproto
   , deleteRecord
   , listRecords
   , commitRecord
+  , pullNewRecords
   ) where
 
 import Control.Concurrent (threadDelay)
 import Data.Aeson (Value, (.:), (.=))
 import qualified Data.Aeson as Aeson
 import Data.Aeson.Key (fromText)
+import qualified Data.Aeson.KeyMap as KM
 import qualified Data.Aeson.Types as AesonT (parseEither)
 import Data.Bits (shiftR, (.&.))
 import qualified Data.ByteString.Lazy as BL
 import Data.Char (intToDigit, isAscii, isAlphaNum, ord)
-import Data.List (isPrefixOf)
+import Data.List (isPrefixOf, sortOn)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -418,6 +420,90 @@ listRecords jvm pdsEndpoint repoDid collection cursor = do
           ++ maybe [] (\c -> [("cursor", T.unpack c)]) cursor
       )
   pure (result >>= parseJson)
+
+-- | Resolve a peer (handle or DID), page through its
+-- @org.jason-edelman.writtenworld.commit@ collection (bounded at 50
+-- pages, same limit @atproto-pull@ always used), and return every
+-- record whose rkey (a real atproto TID, lexicographically ordered by
+-- creation time) sorts strictly after @storedCursor@ -- sorted
+-- ascending, plus the candidate next cursor (the last returned rkey,
+-- or 'Nothing' if nothing new). Extracted from @app/AtprotoPull.hs@
+-- (which now just calls this) so the broker orchestration
+-- (@written-world@'s @cli/app/Broker.hs@) can pull records as a direct
+-- in-process call too, with no subprocess spawning -- required for
+-- Android, and simpler on desktop besides. Retries a failing page up
+-- to 3 times before giving up on it and returning whatever was already
+-- fetched (jedelman/dmml#7's fix, preserved here).
+--
+-- Does NOT write anything to disk or advance any cursor itself -- same
+-- discipline @atproto-pull@ always had: the caller decides whether this
+-- batch is actually incorporated (e.g. after validation) before
+-- persisting the returned cursor anywhere.
+pullNewRecords :: JvmHandle -> Text -> Text -> Text -> IO (Either AtprotoError (Maybe Text, [(Text, Text)]))
+pullNewRecords jvm peerIdentifier collection storedCursor = do
+  didResult <-
+    if "did:" `T.isPrefixOf` peerIdentifier
+      then pure (Right peerIdentifier)
+      else resolveHandle jvm peerIdentifier
+  case didResult of
+    Left err -> pure (Left err)
+    Right did -> do
+      pdsResult <- resolveDidToPdsEndpoint jvm did
+      case pdsResult of
+        Left err -> pure (Left err)
+        Right pdsEndpoint -> do
+          allRecords <- pageAll pdsEndpoint did Nothing maxPages
+          let new = sortOn fst [r | r@(rkey, _) <- allRecords, rkey > storedCursor]
+          pure (Right (if null new then Nothing else Just (fst (last new)), new))
+  where
+    maxPages :: Int
+    maxPages = 50
+
+    pageRetries :: Int
+    pageRetries = 3
+
+    pageAll :: Text -> Text -> Maybe Text -> Int -> IO [(Text, Text)]
+    pageAll _ _ _ 0 = pure []
+    pageAll pdsEndpoint did cursor pagesLeft = do
+      result <- fetchPageWithRetries pdsEndpoint did cursor pageRetries
+      case result of
+        Nothing -> pure []
+        Just v -> do
+          let records = extractRecords v
+              nextCursor = extractCursor v
+          rest <- case nextCursor of
+            Just _ | not (null records) -> pageAll pdsEndpoint did nextCursor (pagesLeft - 1)
+            _ -> pure []
+          pure (records ++ rest)
+
+    fetchPageWithRetries :: Text -> Text -> Maybe Text -> Int -> IO (Maybe Value)
+    fetchPageWithRetries pdsEndpoint did cursor attemptsLeft = do
+      result <- listRecords jvm pdsEndpoint did collection cursor
+      case result of
+        Right v -> pure (Just v)
+        Left _ | attemptsLeft > 1 -> fetchPageWithRetries pdsEndpoint did cursor (attemptsLeft - 1)
+        Left _ -> pure Nothing
+
+    extractCursor :: Value -> Maybe Text
+    extractCursor (Aeson.Object o) = case KM.lookup "cursor" o of
+      Just (Aeson.String s) -> Just s
+      _ -> Nothing
+    extractCursor _ = Nothing
+
+    extractRecords :: Value -> [(Text, Text)]
+    extractRecords (Aeson.Object o) = case KM.lookup "records" o of
+      Just (Aeson.Array arr) -> [r | Just r <- map recordFromValue (foldr (:) [] arr)]
+      _ -> []
+    extractRecords _ = []
+
+    recordFromValue :: Value -> Maybe (Text, Text)
+    recordFromValue (Aeson.Object o) = do
+      Aeson.String uri <- KM.lookup "uri" o
+      Aeson.Object value <- KM.lookup "value" o
+      Aeson.String dmml <- KM.lookup (fromText "dmml") value
+      let rkey = last (T.splitOn "/" uri)
+      pure (rkey, dmml)
+    recordFromValue _ = Nothing
 
 -- | Build a record value matching the real, existing
 -- @org.jason-edelman.writtenworld.commit@ lexicon (@lexicons/org/
