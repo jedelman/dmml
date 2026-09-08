@@ -76,6 +76,18 @@ object NativeBridge {
      * job on both platforms. */
     external fun llmChatComplete(apiKey: String, model: String, systemPrompt: String, userPrompt: String): String
 
+    /** Port of written-world's Broker.hs `incorporate` (branch
+     * claude/written-world-dmml-enrichment-257mkv, commit 317d179) --
+     * pulls a peer's new commit records, validates the whole batch
+     * (all-or-nothing), writes+commits them under `repoDir/commitsDir`,
+     * computes real cross-player divergence, and folds the checkpoint
+     * chain (only when `commitsDir` is literally "commits"). Returns
+     * JSON -- see DMML.AndroidBridge.brokerIncorporateBridge's own doc
+     * comment for the exact shape -- or an "ERROR: ..."-prefixed string
+     * on a validation rejection or any other failure (never a partial
+     * commit). `cursorFile`/`commitsDir` are paths relative to `repoDir`. */
+    external fun brokerIncorporate(repoDir: String, peerIdentifier: String, cursorFile: String, commitsDir: String): String
+
     /** True iff `result` (from any function above) is an error, not
      * real output -- same "ERROR: ..." contract as DmmlBridge.isError. */
     fun isError(result: String): Boolean = result.startsWith("ERROR:")

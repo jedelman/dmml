@@ -38,14 +38,28 @@
 -- path; an uncaught exception crossing the FFI boundary is undefined
 -- behavior, not a clean nonzero exit).
 --
--- NOT YET COVERED here: written-world's own broker orchestration
--- (@cli\/app\/Broker.hs@'s @incorporate@ -- validate + git commit +
--- divergence report + checkpoint fold as one unit) lives in
--- @written-world@, not @dmml-hs@, and needs its own, parallel Android
--- entry point built the same way once an app exists to call it. This
--- module covers the PRIMITIVES that orchestration is built from
--- (commit, pull, chat) -- proven individually, not yet wired together
--- behind one Android call.
+-- Broker orchestration: @android_broker_incorporate@, below, ports
+-- @written-world@'s own @cli\/app\/Broker.hs@ @incorporate@ (validate +
+-- git commit + divergence report + checkpoint fold as one unit,
+-- itself the real Haskell replacement for
+-- @sync-spike\/broker\/atproto-broker.sh@'s bash+subprocess
+-- orchestration -- subprocess spawning doesn't work on Android at
+-- all) onto 'UpcallJvm', the same adaptation every other function in
+-- this module already makes for its own desktop counterpart. Ported
+-- from @written-world@ commit 317d179 (branch
+-- @claude\/written-world-dmml-enrichment-257mkv@) 2026-09-08 -- a
+-- separate repo\/language boundary from this one, so this is a real
+-- adaptation, not a shared import; kept behavior-equivalent
+-- (including the original's own @jgitResolve ... \"HEAD:commits\"@
+-- hardcoding regardless of the actual @commitsDir@ argument, and its
+-- checkpoint-folds-only-when-commitsDir-is-literally-\"commits\"
+-- restriction) with one real, necessary difference: the desktop
+-- original prints its divergence report to stdout and calls
+-- 'System.Exit.exitFailure' on validation rejection -- neither works
+-- across an FFI boundary with no attached console, so this version
+-- returns the divergence report as structured JSON and a rejection as
+-- a normal @Left@, marshaled the same @\"ERROR: ...\"@ way as
+-- everything else here.
 module DMML.AndroidBridge
   ( android_jgit_commit
   , android_atproto_resolve
@@ -53,18 +67,22 @@ module DMML.AndroidBridge
   , android_atproto_create_session
   , android_atproto_create_record
   , android_llm_chat_complete
+  , android_broker_incorporate
   , jgitCommitBridge
   , atprotoResolveBridge
   , atprotoPullBridge
   , atprotoCreateSessionBridge
   , atprotoCreateRecordBridge
   , llmChatCompleteBridge
+  , brokerIncorporateBridge
   ) where
 
-import Control.Exception (SomeException, displayException, try)
+import Control.Exception (SomeException, catch, displayException, try)
 import Data.Aeson (object, (.=))
 import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Lazy as BL
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -72,8 +90,10 @@ import Data.Time.Clock (getCurrentTime)
 import Data.Time.Format (defaultTimeLocale, formatTime)
 import Foreign.C.String (CString, newCString, peekCString)
 
+import DMML.Ast (Literal (..), MachineStmt (machineNode), NodeRef (nodeRefSegments), Value (..))
 import DMML.Atproto
-  ( Session (..)
+  ( AtprotoError
+  , Session (..)
   , commitRecord
   , createRecord
   , createSession
@@ -81,11 +101,16 @@ import DMML.Atproto
   , resolveDidToPdsEndpoint
   , resolveHandle
   )
-import DMML.Jni (JNIEnvPtr, JvmEnvironment (UpcallJvm), withJvm)
-import DMML.Jgit (jgitAddFilepattern, jgitCommit, jgitOpen, revCommitName)
+import DMML.Checkpoint (resolveAndFoldCheckpoint)
+import DMML.Governance (applyGovernance)
+import DMML.Jni (JNIEnvPtr, JvmEnvironment (UpcallJvm), JvmHandle, withJvm)
+import DMML.Jgit (JGit, jgitAddFilepattern, jgitCommit, jgitOpen, jgitResolve, revCommitName)
 import DMML.Llm (chatComplete)
-import System.Directory (createDirectoryIfMissing)
-import System.FilePath (takeDirectory, (</>))
+import DMML.Materialize (WorldSnapshot (..), applyCommits, currentValue, mergeSnapshots)
+import DMML.Surface (parseCommitSurface, parseMachineSurface)
+import System.Directory (createDirectoryIfMissing, doesFileExist, listDirectory)
+import System.FilePath (takeDirectory, takeExtension, (</>))
+import Text.Megaparsec (errorBundlePretty)
 import qualified Data.Text.IO as TIO
 
 foreign export ccall android_jgit_commit :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
@@ -94,6 +119,7 @@ foreign export ccall android_atproto_pull :: JNIEnvPtr -> CString -> CString -> 
 foreign export ccall android_atproto_create_session :: JNIEnvPtr -> CString -> CString -> CString -> IO CString
 foreign export ccall android_atproto_create_record :: JNIEnvPtr -> CString -> CString -> CString -> CString -> CString -> CString -> IO CString
 foreign export ccall android_llm_chat_complete :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
+foreign export ccall android_broker_incorporate :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
 
 -- | Writes @content@ to @repoDir\/relPath@ (creating parent directories
 -- as needed), @git add@s and commits it via 'DMML.Jgit' against the
@@ -203,6 +229,185 @@ llmChatCompleteBridge envPtr apiKey model systemPrompt userPrompt =
   withJvm (UpcallJvm envPtr) $ \jvm -> do
     result <- chatComplete jvm apiKey model systemPrompt userPrompt
     pure (either (Left . show) Right result)
+
+-- | Port of @Broker.hs@'s @collection@ -- the one real lexicon this
+-- project has.
+brokerCollection :: Text
+brokerCollection = "org.jason-edelman.writtenworld.commit"
+
+-- | Pulls a peer's new commit records (via 'DMML.Atproto.pullNewRecords',
+-- same as 'atprotoPullBridge') and, if there are any, validates the
+-- whole batch (all-or-nothing, same policy as the desktop original),
+-- writes each as a @.dmml@ file under @repoDir\/commitsDir@, updates
+-- the cursor file, commits via JGit, computes real cross-player
+-- divergence, and folds the checkpoint chain (only when @commitsDir@
+-- is literally @\"commits\"@, same restriction the original has).
+-- Returns JSON:
+-- @{\"incorporatedCount\":N,\"nextCursor\":...,\"commitSha\":...,
+--   \"divergences\":[{\"subject\":...,\"predicate\":...,
+--     \"options\":[{\"label\":...,\"value\":...}]}],
+--   \"checkpoint\":{\"foldedCount\":N,\"path\":...}|null}@,
+-- or (nothing new) @{\"incorporatedCount\":0,\"message\":\"nothing new\"}@.
+-- A validation rejection or any other failure is a normal 'Left'
+-- (marshaled as an @\"ERROR: ...\"@-prefixed 'CString' by the caller),
+-- never a silent partial commit -- same all-or-nothing guarantee as
+-- the desktop original's @failWith@.
+brokerIncorporateBridge :: JNIEnvPtr -> FilePath -> Text -> FilePath -> FilePath -> IO (Either String Text)
+brokerIncorporateBridge envPtr repoDir peerIdentifier cursorFile commitsDir =
+  withJvm (UpcallJvm envPtr) $ \jvm -> do
+    let cursorPath = repoDir </> cursorFile
+    haveCursorFile <- doesFileExist cursorPath
+    storedCursor <- if haveCursorFile then T.strip <$> TIO.readFile cursorPath else pure ""
+    pullResult <- pullNewRecords jvm peerIdentifier brokerCollection storedCursor
+    case pullResult of
+      Left err -> pure (Left (show (err :: AtprotoError)))
+      Right (nextCursor, []) ->
+        pure (Right (jsonText (object ["incorporatedCount" .= (0 :: Int), "message" .= ("nothing new" :: Text), "nextCursor" .= nextCursor])))
+      Right (nextCursor, newRecords) -> do
+        let badRkeys = [rkey | (rkey, dmml) <- newRecords, Just _ <- [shapeError dmml]]
+        if not (null badRkeys)
+          then pure (Left ("REJECTED -- at least one new record failed validation, not incorporating any of this batch: " <> T.unpack (T.intercalate ", " badRkeys)))
+          else do
+            let commitsPath = repoDir </> commitsDir
+            createDirectoryIfMissing True commitsPath
+
+            -- Snapshot MY OWN existing commits BEFORE incorporating
+            -- anything new -- same reasoning as the desktop original.
+            mineFilesBefore <- listDmmlFiles commitsPath
+
+            let peerPaths = [commitsPath </> T.unpack rkey <> ".dmml" | (rkey, _) <- newRecords]
+            mapM_ (\(rkey, dmml) -> TIO.writeFile (commitsPath </> T.unpack rkey <> ".dmml") dmml) newRecords
+            case nextCursor of
+              Nothing -> pure ()
+              Just c -> TIO.writeFile cursorPath c
+
+            git <- jgitOpen jvm repoDir
+            -- Same hardcoded "HEAD:commits" as the desktop original,
+            -- regardless of the actual commitsDir argument -- kept
+            -- behavior-equivalent, not fixed here (see module haddock).
+            preCommitTreeSha <- jgitResolve jvm git "HEAD:commits"
+
+            jgitAddFilepattern jvm git commitsDir
+            jgitAddFilepattern jvm git cursorFile
+            rev <- jgitCommit jvm git ("atproto: incorporate " <> show (length peerPaths) <> " new commit(s) from " <> T.unpack peerIdentifier)
+            commitSha <- revCommitName jvm rev
+
+            divergences <- computeDivergence mineFilesBefore peerPaths
+
+            checkpointResult <-
+              if commitsDir == "commits"
+                then Just <$> foldCheckpointBridge jvm git preCommitTreeSha peerPaths
+                else pure Nothing
+
+            pure
+              ( Right
+                  ( jsonText
+                      ( object
+                          [ "incorporatedCount" .= length peerPaths
+                          , "nextCursor" .= nextCursor
+                          , "commitSha" .= commitSha
+                          , "divergences" .= divergences
+                          , "checkpoint" .= checkpointResult
+                          ]
+                      )
+                  )
+              )
+  where
+    shapeError :: Text -> Maybe String
+    shapeError src = case parseCommitSurface src of
+      Right _ -> Nothing
+      Left commitErr -> case parseMachineSurface src of
+        Right _ -> Nothing
+        Left _ -> Just (errorBundlePretty commitErr)
+
+listDmmlFiles :: FilePath -> IO [FilePath]
+listDmmlFiles dir = do
+  entries <- listDirectory dir
+  pure [dir </> e | e <- entries, takeExtension e == ".dmml"]
+
+-- | Port of @Broker.hs@'s @reportDivergence@ -- same real divergence
+-- computation ('DMML.Materialize.applyCommits'\/@mergeSnapshots@\/
+-- @currentValue@, 'DMML.Governance.applyGovernance'), returning
+-- structured JSON-encodable data instead of @putStrLn@ing it (there is
+-- no console on the far side of this FFI boundary to print to).
+computeDivergence :: [FilePath] -> [FilePath] -> IO [Aeson.Value]
+computeDivergence minePaths peerPaths = do
+  (mineSnap, mineMachines) <- materializeFiles "mine" minePaths
+  (peerSnap, peerMachines) <- materializeFiles "peer" peerPaths
+  let merged = mergeSnapshots mineSnap peerSnap
+      machines = Map.union mineMachines peerMachines
+      governed = applyGovernance machines merged
+      reallyDivergent =
+        [ (k, vs)
+        | (k, _) <- Map.toList (snapshotFacts governed)
+        , let vs = currentValue k governed
+        , length vs > 1
+        ]
+  pure [report k vs | (k, vs) <- reallyDivergent]
+  where
+    materializeFiles :: Text -> [FilePath] -> IO (WorldSnapshot, Map Text MachineStmt)
+    materializeFiles label paths = do
+      srcs <- mapM TIO.readFile paths
+      let classified = zip paths (map classify srcs)
+      case [(p, e) | (p, Left e) <- classified] of
+        ((p, e) : _) -> ioError (userError (p <> ":\n" <> e))
+        [] ->
+          let commits = [c | (_, Right (Left c)) <- classified]
+              machines = [m | (_, Right (Right m)) <- classified]
+              machineMap = Map.fromList [(nodeRefText (machineNode m), m) | m <- machines]
+           in pure (applyCommits label commits, machineMap)
+
+    classify src = case parseCommitSurface src of
+      Right stmt -> Right (Left stmt)
+      Left commitErr -> case parseMachineSurface src of
+        Right machine -> Right (Right machine)
+        Left _ -> Left (errorBundlePretty commitErr)
+
+    nodeRefText = T.intercalate "/" . nodeRefSegments
+
+    report (subj, pred_) opts =
+      object
+        [ "subject" .= subj
+        , "predicate" .= pred_
+        , "options" .= [object ["label" .= label, "value" .= renderValue v] | (label, v) <- opts]
+        ]
+
+    renderValue (ValueNode n) = T.intercalate "/" (nodeRefSegments n)
+    renderValue (ValueLiteral (LitString s)) = "\"" <> s <> "\""
+    renderValue (ValueLiteral (LitNumber n)) = n
+    renderValue (ValueLiteral (LitBoolean b)) = if b then "true" else "false"
+
+-- | Port of @Broker.hs@'s @foldCheckpoint@ -- same lookup-by-pre-
+-- incorporation-tree-sha shape, non-fatal on failure (the sync itself
+-- already succeeded; next run self-heals), returning the result as
+-- JSON instead of printing it.
+foldCheckpointBridge :: JvmHandle -> JGit -> Maybe String -> [FilePath] -> IO Aeson.Value
+foldCheckpointBridge jvm git preCommitTreeSha newFiles =
+  attempt `catch` \(e :: SomeException) ->
+    pure (object ["error" .= ("checkpoint-fold failed (non-fatal -- sync already succeeded): " <> show e)])
+  where
+    attempt = do
+      createDirectoryIfMissing True "checkpoints"
+      mNewTreeSha <- jgitResolve jvm git "HEAD:commits"
+      case mNewTreeSha of
+        Nothing -> pure (object ["error" .= ("could not resolve commits/ tree at HEAD -- skipping checkpoint" :: Text)])
+        Just newTreeSha -> do
+          (outPath, foldedCount) <- resolveAndFoldCheckpoint "checkpoints" "commits" preCommitTreeSha newTreeSha newFiles
+          jgitAddFilepattern jvm git outPath
+          _ <-
+            jgitCommit
+              jvm
+              git
+              ("checkpoint: " <> newTreeSha <> " (" <> show foldedCount <> " new file(s) folded in)")
+          pure (object ["foldedCount" .= foldedCount, "path" .= outPath])
+
+android_broker_incorporate :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
+android_broker_incorporate envPtr repoDirC peerC cursorC commitsC = guardedRun $ do
+  repoDir <- peekCString repoDirC
+  peerIdentifier <- T.pack <$> peekCString peerC
+  cursorFile <- peekCString cursorC
+  commitsDir <- peekCString commitsC
+  marshalText =<< brokerIncorporateBridge envPtr repoDir peerIdentifier cursorFile commitsDir
 
 jsonText :: Aeson.Value -> Text
 jsonText = TE.decodeUtf8 . BL.toStrict . Aeson.encode

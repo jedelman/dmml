@@ -118,6 +118,17 @@ static jstring native_llmChatComplete(JNIEnv *env, jclass clazz, jstring apiKey,
     return take_hs_cstring(env, result);
 }
 
+static jstring native_brokerIncorporate(JNIEnv *env, jclass clazz, jstring repoDir, jstring peerIdentifier, jstring cursorFile, jstring commitsDir) {
+    (void)clazz;
+    char *c_repoDir = jstring_to_cstr(env, repoDir);
+    char *c_peerIdentifier = jstring_to_cstr(env, peerIdentifier);
+    char *c_cursorFile = jstring_to_cstr(env, cursorFile);
+    char *c_commitsDir = jstring_to_cstr(env, commitsDir);
+    void *result = android_broker_incorporate(env, c_repoDir, c_peerIdentifier, c_cursorFile, c_commitsDir);
+    free(c_repoDir); free(c_peerIdentifier); free(c_cursorFile); free(c_commitsDir);
+    return take_hs_cstring(env, result);
+}
+
 static JNINativeMethod bridgeMethods[] = {
     {"jgitCommit", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_jgitCommit},
     {"atprotoResolve", "(Ljava/lang/String;)Ljava/lang/String;", (void *)native_atprotoResolve},
@@ -125,6 +136,7 @@ static JNINativeMethod bridgeMethods[] = {
     {"atprotoCreateSession", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_atprotoCreateSession},
     {"atprotoCreateRecord", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_atprotoCreateRecord},
     {"llmChatComplete", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_llmChatComplete},
+    {"brokerIncorporate", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_brokerIncorporate},
 };
 
 // Called automatically by the JVM the instant this .so is loaded

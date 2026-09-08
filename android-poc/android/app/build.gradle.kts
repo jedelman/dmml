@@ -95,4 +95,11 @@ dependencies {
     // transitively (this is what "just a Gradle dependency" buys over the
     // desktop CLI's classpath, which has to list all three by hand).
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // BYOK (bring-your-own-key) storage for llmChatComplete -- an
+    // OpenRouter API key is a real secret, so it goes into
+    // EncryptedSharedPreferences (a Keystore-backed AES key wraps the
+    // file), not plain SharedPreferences. Jason supplies the actual key
+    // value himself in the app UI; nothing here hardcodes or invents one.
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 }
