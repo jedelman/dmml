@@ -26,8 +26,13 @@ library
       DMML.Fire
       DMML.FromJson
       DMML.Governance
+      DMML.AndroidBridge
       DMML.Guard
+      DMML.Http
+      DMML.Jgit
+      DMML.Jni
       DMML.JniBridge
+      DMML.Llm
       DMML.Json
       DMML.LocalIdentity
       DMML.Loader
@@ -37,6 +42,20 @@ library
       DMML.StringCap
       DMML.Surface
       DMML.TemplateBank
+  -- DMML.Jgit needs libjvm at link time for every consumer of this
+  -- library from here on -- a deliberate blast-radius expansion, not
+  -- an oversight: written-world's own `cli/` (Main.hs's `fire`) is the
+  -- real consumer that makes this necessary now. See
+  -- written-world/dev-journal/2026-09-07-jgit-canonical-single-
+  -- implementation.md. JVM include/lib paths are machine-specific and
+  -- deliberately NOT set here -- same precedent as this package's own
+  -- gitignored cabal.project.local override for Hackage-index access;
+  -- set them there, e.g.:
+  --   package dmml-hs
+  --     extra-include-dirs: /path/to/jdk/include, /path/to/jdk/include/linux
+  --     extra-lib-dirs: /path/to/jdk/lib/server
+  c-sources:        cbits/jni_prims.c
+  extra-libraries:  jvm
   build-depends:
       base >=4 && <5
     , aeson
@@ -288,4 +307,29 @@ executable atproto-delete
   main-is:          AtprotoDelete.hs
   hs-source-dirs:   app
   build-depends:    base, dmml-hs, text
+  default-language: Haskell2010
+
+-- DMML.Jgit is now a normal exposed library module (promoted from an
+-- isolated-executable-only module once written-world's own `fire`
+-- became a real consumer -- see written-world/dev-journal/2026-09-07-
+-- jgit-canonical-single-implementation.md) -- these two executables no
+-- longer need their own c-sources/extra-libraries, just an ordinary
+-- dependency on dmml-hs.
+executable jgit-smoke-test
+  import:           warnings
+  main-is:          JgitSmokeTest.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs
+  default-language: Haskell2010
+
+-- Proves DMML.Jgit + DMML.Checkpoint's resolveAndFoldCheckpoint compose
+-- into the real thing atproto-broker.sh/post-merge used to do in bash:
+-- incorporate a commit, resolve the resulting tree sha, fold a
+-- checkpoint against whatever parent existed (or bootstrap), commit
+-- the checkpoint too.
+executable jgit-checkpoint-demo
+  import:           warnings
+  main-is:          JgitCheckpointDemo.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, directory, filepath
   default-language: Haskell2010

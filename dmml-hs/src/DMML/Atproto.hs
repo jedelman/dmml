@@ -9,15 +9,21 @@
 -- already the whole discovery mechanism, since our payload is small
 -- DMML text that lives directly in an ordinary atproto record).
 --
--- Deliberate dependency choice: this shells out to @curl@ via
--- "System.Process" rather than pulling in an HTTP client library.
--- This sandbox has no HTTP client installed and no working path to
--- Hackage to fetch one (see @cabal.project.local@); shelling out also
--- avoids adding an HTTP+TLS dependency stack before it is actually
--- needed, matching Jason's own "don't weigh dmml-hs down" concern.
--- Real, disclosed limit: this will not carry to the Android JNI bridge
--- unmodified (no @curl@ binary there) -- a Phase F follow-up, not
--- solved here.
+-- Transport rewritten 2026-09-07 (@written-world@'s
+-- @dev-journal/2026-09-07-jgit-canonical-single-implementation.md@):
+-- this used to shell out to @curl@ via "System.Process" -- a real,
+-- disclosed limit from the day it was built, since Android has no
+-- @curl@ binary either. Now goes through @java.net.http.HttpClient@,
+-- the same embedded\/upcalled JVM 'DMML.Jgit' already needs for git
+-- operations -- one canonical transport for both platforms, no new
+-- dependency (the JDK's HTTP client ships in @java.base@, no extra
+-- jar on the classpath). Every public function here now takes a
+-- 'JvmHandle' as its first argument as a result.
+--
+-- The low-level HTTP-over-JNI plumbing itself moved out to 'DMML.Http'
+-- on 2026-09-08, the moment a second real consumer needed it
+-- ('DMML.Llm''s OpenRouter calls) -- this module now just builds
+-- atproto-shaped URLs/bodies on top of that generic transport.
 --
 -- did:web resolution is NOT implemented -- only did:plc, via
 -- @plc.directory@. A real, disclosed gap, not silently mishandled: a
@@ -32,38 +38,24 @@ module DMML.Atproto
   , deleteRecord
   , listRecords
   , commitRecord
+  , pullNewRecords
   ) where
 
-import Control.Concurrent (forkIO)
-import Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar)
-import Control.Exception (SomeException, try)
 import Data.Aeson (Value, (.:), (.=))
 import qualified Data.Aeson as Aeson
 import Data.Aeson.Key (fromText)
+import qualified Data.Aeson.KeyMap as KM
 import qualified Data.Aeson.Types as AesonT (parseEither)
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
-import Data.List (isPrefixOf)
+import Data.List (isPrefixOf, sortOn)
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import System.Exit (ExitCode (..))
-import System.IO (hClose)
-import System.Process
-  ( CreateProcess (..)
-  , StdStream (..)
-  , proc
-  , waitForProcess
-  , withCreateProcess
-  )
+
+import DMML.Http (HttpError (..), getJson, postJson)
+import DMML.Jni (JvmHandle)
 
 data AtprotoError
-  = CurlLaunchFailed Text
-  | HttpFailed Int BL.ByteString
-  -- ^ curl exit code (non-zero means an actual transport error; a real
-  -- HTTP error status is reported the same way, since @--fail-with-body@
-  -- makes curl exit non-zero on 4xx\/5xx while still capturing the body)
-  -- and whatever body curl did manage to print.
+  = TransportError HttpError
   | ResponseNotJson BL.ByteString
   | ResponseMissingField Text BL.ByteString
   | UnsupportedDidMethod Text
@@ -77,86 +69,14 @@ data Session = Session
   }
   deriving (Eq, Show)
 
--- | Run curl with an explicit argument list (never a shell string --
--- this is the whole point: arguments are passed as real argv entries,
--- so a DID or handle containing shell metacharacters can never be
--- interpreted by a shell, because there is no shell in this path at all).
--- | Fixed curl flags added 2026-09-04 (jedelman/dmml#7), after a real,
--- flaky-link environment (0.1Mbps, heavy packet loss) exposed that
--- 'runCurl' previously set no timeout of any kind -- a stalled TCP
--- connection would hang this process indefinitely rather than failing
--- fast. @--connect-timeout 15@: generous for a slow-but-alive link
--- (this project's XRPC calls are all small JSON, never a large
--- transfer, so a slow-to-connect-but-working link should still get
--- there); @--max-time 60@: same reasoning, an upper bound on the WHOLE
--- request rather than just connect, since a stall can happen
--- mid-transfer too. @--retry 3 --retry-delay 2 --retry-connrefused@:
--- curl's own built-in retry -- covers a transient drop\/reset\/refused-
--- connection without this module needing its own retry loop; does NOT
--- retry on a real HTTP 4xx\/5xx (curl's documented behavior -- those are
--- real application errors, not transport flakiness, and retrying one
--- wouldn't help). Every call in this module goes through 'runCurl', so
--- every XRPC call (resolve, session, read, write) gets this for free.
-curlNetworkFlags :: [String]
-curlNetworkFlags =
-  [ "--connect-timeout"
-  , "15"
-  , "--max-time"
-  , "60"
-  , "--retry"
-  , "3"
-  , "--retry-delay"
-  , "2"
-  , "--retry-connrefused"
-  ]
+runGet :: JvmHandle -> String -> [(String, String)] -> IO (Either AtprotoError BL.ByteString)
+runGet jvm baseUrl queryParams = either (Left . TransportError) Right <$> getJson jvm baseUrl queryParams
 
-runCurl :: [String] -> IO (Either AtprotoError BL.ByteString)
-runCurl args = do
-  result <-
-    try
-      ( withCreateProcess
-          (proc "curl" (["-sS", "--fail-with-body"] ++ curlNetworkFlags ++ args))
-            { std_in = NoStream
-            , std_out = CreatePipe
-            , std_err = CreatePipe
-            }
-          $ \_ mout merr ph -> do
-            case (mout, merr) of
-              (Just outH, Just errH) -> do
-                -- Strict reads, not lazy Data.ByteString.Lazy.hGetContents:
-                -- a lazy read isn't actually forced by anything here, so
-                -- an earlier version of this function closed both
-                -- handles (and let the process exit) before the lazy
-                -- ByteString's thunks had been demanded at all --
-                -- "hGetBufSome: illegal operation (handle is closed)"
-                -- the moment something downstream (e.g. Aeson.decode)
-                -- finally forced it. BS.hGetContents is strict: fully
-                -- read before this line returns, safe to close and
-                -- to wait on the process afterward.
-                --
-                -- Read both pipes concurrently, not sequentially: curl
-                -- writing enough to stderr while stdout's pipe buffer is
-                -- also full (or vice versa) would otherwise deadlock --
-                -- unlikely for the small JSON bodies this module expects,
-                -- but cheap enough to rule out for real rather than
-                -- assume away.
-                outVar <- newEmptyMVar
-                errVar <- newEmptyMVar
-                _ <- forkIO (BS.hGetContents outH >>= putMVar outVar)
-                _ <- forkIO (BS.hGetContents errH >>= putMVar errVar)
-                out <- takeMVar outVar
-                err <- takeMVar errVar
-                code <- waitForProcess ph
-                hClose outH
-                hClose errH
-                pure (code, BL.fromStrict out, BL.fromStrict err)
-              _ -> error "unreachable: both std streams were requested as CreatePipe"
-      )
-  pure $ case result of
-    Left (e :: SomeException) -> Left (CurlLaunchFailed (T.pack (show e)))
-    Right (ExitSuccess, out, _err) -> Right out
-    Right (ExitFailure code, out, err) ->
-      Left (HttpFailed code (if BL.null out then err else out))
+runPostJson :: JvmHandle -> Text -> Text -> Maybe Text -> Value -> IO (Either AtprotoError BL.ByteString)
+runPostJson jvm pdsEndpoint xrpcPath maybeToken bodyValue = do
+  let url = T.unpack pdsEndpoint ++ T.unpack xrpcPath
+      authHeaders = maybe [] (\tok -> [("Authorization", "Bearer " <> T.unpack tok)]) maybeToken
+  either (Left . TransportError) Right <$> postJson jvm url authHeaders bodyValue
 
 parseJson :: BL.ByteString -> Either AtprotoError Value
 parseJson body = maybe (Left (ResponseNotJson body)) Right (Aeson.decode body)
@@ -170,15 +90,9 @@ field name v raw =
 -- | Resolve a handle (e.g. @alice.bsky.social@) to a DID, via the
 -- public, unauthenticated Bluesky resolver. Verified live 2026-09-04
 -- against a real handle -- see the dev-journal entry.
-resolveHandle :: Text -> IO (Either AtprotoError Text)
-resolveHandle handle = do
-  result <-
-    runCurl
-      [ "-G"
-      , "https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle"
-      , "--data-urlencode"
-      , "handle=" ++ T.unpack handle
-      ]
+resolveHandle :: JvmHandle -> Text -> IO (Either AtprotoError Text)
+resolveHandle jvm handle = do
+  result <- runGet jvm "https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle" [("handle", T.unpack handle)]
   pure $ do
     body <- result
     v <- parseJson body
@@ -187,10 +101,10 @@ resolveHandle handle = do
 -- | Resolve a DID to its declared atproto PDS service endpoint. Only
 -- did:plc is implemented (via @plc.directory@) -- did:web is a real,
 -- disclosed gap, not handled.
-resolveDidToPdsEndpoint :: Text -> IO (Either AtprotoError Text)
-resolveDidToPdsEndpoint did
+resolveDidToPdsEndpoint :: JvmHandle -> Text -> IO (Either AtprotoError Text)
+resolveDidToPdsEndpoint jvm did
   | "did:plc:" `isPrefixOf` T.unpack did = do
-      result <- runCurl ["https://plc.directory/" ++ T.unpack did]
+      result <- runGet jvm ("https://plc.directory/" ++ T.unpack did) []
       pure $ do
         body <- result
         v <- parseJson body
@@ -210,10 +124,11 @@ resolveDidToPdsEndpoint did
 -- password is an app password (never the account's real password --
 -- standard atproto convention, unrelated to anything this module
 -- enforces).
-createSession :: Text -> Text -> Text -> IO (Either AtprotoError Session)
-createSession pdsEndpoint identifier password = do
+createSession :: JvmHandle -> Text -> Text -> Text -> IO (Either AtprotoError Session)
+createSession jvm pdsEndpoint identifier password = do
   result <-
-    runCurlWithBody
+    runPostJson
+      jvm
       pdsEndpoint
       "/xrpc/com.atproto.server.createSession"
       Nothing
@@ -225,32 +140,13 @@ createSession pdsEndpoint identifier password = do
     accessJwt <- field "accessJwt" v body
     Right (Session did accessJwt pdsEndpoint)
 
--- | POST a JSON body to an XRPC endpoint, with an optional bearer token.
-runCurlWithBody :: Text -> Text -> Maybe Text -> Value -> IO (Either AtprotoError BL.ByteString)
-runCurlWithBody pdsEndpoint xrpcPath maybeToken bodyValue =
-  runCurl
-    ( [ "-X"
-      , "POST"
-      , T.unpack pdsEndpoint ++ T.unpack xrpcPath
-      , "-H"
-      , "Content-Type: application/json"
-      , "--data-raw"
-      -- decodeUtf8 (real Unicode text), NOT ByteString.Lazy.Char8's
-      -- unpack (a naive byte-as-codepoint widening) -- Char8.unpack
-      -- would mangle any non-ASCII DMML text (accented names, etc.)
-      -- once curl re-encodes this String argument via the process
-      -- locale, since it never actually decodes the UTF-8 aeson wrote.
-      , T.unpack (TE.decodeUtf8 (BL.toStrict (Aeson.encode bodyValue)))
-      ]
-        ++ maybe [] (\tok -> ["-H", "Authorization: Bearer " ++ T.unpack tok]) maybeToken
-    )
-
 -- | Write one record into the caller's own repo (the DID inside
 -- 'Session'). Returns the created record's @at://@ URI.
-createRecord :: Session -> Text -> Value -> IO (Either AtprotoError Text)
-createRecord session collection recordValue = do
+createRecord :: JvmHandle -> Session -> Text -> Value -> IO (Either AtprotoError Text)
+createRecord jvm session collection recordValue = do
   result <-
-    runCurlWithBody
+    runPostJson
+      jvm
       (sessionPdsEndpoint session)
       "/xrpc/com.atproto.repo.createRecord"
       (Just (sessionAccessJwt session))
@@ -271,10 +167,11 @@ createRecord session collection recordValue = do
 -- was published while verifying 'createRecord', with no way to remove
 -- it -- and a record that can never be corrected or retracted is a
 -- real gap for any write path, not just a convenience.
-deleteRecord :: Session -> Text -> Text -> IO (Either AtprotoError ())
-deleteRecord session collection rkey = do
+deleteRecord :: JvmHandle -> Session -> Text -> Text -> IO (Either AtprotoError ())
+deleteRecord jvm session collection rkey = do
   result <-
-    runCurlWithBody
+    runPostJson
+      jvm
       (sessionPdsEndpoint session)
       "/xrpc/com.atproto.repo.deleteRecord"
       (Just (sessionAccessJwt session))
@@ -290,20 +187,100 @@ deleteRecord session collection rkey = do
 -- public repo once its PDS endpoint is known, verified live 2026-09-04
 -- (see the dev-journal entry). @cursor@ pages through results, same
 -- convention @listRecords@ itself uses.
-listRecords :: Text -> Text -> Text -> Maybe Text -> IO (Either AtprotoError Value)
-listRecords pdsEndpoint repoDid collection cursor = do
+listRecords :: JvmHandle -> Text -> Text -> Text -> Maybe Text -> IO (Either AtprotoError Value)
+listRecords jvm pdsEndpoint repoDid collection cursor = do
   result <-
-    runCurl
-      ( [ "-G"
-        , T.unpack pdsEndpoint ++ "/xrpc/com.atproto.repo.listRecords"
-        , "--data-urlencode"
-        , "repo=" ++ T.unpack repoDid
-        , "--data-urlencode"
-        , "collection=" ++ T.unpack collection
-        ]
-          ++ maybe [] (\c -> ["--data-urlencode", "cursor=" ++ T.unpack c]) cursor
+    runGet
+      jvm
+      (T.unpack pdsEndpoint ++ "/xrpc/com.atproto.repo.listRecords")
+      ( [("repo", T.unpack repoDid), ("collection", T.unpack collection)]
+          ++ maybe [] (\c -> [("cursor", T.unpack c)]) cursor
       )
   pure (result >>= parseJson)
+
+-- | Resolve a peer (handle or DID), page through its
+-- @org.jason-edelman.writtenworld.commit@ collection (bounded at 50
+-- pages, same limit @atproto-pull@ always used), and return every
+-- record whose rkey (a real atproto TID, lexicographically ordered by
+-- creation time) sorts strictly after @storedCursor@ -- sorted
+-- ascending, plus the candidate next cursor (the last returned rkey,
+-- or 'Nothing' if nothing new). Extracted from @app/AtprotoPull.hs@
+-- (which now just calls this) so the broker orchestration
+-- (@written-world@'s @cli/app/Broker.hs@) can pull records as a direct
+-- in-process call too, with no subprocess spawning -- required for
+-- Android, and simpler on desktop besides. Retries a failing page up
+-- to 3 times before giving up on it and returning whatever was already
+-- fetched (jedelman/dmml#7's fix, preserved here).
+--
+-- Does NOT write anything to disk or advance any cursor itself -- same
+-- discipline @atproto-pull@ always had: the caller decides whether this
+-- batch is actually incorporated (e.g. after validation) before
+-- persisting the returned cursor anywhere.
+pullNewRecords :: JvmHandle -> Text -> Text -> Text -> IO (Either AtprotoError (Maybe Text, [(Text, Text)]))
+pullNewRecords jvm peerIdentifier collection storedCursor = do
+  didResult <-
+    if "did:" `T.isPrefixOf` peerIdentifier
+      then pure (Right peerIdentifier)
+      else resolveHandle jvm peerIdentifier
+  case didResult of
+    Left err -> pure (Left err)
+    Right did -> do
+      pdsResult <- resolveDidToPdsEndpoint jvm did
+      case pdsResult of
+        Left err -> pure (Left err)
+        Right pdsEndpoint -> do
+          allRecords <- pageAll pdsEndpoint did Nothing maxPages
+          let new = sortOn fst [r | r@(rkey, _) <- allRecords, rkey > storedCursor]
+          pure (Right (if null new then Nothing else Just (fst (last new)), new))
+  where
+    maxPages :: Int
+    maxPages = 50
+
+    pageRetries :: Int
+    pageRetries = 3
+
+    pageAll :: Text -> Text -> Maybe Text -> Int -> IO [(Text, Text)]
+    pageAll _ _ _ 0 = pure []
+    pageAll pdsEndpoint did cursor pagesLeft = do
+      result <- fetchPageWithRetries pdsEndpoint did cursor pageRetries
+      case result of
+        Nothing -> pure []
+        Just v -> do
+          let records = extractRecords v
+              nextCursor = extractCursor v
+          rest <- case nextCursor of
+            Just _ | not (null records) -> pageAll pdsEndpoint did nextCursor (pagesLeft - 1)
+            _ -> pure []
+          pure (records ++ rest)
+
+    fetchPageWithRetries :: Text -> Text -> Maybe Text -> Int -> IO (Maybe Value)
+    fetchPageWithRetries pdsEndpoint did cursor attemptsLeft = do
+      result <- listRecords jvm pdsEndpoint did collection cursor
+      case result of
+        Right v -> pure (Just v)
+        Left _ | attemptsLeft > 1 -> fetchPageWithRetries pdsEndpoint did cursor (attemptsLeft - 1)
+        Left _ -> pure Nothing
+
+    extractCursor :: Value -> Maybe Text
+    extractCursor (Aeson.Object o) = case KM.lookup "cursor" o of
+      Just (Aeson.String s) -> Just s
+      _ -> Nothing
+    extractCursor _ = Nothing
+
+    extractRecords :: Value -> [(Text, Text)]
+    extractRecords (Aeson.Object o) = case KM.lookup "records" o of
+      Just (Aeson.Array arr) -> [r | Just r <- map recordFromValue (foldr (:) [] arr)]
+      _ -> []
+    extractRecords _ = []
+
+    recordFromValue :: Value -> Maybe (Text, Text)
+    recordFromValue (Aeson.Object o) = do
+      Aeson.String uri <- KM.lookup "uri" o
+      Aeson.Object value <- KM.lookup "value" o
+      Aeson.String dmml <- KM.lookup (fromText "dmml") value
+      let rkey = last (T.splitOn "/" uri)
+      pure (rkey, dmml)
+    recordFromValue _ = Nothing
 
 -- | Build a record value matching the real, existing
 -- @org.jason-edelman.writtenworld.commit@ lexicon (@lexicons/org/
