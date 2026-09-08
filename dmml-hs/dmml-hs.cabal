@@ -30,6 +30,7 @@ library
       DMML.JniBridge
       DMML.Json
       DMML.LocalIdentity
+      DMML.Loader
       DMML.Materialize
       DMML.Retroconsistency
       DMML.SelfDeclaration

@@ -148,3 +148,53 @@ Java_org_writtenworld_androidpoc_DmmlBridge_fireHistory(JNIEnv *env, jobject thi
     (*env)->ReleaseStringUTFChars(env, transitionIdent, transition);
     return result;
 }
+
+// Directory-aware variants (added 2026-09-07 alongside WorldRepository.kt
+// and DMML.Loader -- see dmml/dev-journal/2026-09-07-android-jgit-sync-
+// spec.md). `dirPath` is a real filesystem path; DMML.Loader reads
+// *.dmml files from it directly on the Haskell side, no JSON
+// serialization of file contents across this boundary at all.
+
+JNIEXPORT jstring JNICALL
+Java_org_writtenworld_androidpoc_DmmlBridge_renderDir(JNIEnv *env, jobject thiz, jstring dirPath) {
+    const char *dir = (*env)->GetStringUTFChars(env, dirPath, NULL);
+
+    char *hsResult = dmml_render_dir((char *)dir);
+    jstring result = (*env)->NewStringUTF(env, hsResult);
+    free(hsResult);
+
+    (*env)->ReleaseStringUTFChars(env, dirPath, dir);
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_writtenworld_androidpoc_DmmlBridge_actionsDir(JNIEnv *env, jobject thiz, jstring dirPath, jstring selfNode) {
+    const char *dir = (*env)->GetStringUTFChars(env, dirPath, NULL);
+    const char *self = (*env)->GetStringUTFChars(env, selfNode, NULL);
+
+    char *hsResult = dmml_actions_dir((char *)dir, (char *)self);
+    jstring result = (*env)->NewStringUTF(env, hsResult);
+    free(hsResult);
+
+    (*env)->ReleaseStringUTFChars(env, dirPath, dir);
+    (*env)->ReleaseStringUTFChars(env, selfNode, self);
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_writtenworld_androidpoc_DmmlBridge_fireDir(JNIEnv *env, jobject thiz, jstring dirPath, jstring selfNode, jstring machineNode, jstring transitionIdent) {
+    const char *dir = (*env)->GetStringUTFChars(env, dirPath, NULL);
+    const char *self = (*env)->GetStringUTFChars(env, selfNode, NULL);
+    const char *machine = (*env)->GetStringUTFChars(env, machineNode, NULL);
+    const char *transition = (*env)->GetStringUTFChars(env, transitionIdent, NULL);
+
+    char *hsResult = dmml_fire_dir((char *)dir, (char *)self, (char *)machine, (char *)transition);
+    jstring result = (*env)->NewStringUTF(env, hsResult);
+    free(hsResult);
+
+    (*env)->ReleaseStringUTFChars(env, dirPath, dir);
+    (*env)->ReleaseStringUTFChars(env, selfNode, self);
+    (*env)->ReleaseStringUTFChars(env, machineNode, machine);
+    (*env)->ReleaseStringUTFChars(env, transitionIdent, transition);
+    return result;
+}

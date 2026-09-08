@@ -1,102 +1,126 @@
 package org.writtenworld.androidpoc
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import org.json.JSONArray
+import kotlinx.coroutines.launch
+import org.writtenworld.androidpoc.world.SyncResult
+import org.writtenworld.androidpoc.world.WorldRepository
 
-// Same fixture dmml-hs/app/JniBridgeSmokeTest.hs (host GHC, through the
-// exact same FFI-shaped functions) and dmml-hs/examples/
-// interactive-browser-demo (the terminal REPL AND TouchBrowser.hs's
-// HTTP version) already verified end-to-end -- kept identical on
-// purpose, so a real on-device run is checking the exact same
-// known-good input every other layer already proved, not a fresh guess.
-private const val WORLD_SRC = """commit prospect
-  declare relation location
-  declare relation name
-  declare relation state
-  declare relation role
+// Placeholder -- no canonical world repo exists yet
+// (dmml/dev-journal/2026-09-07-android-canonical-structure-decisions.md
+// is accepted, but Jason's own repo hasn't been created/pointed to).
+// Deliberately obviously-fake rather than a real-looking URL, so this
+// can't be mistaken for a working default if it's ever left unchanged.
+private const val PLACEHOLDER_WORLD_REPO_URL = "https://example.invalid/replace-with-real-world-repo.git"
 
-  player/one `location` room/forge
-  player/one `state` idle
-
-  npc/smith :: a type/smith
-  npc/smith `name` "Tamsin"
-  npc/smith `location` room/forge
-  npc/smith `role` role/oresmith
-
-  room/forge `name` "the smithy"
-"""
-
-private const val MACHINE_SRC = """machine machine/actions
-
-  states
-    idle
-    working
-
-  transition work()
-    idle -> working
-    guard self `location` room/forge
-    assert working
-    retract idle
-
-  transition rest()
-    working -> idle
-    guard self `location` room/forge
-    assert idle
-    retract working
-"""
-
+// Real self-node and firing identity are both still open per the
+// canonical structure decision doc (git identity = the player's
+// atproto DID, confirmed decided; the DMML *self* node used for guard
+// evaluation is a related but distinct question, not yet resolved to a
+// real per-player value). Placeholder until that's wired.
 private const val SELF_NODE = "player/one"
 
 /**
- * The whole state model is one growing list: the ORIGINAL world commit,
- * then each previously-fired commit's own rendered text, in firing
- * order -- exactly [DMML.JniBridge]'s history contract (see
- * `DmmlBridge.kt`'s own doc comment), which is exactly
- * `TouchBrowser.hs`'s own `[IdentifiedCommit]` history, just held in
- * Compose state and serialized to JSON to cross the JNI boundary
- * instead of accumulated natively in Haskell. Tapping a button is the
- * ENTIRE input surface -- no text field anywhere in this screen.
+ * Real git-sync browsing, replacing the F1-era hardcoded
+ * `WORLD_SRC`/`MACHINE_SRC` + in-memory `*History` functions with a
+ * real [WorldRepository] clone and [DmmlBridge]'s directory-based
+ * (`*Dir`) functions -- dmml/dev-journal/2026-09-07-android-jgit-sync-
+ * spec.md, refined by 2026-09-07-android-canonical-structure-
+ * decisions.md.
+ *
+ * Deliberately READ-ONLY, matching `written-world look`'s own scope:
+ * tapping an action calls [DmmlBridge.fireDir] and shows the resulting
+ * commit as a PREVIEW ("what firing this would produce") -- it is never
+ * written back to the synced clone. Real persistence is the separate,
+ * not-yet-built authoring worktree's job
+ * (2026-09-07-android-authoring-loop-spec.md) -- keeping this screen
+ * read-only is a deliberate scope boundary, not an oversight.
  */
 @Composable
 fun GameScreen() {
-    var history by remember { mutableStateOf(listOf(WORLD_SRC)) }
-    var lastError by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val repo = remember { WorldRepository(context, PLACEHOLDER_WORLD_REPO_URL) }
 
-    val historyJson = remember(history) { JSONArray(history).toString() }
-    val rendered = remember(historyJson) { DmmlBridge.renderHistory(historyJson, MACHINE_SRC) }
-    val actionsRaw = remember(historyJson) { DmmlBridge.actionsHistory(historyJson, MACHINE_SRC, SELF_NODE) }
-    // actionsHistory renders "machineNode/transitionIdent" per line, and
-    // the machine node itself contains a "/" -- taking the LAST segment
-    // is correct regardless, since a real transition ident is always a
-    // single, slash-free identifier (DMML.Surface's own grammar).
-    val actions = remember(actionsRaw) {
-        actionsRaw.lines().filter { it.isNotBlank() }.map { it.substringAfterLast("/") }
+    var syncStatus by remember { mutableStateOf("not synced yet") }
+    var rendered by remember { mutableStateOf("") }
+    // Each entry: Pair(machineNode, transitionIdent) -- actionsDir
+    // renders "machineNode/transitionIdent" lines, and a machine node
+    // can itself contain "/", so the split has to happen on the LAST
+    // "/" only (a real transition ident is always a single, slash-free
+    // identifier -- DMML.Surface's own grammar guarantees this).
+    var actions by remember { mutableStateOf(listOf<Pair<String, String>>()) }
+    var loadError by remember { mutableStateOf<String?>(null) }
+    var previewText by remember { mutableStateOf<String?>(null) }
+
+    fun reloadFromDisk() {
+        val dir = repo.commitsDir.path
+        val renderedResult = DmmlBridge.renderDir(dir)
+        if (DmmlBridge.isError(renderedResult)) {
+            loadError = renderedResult.removePrefix("ERROR: ")
+            rendered = ""
+            actions = emptyList()
+            return
+        }
+        loadError = null
+        rendered = renderedResult
+        val actionsRaw = DmmlBridge.actionsDir(dir, SELF_NODE)
+        actions = if (DmmlBridge.isError(actionsRaw)) {
+            emptyList()
+        } else {
+            actionsRaw.lines().filter { it.isNotBlank() }.map { line ->
+                val idx = line.lastIndexOf('/')
+                Pair(line.substring(0, idx), line.substring(idx + 1))
+            }
+        }
     }
 
+    fun doSync() {
+        scope.launch {
+            syncStatus = "syncing..."
+            when (val result = repo.sync()) {
+                is SyncResult.UpToDate -> syncStatus = "up to date"
+                is SyncResult.Updated -> syncStatus = "synced"
+                is SyncResult.Error -> syncStatus = "sync failed: ${result.reason}"
+            }
+            reloadFromDisk()
+        }
+    }
+
+    LaunchedEffect(Unit) { doSync() }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("dmml -- touch browser", style = MaterialTheme.typography.titleLarge)
+        Row {
+            Text("dmml -- browsing", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f, fill = true))
+            OutlinedButton(onClick = { doSync() }) { Text("Sync") }
+        }
+        Text(syncStatus, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(8.dp))
 
-        lastError?.let { err ->
+        loadError?.let { err ->
             Text("refused: $err", color = MaterialTheme.colorScheme.error)
             Spacer(Modifier.height(8.dp))
         }
@@ -107,20 +131,25 @@ fun GameScreen() {
             modifier = Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())
         )
 
+        previewText?.let { preview ->
+            Spacer(Modifier.height(8.dp))
+            Text("-- preview (not applied) --", style = MaterialTheme.typography.labelMedium)
+            Text(preview, fontFamily = FontFamily.Monospace, modifier = Modifier.verticalScroll(rememberScrollState()))
+        }
+
         Spacer(Modifier.height(16.dp))
 
         if (actions.isEmpty()) {
             Text("Nothing more you can do here.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
-            actions.forEach { transitionIdent ->
+            actions.forEach { (machineNode, transitionIdent) ->
                 Button(
                     onClick = {
-                        val result = DmmlBridge.fireHistory(historyJson, MACHINE_SRC, SELF_NODE, transitionIdent)
-                        if (DmmlBridge.isError(result)) {
-                            lastError = result.removePrefix("ERROR: ")
+                        val result = DmmlBridge.fireDir(repo.commitsDir.path, SELF_NODE, machineNode, transitionIdent)
+                        previewText = if (DmmlBridge.isError(result)) {
+                            "refused: ${result.removePrefix("ERROR: ")}"
                         } else {
-                            lastError = null
-                            history = history + result
+                            result
                         }
                     },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).heightIn(min = 56.dp)

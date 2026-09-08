@@ -41,6 +41,26 @@
 -- raw, exactly the mitigation the JNI-vs-IPC dev-journal entry calls
 -- \"required for the real bridge\" (no process isolation on this path,
 -- unlike a subprocess's own clean nonzero exit).
+--
+-- A THIRD family, @_dir@, added 2026-09-07 per @dev-journal/2026-09-07-
+-- android-canonical-structure-decisions.md@: the @_history@ family's
+-- JSON-array-of-strings shape was the right call to prove the FFI
+-- surface for F1, but the wrong long-term shape once a real @commits/@
+-- directory exists on-device (JGit-managed, per that same entry) --
+-- every render would otherwise need Kotlin to re-serialize the whole
+-- history as JSON on every call, duplicating what 'DMML.Loader' now
+-- does correctly (real per-file provenance, real mtime ordering) in a
+-- second, Kotlin-side implementation. The @_dir@ functions instead take
+-- a real filesystem path and call 'DMML.Loader.worldSnapshotFromDirectory'
+-- directly -- and, as a direct consequence of loading a whole directory
+-- rather than one passed-in machine string, are MULTI-MACHINE: every
+-- @.dmml@ machine file present loads, not just one. 'dmml_fire_dir'
+-- therefore takes an explicit machine-node argument (which machine, of
+-- however many are present, is actually firing) that the single-machine
+-- @_history@\/original functions never needed. All three prior families
+-- are kept, unchanged -- a caller with in-memory content and no real
+-- directory (the host smoke test, e.g.) still has a legitimate use for
+-- them.
 module DMML.JniBridge
   ( dmml_render
   , dmml_actions
@@ -48,12 +68,18 @@ module DMML.JniBridge
   , dmml_render_history
   , dmml_actions_history
   , dmml_fire_history
+  , dmml_render_dir
+  , dmml_actions_dir
+  , dmml_fire_dir
   , renderBridge
   , actionsBridge
   , fireBridge
   , renderHistoryBridge
   , actionsHistoryBridge
   , fireHistoryBridge
+  , renderDirBridge
+  , actionsDirBridge
+  , fireDirBridge
   ) where
 
 import Control.Exception (SomeException, displayException, try)
@@ -70,6 +96,7 @@ import DMML.Ast (MachineStmt, NodeRef (..), machineNode, nodeRefSegments)
 import DMML.Fire (FireError, fireTransition, renderFiredCommit)
 import DMML.Guard (EvalContext (..), availableTransitions)
 import DMML.LocalIdentity (localFileRef)
+import DMML.Loader (worldSnapshotFromDirectory)
 import DMML.Materialize (IdentifiedCommit (..), WorldSnapshot, applyIdentifiedCommit, applyIdentifiedCommits, emptySnapshot, renderSnapshot)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
 
@@ -79,6 +106,9 @@ foreign export ccall dmml_fire :: CString -> CString -> CString -> CString -> IO
 foreign export ccall dmml_render_history :: CString -> CString -> IO CString
 foreign export ccall dmml_actions_history :: CString -> CString -> CString -> IO CString
 foreign export ccall dmml_fire_history :: CString -> CString -> CString -> CString -> IO CString
+foreign export ccall dmml_render_dir :: CString -> IO CString
+foreign export ccall dmml_actions_dir :: CString -> CString -> IO CString
+foreign export ccall dmml_fire_dir :: CString -> CString -> CString -> CString -> IO CString
 
 nodeRefText :: NodeRef -> Text
 nodeRefText = T.intercalate "/" . nodeRefSegments
@@ -226,6 +256,54 @@ fireHistoryBridge historyJson machineSrc selfNode transitionIdent = do
         Left err -> Left (renderFireError err)
         Right effects -> pure (renderFiredCommit "android_fire" effects)
 
+-- | Pure core of 'dmml_render_dir': load every @*.dmml@ file directly
+-- inside @dirPath@ (via 'DMML.Loader.worldSnapshotFromDirectory' --
+-- real mtime ordering, real per-file provenance) and render the
+-- resulting snapshot. Ignores whatever machines are present -- 'render'
+-- never needed a machine, single- or multi-.
+renderDirBridge :: Text -> IO (Either String Text)
+renderDirBridge dirPath = do
+  result <- worldSnapshotFromDirectory (T.unpack dirPath)
+  pure $ case result of
+    Left err -> Left err
+    Right (snap, _machines) -> Right (renderSnapshot snap)
+
+-- | Pure core of 'dmml_actions_dir': load the directory, then enumerate
+-- every transition on EVERY machine found there that currently holds
+-- for @selfNode@ -- 'DMML.Guard.availableTransitions' over the real,
+-- possibly-multi-entry 'DMML.Loader.machineMap', not a caller-supplied
+-- single machine.
+actionsDirBridge :: Text -> Text -> IO (Either String Text)
+actionsDirBridge dirPath selfNode = do
+  result <- worldSnapshotFromDirectory (T.unpack dirPath)
+  pure $ case result of
+    Left err -> Left err
+    Right (snap, machines) ->
+      let ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+          actions = availableTransitions machines ctx snap
+       in Right (T.unlines [m <> "/" <> t | (m, t) <- actions])
+
+-- | Pure core of 'dmml_fire_dir': load the directory, then fire one
+-- named transition on the EXPLICITLY named machine (there can be
+-- several present, unlike the single-machine families above, so the
+-- caller must say which one) -- gated against every OTHER machine found
+-- in the same directory too, same "the multi-machine gate is exactly as
+-- real as the caller's machine set" caveat 'fireBridge'\'s own doc
+-- comment already states, just now genuinely populated by every machine
+-- file present rather than at most one.
+fireDirBridge :: Text -> Text -> Text -> Text -> IO (Either String Text)
+fireDirBridge dirPath selfNode machineNodeText transitionIdent = do
+  result <- worldSnapshotFromDirectory (T.unpack dirPath)
+  pure $ case result of
+    Left err -> Left err
+    Right (snap, machines) -> case Map.lookup machineNodeText machines of
+      Nothing -> Left ("no such machine in directory: " <> T.unpack machineNodeText)
+      Just m ->
+        let ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+         in case fireTransition machines m transitionIdent ctx snap of
+              Left err -> Left (renderFireError err)
+              Right effects -> Right (renderFiredCommit "android_fire" effects)
+
 -- | Marshals a 'Left' to an @\"ERROR: ...\"@-prefixed 'CString' and a
 -- 'Right' straight through -- shared by all three exported functions so
 -- the error-shape discipline the dev-journal calls for lives in exactly
@@ -275,6 +353,28 @@ dmml_fire_history historyC machineC selfC transC = guardedRun $ do
   selfNode <- T.pack <$> peekCString selfC
   transitionIdent <- T.pack <$> peekCString transC
   marshal (fireHistoryBridge historyJson machineSrc selfNode transitionIdent)
+
+dmml_render_dir :: CString -> IO CString
+dmml_render_dir dirC = guardedRun $ do
+  dirPath <- T.pack <$> peekCString dirC
+  result <- renderDirBridge dirPath
+  marshal result
+
+dmml_actions_dir :: CString -> CString -> IO CString
+dmml_actions_dir dirC selfC = guardedRun $ do
+  dirPath <- T.pack <$> peekCString dirC
+  selfNode <- T.pack <$> peekCString selfC
+  result <- actionsDirBridge dirPath selfNode
+  marshal result
+
+dmml_fire_dir :: CString -> CString -> CString -> CString -> IO CString
+dmml_fire_dir dirC selfC machineC transC = guardedRun $ do
+  dirPath <- T.pack <$> peekCString dirC
+  selfNode <- T.pack <$> peekCString selfC
+  machineNodeText <- T.pack <$> peekCString machineC
+  transitionIdent <- T.pack <$> peekCString transC
+  result <- fireDirBridge dirPath selfNode machineNodeText transitionIdent
+  marshal result
 
 -- | The real exception backstop: runs @act@, and if ANYTHING escapes as
 -- a Haskell exception (a parse-library partiality, an out-of-memory, a

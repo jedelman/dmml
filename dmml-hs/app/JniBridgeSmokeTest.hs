@@ -19,7 +19,7 @@ import qualified Data.Text.Lazy.Encoding as TLE
 import Foreign.C.String (newCString, peekCString)
 import System.Exit (exitFailure)
 
-import DMML.JniBridge (dmml_actions, dmml_actions_history, dmml_fire, dmml_fire_history, dmml_render, dmml_render_history)
+import DMML.JniBridge (dmml_actions, dmml_actions_dir, dmml_actions_history, dmml_fire, dmml_fire_dir, dmml_fire_history, dmml_render, dmml_render_dir, dmml_render_history)
 
 worldSrc :: String
 worldSrc =
@@ -142,6 +142,49 @@ main = do
   renderedH2C <- dmml_render_history history2C machineC
   renderedH2 <- peekCString renderedH2C
   check "final rendered state is idle again (toggled twice)" ("state = idle" `isInfixOfStr` renderedH2)
+
+  putStrLn ""
+  putStrLn "=== directory mode: dmml_render_dir/actions_dir/fire_dir against a real fixture directory ==="
+  -- examples/interactive-browser-demo/ is a real, on-disk commits/-shaped
+  -- directory (world.dmml + machine.dmml, no in-memory strings, no JSON
+  -- history array) -- proving DMML.Loader's real file-loading path (mtime
+  -- order, real per-file provenance) through the exact FFI-shaped
+  -- functions a JGit-synced Android client will actually call.
+  dirC <- newCString "examples/interactive-browser-demo"
+  machineNodeC <- newCString "machine/actions"
+
+  renderedDirC <- dmml_render_dir dirC
+  renderedDir <- peekCString renderedDirC
+  putStrLn renderedDir
+  check "dir render succeeded" (take 6 renderedDir /= "ERROR:")
+  check "dir render mentions player/one" ("player/one" `isInfixOfStr` renderedDir)
+
+  actionsDirC <- dmml_actions_dir dirC selfC
+  actionsDir <- peekCString actionsDirC
+  check "dir actions offers work() (multi-machine map loaded from disk)" ("machine/actions/work" `isInfixOfStr` actionsDir)
+
+  firedDirC <- dmml_fire_dir dirC selfC machineNodeC transC
+  firedDir <- peekCString firedDirC
+  putStrLn firedDir
+  check "dir fire succeeded" (take 6 firedDir /= "ERROR:")
+  check "dir fire asserts working" ("working" `isInfixOfStr` firedDir)
+  check "dir fire cites real on-disk file provenance" ("consumes" `isInfixOfStr` firedDir && "fnv1a64:" `isInfixOfStr` firedDir)
+
+  putStrLn ""
+  putStrLn "=== directory mode error path: unknown machine node ==="
+  badMachineC <- newCString "machine/doesnotexist"
+  badMachineFireC <- dmml_fire_dir dirC selfC badMachineC transC
+  badMachineFire <- peekCString badMachineFireC
+  putStrLn badMachineFire
+  check "unknown machine in directory reports ERROR:, doesn't crash" (take 6 badMachineFire == "ERROR:")
+
+  putStrLn ""
+  putStrLn "=== directory mode error path: nonexistent directory loads as empty, not an error ==="
+  missingDirC <- newCString "examples/this-directory-does-not-exist"
+  emptyRenderC <- dmml_render_dir missingDirC
+  emptyRender <- peekCString emptyRenderC
+  putStrLn emptyRender
+  check "missing directory renders an empty world, not ERROR:" (take 6 emptyRender /= "ERROR:")
 
   putStrLn ""
   putStrLn "all checks passed"

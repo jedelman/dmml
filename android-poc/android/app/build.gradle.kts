@@ -28,7 +28,15 @@ android {
 
     defaultConfig {
         applicationId = "org.writtenworld.androidpoc"
-        minSdk = 24
+        // 28, not 24: dev-journal/2026-09-06-android-cross-compile-
+        // verified-on-device.md's own real fix -- libdmmlbridge.so was
+        // built against API 28 (getentropy() doesn't exist in Bionic
+        // below it, and splitmix calls it unconditionally). A real API
+        // 24-27 device would install this app fine and then fail to
+        // dlopen the native library at runtime -- minSdk must match
+        // what the .so actually needs, not what an earlier, since-
+        // superseded build targeted.
+        minSdk = 28
         targetSdk = 34
         versionCode = 1
         versionName = "0.1"
@@ -59,4 +67,19 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // JGit for browsing's git-sync half (dmml/dev-journal/2026-09-07-
+    // android-jgit-sync-spec.md) -- pure-JVM, no native code, no NDK/
+    // cross-compile involvement, unlike everything DMML.JniBridge
+    // itself needed. Real, disclosed unverified item: JGit's Android
+    // compatibility is well-established by OTHER projects (Gerrit's own
+    // tooling, MGit), not independently confirmed against this exact
+    // toolchain (AGP 9.4.0 / Kotlin 2.4.10 / minSdk 24) until it's
+    // actually built.
+    implementation("org.eclipse.jgit:org.eclipse.jgit:6.10.0.202406032230-r")
+
+    // Explicit, not relied-on-transitively -- WorldRepository's suspend
+    // functions need a real coroutines dependency, not an assumption
+    // that activity-compose happens to pull one in.
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
 }

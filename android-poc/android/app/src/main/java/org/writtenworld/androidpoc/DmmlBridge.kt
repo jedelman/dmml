@@ -53,6 +53,24 @@ object DmmlBridge {
     external fun actionsHistory(worldHistoryJson: String, machineSrc: String, selfNode: String): String
     external fun fireHistory(worldHistoryJson: String, machineSrc: String, selfNode: String, transitionIdent: String): String
 
+    /** Directory-aware variants -- added 2026-09-07 alongside
+     * [org.writtenworld.androidpoc.world.WorldRepository]. `dirPath` is
+     * a real filesystem path (a JGit-synced checkout's `commits/`
+     * directory), read directly by DMML.Loader on the Haskell side --
+     * no JSON serialization of file contents across the FFI boundary at
+     * all, unlike the `*History` family. Genuinely multi-machine: every
+     * `.dmml` machine file present in `dirPath` loads, not just one, so
+     * [fireDir] takes an explicit `machineNode` (which of however many
+     * machines is actually firing) the single-machine families never
+     * needed. [fireDir] is a PREVIEW ONLY -- it returns the commit
+     * firing WOULD produce, exactly like [fire]/[fireHistory], and
+     * writes nothing to `dirPath` itself; real persistence is the
+     * (not yet built) authoring worktree's job, deliberately kept
+     * separate from this read-only browsing path. */
+    external fun renderDir(dirPath: String): String
+    external fun actionsDir(dirPath: String, selfNode: String): String
+    external fun fireDir(dirPath: String, selfNode: String, machineNode: String, transitionIdent: String): String
+
     /** True iff `result` (from any function above) is an error, not
      * real output. */
     fun isError(result: String): Boolean = result.startsWith("ERROR:")
