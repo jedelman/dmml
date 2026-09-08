@@ -27,9 +27,11 @@ library
       DMML.FromJson
       DMML.Governance
       DMML.Guard
+      DMML.Http
       DMML.Jgit
       DMML.Jni
       DMML.JniBridge
+      DMML.Llm
       DMML.Json
       DMML.LocalIdentity
       DMML.Materialize
