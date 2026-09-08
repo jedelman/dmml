@@ -82,4 +82,17 @@ dependencies {
     // functions need a real coroutines dependency, not an assumption
     // that activity-compose happens to pull one in.
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+
+    // OkHttp for DMML.Http's 2026-09-08 rewrite off java.net.http.HttpClient
+    // (confirmed absent on Android/ART on any API level -- see
+    // dmml-hs/src/DMML/Http.hs's own module haddock). Real, disclosed gap
+    // this dependency fixes: it was verified on the desktop CLI's own
+    // manually-supplied classpath but NOT added here until a real
+    // on-device NativeBridge.atprotoResolve call crashed the whole ART
+    // runtime with `JNI DETECTED ERROR ... ClassNotFoundException:
+    // okhttp3.Request$Builder` -- proving the gap for real rather than
+    // assuming Gradle would somehow pull it in. okio + kotlin-stdlib come
+    // transitively (this is what "just a Gradle dependency" buys over the
+    // desktop CLI's classpath, which has to list all three by hand).
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }

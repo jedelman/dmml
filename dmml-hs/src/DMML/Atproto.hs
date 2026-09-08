@@ -13,16 +13,20 @@
 -- @dev-journal/2026-09-07-jgit-canonical-single-implementation.md@):
 -- this used to shell out to @curl@ via "System.Process" -- a real,
 -- disclosed limit from the day it was built, since Android has no
--- @curl@ binary either. Now goes through @java.net.http.HttpClient@,
--- the same embedded\/upcalled JVM 'DMML.Jgit' already needs for git
--- operations -- one canonical transport for both platforms, no new
--- dependency (the JDK's HTTP client ships in @java.base@, no extra
--- jar on the classpath). Every public function here now takes a
--- 'JvmHandle' as its first argument as a result.
+-- @curl@ binary either. Now goes through the JVM, the same
+-- embedded\/upcalled JVM 'DMML.Jgit' already needs for git operations
+-- -- one canonical transport for both platforms. Every public
+-- function here now takes a 'JvmHandle' as its first argument as a
+-- result.
 --
 -- The low-level HTTP-over-JNI plumbing itself moved out to 'DMML.Http'
 -- on 2026-09-08, the moment a second real consumer needed it
 -- ('DMML.Llm''s OpenRouter calls) -- this module now just builds
+-- request/response shapes; 'DMML.Http' itself was rewritten the same
+-- day from @java.net.http.HttpClient@ to bundled OkHttp, after a real
+-- on-device probe found @java.net.http.HttpClient@ does not exist on
+-- Android\/ART at all (see 'DMML.Http''s module haddock). OkHttp is a
+-- real jar dependency now, not a JDK-bundled freebie.
 -- atproto-shaped URLs/bodies on top of that generic transport.
 --
 -- did:web resolution is NOT implemented -- only did:plc, via

@@ -66,6 +66,10 @@ jmethodID hs_jni_get_static_method_id(JNIEnv *env, jclass cls, const char *name,
 // directly, hence this file, but nothing here is specific to any one
 // JGit call.
 
+jobject hs_jni_new_object_0(JNIEnv *env, jclass cls, jmethodID ctor) {
+    return (*env)->NewObject(env, cls, ctor);
+}
+
 jobject hs_jni_new_object_1obj(JNIEnv *env, jclass cls, jmethodID ctor, jobject arg0) {
     return (*env)->NewObject(env, cls, ctor, arg0);
 }
@@ -112,6 +116,10 @@ jint hs_jni_call_int_method_0(JNIEnv *env, jobject recv, jmethodID m) {
 
 jobject hs_jni_call_static_object_method_1long(JNIEnv *env, jclass cls, jmethodID m, jlong arg0) {
     return (*env)->CallStaticObjectMethod(env, cls, m, arg0);
+}
+
+jobject hs_jni_call_static_object_method_2obj(JNIEnv *env, jclass cls, jmethodID m, jobject arg0, jobject arg1) {
+    return (*env)->CallStaticObjectMethod(env, cls, m, arg0, arg1);
 }
 
 // --- String marshaling ---------------------------------------------------

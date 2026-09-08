@@ -30,11 +30,13 @@ module DMML.Jni
   , jStringToHsString
   , describeAndClearException
     -- * Raw JNI call primitives, by shape
+  , c_newObject0
   , c_newObject1Obj
   , c_callStaticObjectMethod0
   , c_callStaticObjectMethod1Obj
   , c_callStaticObjectMethod1Bool
   , c_callStaticObjectMethod1Long
+  , c_callStaticObjectMethod2Obj
   , c_callObjectMethod0
   , c_callObjectMethod1Obj
   , c_callObjectMethod1Str
@@ -147,6 +149,9 @@ foreign import ccall unsafe "hs_jni_get_method_id"
 foreign import ccall unsafe "hs_jni_get_static_method_id"
   c_getStaticMethodId :: JNIEnvPtr -> JRef -> CString -> CString -> IO JRef
 
+foreign import ccall safe "hs_jni_new_object_0"
+  c_newObject0 :: JNIEnvPtr -> JRef -> JRef -> IO JRef
+
 foreign import ccall safe "hs_jni_new_object_1obj"
   c_newObject1Obj :: JNIEnvPtr -> JRef -> JRef -> JRef -> IO JRef
 
@@ -161,6 +166,9 @@ foreign import ccall safe "hs_jni_call_static_object_method_1bool"
 
 foreign import ccall safe "hs_jni_call_static_object_method_1long"
   c_callStaticObjectMethod1Long :: JNIEnvPtr -> JRef -> JRef -> CLLong -> IO JRef
+
+foreign import ccall safe "hs_jni_call_static_object_method_2obj"
+  c_callStaticObjectMethod2Obj :: JNIEnvPtr -> JRef -> JRef -> JRef -> JRef -> IO JRef
 
 foreign import ccall safe "hs_jni_call_object_method_0"
   c_callObjectMethod0 :: JNIEnvPtr -> JRef -> JRef -> IO JRef

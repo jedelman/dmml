@@ -1,0 +1,82 @@
+package org.jasonedelman.writtenworld
+
+// The Kotlin half of the JNI-upcall architecture built 2026-09-07/08
+// (dmml-hs's DMML.AndroidBridge + cbits/android_onload.c) -- the
+// OPPOSITE direction from org.writtenworld.androidpoc.DmmlBridge
+// (which is Kotlin calling INTO pure Haskell logic). Here, Haskell
+// calls BACK OUT into real JVM objects -- JGit's `Git`, OkHttp's
+// `OkHttpClient` -- via the live JNIEnv* this class's own native
+// methods hand it, borrowed rather than a second embedded JVM (see
+// DMML.Jni's `UpcallJvm`, and why one is needed at all: Android/ART
+// exposes no linkable libjvm.so for a real JNI_CreateJavaVM embed).
+//
+// This class's exact package + name (`org.jasonedelman.writtenworld
+// .NativeBridge`) and every method name/signature below are load-
+// bearing: cbits/android_onload.c's JNI_OnLoad does
+// `FindClass(env, "org/jasonedelman/writtenworld/NativeBridge")`
+// then `RegisterNatives` against a hardcoded table of exactly these
+// six (name, JNI signature) pairs. Move or rename anything here
+// without updating that table and JNI_OnLoad's FindClass call fails
+// at native-library-load time, silently disabling every native call
+// below (not a crash -- `System.loadLibrary` still "succeeds"; only
+// `UnsatisfiedLinkError` at first actual call reveals it, so this
+// module's own on-device verification, not just a clean build, is
+// what actually proves the binding is right).
+//
+// Loaded from a DIFFERENT shared library ("dmmlandroidbridge") than
+// org.writtenworld.androidpoc.DmmlBridge's "dmmlbridge" -- the two
+// architectures haven't been unified into one linked .so yet (see
+// dev-journal/2026-09-08-android-ndk-cross-compile-of-androidbridge.md's
+// "What's still open"), so both .so files are bundled side by side in
+// jniLibs/ for now, each loaded independently, neither touching the
+// other's native methods.
+object NativeBridge {
+    init {
+        System.loadLibrary("dmmlandroidbridge")
+    }
+
+    /** Writes `content` to `repoDir/relPath` (parent dirs created as
+     * needed), stages and commits it via JGit against the live
+     * upcalled JVM. Returns "OK:<commit-sha>" on success, an
+     * "ERROR: ..."-prefixed string on failure -- same contract as
+     * every function below and as org.writtenworld.androidpoc
+     * .DmmlBridge's own functions. `repoDir` must already be a real
+     * git working tree (`git init`'d), same precondition DMML.Jgit's
+     * `jgitOpen` has on desktop. */
+    external fun jgitCommit(repoDir: String, relPath: String, content: String, message: String): String
+
+    /** Resolves a handle or DID all the way to its real PDS endpoint.
+     * Returns JSON `{"did":...,"pdsEndpoint":...}`. No credentials
+     * needed -- pure public DID/handle resolution. */
+    external fun atprotoResolve(identifier: String): String
+
+    /** Pulls a peer's new commit records since `storedCursor` (pass
+     * "" for "from the beginning"). Returns JSON
+     * `{"nextCursor":...,"records":[{"rkey":...,"dmml":...}]}`. */
+    external fun atprotoPull(peerIdentifier: String, collection: String, storedCursor: String): String
+
+    /** Authenticates against a resolved PDS endpoint. Returns JSON
+     * `{"did":...,"accessJwt":...,"pdsEndpoint":...}`. */
+    external fun atprotoCreateSession(pdsEndpoint: String, identifier: String, password: String): String
+
+    /** Publishes one DMML commit as a real atproto record.
+     * `createdAt` is stamped on the Haskell side. Returns the
+     * created record's at:// URI. */
+    external fun atprotoCreateRecord(
+        pdsEndpoint: String,
+        did: String,
+        accessJwt: String,
+        collection: String,
+        predicate: String,
+        dmmlText: String,
+    ): String
+
+    /** One BYOK chat completion via DMML.Llm.chatComplete. Returns
+     * the raw assistant content, unvalidated as DMML -- the caller's
+     * job on both platforms. */
+    external fun llmChatComplete(apiKey: String, model: String, systemPrompt: String, userPrompt: String): String
+
+    /** True iff `result` (from any function above) is an error, not
+     * real output -- same "ERROR: ..." contract as DmmlBridge.isError. */
+    fun isError(result: String): Boolean = result.startsWith("ERROR:")
+}

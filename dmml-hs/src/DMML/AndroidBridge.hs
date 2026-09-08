@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 -- | The real Android bridge surface for everything built 2026-09-07/08
 -- on top of a live JNI environment -- git (via 'DMML.Jgit'), atproto
@@ -9,8 +10,8 @@
 -- surface (render\/actions\/fire -- pure Haskell logic, plain
 -- 'Foreign.C.String.CString' in and out, no real @JNIEnv*@ needed at
 -- all). Everything in THIS module is different: each function needs a
--- live @JNIEnv*@ to call real Java objects (JGit's @Git@, @java.net.
--- http.HttpClient@) the same way the desktop CLI does via an embedded
+-- live @JNIEnv*@ to call real Java objects (JGit's @Git@, OkHttp's
+-- @OkHttpClient@) the same way the desktop CLI does via an embedded
 -- JVM -- the only difference on Android is WHERE that @JNIEnv*@ comes
 -- from, which is exactly what 'DMML.Jni.JvmEnvironment'\'s 'UpcallJvm'
 -- constructor exists to abstract away (see its own doc comment). Every

@@ -15,3 +15,14 @@ checkpoint-rebuild
 retro-gate
 check-declared
 check-string-cap
+
+# Downloaded jars, extracted JDKs, and build logs used to verify the
+# OkHttp rewrite of DMML.Http locally -- artifacts, not scripts, so
+# not committed (see repo convention: scratch scripts get committed,
+# scratch artifacts don't).
+wsl-scratch-http/
+
+# Cross-compiled Android .so outputs (libdmmlbridge.so, stub
+# libjvm.so, libc++_shared.so) -- binary build artifacts, not
+# committed, same convention as wsl-scratch-http/ above.
+wsl-scratch-android/

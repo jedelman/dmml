@@ -1,15 +1,29 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- | Generic JSON-over-HTTPS transport via @java.net.http.HttpClient@,
--- through the same embedded\/upcalled JVM 'DMML.Jgit' already needs for
--- git. Extracted from 'DMML.Atproto' 2026-09-08 the moment a second
--- real consumer appeared ('DMML.Llm''s OpenRouter calls, for the
--- in-product authoring agents' BYOK path) -- despite the low-level
--- signature-string wrappers below having originally been written for
--- atproto's own XRPC calls, nothing about
--- @HttpClient@\/@HttpRequest@\/@HttpResponse@ is atproto-specific. Same
--- extraction discipline as 'DMML.Jni' being pulled out of 'DMML.Jgit'
--- the day before for the identical reason.
+-- | Generic JSON-over-HTTPS transport via bundled OkHttp
+-- (@okhttp3.*@), through the same embedded\/upcalled JVM 'DMML.Jgit'
+-- already needs for git. Originally written against
+-- @java.net.http.HttpClient@ (the JDK 11+ API); rewritten 2026-09-08
+-- after a real on-device probe (@dalvikvm@ loading
+-- @java.net.http.HttpClient@ via reflection) confirmed that class is
+-- simply not part of Android\/ART's core library on any API level --
+-- not a missing permission or a proguard strip, the class does not
+-- exist there at all. OkHttp is a plain JVM library with no
+-- Android-core dependency, so it works identically on desktop and
+-- Android once its jar is on the relevant classpath (see
+-- 'DMML.Jgit''s own precedent for JGit).
+--
+-- Deliberately simple, per the "bundle okhttp, keep it simple"
+-- instruction this rewrite was done under: no per-request timeout
+-- override (OkHttp's own defaults -- 10s connect\/read\/write -- are
+-- used via a single default-constructed @OkHttpClient@ per call,
+-- matching the original's "new client per call" policy); no explicit
+-- @Content-Type@ header is set separately from the request body --
+-- OkHttp derives it from the 'okhttp3.RequestBody''s
+-- 'okhttp3.MediaType' automatically, which is the normal OkHttp idiom
+-- and *more* correct than the old code's manual duplication (the old
+-- @java.net.http@ code had to set @Content-Type@ by hand because
+-- @HttpRequest@'s body publisher carries no media type of its own).
 module DMML.Http
   ( HttpError (..)
   , oneRequest
@@ -35,11 +49,10 @@ import DMML.Jni
   , c_callIntMethod0
   , c_callObjectMethod0
   , c_callObjectMethod1Obj
-  , c_callObjectMethod2Obj
   , c_callObjectMethod2Str
-  , c_callStaticObjectMethod0
-  , c_callStaticObjectMethod1Long
   , c_callStaticObjectMethod1Obj
+  , c_callStaticObjectMethod2Obj
+  , c_newObject0
   , describeAndClearException
   , findClass
   , hsStringToJString
@@ -51,7 +64,7 @@ import DMML.Jni
 data HttpError
   = HttpTransportFailed Text
   -- ^ The request never got a real HTTP response at all (DNS, connect
-  -- refused/timeout, a Java exception out of @HttpClient.send@ -- see
+  -- refused/timeout, a Java exception out of @Call.execute@ -- see
   -- 'describeAndClearException'). Distinct from 'HttpFailed', a real
   -- non-2xx response.
   | HttpFailed Int BL.ByteString
@@ -74,144 +87,151 @@ percentEncode = concatMap encodeByte . BL.unpack . BL.fromStrict . TE.encodeUtf8
     hexDigit n = intToDigit' (fromIntegral n)
     intToDigit' n = if n < 10 then intToDigit n else toEnum (ord 'A' + n - 10)
 
--- | Build a @java.net.URI@ from an already-fully-formed URL string.
--- Real signature: @URI.create(String) -> "(Ljava/lang/String;)Ljava/net/URI;"@ (static).
-buildUri :: JRef -> String -> IO JRef
-buildUri env urlStr = do
-  uriCls <- findClass env "java/net/URI"
-  createM <- staticMethodId env uriCls "create" "(Ljava/lang/String;)Ljava/net/URI;"
-  urlJStr <- hsStringToJString env urlStr
-  c_callStaticObjectMethod1Obj env uriCls createM urlJStr
+-- | Real signature: @new OkHttpClient()@ -- confirmed via @javap@ as a
+-- real public no-arg constructor. A new client per call, deliberately
+-- (see module haddock) -- matches the original's own "new client per
+-- call" policy, not a regression.
+newOkHttpClient :: JRef -> IO JRef
+newOkHttpClient env = do
+  clientCls <- findClass env "okhttp3/OkHttpClient"
+  ctor <- methodId env clientCls "<init>" "()V"
+  c_newObject0 env clientCls ctor
 
--- | Real signature: @HttpRequest.newBuilder(URI) -> "(Ljava/net/URI;)Ljava/net/http/HttpRequest$Builder;"@ (static).
-newRequestBuilder :: JRef -> JRef -> IO JRef
-newRequestBuilder env uriObj = do
-  reqCls <- findClass env "java/net/http/HttpRequest"
-  newBuilderM <- staticMethodId env reqCls "newBuilder" "(Ljava/net/URI;)Ljava/net/http/HttpRequest$Builder;"
-  c_callStaticObjectMethod1Obj env reqCls newBuilderM uriObj
+-- | Real signature: @new Request.Builder()@ -- confirmed via @javap@
+-- as a real public no-arg constructor.
+newRequestBuilder :: JRef -> IO JRef
+newRequestBuilder env = do
+  builderCls <- findClass env "okhttp3/Request$Builder"
+  ctor <- methodId env builderCls "<init>" "()V"
+  c_newObject0 env builderCls ctor
 
--- | Real signature: @HttpRequest.Builder.header(String,String) -> "(Ljava/lang/String;Ljava/lang/String;)Ljava/net/http/HttpRequest$Builder;"@.
+-- | Real signature: @Request.Builder.url(String) ->
+-- "(Ljava/lang/String;)Lokhttp3/Request$Builder;"@.
+setUrl :: JRef -> JRef -> String -> IO JRef
+setUrl env builder url = do
+  builderCls <- findClass env "okhttp3/Request$Builder"
+  urlM <- methodId env builderCls "url" "(Ljava/lang/String;)Lokhttp3/Request$Builder;"
+  urlJ <- hsStringToJString env url
+  c_callObjectMethod1Obj env builder urlM urlJ
+
+-- | Real signature: @Request.Builder.header(String,String) ->
+-- "(Ljava/lang/String;Ljava/lang/String;)Lokhttp3/Request$Builder;"@.
 addHeader :: JRef -> JRef -> String -> String -> IO JRef
 addHeader env builder k v = do
-  builderCls <- findClass env "java/net/http/HttpRequest$Builder"
-  headerM <- methodId env builderCls "header" "(Ljava/lang/String;Ljava/lang/String;)Ljava/net/http/HttpRequest$Builder;"
+  builderCls <- findClass env "okhttp3/Request$Builder"
+  headerM <- methodId env builderCls "header" "(Ljava/lang/String;Ljava/lang/String;)Lokhttp3/Request$Builder;"
   kJ <- hsStringToJString env k
   vJ <- hsStringToJString env v
   c_callObjectMethod2Str env builder headerM kJ vJ
 
--- | Real signature: @HttpRequest.Builder.GET() -> "()Ljava/net/http/HttpRequest$Builder;"@.
+-- | Real signature: @Request.Builder.get() ->
+-- "()Lokhttp3/Request$Builder;"@.
 setGet :: JRef -> JRef -> IO JRef
 setGet env builder = do
-  builderCls <- findClass env "java/net/http/HttpRequest$Builder"
-  getM <- methodId env builderCls "GET" "()Ljava/net/http/HttpRequest$Builder;"
+  builderCls <- findClass env "okhttp3/Request$Builder"
+  getM <- methodId env builderCls "get" "()Lokhttp3/Request$Builder;"
   c_callObjectMethod0 env builder getM
 
--- | Real signature: @HttpRequest.Builder.POST(BodyPublisher) -> "(Ljava/net/http/HttpRequest$BodyPublisher;)Ljava/net/http/HttpRequest$Builder;"@.
+-- | Real signature: @Request.Builder.post(RequestBody) ->
+-- "(Lokhttp3/RequestBody;)Lokhttp3/Request$Builder;"@.
 setPost :: JRef -> JRef -> JRef -> IO JRef
-setPost env builder bodyPublisher = do
-  builderCls <- findClass env "java/net/http/HttpRequest$Builder"
-  postM <- methodId env builderCls "POST" "(Ljava/net/http/HttpRequest$BodyPublisher;)Ljava/net/http/HttpRequest$Builder;"
-  c_callObjectMethod1Obj env builder postM bodyPublisher
+setPost env builder body = do
+  builderCls <- findClass env "okhttp3/Request$Builder"
+  postM <- methodId env builderCls "post" "(Lokhttp3/RequestBody;)Lokhttp3/Request$Builder;"
+  c_callObjectMethod1Obj env builder postM body
 
--- | Real signatures: @HttpRequest.Builder.timeout(Duration) -> "(Ljava/time/Duration;)Ljava/net/http/HttpRequest$Builder;"@,
--- @Duration.ofSeconds(long) -> "(J)Ljava/time/Duration;"@ (static).
-setTimeoutSeconds :: JRef -> JRef -> Int -> IO JRef
-setTimeoutSeconds env builder secs = do
-  builderCls <- findClass env "java/net/http/HttpRequest$Builder"
-  timeoutM <- methodId env builderCls "timeout" "(Ljava/time/Duration;)Ljava/net/http/HttpRequest$Builder;"
-  durCls <- findClass env "java/time/Duration"
-  ofSecondsM <- staticMethodId env durCls "ofSeconds" "(J)Ljava/time/Duration;"
-  durObj <- c_callStaticObjectMethod1Long env durCls ofSecondsM (fromIntegral secs)
-  c_callObjectMethod1Obj env builder timeoutM durObj
-
--- | Real signature: @HttpRequest.Builder.build() -> "()Ljava/net/http/HttpRequest;"@.
+-- | Real signature: @Request.Builder.build() -> "()Lokhttp3/Request;"@.
 buildRequest :: JRef -> JRef -> IO JRef
 buildRequest env builder = do
-  builderCls <- findClass env "java/net/http/HttpRequest$Builder"
-  buildM <- methodId env builderCls "build" "()Ljava/net/http/HttpRequest;"
+  builderCls <- findClass env "okhttp3/Request$Builder"
+  buildM <- methodId env builderCls "build" "()Lokhttp3/Request;"
   c_callObjectMethod0 env builder buildM
 
--- | Real signature: @HttpRequest.BodyPublishers.ofString(String) -> "(Ljava/lang/String;)Ljava/net/http/HttpRequest$BodyPublisher;"@ (static).
-bodyPublisherOfString :: JRef -> String -> IO JRef
-bodyPublisherOfString env s = do
-  bpCls <- findClass env "java/net/http/HttpRequest$BodyPublishers"
-  ofStringM <- staticMethodId env bpCls "ofString" "(Ljava/lang/String;)Ljava/net/http/HttpRequest$BodyPublisher;"
-  sJ <- hsStringToJString env s
-  c_callStaticObjectMethod1Obj env bpCls ofStringM sJ
+-- | Real signature: @MediaType.parse(String) ->
+-- "(Ljava/lang/String;)Lokhttp3/MediaType;"@ (static, confirmed via
+-- @javap@ callable directly -- not behind Kotlin's @Companion@
+-- indirection).
+mediaTypeParse :: JRef -> String -> IO JRef
+mediaTypeParse env mime = do
+  mtCls <- findClass env "okhttp3/MediaType"
+  parseM <- staticMethodId env mtCls "parse" "(Ljava/lang/String;)Lokhttp3/MediaType;"
+  mimeJ <- hsStringToJString env mime
+  c_callStaticObjectMethod1Obj env mtCls parseM mimeJ
 
--- | Real signature: @HttpClient.newHttpClient() -> "()Ljava/net/http/HttpClient;"@ (static).
--- A new client per call, deliberately -- these are small, infrequent
--- calls, not a hot path worth threading a shared client through every
--- caller.
-newHttpClient :: JRef -> IO JRef
-newHttpClient env = do
-  clientCls <- findClass env "java/net/http/HttpClient"
-  newClientM <- staticMethodId env clientCls "newHttpClient" "()Ljava/net/http/HttpClient;"
-  c_callStaticObjectMethod0 env clientCls newClientM
+-- | Real signature: @RequestBody.create(String,MediaType) ->
+-- "(Ljava/lang/String;Lokhttp3/MediaType;)Lokhttp3/RequestBody;"@
+-- (static, confirmed via @javap@ callable directly).
+requestBodyCreate :: JRef -> String -> JRef -> IO JRef
+requestBodyCreate env body mediaType = do
+  rbCls <- findClass env "okhttp3/RequestBody"
+  createM <- staticMethodId env rbCls "create" "(Ljava/lang/String;Lokhttp3/MediaType;)Lokhttp3/RequestBody;"
+  bodyJ <- hsStringToJString env body
+  c_callStaticObjectMethod2Obj env rbCls createM bodyJ mediaType
 
--- | Real signature: @HttpResponse.BodyHandlers.ofString() -> "()Ljava/net/http/HttpResponse$BodyHandler;"@ (static).
-bodyHandlerOfString :: JRef -> IO JRef
-bodyHandlerOfString env = do
-  bhCls <- findClass env "java/net/http/HttpResponse$BodyHandlers"
-  ofStringM <- staticMethodId env bhCls "ofString" "()Ljava/net/http/HttpResponse$BodyHandler;"
-  c_callStaticObjectMethod0 env bhCls ofStringM
+-- | Real signature: @OkHttpClient.newCall(Request) ->
+-- "(Lokhttp3/Request;)Lokhttp3/Call;"@.
+newCall :: JRef -> JRef -> JRef -> IO JRef
+newCall env client req = do
+  clientCls <- findClass env "okhttp3/OkHttpClient"
+  newCallM <- methodId env clientCls "newCall" "(Lokhttp3/Request;)Lokhttp3/Call;"
+  c_callObjectMethod1Obj env client newCallM req
 
--- | Real signature: @HttpClient.send(HttpRequest, BodyHandler) -> "(Ljava/net/http/HttpRequest;Ljava/net/http/HttpResponse$BodyHandler;)Ljava/net/http/HttpResponse;"@.
--- Throws checked @IOException@\/@InterruptedException@ -- checked by
--- the caller via 'describeAndClearException', not here.
-sendRequest :: JRef -> JRef -> JRef -> JRef -> IO JRef
-sendRequest env client req bh = do
-  clientCls <- findClass env "java/net/http/HttpClient"
-  sendM <-
-    methodId
-      env
-      clientCls
-      "send"
-      "(Ljava/net/http/HttpRequest;Ljava/net/http/HttpResponse$BodyHandler;)Ljava/net/http/HttpResponse;"
-  c_callObjectMethod2Obj env client sendM req bh
+-- | Real signature: @Call.execute() -> "()Lokhttp3/Response;"@. Throws
+-- checked @IOException@ -- checked by the caller via
+-- 'describeAndClearException', not here.
+executeCall :: JRef -> JRef -> IO JRef
+executeCall env call = do
+  callCls <- findClass env "okhttp3/Call"
+  executeM <- methodId env callCls "execute" "()Lokhttp3/Response;"
+  c_callObjectMethod0 env call executeM
 
--- | Real signature: @HttpResponse.statusCode() -> "()I"@.
+-- | Real signature: @Response.code() -> "()I"@.
 getStatusCode :: JRef -> JRef -> IO Int
 getStatusCode env resp = do
-  respCls <- findClass env "java/net/http/HttpResponse"
-  statusM <- methodId env respCls "statusCode" "()I"
-  fromIntegral <$> c_callIntMethod0 env resp statusM
+  respCls <- findClass env "okhttp3/Response"
+  codeM <- methodId env respCls "code" "()I"
+  fromIntegral <$> c_callIntMethod0 env resp codeM
 
--- | Real signature: @HttpResponse.body() -> "()Ljava/lang/Object;"@ (the
--- descriptor is erased to @Object@ regardless of the generic type
--- parameter -- confirmed via @javap@; the real runtime type is
--- @String@ here because 'bodyHandlerOfString' was used).
+-- | Real signatures: @Response.body() -> "()Lokhttp3/ResponseBody;"@,
+-- @ResponseBody.string() -> "()Ljava/lang/String;"@ (throws checked
+-- @IOException@). No explicit @ResponseBody.close()@ -- these are
+-- one-shot, whole-body-buffered calls (matching the original's own
+-- @HttpResponse.BodyHandlers.ofString@ behaviour), and @string()@
+-- itself closes the underlying source once fully consumed.
 getBody :: JRef -> JRef -> IO String
 getBody env resp = do
-  respCls <- findClass env "java/net/http/HttpResponse"
-  bodyM <- methodId env respCls "body" "()Ljava/lang/Object;"
+  respCls <- findClass env "okhttp3/Response"
+  bodyM <- methodId env respCls "body" "()Lokhttp3/ResponseBody;"
   bodyObj <- c_callObjectMethod0 env resp bodyM
-  jStringToHsString env bodyObj
+  rbCls <- findClass env "okhttp3/ResponseBody"
+  stringM <- methodId env rbCls "string" "()Ljava/lang/String;"
+  strObj <- c_callObjectMethod0 env bodyObj stringM
+  jStringToHsString env strObj
 
 -- | One real HTTP call, no retry -- 'withRetry' wraps this for the
 -- transport-level-failure retry curl used to do via @--retry
 -- --retry-connrefused@. @method@ is @\"GET\"@ or @\"POST\"@;
 -- @maybeBody@ is the raw request body for POST, ignored for GET;
--- @extraHeaders@ are added after @Content-Type@ (always set for a
--- POST body) and any bearer token/auth header a caller supplies.
+-- @extraHeaders@ are added after any bearer token/auth header a
+-- caller supplies. @Content-Type@ for a POST body is set by OkHttp
+-- itself from the 'okhttp3.RequestBody''s media type, not added here.
 oneRequest :: JvmHandle -> String -> String -> Maybe (String, [(String, String)]) -> [(String, String)] -> IO (Either HttpError (Int, BL.ByteString))
 oneRequest (JvmHandle env) method url maybeBody extra = do
-  uriObj <- buildUri env url
-  b0 <- newRequestBuilder env uriObj
-  b1 <- case method of
-    "GET" -> setGet env b0
+  b0 <- newRequestBuilder env
+  b1 <- setUrl env b0 url
+  b2 <- case method of
+    "GET" -> setGet env b1
     "POST" -> do
       let body = maybe "" fst maybeBody
-      bp <- bodyPublisherOfString env body
-      b0' <- setPost env b0 bp
-      addHeader env b0' "Content-Type" "application/json"
+      mediaType <- mediaTypeParse env "application/json"
+      rb <- requestBodyCreate env body mediaType
+      setPost env b1 rb
     other -> ioError (userError ("DMML.Http: unsupported method " <> other))
-  b2 <- foldHeaders b1 (maybe [] snd maybeBody ++ extra)
-  b3 <- setTimeoutSeconds env b2 60
+  b3 <- foldHeaders b2 (maybe [] snd maybeBody ++ extra)
   req <- buildRequest env b3
-  client <- newHttpClient env
-  bh <- bodyHandlerOfString env
-  resp <- sendRequest env client req bh
+  client <- newOkHttpClient env
+  call <- newCall env client req
+  resp <- executeCall env call
   mErr <- describeAndClearException env
   case mErr of
     Just err -> pure (Left (HttpTransportFailed (T.pack err)))

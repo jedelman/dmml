@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Needed by NativeBridge's atprotoResolve/atprotoPull (real
+         OkHttp calls via the JNI upcall) and by WorldRepository's
+         JGit fetch: neither worked at all without this, on any API
+         level; Android denies raw sockets to any app that omits it. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:label="dmml Android bridge PoC"
         android:allowBackup="false">
@@ -13,6 +19,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="org.jasonedelman.writtenworld.VerifyActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
     </application>
 
 </manifest>
