@@ -26,6 +26,7 @@ library
       DMML.Fire
       DMML.FromJson
       DMML.Governance
+      DMML.AndroidBridge
       DMML.Guard
       DMML.Http
       DMML.Jgit
