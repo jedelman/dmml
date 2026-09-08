@@ -169,7 +169,7 @@ private fun runLlmChatCompleteCheck(context: Context): String {
     return try {
         val result = NativeBridge.llmChatComplete(
             apiKey,
-            "openai/gpt-4o-mini",
+            "deepseek/deepseek-v4-flash-0731",
             "You are a terse test assistant.",
             "Reply with exactly the word: pong",
         )
