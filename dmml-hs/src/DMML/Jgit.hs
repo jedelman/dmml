@@ -27,6 +27,8 @@
 -- implementation.md@ for why those are gone, not deferred.
 module DMML.Jgit
   ( JvmHandle
+  , JvmEnvironment (..)
+  , withJvm
   , withEmbeddedJvm
   , JGit
   , RevCommitRef
@@ -44,6 +46,7 @@ import Foreign.Ptr (nullPtr)
 
 import DMML.Jni
   ( JRef
+  , JvmEnvironment (..)
   , JvmHandle (..)
   , c_callObjectMethod0
   , c_callObjectMethod1Obj
@@ -59,6 +62,7 @@ import DMML.Jni
   , methodId
   , staticMethodId
   , withEmbeddedJvm
+  , withJvm
   )
 
 -- | A live @org.eclipse.jgit.api.Git@ instance.

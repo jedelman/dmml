@@ -27,7 +27,7 @@ import DMML.Atproto
   , resolveDidToPdsEndpoint
   , resolveHandle
   )
-import DMML.Jni (JvmHandle, withEmbeddedJvm)
+import DMML.Jni (JvmEnvironment (..), JvmHandle, withJvm)
 import System.Environment (getArgs, lookupEnv)
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
@@ -36,7 +36,7 @@ main :: IO ()
 main = do
   args <- getArgs
   classpath <- maybe "." id <$> lookupEnv "DMML_JGIT_CLASSPATH"
-  withEmbeddedJvm classpath $ \jvm ->
+  withJvm (EmbeddedJvm classpath) $ \jvm ->
     case args of
       [identifierStr, predicateStr, dmmlPath] -> do
         maybePassword <- lookupEnv "ATPROTO_APP_PASSWORD"

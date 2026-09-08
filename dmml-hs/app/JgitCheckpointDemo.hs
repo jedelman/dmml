@@ -15,7 +15,8 @@ import DMML.Jgit
   , jgitInit
   , jgitResolve
   , revCommitName
-  , withEmbeddedJvm
+  , JvmEnvironment (..)
+  , withJvm
   )
 import System.Directory (createDirectoryIfMissing)
 import System.Environment (getArgs)
@@ -33,7 +34,7 @@ main = do
       exitFailure
 
 runDemo :: FilePath -> FilePath -> IO ()
-runDemo classpath dir = withEmbeddedJvm classpath $ \jvm -> do
+runDemo classpath dir = withJvm (EmbeddedJvm classpath) $ \jvm -> do
   let commitsDir = dir </> "commits"
       checkpointsDir = dir </> "checkpoints"
 

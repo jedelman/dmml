@@ -32,7 +32,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import DMML.Atproto (pullNewRecords)
-import DMML.Jni (withEmbeddedJvm)
+import DMML.Jni (JvmEnvironment (..), withJvm)
 import System.Directory (createDirectoryIfMissing, doesFileExist)
 import System.Environment (getArgs, lookupEnv)
 import System.Exit (exitFailure)
@@ -43,7 +43,7 @@ main :: IO ()
 main = do
   args <- getArgs
   classpath <- maybe "." id <$> lookupEnv "DMML_JGIT_CLASSPATH"
-  withEmbeddedJvm classpath $ \jvm ->
+  withJvm (EmbeddedJvm classpath) $ \jvm ->
     case args of
       [peerIdentifier, collection, cursorFile, outDir] -> do
         haveCursorFile <- doesFileExist cursorFile

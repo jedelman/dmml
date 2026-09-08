@@ -13,7 +13,8 @@ import DMML.Jgit
   , jgitCommit
   , jgitInit
   , revCommitName
-  , withEmbeddedJvm
+  , JvmEnvironment (..)
+  , withJvm
   )
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
@@ -29,7 +30,7 @@ main = do
       exitFailure
 
 runSmokeTest :: FilePath -> FilePath -> IO ()
-runSmokeTest classpath dir = withEmbeddedJvm classpath $ \jvm -> do
+runSmokeTest classpath dir = withJvm (EmbeddedJvm classpath) $ \jvm -> do
   putStrLn ("jgit-smoke-test: Git.init() at " <> dir)
   git <- jgitInit jvm dir
 

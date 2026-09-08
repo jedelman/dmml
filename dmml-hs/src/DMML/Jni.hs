@@ -20,6 +20,8 @@ module DMML.Jni
   , JNIEnvPtr
   , JVMPtr
   , JvmHandle (..)
+  , JvmEnvironment (..)
+  , withJvm
   , withEmbeddedJvm
   , findClass
   , methodId
@@ -65,13 +67,58 @@ type JVMPtr = JRef
 -- narrower export lists.
 newtype JvmHandle = JvmHandle JNIEnvPtr
 
+-- | The one real platform incompatibility every module built on top of
+-- 'JvmHandle' (@DMML.Jgit@, @DMML.Http@, @DMML.Llm@, and anything
+-- built on those) needs abstracted away, added 2026-09-08 once the
+-- Android side of "one canonical implementation" was finally being
+-- built rather than just disclosed as a gap. The two cases:
+--
+-- * 'EmbeddedJvm': desktop\/CLI. Nothing hosts a JVM for us, so we
+--   create one ourselves via the JNI Invocation API
+--   ('JNI_CreateJavaVM') and own its whole lifecycle -- must destroy
+--   it when done. This is exactly 'withEmbeddedJvm' below, unchanged.
+-- * 'UpcallJvm': Android. The JVM already exists (it's what's hosting
+--   the Kotlin app that called into this native library in the first
+--   place) -- a JNI-exported Haskell function receives that JVM's real
+--   @JNIEnv*@ as its own first parameter, per ordinary JNI calling
+--   convention, whether the export is bound by @Java_pkg_Class_method@
+--   name-mangling or via @JNI_OnLoad@\'s @RegisterNatives@ (this
+--   project's 'DMML.AndroidBridge' uses the latter, see its own doc
+--   comment). Wrapping that pointer is the WHOLE job -- calling
+--   'JNI_CreateJavaVM' would be wrong (a process hosts exactly one
+--   JVM) and there is nothing to destroy afterward either: the caller
+--   (Android\/ART) owns that JVM's entire lifecycle, not us.
+--
+-- Every consumer downstream of this type should go through 'withJvm',
+-- not call 'withEmbeddedJvm' directly -- that's the actual point of
+-- this abstraction existing: the exact same 'DMML.Jgit'\/'DMML.Atproto'\/
+-- 'DMML.Llm' call sites work unmodified under either environment, since
+-- none of them ever see how the 'JvmHandle' they were given came to be.
+data JvmEnvironment
+  = EmbeddedJvm FilePath
+  -- ^ Desktop\/CLI: the classpath to embed a fresh JVM with.
+  | UpcallJvm JNIEnvPtr
+  -- ^ Android: the real @JNIEnv*@ the upcall was invoked with. Never
+  -- created or destroyed by this module -- purely borrowed for the
+  -- duration of @action@.
+  deriving (Show)
+
+-- | Runs @action@ with a valid 'JvmHandle' for either environment,
+-- handling create\/destroy lifecycle when (and only when) this code
+-- actually owns it ('EmbeddedJvm') and doing nothing extra otherwise
+-- ('UpcallJvm') -- see 'JvmEnvironment'\'s own doc comment for why
+-- those are the only two cases and why they need different lifecycle
+-- handling at all.
+withJvm :: JvmEnvironment -> (JvmHandle -> IO a) -> IO a
+withJvm (EmbeddedJvm classpath) action = withEmbeddedJvm classpath action
+withJvm (UpcallJvm envPtr) action = action (JvmHandle envPtr)
+
 -- Desktop\/CLI only. Embeds a fresh JVM via the JNI Invocation API,
 -- runs the action with a valid 'JvmHandle', tears the JVM down after --
 -- exactly the mechanism dmml-hs\/spikes\/jvm-embed\/ proved works from a
--- real GHC-compiled binary. The Android half of "one canonical
--- implementation" is the OPPOSITE direction (an upcall into the JVM
--- Kotlin already started) and does not use this function at all -- not
--- yet written, a real, disclosed gap, not this module's job to close.
+-- real GHC-compiled binary. Prefer 'withJvm' (with an 'EmbeddedJvm')
+-- at new call sites -- this is kept as the underlying primitive, not
+-- because it should be called directly going forward.
 withEmbeddedJvm :: FilePath -> (JvmHandle -> IO a) -> IO a
 withEmbeddedJvm classpath action =
   alloca $ \jvmPtrPtr ->

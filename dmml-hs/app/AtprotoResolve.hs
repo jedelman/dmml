@@ -14,7 +14,7 @@ import qualified Data.ByteString.Lazy.Char8 as BLC
 import Data.Text (Text)
 import qualified Data.Text as T
 import DMML.Atproto (listRecords, resolveDidToPdsEndpoint, resolveHandle)
-import DMML.Jni (JvmHandle, withEmbeddedJvm)
+import DMML.Jni (JvmEnvironment (..), JvmHandle, withJvm)
 import System.Environment (getArgs, lookupEnv)
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
@@ -23,7 +23,7 @@ main :: IO ()
 main = do
   args <- getArgs
   classpath <- maybe "." id <$> lookupEnv "DMML_JGIT_CLASSPATH"
-  withEmbeddedJvm classpath $ \jvm ->
+  withJvm (EmbeddedJvm classpath) $ \jvm ->
     case args of
       [handle] -> run jvm (T.pack handle) Nothing
       [handle, collection] -> run jvm (T.pack handle) (Just (T.pack collection))
