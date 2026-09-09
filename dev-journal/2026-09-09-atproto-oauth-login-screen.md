@@ -144,6 +144,67 @@ enterable credentials -- Jason's own (the `did:plc:zz4wcje4a2nbbtc7pdoth3f2`
 this domain's `.well-known/atproto-did` already names), typed by Jason
 himself into that real bsky.social page, never into this app.
 
+## A real login, completed for real (2026-09-09, later the same day)
+
+Two more real, on-device bugs surfaced testing on Jason's own Pixel 8,
+both fixed and both real, not hypothetical -- see
+`2026-09-09-android-16kb-pages-and-oauth-process-death.md` for the
+16KB-page-alignment and launcher-activity fixes, and the `apply()` ->
+`commit()` persistence fix below.
+
+**`apply()` vs `commit()`, a real race**: `OAuthPendingAuthStore.save`
+used `SharedPreferences.Editor.apply()`, which schedules its write
+asynchronously and returns immediately.
+`AtprotoOAuthClient.beginLogin` calls `save()` right before opening
+the Custom Tab, which backgrounds this app's process almost
+immediately after -- a real race between the async disk write and
+Android considering the process killable, reproduced on Jason's phone
+as "OAuth redirect arrived with no matching pending login" even
+though `save()` had definitely run. Fixed by switching both
+`OAuthPendingAuthStore.save` and `OAuthTokenStore.save` to `commit()`
+(blocking) -- both already run on `Dispatchers.IO`, so blocking is
+safe, and both are exactly the writes that need to survive a
+near-immediate process kill.
+
+**A real, correct login completed end to end** on the emulator with
+`claude.jason-edelman.org` (its own real DID,
+`did:plc:5y6kop75jnvkbujbubrhj6e3`, resolved via `.well-known/atproto-did`
+the same way `jason-edelman.org`'s own does) -- confirmed via added
+diagnostic logging (tag `AtprotoOAuth`), not just a UI glance:
+
+```
+beginLogin: generated state, persisted, opened Custom Tab
+[~71 real seconds later]
+OAuthCallbackActivity.onCreate: real redirect with real code
+OAuthPendingAuthHolder.take() -> HIT (fast path, in-memory, process stayed alive)
+completeLogin: Success -- real DPoP-bound access token (typ "at+jwt", alg ES256,
+  cnf.jkt = this device's real DPoP key thumbprint), real refresh token,
+  pdsEndpoint=https://discina.us-west.host.bsky.network, authServerIssuer=https://bsky.social
+saved session, cleared pending store
+```
+
+**A real, separate wrinkle, not a bug**: after that real success,
+Bluesky's own "Login complete... You are being redirected..."
+interstitial page didn't auto-navigate (a real, plausible Chrome
+anti-abuse policy: automatic, non-user-gesture navigation to a custom
+URI scheme can be blocked, requiring an actual tap -- Bluesky's own
+page provides a "Click here if nothing happens" fallback link for
+exactly this). That link, tapped three more times over the next ~3
+minutes, redelivered the SAME already-consumed code/state each time
+(`OAuthCallbackActivity.onCreate` logged three more times with
+identical `code=cod-9567...`/`state=wS35...` params) -- each correctly
+refused (`OAuthPendingAuthHolder.take() -> MISS`,
+`OAuthPendingAuthStore.loadMatching -> MISS`, since the entry was
+already cleared by the real first success) rather than replaying a
+used authorization code. Real, correct security behavior, not a
+retry-worthy failure -- momentarily confusing on screen ("pending
+redirect error again!") since nothing on this build's UI yet
+distinguishes "replayed, already-used code, you're actually fine" from
+a genuine failure. Jason confirmed the session was real and live:
+cancelled the stale browser tab, reopened the app, saw "Already logged
+in as did:plc:5y6kop75jnvkbujbubrhj6e3" (LoginScreen reading
+`OAuthTokenStore` on init, exactly as designed).
+
 ## What's still open
 - **DPoP on every subsequent API call**: the spec's real requirement
   --"applies to every PDS request", not just login -- means
@@ -154,5 +215,15 @@ himself into that real bsky.social page, never into this app.
   explicitly not done here -- this entry covers login only.
 - **Token refresh**: `refresh_token` is stored but nothing yet uses it
   to refresh an expired `access_token`.
-- **`OAuthCallbackActivity`'s in-memory `PendingAuth` limitation**
-  (above) -- real, disclosed, not fixed.
+- **`OAuthCallbackActivity`'s in-memory `PendingAuth` limitation** is
+  now mitigated (persisted fallback via `OAuthPendingAuthStore`, see
+  above), not eliminated -- a process kill during the disk-fallback
+  path itself, or before `commit()` returns, is still a real, if much
+  smaller, gap.
+- **The stale-redirect-replay UX**: a real, correctly-refused replay
+  (see above) currently surfaces as the same generic toast as an
+  actual failure. Worth distinguishing on screen -- "already logged in"
+  vs. "login failed" -- as real follow-up polish, not correctness work.
+- Confirmed working end to end on the emulator only; the phone
+  (Jason's real Pixel 8) has the same build installed but a full,
+  real login there hasn't been separately confirmed yet.
