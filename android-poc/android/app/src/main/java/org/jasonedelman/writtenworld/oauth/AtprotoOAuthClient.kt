@@ -173,11 +173,22 @@ object AtprotoOAuthClient {
         val codeChallenge = b64url(MessageDigest.getInstance("SHA-256").digest(codeVerifier.toByteArray(Charsets.UTF_8)))
 
         val requestUri = pushAuthorizationRequest(parEndpoint, state, codeChallenge, identifier)
+        val pending = PendingAuth(state, codeVerifier, tokenEndpoint, authServerIssuer, pdsEndpoint, did)
+
+        // Persisted BEFORE opening the Custom Tab, not after -- real,
+        // on-device-confirmed necessity: Android killed this app's
+        // backgrounded process during a real ~76-second login on
+        // Bluesky's own page, losing OAuthPendingAuthHolder's
+        // in-memory-only copy before the redirect came back. This
+        // persisted copy is what lets OAuthCallbackActivity complete
+        // the exchange for real even from a freshly cold-started
+        // process.
+        OAuthPendingAuthStore.save(context, pending)
 
         val authUrl = "$authorizationEndpoint?client_id=${Uri.encode(CLIENT_ID)}&request_uri=${Uri.encode(requestUri)}"
         CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(authUrl))
 
-        return PendingAuth(state, codeVerifier, tokenEndpoint, authServerIssuer, pdsEndpoint, did)
+        return pending
     }
 
     /**

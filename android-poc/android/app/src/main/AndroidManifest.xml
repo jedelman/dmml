@@ -10,8 +10,27 @@
     <application
         android:label="dmml Android bridge PoC"
         android:allowBackup="false">
+        <!-- android:name=".MainActivity" is the older, separate
+             GameScreen demo (DmmlBridge's pure-Haskell v1 JNI surface):
+             its own native library (libdmmlbridge.so) was never
+             rebuilt with the RTS whole-archive linking fix
+             libdmmlandroidbridge.so already has, so it crashes on
+             load (UnsatisfiedLinkError: stg_SRT_1_info), a real,
+             pre-existing, unrelated bug. Deliberately NOT the LAUNCHER
+             here (moved to VerifyActivity below) so that Android's own
+             fallback-to-launcher-activity behavior, which happens for
+             real after the app's process is killed while a Custom Tab
+             has focus during OAuth login (see OAuthCallbackActivity's
+             doc comment), doesn't land on a known-broken screen and
+             crash-loop. Real follow-up work, not done here: rebuild
+             libdmmlbridge.so the same way, or retire this screen
+             entirely now that it's superseded. -->
         <activity
             android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <activity
+            android:name="org.jasonedelman.writtenworld.VerifyActivity"
             android:exported="true"
             android:theme="@android:style/Theme.Material.Light.NoActionBar">
             <intent-filter>
@@ -19,10 +38,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="org.jasonedelman.writtenworld.VerifyActivity"
-            android:exported="true"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
 
         <!-- Real atproto OAuth redirect target: scheme must match
              https://jason-edelman.org/oauth/written-world-android/
