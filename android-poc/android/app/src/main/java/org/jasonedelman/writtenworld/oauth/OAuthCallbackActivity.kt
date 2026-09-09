@@ -3,6 +3,7 @@ package org.jasonedelman.writtenworld.oauth
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,30 +31,51 @@ import kotlinx.coroutines.launch
 // Toast -- the user sees "Already logged in as ..." the next time
 // LoginScreen composes (it reads OAuthTokenStore on init), not a live
 // status update.
+//
+// Real, on-device-confirmed complication (2026-09-09): Chrome/Custom
+// Tabs can redeliver this activity's VIEW intent more than once for a
+// SINGLE completed authorization (same code/state each time) --
+// onCreate then onNewIntent, or multiple onNewIntent calls. Since
+// OAuthPendingAuthHolder.take() consumes its entry, only the first
+// delivery can use the fast path; a second delivery arriving before
+// the first's async completeLogin() call has finished (and cleared
+// OAuthPendingAuthStore) can still find a match on disk and attempt a
+// SECOND token exchange with the same, now-already-used authorization
+// code -- which the real authorization server will reject (auth codes
+// are single-use). Logged verbosely (tag "AtprotoOAuth") specifically
+// to see this sequence for real rather than guess at it.
+private const val TAG = "AtprotoOAuth"
+
 class OAuthCallbackActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "OAuthCallbackActivity.onCreate intent=${intent?.data}")
         handleRedirect(intent)
         finish()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        Log.d(TAG, "OAuthCallbackActivity.onNewIntent intent=${intent.data}")
         handleRedirect(intent)
         finish()
     }
 
     private fun handleRedirect(intent: Intent?) {
+        val appContext = applicationContext
         val uri = intent?.data
         if (uri == null) {
-            Toast.makeText(this, "OAuth redirect arrived with no data URI", Toast.LENGTH_LONG).show()
+            Log.e(TAG, "handleRedirect: no data URI on intent")
+            Toast.makeText(appContext, "OAuth redirect arrived with no data URI", Toast.LENGTH_LONG).show()
             return
         }
         val error = uri.getQueryParameter("error")
         val code = uri.getQueryParameter("code")
         val state = uri.getQueryParameter("state")
+        Log.d(TAG, "handleRedirect: error=$error code=${code?.take(8)}... state=$state")
 
         val pendingFromMemory = OAuthPendingAuthHolder.take()
+        Log.d(TAG, "handleRedirect: OAuthPendingAuthHolder.take() -> ${if (pendingFromMemory != null) "HIT (state=${pendingFromMemory.state})" else "MISS"}")
         if (pendingFromMemory != null) {
             // Fast path: same process, LoginScreen's coroutine is
             // still alive and awaiting this.
@@ -66,41 +88,48 @@ class OAuthCallbackActivity : Activity() {
                 return
             }
             CoroutineScope(Dispatchers.IO).launch {
+                Log.d(TAG, "fast path: calling completeLogin")
                 val result = runCatching { AtprotoOAuthClient.completeLogin(pendingFromMemory, state, code) }
+                Log.d(TAG, "fast path: completeLogin result = $result")
                 result.onSuccess { session ->
-                    OAuthTokenStore.save(this@OAuthCallbackActivity, session)
-                    OAuthPendingAuthStore.clear(this@OAuthCallbackActivity)
+                    OAuthTokenStore.save(appContext, session)
+                    OAuthPendingAuthStore.clear(appContext)
+                    Log.d(TAG, "fast path: saved session, cleared pending store")
                 }
                 OAuthPendingAuthHolder.reportResult(result)
             }
             return
         }
 
-        // Fallback path: fresh process, no live coroutine to notify --
+        // Fallback path: fresh process, or a redundant redelivery of
+        // an already-consumed intent -- no live coroutine to notify --
         // complete the login for real anyway if we have a matching
         // persisted PendingAuth, so the login isn't just lost.
         if (state == null) {
-            Toast.makeText(this, "OAuth redirect arrived with no pending login and no state to recover one -- retry from the login screen", Toast.LENGTH_LONG).show()
+            Log.e(TAG, "fallback path: redirect has no state param at all")
+            Toast.makeText(appContext, "OAuth redirect arrived with no pending login and no state to recover one -- retry from the login screen", Toast.LENGTH_LONG).show()
             return
         }
         val pendingFromDisk = OAuthPendingAuthStore.loadMatching(this, state)
+        Log.d(TAG, "fallback path: OAuthPendingAuthStore.loadMatching(state=$state) -> ${if (pendingFromDisk != null) "HIT" else "MISS"}")
         if (pendingFromDisk == null) {
-            Toast.makeText(this, "OAuth redirect arrived with no matching pending login (app process was likely killed) -- retry from the login screen", Toast.LENGTH_LONG).show()
+            Toast.makeText(appContext, "OAuth redirect arrived with no matching pending login (app process was likely killed, or this is a redundant redelivery already consumed) -- retry from the login screen", Toast.LENGTH_LONG).show()
             return
         }
         if (error != null) {
             OAuthPendingAuthStore.clear(this)
-            Toast.makeText(this, "Login failed: authorization server returned $error", Toast.LENGTH_LONG).show()
+            Toast.makeText(appContext, "Login failed: authorization server returned $error", Toast.LENGTH_LONG).show()
             return
         }
         if (code == null) {
             OAuthPendingAuthStore.clear(this)
-            Toast.makeText(this, "Login failed: redirect missing code", Toast.LENGTH_LONG).show()
+            Toast.makeText(appContext, "Login failed: redirect missing code", Toast.LENGTH_LONG).show()
             return
         }
-        val appContext = applicationContext
         CoroutineScope(Dispatchers.IO).launch {
+            Log.d(TAG, "fallback path: calling completeLogin")
             val result = runCatching { AtprotoOAuthClient.completeLogin(pendingFromDisk, state, code) }
+            Log.d(TAG, "fallback path: completeLogin result = $result")
             OAuthPendingAuthStore.clear(appContext)
             result.fold(
                 onSuccess = { session ->

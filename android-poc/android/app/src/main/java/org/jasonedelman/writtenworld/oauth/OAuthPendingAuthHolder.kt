@@ -1,6 +1,9 @@
 package org.jasonedelman.writtenworld.oauth
 
+import android.util.Log
 import kotlinx.coroutines.CompletableDeferred
+
+private const val TAG = "AtprotoOAuth"
 
 // In-process handoff between the screen that starts a login
 // (AtprotoOAuthClient.beginLogin, running inside a Composable's
@@ -18,6 +21,7 @@ object OAuthPendingAuthHolder {
     /** Called by the login screen right after AtprotoOAuthClient.beginLogin
      * returns, before the Custom Tab gains focus. */
     fun start(auth: AtprotoOAuthClient.PendingAuth): CompletableDeferred<Result<OAuthTokenStore.Session>> {
+        Log.d(TAG, "OAuthPendingAuthHolder.start state=${auth.state}")
         pending = auth
         val deferred = CompletableDeferred<Result<OAuthTokenStore.Session>>()
         resultDeferred = deferred
@@ -29,6 +33,7 @@ object OAuthPendingAuthHolder {
     fun take(): AtprotoOAuthClient.PendingAuth? {
         val p = pending
         pending = null
+        Log.d(TAG, "OAuthPendingAuthHolder.take -> ${if (p != null) "state=${p.state}" else "null"}")
         return p
     }
 

@@ -2,6 +2,7 @@ package org.jasonedelman.writtenworld.oauth
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -26,6 +27,7 @@ import java.util.Base64
 // app, by design; DPoP possession-proof is the whole security model
 // for a client shaped like this.
 object AtprotoOAuthClient {
+    private const val TAG = "AtprotoOAuth"
     const val CLIENT_ID = "https://jason-edelman.org/oauth/written-world-android/client-metadata.json"
     // Real, server-confirmed constraint (not a convention we chose):
     // atproto requires a private-use-scheme redirect_uri to be
@@ -171,6 +173,7 @@ object AtprotoOAuthClient {
         val state = randomUrlSafeString(24)
         val codeVerifier = randomUrlSafeString(48)
         val codeChallenge = b64url(MessageDigest.getInstance("SHA-256").digest(codeVerifier.toByteArray(Charsets.UTF_8)))
+        Log.d(TAG, "beginLogin: generated state=$state for identifier=$identifier")
 
         val requestUri = pushAuthorizationRequest(parEndpoint, state, codeChallenge, identifier)
         val pending = PendingAuth(state, codeVerifier, tokenEndpoint, authServerIssuer, pdsEndpoint, did)
@@ -184,6 +187,7 @@ object AtprotoOAuthClient {
         // the exchange for real even from a freshly cold-started
         // process.
         OAuthPendingAuthStore.save(context, pending)
+        Log.d(TAG, "beginLogin: persisted pending auth for state=$state, opening Custom Tab")
 
         val authUrl = "$authorizationEndpoint?client_id=${Uri.encode(CLIENT_ID)}&request_uri=${Uri.encode(requestUri)}"
         CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(authUrl))
