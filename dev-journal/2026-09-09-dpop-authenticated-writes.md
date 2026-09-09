@@ -81,11 +81,26 @@ already-solved toolchain, `-Wl,-z,max-page-size=16384` kept for the
 16KB alignment fix from earlier the same day -- no new toolchain
 blockers this time.
 
+## Verified, for real, on the emulator, first real attempt
+
+```
+atprotoCreateRecordDpop ->
+at://did:plc:5y6kop75jnvkbujbubrhj6e3/org.jason-edelman.writtenworld.commit/...
+OK, real DPoP-authenticated record published
+```
+
+The saved OAuth session (from the login earlier the same day) was
+still valid -- a real, live record was published to
+`did:plc:5y6kop75jnvkbujbubrhj6e3`'s own repo, through the full chain:
+Kotlin Keystore ECDSA signing -> Haskell JNI upcall
+(`DMML.Dpop.createProofUpcall`) -> OkHttp POST with real
+`Authorization: DPoP <token>` + `DPoP: <proof>` headers -> a real 2xx
+from the PDS. First real attempt, no nonce-retry needed this time (the
+PDS didn't require one for this particular request), no errors.
+
 ## What's still open
 
-- Not yet verified on-device -- built and cross-compiled, the actual
-  real DPoP-authenticated write hasn't been exercised yet.
-- `createRecordDpop`'s test record, once published for real, needs a
+- `createRecordDpop`'s test record, published for real above, needs a
   real `deleteRecordDpop` (or manual cleanup via the existing
   app-password `deleteRecord`, which still works against any account
   with app-password auth set up) to remove it afterward.
