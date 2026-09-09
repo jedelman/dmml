@@ -107,6 +107,19 @@ static jstring native_atprotoCreateRecord(JNIEnv *env, jclass clazz, jstring pds
     return take_hs_cstring(env, result);
 }
 
+static jstring native_atprotoCreateRecordDpop(JNIEnv *env, jclass clazz, jstring pdsEndpoint, jstring did, jstring accessToken, jstring collection, jstring predicate, jstring dmmlText) {
+    (void)clazz;
+    char *c_pdsEndpoint = jstring_to_cstr(env, pdsEndpoint);
+    char *c_did = jstring_to_cstr(env, did);
+    char *c_accessToken = jstring_to_cstr(env, accessToken);
+    char *c_collection = jstring_to_cstr(env, collection);
+    char *c_predicate = jstring_to_cstr(env, predicate);
+    char *c_dmmlText = jstring_to_cstr(env, dmmlText);
+    void *result = android_atproto_create_record_dpop(env, c_pdsEndpoint, c_did, c_accessToken, c_collection, c_predicate, c_dmmlText);
+    free(c_pdsEndpoint); free(c_did); free(c_accessToken); free(c_collection); free(c_predicate); free(c_dmmlText);
+    return take_hs_cstring(env, result);
+}
+
 static jstring native_llmChatComplete(JNIEnv *env, jclass clazz, jstring apiKey, jstring model, jstring systemPrompt, jstring userPrompt) {
     (void)clazz;
     char *c_apiKey = jstring_to_cstr(env, apiKey);
@@ -135,6 +148,7 @@ static JNINativeMethod bridgeMethods[] = {
     {"atprotoPull", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_atprotoPull},
     {"atprotoCreateSession", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_atprotoCreateSession},
     {"atprotoCreateRecord", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_atprotoCreateRecord},
+    {"atprotoCreateRecordDpop", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_atprotoCreateRecordDpop},
     {"llmChatComplete", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_llmChatComplete},
     {"brokerIncorporate", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_brokerIncorporate},
 };

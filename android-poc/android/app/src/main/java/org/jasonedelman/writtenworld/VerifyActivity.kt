@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.eclipse.jgit.api.Git
 import org.jasonedelman.writtenworld.oauth.LoginScreen
+import org.jasonedelman.writtenworld.oauth.OAuthTokenStore
 import java.io.File
 
 // On-device verification for the 2026-09-08 JNI-upcall architecture
@@ -100,6 +101,13 @@ private fun VerifyScreen(filesDir: File, context: Context) {
             }
         }) { Text("3. brokerIncorporate") }
 
+        Button(onClick = {
+            scope.launch {
+                log = "Running atprotoCreateRecordDpop...\n"
+                log += withContext(Dispatchers.IO) { runAtprotoCreateRecordDpopCheck(context) }
+            }
+        }) { Text("5. atprotoCreateRecordDpop") }
+
         HorizontalDivider(Modifier.padding(vertical = 12.dp))
 
         Text("OpenRouter API key (BYOK, stored encrypted on-device):")
@@ -167,6 +175,31 @@ private fun runBrokerIncorporateCheck(filesDir: File): String =
     } catch (t: Throwable) {
         "brokerIncorporate -> EXCEPTION: ${t}"
     }
+
+private fun runAtprotoCreateRecordDpopCheck(context: Context): String {
+    val session = OAuthTokenStore.load(context)
+        ?: return "atprotoCreateRecordDpop -> SKIPPED: not logged in yet. Log in with Bluesky above first."
+    return try {
+        // A real, deliberately test-labeled predicate/dmml pair --
+        // not a real DMML commit, just enough to exercise the real
+        // DPoP-authenticated write path end to end. Real, disclosed
+        // side effect: this actually publishes a record to the
+        // logged-in account's own real repo (session.did) -- delete
+        // it afterward via com.atproto.repo.deleteRecord if it
+        // shouldn't stay.
+        val result = NativeBridge.atprotoCreateRecordDpop(
+            session.pdsEndpoint,
+            session.did,
+            session.accessToken,
+            "org.jason-edelman.writtenworld.commit",
+            "test/dpop-verification",
+            "-- DPoP verification test record, written-world Android, 2026-09-09",
+        )
+        "atprotoCreateRecordDpop -> $result\n${if (NativeBridge.isError(result)) "FAILED" else "OK, real DPoP-authenticated record published to ${session.did}"}"
+    } catch (t: Throwable) {
+        "atprotoCreateRecordDpop -> EXCEPTION: ${t}"
+    }
+}
 
 private fun runLlmChatCompleteCheck(context: Context): String {
     val apiKey = ApiKeyStore.getApiKey(context)

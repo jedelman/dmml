@@ -71,6 +71,22 @@ object NativeBridge {
         dmmlText: String,
     ): String
 
+    /** Real atproto OAuth counterpart to [atprotoCreateRecord] -- same
+     * job, but authenticated with a real DPoP-bound `accessToken`
+     * from a completed OAuth login (see oauth/OAuthTokenStore.kt)
+     * instead of an app-password session's plain-Bearer `accessJwt`.
+     * DMML.Http computes the DPoP proof itself per-request (via an
+     * upcall back into oauth/DpopKeyManager.kt) -- the caller here
+     * doesn't build one. */
+    external fun atprotoCreateRecordDpop(
+        pdsEndpoint: String,
+        did: String,
+        accessToken: String,
+        collection: String,
+        predicate: String,
+        dmmlText: String,
+    ): String
+
     /** One BYOK chat completion via DMML.Llm.chatComplete. Returns
      * the raw assistant content, unvalidated as DMML -- the caller's
      * job on both platforms. */

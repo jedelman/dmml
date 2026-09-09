@@ -37,6 +37,7 @@ module DMML.Jni
   , c_callStaticObjectMethod1Bool
   , c_callStaticObjectMethod1Long
   , c_callStaticObjectMethod2Obj
+  , c_callStaticObjectMethod4Obj
   , c_callObjectMethod0
   , c_callObjectMethod1Obj
   , c_callObjectMethod1Str
@@ -169,6 +170,9 @@ foreign import ccall safe "hs_jni_call_static_object_method_1long"
 
 foreign import ccall safe "hs_jni_call_static_object_method_2obj"
   c_callStaticObjectMethod2Obj :: JNIEnvPtr -> JRef -> JRef -> JRef -> JRef -> IO JRef
+
+foreign import ccall safe "hs_jni_call_static_object_method_4obj"
+  c_callStaticObjectMethod4Obj :: JNIEnvPtr -> JRef -> JRef -> JRef -> JRef -> JRef -> JRef -> IO JRef
 
 foreign import ccall safe "hs_jni_call_object_method_0"
   c_callObjectMethod0 :: JNIEnvPtr -> JRef -> JRef -> IO JRef

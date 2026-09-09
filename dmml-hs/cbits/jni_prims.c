@@ -122,6 +122,10 @@ jobject hs_jni_call_static_object_method_2obj(JNIEnv *env, jclass cls, jmethodID
     return (*env)->CallStaticObjectMethod(env, cls, m, arg0, arg1);
 }
 
+jobject hs_jni_call_static_object_method_4obj(JNIEnv *env, jclass cls, jmethodID m, jobject arg0, jobject arg1, jobject arg2, jobject arg3) {
+    return (*env)->CallStaticObjectMethod(env, cls, m, arg0, arg1, arg2, arg3);
+}
+
 // --- String marshaling ---------------------------------------------------
 
 jstring hs_jni_new_string_utf(JNIEnv *env, const char *s) {

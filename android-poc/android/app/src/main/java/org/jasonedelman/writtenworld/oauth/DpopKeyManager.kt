@@ -138,6 +138,20 @@ object DpopKeyManager {
      * DPoP-bound resource-server request, omitted for the token
      * endpoint's own initial exchange.
      */
+    /** JNI-callable entry point for DMML.Http's DPoP-aware requests
+     * (DMML.Dpop.createProofUpcall, dmml-hs) -- calls the same, already-
+     * proven createProof below. A separate, non-default-args, @JvmStatic
+     * overload rather than calling createProof directly: Kotlin default
+     * parameter values compile to a synthetic `$default` bridge method
+     * (taking an extra bitmask + Object marker arg), real extra
+     * complexity to construct correctly from raw JNI GetStaticMethodID/
+     * CallStaticObjectMethod calls for no real benefit -- empty-string
+     * sentinels for "no nonce"/"no access token" avoid needing to pass a
+     * real Java `null` jstring across the upcall boundary at all. */
+    @JvmStatic
+    fun createProofForNative(htm: String, htu: String, nonce: String, accessToken: String): String =
+        createProof(htm, htu, nonce.ifEmpty { null }, accessToken.ifEmpty { null })
+
     fun createProof(htm: String, htu: String, nonce: String? = null, accessToken: String? = null): String {
         val header = JSONObject()
             .put("typ", "dpop+jwt")

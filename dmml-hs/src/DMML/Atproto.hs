@@ -39,6 +39,7 @@ module DMML.Atproto
   , resolveDidToPdsEndpoint
   , createSession
   , createRecord
+  , createRecordDpop
   , deleteRecord
   , listRecords
   , commitRecord
@@ -55,7 +56,7 @@ import Data.List (isPrefixOf, sortOn)
 import Data.Text (Text)
 import qualified Data.Text as T
 
-import DMML.Http (HttpError (..), getJson, postJson)
+import DMML.Http (HttpError (..), getJson, postJson, postJsonDpop)
 import DMML.Jni (JvmHandle)
 
 data AtprotoError
@@ -160,6 +161,35 @@ createRecord jvm session collection recordValue = do
           , "record" .= recordValue
           ]
       )
+  pure $ do
+    body <- result
+    v <- parseJson body
+    field "uri" v body
+
+-- | Real atproto OAuth counterpart to 'createRecord' -- same XRPC
+-- call, same @repo@\/@collection@\/@record@ body shape, but
+-- authenticated with a real DPoP-bound access token from a completed
+-- OAuth login ("OAuthTokenStore.kt", verified working end-to-end
+-- 2026-09-09) instead of the app-password flow's plain-Bearer
+-- 'Session'. @did@ here is the OAuth session's own DID (its @repo@),
+-- not read out of a 'Session' record since there isn't one for this
+-- flow. Goes through 'DMML.Http.postJsonDpop', which handles the real
+-- DPoP-nonce retry every PDS request needs -- see that function's own
+-- doc comment.
+createRecordDpop :: JvmHandle -> Text -> Text -> Text -> Text -> Value -> IO (Either AtprotoError Text)
+createRecordDpop jvm pdsEndpoint did accessToken collection recordValue = do
+  result <-
+    either (Left . TransportError) Right
+      <$> postJsonDpop
+        jvm
+        (T.unpack pdsEndpoint ++ "/xrpc/com.atproto.repo.createRecord")
+        accessToken
+        ( Aeson.object
+            [ "repo" .= did
+            , "collection" .= collection
+            , "record" .= recordValue
+            ]
+        )
   pure $ do
     body <- result
     v <- parseJson body

@@ -66,6 +66,7 @@ module DMML.AndroidBridge
   , android_atproto_pull
   , android_atproto_create_session
   , android_atproto_create_record
+  , android_atproto_create_record_dpop
   , android_llm_chat_complete
   , android_broker_incorporate
   , jgitCommitBridge
@@ -73,6 +74,7 @@ module DMML.AndroidBridge
   , atprotoPullBridge
   , atprotoCreateSessionBridge
   , atprotoCreateRecordBridge
+  , atprotoCreateRecordDpopBridge
   , llmChatCompleteBridge
   , brokerIncorporateBridge
   ) where
@@ -96,6 +98,7 @@ import DMML.Atproto
   , Session (..)
   , commitRecord
   , createRecord
+  , createRecordDpop
   , createSession
   , pullNewRecords
   , resolveDidToPdsEndpoint
@@ -118,6 +121,7 @@ foreign export ccall android_atproto_resolve :: JNIEnvPtr -> CString -> IO CStri
 foreign export ccall android_atproto_pull :: JNIEnvPtr -> CString -> CString -> CString -> IO CString
 foreign export ccall android_atproto_create_session :: JNIEnvPtr -> CString -> CString -> CString -> IO CString
 foreign export ccall android_atproto_create_record :: JNIEnvPtr -> CString -> CString -> CString -> CString -> CString -> CString -> IO CString
+foreign export ccall android_atproto_create_record_dpop :: JNIEnvPtr -> CString -> CString -> CString -> CString -> CString -> CString -> IO CString
 foreign export ccall android_llm_chat_complete :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
 foreign export ccall android_broker_incorporate :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
 
@@ -216,6 +220,22 @@ atprotoCreateRecordBridge envPtr pdsEndpoint did accessJwt collection predicate 
         session = Session {sessionDid = did, sessionAccessJwt = accessJwt, sessionPdsEndpoint = pdsEndpoint}
         record = commitRecord predicate dmmlText createdAt
     result <- createRecord jvm session collection record
+    pure (either (Left . show) Right result)
+
+-- | Real atproto OAuth counterpart to 'atprotoCreateRecordBridge' --
+-- same job (publish one DMML commit as an @org.jason-edelman.writtenworld.commit@
+-- record), but authenticated with a real DPoP-bound @accessToken@ from
+-- a completed OAuth login (@OAuthTokenStore.kt@, verified working
+-- end-to-end 2026-09-09) instead of an app-password 'Session'. Goes
+-- through 'DMML.Atproto.createRecordDpop', which handles the real
+-- DPoP-nonce retry every PDS request needs.
+atprotoCreateRecordDpopBridge :: JNIEnvPtr -> Text -> Text -> Text -> Text -> Text -> Text -> IO (Either String Text)
+atprotoCreateRecordDpopBridge envPtr pdsEndpoint did accessToken collection predicate dmmlText =
+  withJvm (UpcallJvm envPtr) $ \jvm -> do
+    now <- getCurrentTime
+    let createdAt = T.pack (formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%S%QZ" now)
+        record = commitRecord predicate dmmlText createdAt
+    result <- createRecordDpop jvm pdsEndpoint did accessToken collection record
     pure (either (Left . show) Right result)
 
 -- | One BYOK chat completion via 'DMML.Llm.chatComplete' -- the same
@@ -456,6 +476,16 @@ android_atproto_create_record envPtr pdsC didC jwtC collC predC dmmlC = guardedR
   predicate <- T.pack <$> peekCString predC
   dmmlText <- T.pack <$> peekCString dmmlC
   marshalText =<< atprotoCreateRecordBridge envPtr pdsEndpoint did accessJwt collection predicate dmmlText
+
+android_atproto_create_record_dpop :: JNIEnvPtr -> CString -> CString -> CString -> CString -> CString -> CString -> IO CString
+android_atproto_create_record_dpop envPtr pdsC didC tokenC collC predC dmmlC = guardedRun $ do
+  pdsEndpoint <- T.pack <$> peekCString pdsC
+  did <- T.pack <$> peekCString didC
+  accessToken <- T.pack <$> peekCString tokenC
+  collection <- T.pack <$> peekCString collC
+  predicate <- T.pack <$> peekCString predC
+  dmmlText <- T.pack <$> peekCString dmmlC
+  marshalText =<< atprotoCreateRecordDpopBridge envPtr pdsEndpoint did accessToken collection predicate dmmlText
 
 android_llm_chat_complete :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
 android_llm_chat_complete envPtr keyC modelC sysC userC = guardedRun $ do

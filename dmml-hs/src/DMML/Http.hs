@@ -30,6 +30,7 @@ module DMML.Http
   , withRetry
   , getJson
   , postJson
+  , postJsonDpop
   ) where
 
 import Control.Concurrent (threadDelay)
@@ -38,17 +39,21 @@ import qualified Data.Aeson as Aeson
 import Data.Bits (shiftR, (.&.))
 import qualified Data.ByteString.Lazy as BL
 import Data.Char (intToDigit, isAscii, isAlphaNum, ord)
+import Data.List (isInfixOf)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Word (Word8)
+import Foreign.Ptr (nullPtr)
 
+import DMML.Dpop (createProofUpcall)
 import DMML.Jni
   ( JRef
   , JvmHandle (..)
   , c_callIntMethod0
   , c_callObjectMethod0
   , c_callObjectMethod1Obj
+  , c_callObjectMethod1Str
   , c_callObjectMethod2Str
   , c_callStaticObjectMethod1Obj
   , c_callStaticObjectMethod2Obj
@@ -208,6 +213,22 @@ getBody env resp = do
   strObj <- c_callObjectMethod0 env bodyObj stringM
   jStringToHsString env strObj
 
+-- | Real signature: @Response.header(String) ->
+-- "(Ljava/lang/String;)Ljava/lang/String;"@ -- nullable, per OkHttp's
+-- own contract (returns @null@, not an exception, when the named
+-- header isn't present). Used to read the @DPoP-Nonce@ response
+-- header for 'oneRequestDpop''s nonce retry -- the same real-server
+-- behavior 'AtprotoOAuthClient.kt''s own PAR\/token-endpoint DPoP
+-- handling already discovered and handled, now needed here too for
+-- resource-server (PDS) requests.
+getResponseHeader :: JRef -> JRef -> String -> IO (Maybe String)
+getResponseHeader env resp name = do
+  respCls <- findClass env "okhttp3/Response"
+  headerM <- methodId env respCls "header" "(Ljava/lang/String;)Ljava/lang/String;"
+  nameJ <- hsStringToJString env name
+  result <- c_callObjectMethod1Str env resp headerM nameJ
+  if result == nullPtr then pure Nothing else Just <$> jStringToHsString env result
+
 -- | One real HTTP call, no retry -- 'withRetry' wraps this for the
 -- transport-level-failure retry curl used to do via @--retry
 -- --retry-connrefused@. @method@ is @\"GET\"@ or @\"POST\"@;
@@ -281,3 +302,71 @@ postJson jvm url headers bodyValue = do
   let bodyStr = T.unpack (TE.decodeUtf8 (BL.toStrict (Aeson.encode bodyValue)))
   result <- withRetry (oneRequest jvm "POST" url (Just (bodyStr, [])) headers)
   pure (snd <$> result)
+
+-- | A DPoP-authenticated POST -- real atproto requirement (see
+-- 'DMML.Dpop''s own module haddock): every authenticated resource-
+-- server (PDS) request needs its own fresh @Authorization: DPoP
+-- \<token\>@ + @DPoP: \<proof-jwt\>@ pair, not a reusable @Bearer@
+-- header the way 'postJson' sends one. @accessToken@ is a real,
+-- DPoP-bound access token from a completed atproto OAuth login (see
+-- @OAuthTokenStore.kt@) -- NOT the plain @Bearer@-style JWT
+-- 'DMML.Atproto.createSession' (the app-password flow) produces,
+-- which this function was never meant for.
+--
+-- Handles the real DPoP-nonce retry every DPoP-protected endpoint can
+-- require (first attempt: 400\/401 with a @DPoP-Nonce@ response
+-- header; retried once with that nonce folded into a freshly re-signed
+-- proof) -- the exact same real-server behavior
+-- @AtprotoOAuthClient.kt@'s own PAR\/token-endpoint calls already
+-- discovered and handled on 2026-09-09, now needed again here for
+-- resource-server requests specifically, since the PDS enforces its
+-- own nonce independently of the authorization server's.
+postJsonDpop :: JvmHandle -> String -> Text -> Value -> IO (Either HttpError BL.ByteString)
+postJsonDpop jvm url accessToken bodyValue = do
+  let bodyStr = T.unpack (TE.decodeUtf8 (BL.toStrict (Aeson.encode bodyValue)))
+  result <- withRetry (oneRequestDpop jvm "POST" url bodyStr accessToken)
+  pure (snd <$> result)
+
+-- | Real DPoP request/response cycle, with one nonce retry -- see
+-- 'postJsonDpop''s own doc comment for why this exists as a separate
+-- function from 'oneRequest' rather than a variant of it (a
+-- DPoP-bound request's headers can't be finalized -- specifically the
+-- @DPoP@ proof header itself -- until AFTER a possible nonce-carrying
+-- failure response is seen, which 'oneRequest'\'s single-pass shape
+-- has no way to express).
+oneRequestDpop :: JvmHandle -> String -> String -> String -> Text -> IO (Either HttpError (Int, BL.ByteString))
+oneRequestDpop (JvmHandle env) method url bodyStr accessToken = attempt Nothing
+  where
+    attempt :: Maybe Text -> IO (Either HttpError (Int, BL.ByteString))
+    attempt mNonce = do
+      proof <- createProofUpcall env (T.pack method) (T.pack url) (maybe "" id mNonce) accessToken
+      b0 <- newRequestBuilder env
+      b1 <- setUrl env b0 url
+      b2 <- case method of
+        "GET" -> setGet env b1
+        "POST" -> do
+          mediaType <- mediaTypeParse env "application/json"
+          rb <- requestBodyCreate env bodyStr mediaType
+          setPost env b1 rb
+        other -> ioError (userError ("DMML.Http: unsupported method " <> other))
+      b3 <- addHeader env b2 "Authorization" ("DPoP " <> T.unpack accessToken)
+      b4 <- addHeader env b3 "DPoP" (T.unpack proof)
+      req <- buildRequest env b4
+      client <- newOkHttpClient env
+      call <- newCall env client req
+      resp <- executeCall env call
+      mErr <- describeAndClearException env
+      case mErr of
+        Just err -> pure (Left (HttpTransportFailed (T.pack err)))
+        Nothing -> do
+          code <- getStatusCode env resp
+          body <- getBody env resp
+          let bodyBytes = BL.fromStrict (TE.encodeUtf8 (T.pack body))
+          nonceHeader <- getResponseHeader env resp "DPoP-Nonce"
+          case (mNonce, nonceHeader) of
+            (Nothing, Just newNonce) | "use_dpop_nonce" `isInfixOf` body ->
+              attempt (Just (T.pack newNonce))
+            _ ->
+              if code >= 200 && code < 300
+                then pure (Right (code, bodyBytes))
+                else pure (Left (HttpFailed code bodyBytes))
