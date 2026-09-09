@@ -27,10 +27,15 @@
         <!-- Real atproto OAuth redirect target: scheme must match
              https://jason-edelman.org/oauth/written-world-android/
              client-metadata.json's redirect_uris EXACTLY, both
-             directions (spec requirement, not convention). No
+             directions (spec requirement, not convention). Real
+             server-confirmed constraint: the scheme must be EXACTLY
+             the client_id FQDN reversed, no extra path segments:
+             "org.jason-edelman", not "org.jason-edelman.written-world"
+             (the real authorization server rejected the latter with
+             an explicit error naming the required form). No
              android:host/path needed for an opaque custom-scheme URI
-             (org.jason-edelman.written-world:/callback has no
-             authority component, per RFC 3986's opaque-URI form). -->
+             (org.jason-edelman:/callback has no authority component,
+             per RFC 3986's opaque-URI form). -->
         <activity
             android:name="org.jasonedelman.writtenworld.oauth.OAuthCallbackActivity"
             android:exported="true"
@@ -40,7 +45,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="org.jason-edelman.written-world" />
+                <data android:scheme="org.jason-edelman" />
             </intent-filter>
         </activity>
     </application>

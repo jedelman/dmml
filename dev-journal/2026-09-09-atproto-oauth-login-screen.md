@@ -98,13 +98,53 @@ construction, and the nonce-retry handling at PAR all work correctly
 end to end. The only thing between this and a real login is deploying
 the branch above.
 
-## What's still open
+## Deployed, and the real flow verified all the way to a human's own password
 
-- **Deploy the client metadata**: push/merge
-  `oauth-client-metadata-written-world-android` on `jason-edelman.org`
-  (Jason's call -- it's a live public site with an auto-deploy
-  pipeline). Once live, the actual browser-based login + token
-  exchange is unverified but should be the next real test.
+Jason approved deploying: merged the branch to `jason-edelman.org`
+`main` and pushed -- Cloudflare's own git integration auto-deploys on
+push (no GitHub Actions workflow file, which is why none was found by
+searching for one; confirmed by watching `client-metadata.json` go
+from 404 to a real 200 within about a minute of the push).
+
+First real attempt after deploying still failed at PAR, but with a
+new, more precise, entirely real error from bsky.social's own
+authorization server:
+
+```
+{"error":"invalid_redirect_uri","error_description":"Private-Use URI
+Scheme redirect URI, for discoverable client metadata, must be the
+fully qualified domain name (FQDN) of the client_id, in reverse order
+(org.jason-edelman:)"}
+```
+
+The original `redirect_uris` (`org.jason-edelman.written-world:/callback`)
+had an extra path segment the spec's prose alone hadn't made obvious
+was disallowed -- the real server was more precise than the docs.
+Fixed in three places that all have to agree exactly: `client-metadata.json`
+(redeployed), `AtprotoOAuthClient.REDIRECT_URI`, and the manifest's
+`intent-filter` scheme -- all now `org.jason-edelman:/callback`.
+
+After that fix, redeployed and re-ran the flow: **PAR succeeded for
+real**, the Custom Tab launched (through Chrome's real first-run setup
+on this fresh emulator -- `uiautomator dump` was needed to find the
+real "Use without an account" button coordinates after two guessed-
+coordinate taps missed), and it landed on `bsky.social`'s own real,
+live "Sign in" page -- HTTPS lock icon, real identifier field
+pre-filled with the handle tried (`bsky.app`), real password field,
+real "Verify the website address" warning. This is the actual, correct
+terminus of automated verification: a human's real password belongs
+nowhere in this loop, so the flow was cancelled there rather than
+proceeding further. Every step up to that point -- resolution, AS
+discovery, PKCE, DPoP signing, PAR, the Custom Tab handoff -- is now
+confirmed working against the real, live authorization server, not
+assumed.
+
+To complete a REAL login (not yet done): use a handle with real,
+enterable credentials -- Jason's own (the `did:plc:zz4wcje4a2nbbtc7pdoth3f2`
+this domain's `.well-known/atproto-did` already names), typed by Jason
+himself into that real bsky.social page, never into this app.
+
+## What's still open
 - **DPoP on every subsequent API call**: the spec's real requirement
   --"applies to every PDS request", not just login -- means
   `DMML.Atproto`'s `createRecord`/`pullNewRecords`/etc. (currently

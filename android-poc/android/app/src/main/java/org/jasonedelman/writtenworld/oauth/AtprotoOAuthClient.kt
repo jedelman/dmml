@@ -27,7 +27,15 @@ import java.util.Base64
 // for a client shaped like this.
 object AtprotoOAuthClient {
     const val CLIENT_ID = "https://jason-edelman.org/oauth/written-world-android/client-metadata.json"
-    const val REDIRECT_URI = "org.jason-edelman.written-world:/callback"
+    // Real, server-confirmed constraint (not a convention we chose):
+    // atproto requires a private-use-scheme redirect_uri to be
+    // EXACTLY the client_id's FQDN in reverse order, no extra path
+    // segments -- a first attempt with an extra ".written-world"
+    // segment was rejected by the real authorization server with
+    // "Private-Use URI Scheme redirect URI ... must be the fully
+    // qualified domain name (FQDN) of the client_id, in reverse order
+    // (org.jason-edelman:)".
+    const val REDIRECT_URI = "org.jason-edelman:/callback"
     private const val SCOPE = "atproto transition:generic"
 
     private val http = OkHttpClient()
