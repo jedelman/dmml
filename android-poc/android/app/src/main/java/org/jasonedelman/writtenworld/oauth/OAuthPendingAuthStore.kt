@@ -39,6 +39,17 @@ object OAuthPendingAuthStore {
         )
     }
 
+    /** `commit()`, not `apply()` -- deliberately blocking. `apply()`
+     * schedules its write asynchronously and returns immediately;
+     * AtprotoOAuthClient.beginLogin calls this right before opening
+     * the Custom Tab, which backgrounds this app's process almost
+     * immediately after -- a real race, confirmed on-device (2026-09-09):
+     * "OAuth redirect arrived with no matching pending login" even
+     * though save() had definitely been called, because the async
+     * write hadn't actually reached disk before the process was
+     * considered killable. Called from a background dispatcher
+     * already (beginLogin runs under Dispatchers.IO), so blocking
+     * here is safe. */
     fun save(context: Context, pending: AtprotoOAuthClient.PendingAuth) {
         prefs(context).edit()
             .putString(KEY_STATE, pending.state)
@@ -47,7 +58,7 @@ object OAuthPendingAuthStore {
             .putString(KEY_AUTH_SERVER_ISSUER, pending.authServerIssuer)
             .putString(KEY_PDS_ENDPOINT, pending.pdsEndpoint)
             .putString(KEY_DID, pending.did)
-            .apply()
+            .commit()
     }
 
     /** Returns the persisted PendingAuth only if its own `state`

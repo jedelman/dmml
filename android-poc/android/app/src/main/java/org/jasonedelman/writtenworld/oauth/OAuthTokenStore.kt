@@ -42,6 +42,11 @@ object OAuthTokenStore {
         )
     }
 
+    /** `commit()`, not `apply()` -- this is called right before
+     * OAuthCallbackActivity finishes (its whole job is done and the
+     * process is a real backgrounding/kill candidate immediately
+     * after), same real async-write-loss risk `apply()` had in
+     * OAuthPendingAuthStore.save, confirmed on-device 2026-09-09. */
     fun save(context: Context, session: Session) {
         prefs(context).edit()
             .putString(KEY_ACCESS_TOKEN, session.accessToken)
@@ -49,7 +54,7 @@ object OAuthTokenStore {
             .putString(KEY_DID, session.did)
             .putString(KEY_PDS_ENDPOINT, session.pdsEndpoint)
             .putString(KEY_AUTH_SERVER_ISSUER, session.authServerIssuer)
-            .apply()
+            .commit()
     }
 
     fun load(context: Context): Session? {
