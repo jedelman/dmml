@@ -102,4 +102,11 @@ dependencies {
     // file), not plain SharedPreferences. Jason supplies the actual key
     // value himself in the app UI; nothing here hardcodes or invents one.
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // Chrome Custom Tabs -- atproto OAuth's authorization step must
+    // happen in a real browser context the app doesn't control (the
+    // PDS/authorization server's own hosted login page), never an
+    // in-app WebView (which the spec explicitly disallows for exactly
+    // the phishing-surface reason every OAuth guide warns about).
+    implementation("androidx.browser:browser:1.8.0")
 }

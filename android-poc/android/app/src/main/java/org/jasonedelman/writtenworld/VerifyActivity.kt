@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.eclipse.jgit.api.Git
+import org.jasonedelman.writtenworld.oauth.LoginScreen
 import java.io.File
 
 // On-device verification for the 2026-09-08 JNI-upcall architecture
@@ -74,6 +75,10 @@ private fun VerifyScreen(filesDir: File, context: Context) {
     val scope = rememberCoroutineScope()
 
     Column(Modifier.padding(16.dp).verticalScroll(rememberScrollState())) {
+        LoginScreen(context = context, onLoggedIn = {})
+
+        HorizontalDivider(Modifier.padding(vertical = 12.dp))
+
         Button(onClick = {
             scope.launch {
                 log = "Running jgitCommit...\n"
