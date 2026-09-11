@@ -142,6 +142,17 @@ static jstring native_brokerIncorporate(JNIEnv *env, jclass clazz, jstring repoD
     return take_hs_cstring(env, result);
 }
 
+static jstring native_author(JNIEnv *env, jclass clazz, jstring repoDir, jstring apiKey, jstring model, jstring request) {
+    (void)clazz;
+    char *c_repoDir = jstring_to_cstr(env, repoDir);
+    char *c_apiKey = jstring_to_cstr(env, apiKey);
+    char *c_model = jstring_to_cstr(env, model);
+    char *c_request = jstring_to_cstr(env, request);
+    void *result = android_author(env, c_repoDir, c_apiKey, c_model, c_request);
+    free(c_repoDir); free(c_apiKey); free(c_model); free(c_request);
+    return take_hs_cstring(env, result);
+}
+
 static JNINativeMethod bridgeMethods[] = {
     {"jgitCommit", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_jgitCommit},
     {"atprotoResolve", "(Ljava/lang/String;)Ljava/lang/String;", (void *)native_atprotoResolve},
@@ -151,6 +162,7 @@ static JNINativeMethod bridgeMethods[] = {
     {"atprotoCreateRecordDpop", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_atprotoCreateRecordDpop},
     {"llmChatComplete", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_llmChatComplete},
     {"brokerIncorporate", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_brokerIncorporate},
+    {"author", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *)native_author},
 };
 
 // Called automatically by the JVM the instant this .so is loaded

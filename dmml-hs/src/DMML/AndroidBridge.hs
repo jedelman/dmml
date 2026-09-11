@@ -69,6 +69,7 @@ module DMML.AndroidBridge
   , android_atproto_create_record_dpop
   , android_llm_chat_complete
   , android_broker_incorporate
+  , android_author
   , jgitCommitBridge
   , atprotoResolveBridge
   , atprotoPullBridge
@@ -77,6 +78,7 @@ module DMML.AndroidBridge
   , atprotoCreateRecordDpopBridge
   , llmChatCompleteBridge
   , brokerIncorporateBridge
+  , authorBridge
   ) where
 
 import Control.Exception (SomeException, catch, displayException, try)
@@ -89,6 +91,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time.Clock (getCurrentTime)
+import Data.Time.Clock.POSIX (getPOSIXTime)
 import Data.Time.Format (defaultTimeLocale, formatTime)
 import Foreign.C.String (CString, newCString, peekCString)
 
@@ -108,8 +111,9 @@ import DMML.Checkpoint (resolveAndFoldCheckpoint)
 import DMML.Governance (applyGovernance)
 import DMML.Jni (JNIEnvPtr, JvmEnvironment (UpcallJvm), JvmHandle, withJvm)
 import DMML.Jgit (JGit, jgitAddFilepattern, jgitCommit, jgitOpen, jgitResolve, revCommitName)
-import DMML.Llm (chatComplete)
-import DMML.Materialize (WorldSnapshot (..), applyCommits, currentValue, mergeSnapshots)
+import DMML.Llm (LlmError, chatComplete)
+import DMML.Loader (worldSnapshotFromDirectory)
+import DMML.Materialize (WorldSnapshot (..), applyCommits, currentValue, mergeSnapshots, renderSnapshot)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
 import System.Directory (createDirectoryIfMissing, doesFileExist, listDirectory)
 import System.FilePath (takeDirectory, takeExtension, (</>))
@@ -124,6 +128,7 @@ foreign export ccall android_atproto_create_record :: JNIEnvPtr -> CString -> CS
 foreign export ccall android_atproto_create_record_dpop :: JNIEnvPtr -> CString -> CString -> CString -> CString -> CString -> CString -> IO CString
 foreign export ccall android_llm_chat_complete :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
 foreign export ccall android_broker_incorporate :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
+foreign export ccall android_author :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
 
 -- | Writes @content@ to @repoDir\/relPath@ (creating parent directories
 -- as needed), @git add@s and commits it via 'DMML.Jgit' against the
@@ -340,6 +345,132 @@ brokerIncorporateBridge envPtr repoDir peerIdentifier cursorFile commitsDir =
         Right _ -> Nothing
         Left _ -> Just (errorBundlePretty commitErr)
 
+-- | Port of @written-world@'s own real BYOK authoring agent
+-- (@cli\/app\/Author.hs@, same branch\/commit as 'brokerIncorporateBridge'
+-- was ported from) onto 'UpcallJvm' -- a genuinely free-form authoring
+-- turn (\"write me a room,\" \"invent an object here\"), not a template
+-- match. Grounds the model in the real current world state
+-- ('DMML.Loader.worldSnapshotFromDirectory' + 'renderSnapshot', reused
+-- rather than reimplemented -- the desktop original duplicates its own
+-- mtime-sorted loader, this version doesn't need to since
+-- 'DMML.Loader' already exists here), never trusts the model's raw
+-- output (every response validated via 'DMML.Surface' before being
+-- written, up to 3 attempts total, feeding the real parse error back
+-- to the model on a retry -- identical discipline to the desktop
+-- original), and on success writes + commits the file via
+-- 'DMML.Jgit', matching 'jgitCommitBridge'\'s own pattern. One real,
+-- necessary difference from the desktop original: no
+-- 'System.Exit.exitFailure' anywhere in this path (a JNI-loaded
+-- library must never call it -- same reason every other function in
+-- this module returns @Either@ instead), and the result comes back as
+-- structured JSON instead of stdout lines.
+-- Returns JSON @{\"path\":...,\"commitSha\":...,\"dmmlText\":...}@ on
+-- success, or a normal @Left@ (an LLM call failure, or rejection after
+-- 3 failed validation attempts) marshaled the same @\"ERROR: ...\"@
+-- way as everything else here.
+authorBridge :: JNIEnvPtr -> FilePath -> Text -> Text -> Text -> IO (Either String Text)
+authorBridge envPtr repoDir apiKey model request =
+  withJvm (UpcallJvm envPtr) $ \jvm -> do
+    let commitsPath = repoDir </> "commits"
+    snapResult <- worldSnapshotFromDirectory commitsPath
+    case snapResult of
+      Left err -> pure (Left ("failed to load world snapshot: " <> err))
+      Right (snap, _machines) -> do
+        let worldText = renderSnapshot snap
+            grounding =
+              if T.null (T.strip worldText)
+                then "The world is currently empty -- no commits exist yet. This may be the very first content."
+                else "The world's current state (already-asserted facts, for grounding -- do not contradict them):\n" <> worldText
+        tryAttempt jvm commitsPath grounding maxAttempts Nothing
+  where
+    maxAttempts :: Int
+    maxAttempts = 3
+
+    tryAttempt :: JvmHandle -> FilePath -> Text -> Int -> Maybe Text -> IO (Either String Text)
+    tryAttempt jvm commitsPath grounding attemptsLeft priorError = do
+      let userPrompt = case priorError of
+            Nothing -> request
+            Just err ->
+              request
+                <> "\n\nYour previous attempt failed to parse as valid DMML:\n"
+                <> err
+                <> "\n\nFix it. Reply with ONLY the corrected .dmml source, nothing else."
+      result <- chatComplete jvm apiKey model (authorSystemPrompt grounding) userPrompt
+      case result of
+        Left err -> pure (Left ("chatComplete failed: " <> show (err :: LlmError)))
+        Right raw -> do
+          let dmmlText = stripFences raw
+          case validateDmml dmmlText of
+            Right () -> commitAuthored jvm repoDir commitsPath dmmlText
+            Left parseErr
+              | attemptsLeft > 1 -> tryAttempt jvm commitsPath grounding (attemptsLeft - 1) (Just (T.pack parseErr))
+              | otherwise -> pure (Left ("REJECTED after " <> show maxAttempts <> " attempts, last parse error:\n" <> parseErr <> "\n\nlast raw output:\n" <> T.unpack dmmlText))
+
+    validateDmml :: Text -> Either String ()
+    validateDmml src = case parseCommitSurface src of
+      Right _ -> Right ()
+      Left commitErr -> case parseMachineSurface src of
+        Right _ -> Right ()
+        Left _ -> Left (errorBundlePretty commitErr)
+
+-- | Same fence-stripping heuristic as the desktop original -- models
+-- routinely wrap code in markdown fences even when told not to.
+stripFences :: Text -> Text
+stripFences t =
+  let stripped = T.strip t
+      withoutLeading =
+        if "```" `T.isPrefixOf` stripped
+          then T.dropWhile (/= '\n') stripped
+          else stripped
+      withoutTrailing =
+        if "```" `T.isSuffixOf` T.strip withoutLeading
+          then T.dropWhileEnd (/= '\n') (T.strip withoutLeading)
+          else withoutLeading
+   in T.strip withoutTrailing
+
+commitAuthored :: JvmHandle -> FilePath -> FilePath -> Text -> IO (Either String Text)
+commitAuthored jvm repoDir commitsPath dmmlText = do
+  createDirectoryIfMissing True commitsPath
+  nowMs <- (round . (* 1000)) <$> getPOSIXTime :: IO Integer
+  let path = commitsPath </> ("author-" <> show nowMs <> ".dmml")
+  TIO.writeFile path dmmlText
+  git <- jgitOpen jvm repoDir
+  jgitAddFilepattern jvm git path
+  rev <- jgitCommit jvm git ("author: " <> path)
+  commitSha <- revCommitName jvm rev
+  pure (Right (jsonText (object ["path" .= path, "commitSha" .= commitSha, "dmmlText" .= dmmlText])))
+
+-- | Identical grammar-rules-and-worked-example prompt as the desktop
+-- original -- verified against real 'DMML.Surface' parse behavior
+-- there, not re-derived here.
+authorSystemPrompt :: Text -> Text
+authorSystemPrompt grounding =
+  "You are a DMML content author for a text-adventure world. DMML is a \
+  \small fact-assertion language. Output ONLY a single, valid DMML \
+  \commit block -- no markdown fences, no explanation, no commentary.\n\n\
+  \GRAMMAR RULES (verified, not optional):\n\
+  \1. Shape: `commit <name>` on its own line, then a `declare relation <predicate>` \
+  \or `declare attribute <predicate>` line for EVERY distinct predicate you use \
+  \(indented 2 spaces), then a BLANK LINE, then one or more fact lines \
+  \(indented 2 spaces) of the form `` subject `predicate` value ``.\n\
+  \2. Node references (subjects, and node-valued predicate values) look like \
+  \`type/name`, e.g. `room/2`, `key/forge`, `npc/keeper`. Use camelCase, NO \
+  \hyphens anywhere in an identifier (hyphens are a parse error).\n\
+  \3. A string value is double-quoted ASCII text, e.g. `\"a small brass key\"`. \
+  \A node value has no quotes.\n\
+  \4. There is NO comment syntax at all -- never write `#` or `//` or anything \
+  \meant as a comment. Every line is real content.\n\
+  \5. A single commit can never assert the same (subject, predicate) pair twice.\n\
+  \6. Do not declare or fire a machine/transition -- only ever write a plain \
+  \`commit` block of facts. Nothing else is being asked of you here.\n\n\
+  \WORKED EXAMPLE (this exact shape, adapted to the real request):\n\
+  \commit setup\n\
+  \  declare relation stocked\n\
+  \  declare relation state\n\n\
+  \  key/forge `stocked` iron/ingot\n\
+  \  key/forge `state` idle\n\n"
+    <> grounding
+
 listDmmlFiles :: FilePath -> IO [FilePath]
 listDmmlFiles dir = do
   entries <- listDirectory dir
@@ -428,6 +559,14 @@ android_broker_incorporate envPtr repoDirC peerC cursorC commitsC = guardedRun $
   cursorFile <- peekCString cursorC
   commitsDir <- peekCString commitsC
   marshalText =<< brokerIncorporateBridge envPtr repoDir peerIdentifier cursorFile commitsDir
+
+android_author :: JNIEnvPtr -> CString -> CString -> CString -> CString -> IO CString
+android_author envPtr repoDirC keyC modelC reqC = guardedRun $ do
+  repoDir <- peekCString repoDirC
+  apiKey <- T.pack <$> peekCString keyC
+  model <- T.pack <$> peekCString modelC
+  request <- T.pack <$> peekCString reqC
+  marshalText =<< authorBridge envPtr repoDir apiKey model request
 
 jsonText :: Aeson.Value -> Text
 jsonText = TE.decodeUtf8 . BL.toStrict . Aeson.encode

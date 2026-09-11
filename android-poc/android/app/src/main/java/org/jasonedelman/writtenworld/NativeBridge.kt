@@ -104,6 +104,22 @@ object NativeBridge {
      * commit). `cursorFile`/`commitsDir` are paths relative to `repoDir`. */
     external fun brokerIncorporate(repoDir: String, peerIdentifier: String, cursorFile: String, commitsDir: String): String
 
+    /** Port of written-world's own real BYOK authoring agent
+     * (cli/app/Author.hs, same branch/commit as [brokerIncorporate]).
+     * A genuinely free-form authoring turn -- "write me a room,"
+     * "invent an object here" -- not a template match: grounds the
+     * model in the real current world state under `repoDir/commits`,
+     * validates every response via DMML.Surface before writing or
+     * committing anything (up to 3 attempts, feeding the real parse
+     * error back to the model on a retry), and on success writes +
+     * commits the new .dmml file via JGit. Returns JSON
+     * `{"path":...,"commitSha":...,"dmmlText":...}` on success, or an
+     * "ERROR: ..."-prefixed string (an LLM call failure, or rejection
+     * after 3 failed validation attempts) on failure. `repoDir` must
+     * already be a real git working tree (`git init`'d), same
+     * precondition [jgitCommit] has. */
+    external fun author(repoDir: String, apiKey: String, model: String, request: String): String
+
     /** True iff `result` (from any function above) is an error, not
      * real output -- same "ERROR: ..." contract as DmmlBridge.isError. */
     fun isError(result: String): Boolean = result.startsWith("ERROR:")

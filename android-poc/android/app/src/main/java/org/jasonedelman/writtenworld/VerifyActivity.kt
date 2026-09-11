@@ -133,6 +133,22 @@ private fun VerifyScreen(filesDir: File, context: Context) {
             }
         }) { Text("4. llmChatComplete") }
 
+        HorizontalDivider(Modifier.padding(vertical = 12.dp))
+
+        Text("Authoring agent request (free-form, e.g. \"invent a small room north of here\"):")
+        var authorRequest by remember { mutableStateOf("describe a small, dusty workshop with one interesting object in it") }
+        OutlinedTextField(
+            value = authorRequest,
+            onValueChange = { authorRequest = it },
+            modifier = Modifier.padding(vertical = 4.dp),
+        )
+        Button(onClick = {
+            scope.launch {
+                log = "Running author...\n"
+                log += withContext(Dispatchers.IO) { runAuthorCheck(filesDir, context, authorRequest) }
+            }
+        }) { Text("6. author") }
+
         Text(log)
     }
 }
@@ -214,6 +230,21 @@ private fun runLlmChatCompleteCheck(context: Context): String {
         "llmChatComplete -> $result\n${if (NativeBridge.isError(result)) "FAILED" else "OK, real BYOK chat completion"}"
     } catch (t: Throwable) {
         "llmChatComplete -> EXCEPTION: ${t}"
+    }
+}
+
+private fun runAuthorCheck(filesDir: File, context: Context, request: String): String {
+    val apiKey = ApiKeyStore.getApiKey(context)
+        ?: return "author -> SKIPPED: no API key saved yet. Enter one above and tap Save."
+    return try {
+        val repoDir = verifyRepoDir(filesDir)
+        // Real, disclosed side effect: on success this writes a real
+        // .dmml file under repoDir/commits and commits it via JGit --
+        // not published to atproto, just local (same as jgitCommit).
+        val result = NativeBridge.author(repoDir.absolutePath, apiKey, "deepseek/deepseek-v4-flash-0731", request)
+        "author -> $result\n${if (NativeBridge.isError(result)) "FAILED" else "OK, real BYOK-authored + validated + committed DMML content"}"
+    } catch (t: Throwable) {
+        "author -> EXCEPTION: ${t}"
     }
 }
 
