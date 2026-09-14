@@ -1,5 +1,48 @@
 # F1 — Android JNI bridge, now carrying the real interpreter
 
+> **Status as of 2026-09-11 — this file stops updating at F1's
+> 2026-09-06 close; six more days of real work happened after that and
+> aren't reflected below.** Added here rather than rewriting the
+> historical sections, matching this project's own discipline of not
+> silently editing what already happened. Current real state, in
+> order — see each dev-journal entry for the full account, this is
+> just the index:
+> - `dev-journal/2026-09-07-android-canonical-structure-decisions.md` —
+>   vendor-the-`.so` and directory-based-JNI-entry-points decisions.
+> - `dev-journal/2026-09-08-android-ndk-cross-compile-of-androidbridge.md`,
+>   `2026-09-08-android-jni-upcall-verified-on-device.md`,
+>   `2026-09-08-broker-incorporate-ported-to-android.md` — the
+>   `DMML.AndroidBridge`/`org.jasonedelman.writtenworld.NativeBridge`
+>   upcall architecture (see "Two architectures, not yet unified"
+>   below), cross-compiled and verified on-device, plus the broker's
+>   `incorporate` orchestration ported.
+> - `dev-journal/2026-09-09-atproto-oauth-login-screen.md`,
+>   `2026-09-09-dpop-authenticated-writes.md`,
+>   `2026-09-09-android-16kb-pages-and-oauth-process-death.md` — a real
+>   atproto OAuth (PAR+PKCE+DPoP) login, completed end to end on a real
+>   Pixel 8, and DPoP-authenticated writes confirmed working.
+> - `dev-journal/2026-09-11-android-authoring-agent.md` — the real BYOK
+>   authoring agent (`written-world`'s `cli/app/Author.hs`), ported and
+>   verified live on-device.
+>
+> **Two architectures, not yet unified** — a real, disclosed, still-open
+> item, not an oversight: `org.writtenworld.androidpoc.DmmlBridge`
+> (`libdmmlbridge.so`, this file's own original F1 subject, Kotlin
+> calling INTO pure Haskell logic) and
+> `org.jasonedelman.writtenworld.NativeBridge`
+> (`libdmmlandroidbridge.so`, `DMML.AndroidBridge`, Haskell calling BACK
+> OUT via a borrowed `JNIEnv*` — see `NativeBridge.kt`'s own header
+> comment) are two separate native libraries, bundled side by side,
+> loaded independently. `libdmmlbridge.so` was never rebuilt with the
+> RTS whole-archive linking fix the other one needed
+> (`UnsatisfiedLinkError: stg_SRT_1_info`) — real, currently broken, not
+> deleted here since `WorldRepository.kt`'s directory-based git-sync
+> browsing is real functionality built on it, not dead PoC code; fixing
+> the link (same `-Wl,--whole-archive`/`libHSrts.a`/`libffi.a` treatment
+> `libdmmlandroidbridge.so` already has) or unifying the two into one
+> `.so` needs the real NDK/cross-GHC toolchain this cloud session
+> doesn't have — see `BOOTSTRAP.md`'s own status note.
+
 The last open item from `jedelman/dmml#1`. Jason: "go ahead and tackle
 F1. keep it as simple as you can." The original PoC here (now superseded,
 see below) was the smallest real thing proving a Haskell function is

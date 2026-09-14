@@ -33,11 +33,18 @@ object ApiKeyStore {
     fun getApiKey(context: Context): String? =
         prefs(context).getString(KEY_OPENROUTER_API_KEY, null)?.takeIf { it.isNotBlank() }
 
+    // commit(), not apply(): the same real race OAuthPendingAuthStore/
+    // OAuthTokenStore hit and fixed 2026-09-09 (apply()'s write is
+    // scheduled async and can lose to the app being backgrounded/killed
+    // right after) applies here too, just less likely to be hit in
+    // practice since saving a key isn't immediately followed by handing
+    // off to a Custom Tab. Same fix for consistency rather than waiting
+    // to reproduce it a third time.
     fun setApiKey(context: Context, apiKey: String) {
-        prefs(context).edit().putString(KEY_OPENROUTER_API_KEY, apiKey).apply()
+        prefs(context).edit().putString(KEY_OPENROUTER_API_KEY, apiKey).commit()
     }
 
     fun clearApiKey(context: Context) {
-        prefs(context).edit().remove(KEY_OPENROUTER_API_KEY).apply()
+        prefs(context).edit().remove(KEY_OPENROUTER_API_KEY).commit()
     }
 }

@@ -1,5 +1,18 @@
 # Bootstrap: local Android + Haskell dev environment
 
+> **Superseded 2026-09-11 — this file describes the ORIGINAL F1 PoC
+> (`haskell/Bridge.hs`, `hsGreet`, `MainActivity` as launcher), which no
+> longer exists.** `haskell/` was removed 2026-09-06 (see `README.md`);
+> the real toolchain that actually worked is a WSL2 + `MrAdityaAlok/
+> ghc-cross-tools` (GHC 9.2.5) + NDK r27c setup, documented step-by-step
+> with every real blocker and its fix in `dev-journal/2026-09-06-
+> android-cross-compile-verified-on-device.md` — read that instead of
+> following the steps below. Kept here, unedited, as the historical
+> record of what was tried first (the `hatter` path) and why it didn't
+> pan out (needs Nix, no native Windows support) — not as a working
+> guide anymore. If you're setting up a machine to build this today,
+> start from the 2026-09-06 entry, not this file.
+
 For whoever picks up F1 next — a different harness/model, on Jason's
 own laptop, per `dev-journal/2026-09-02-f1-android-handoff-to-laptop-
 session.md`. Read that entry and `README.md` first; this file is just
