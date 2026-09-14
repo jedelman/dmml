@@ -91,7 +91,20 @@ housekeeping complaint. Left it alone.
   actual vendored `.so` files to fill in real commit hashes/build
   dates, not guessable from here.
 
+## Live-record cleanup — done, Jason confirmed
+
+"Go ahead!" All 5 `test/dpop-verification` records deleted via the
+existing app-password `atproto-delete` against
+`claude.jason-edelman.org` (`ATPROTO_APP_PASSWORD` in this session's
+own env worked against that account). Re-listed the collection
+afterward to confirm, not assumed: 0 `test/dpop-verification` records
+remain, total record count dropped from 55 to exactly 50 (the other
+~45 real, unrelated records untouched).
+
 ## Status
 
-Pushed to `dmml` `main`. The live-record deletion is the one item
-still waiting on Jason's explicit go-ahead before it happens at all.
+Everything in this entry is done and pushed to `dmml` `main`, including
+the live-record cleanup. What's left is exactly what's listed above as
+needing the real toolchain: the `libdmmlbridge.so` relink/unification,
+and `SO_BUILD_MANIFEST.md`'s TODO fields once someone rebuilds against
+this commit.
