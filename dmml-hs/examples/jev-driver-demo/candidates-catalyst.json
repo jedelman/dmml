@@ -1,0 +1,76 @@
+{
+  "world_seed": ["contested-world.dmml"],
+  "machines": [
+    "../cascade-demo/furnace.dmml",
+    "furnace2.dmml",
+    "../cascade-demo/anvil.dmml",
+    "catalyst.dmml",
+    "temperedTemplate.dmml"
+  ],
+  "candidates": [
+    {
+      "id": "smelt-raw1",
+      "machine": "../cascade-demo/furnace.dmml",
+      "transition": "smelt",
+      "verb": "smelts",
+      "params": { "ore": "ore/raw1" },
+      "description": "Smelt raw ore batch 1 in the primary furnace, turning it into ingot batch 1."
+    },
+    {
+      "id": "smelt-raw2",
+      "machine": "furnace2.dmml",
+      "transition": "smelt",
+      "verb": "smelts",
+      "params": { "ore": "ore/raw2" },
+      "description": "Smelt raw ore batch 2 in the second furnace, turning it into ingot batch 2."
+    },
+    {
+      "id": "forge-ingot1",
+      "machine": "../cascade-demo/anvil.dmml",
+      "transition": "forge",
+      "verb": "forges",
+      "params": {},
+      "description": "Forge ingot batch 1 at the anvil into a finished ingot. Only becomes legal after ore/raw1 has been ordinarily smelted into ingot/batch1 -- tempering the primary furnace instead forecloses this path."
+    },
+    {
+      "id": "temper-furnace1",
+      "machine": "catalyst.dmml",
+      "transition": "temper",
+      "verb": "quenches",
+      "params": { "oldFurnace": "smithy/furnace", "newFurnace": "smithy/furnaceTempered", "ore": "ore/raw1" },
+      "description": "Quench the primary furnace's raw ore batch 1 with the catalyst instead of smelting it normally, spawning a tempered furnace that produces a finer ingot. Retires the primary furnace's own smelt (its ore stock is consumed) and forecloses the ordinary forge-ingot1 path, since the anvil only ever checks for ore/raw1 refined the ordinary way.",
+      "spawns_followup": {
+        "id": "superSmelt-furnaceTempered",
+        "transition": "superSmelt",
+        "verb": "tempers",
+        "params": { "ore": "ore/raw1" },
+        "description": "Fire the tempered furnace's own superSmelt on the ore the catalyst transferred to it, producing a marked fine-quality ingot instead of an ordinary one."
+      }
+    },
+    {
+      "id": "temper-furnace2",
+      "machine": "catalyst.dmml",
+      "transition": "temper",
+      "verb": "quenches",
+      "params": { "oldFurnace": "smithy/furnace2", "newFurnace": "smithy/furnace2Tempered", "ore": "ore/raw2" },
+      "description": "Quench the second furnace's raw ore batch 2 with the catalyst instead of smelting it normally, spawning a tempered furnace that produces a finer ingot. Retires the second furnace's own smelt (its ore stock is consumed); does not affect the ordinary forge-ingot1 path, which only ever depends on ore/raw1.",
+      "spawns_followup": {
+        "id": "superSmelt-furnace2Tempered",
+        "transition": "superSmelt",
+        "verb": "tempers",
+        "params": { "ore": "ore/raw2" },
+        "description": "Fire the tempered furnace's own superSmelt on the ore the catalyst transferred to it, producing a marked fine-quality ingot instead of an ordinary one."
+      }
+    }
+  ],
+  "budget": {
+    "max_rounds": 10,
+    "max_total_firings": 10,
+    "max_firings_per_candidate": 1,
+    "max_minted_nodes": 40
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "Given the actions legal this round in a small crafting world, choose the one that seems most interesting or valuable to pursue -- there is no single objectively correct path. Ordinary smelting is reliable and simple; tempering is a one-time-only capability (only one catalyst exists) that trades away a furnace's normal output for a finer one, at the cost of foreclosing whatever depended on that furnace's ordinary path."
+  }
+}

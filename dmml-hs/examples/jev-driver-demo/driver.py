@@ -20,14 +20,26 @@ here is a new DMML engine primitive. Each round:
      and loop.
 
 KNOWN, DISCLOSED SCOPE LIMITS (not oversights):
-  - Candidate (machine, transition, params) tuples are hand-authored
-    in the config file, not auto-enumerated from declared nodes. DMML
-    has no generic "for every node of type X, what fires" query
-    exposed via any CLI yet -- WorldBrowserDemo.hs's own doc comment
-    flags the same gap (DMML.Guard.availableTransitions takes one
-    already-bound EvalContext, it doesn't generate candidate
-    bindings). Widening a config's candidate list is what stands in
-    for "new content" until that enumeration exists.
+  - Candidate (machine, transition, params) tuples are still mostly
+    hand-authored in the config file -- DMML has no generic "for every
+    node of type X, what fires" query with values already bound.
+    Partial exception, added 2026-09-17: a candidate that spawns a
+    machine (a real EffectSpawn) can declare `spawns_followup` in the
+    config, and this driver then registers the resulting fact-native
+    machine's follow-up candidate DYNAMICALLY, the instant the spawn's
+    captured Surface `machine` block is written -- no path or node name
+    needs predicting ahead of time. `discover_fact_native` also runs
+    the real `list-candidates` binary (DMML.MachineFacts.
+    candidateTransitions) every round as a transparency pass, printed
+    and logged -- confirms independently what's fact-native-discoverable,
+    but stays informational rather than auto-firing, because
+    list-candidates reports formal param NAMES, not concrete VALUES,
+    and turning one into the other is a real binding decision
+    `spawns_followup` makes explicitly rather than guessed generically.
+    A hand-authored Surface-text machine (furnace/anvil/catalyst
+    themselves) is still permanently invisible to list-candidates
+    unless something also runs it through DMML.MachineFacts.
+    encodeMachine -- that part of the gap is unchanged.
   - Minted-node tracking below is a text-scan heuristic over commit
     output (anything containing "/" that isn't a quoted string), not
     a real DMML.Ast parse -- good enough to bound a run, not a
@@ -36,14 +48,19 @@ KNOWN, DISCLOSED SCOPE LIMITS (not oversights):
     the full world snapshot. Tune `build_state_summary` once you can
     see what Jev actually needs to choose well in practice.
 
-UNTESTED IN THIS SESSION: this sandbox has no GHC/cabal toolchain and
-no Jev API key, so `fire-transition` was never actually invoked here
-and no live Jev call was made. The CLI argument shape is taken
-directly from FireTransition.hs's own parseArgs/usage string and the
-wire format from docs.typesafe.ai (POST /v1/systemone, Bearer auth,
-{state, model, questions} request / {answers, usage} response) -- both
-read, not guessed at -- but run this for real, with --dry-run first,
-before trusting it with anything you care about.
+VERIFIED LIVE (2026-09-17): built a real GHC/cabal toolchain, fired
+`fire-transition` for real against cascade-demo, and made real live
+calls to Jev (api.typesafe.ai, POST /v1/systemone) that chose among
+genuinely contested candidates -- including, later the same session, a
+round with a real EffectSpawn (a catalyst machine tempering a furnace,
+spawning a new fact-native machine), whose captured Surface `machine`
+block this driver now writes out and dynamically registers as a new
+fireable candidate via a config entry's own `spawns_followup`. See
+`examples/jev-driver-demo/README.md` and claude-memory's
+2026-09-17 conversation logs for the full account. Still worth running
+--dry-run first on any new candidates config before spending a live
+call -- this note records that the mechanism works, not that every
+config you write will be correct on the first try.
 """
 
 from __future__ import annotations
@@ -74,6 +91,14 @@ class Candidate:
     description: str
     firings: int = 0
     last_hash: str | None = None
+    # Optional: when this candidate's firing spawns a machine (a real
+    # DMML.Ast.EffectSpawn), this describes the follow-up candidate to
+    # register dynamically once the spawn actually happens -- id,
+    # transition, verb, params, description, same shape as a config
+    # candidate entry minus "machine" (the machine is whatever file the
+    # spawn's own captured Surface block gets written to, not knowable
+    # ahead of time since it lives under a per-run mkdtemp world dir).
+    spawns_followup: dict | None = None
 
 
 @dataclass
@@ -108,6 +133,7 @@ def load_config(path: Path) -> tuple[RunState, Budget, dict]:
             verb=c["verb"],
             params=c.get("params", {}),
             description=c["description"],
+            spawns_followup=c.get("spawns_followup"),
         )
     b = cfg["budget"]
     budget = Budget(
@@ -199,12 +225,113 @@ def call_jev(api_key: str, model: str, instructions: str, state_summary: str, le
         sys.exit(3)
 
 
+def split_output_blocks(output: str) -> list[tuple[str, str]]:
+    """Split fire-transition's stdout into its top-level commit/machine
+    blocks. Needed once a firing includes a spawn effect: DMML.Fire.
+    renderFiredCommits then prints MULTIPLE commits (the primary
+    ordinary-facts commit, plus one commit per spawned machine's own
+    encoded facts -- the one-commit-per-fact constraint from
+    DMML.MachineFacts), followed by a human-readable `machine` block per
+    spawn (DMML.Fire.renderFiredMachine) -- two different top-level
+    grammars (DMML.Ast.TopCommit vs TopMachine), which a --world file
+    and a --machine file can never both be parsed as. A `machine` block
+    itself contains internal blank lines (between its own states and
+    transitions), so this can't split on blank lines the way the old
+    single-file dump implicitly assumed -- it splits on any line
+    starting literally `commit ` or `machine ` at column 0, mirroring
+    how DMML.Surface's own top-level parser tells the two productions
+    apart.
+    """
+    blocks: list[tuple[str, str]] = []
+    kind: str | None = None
+    lines: list[str] = []
+
+    def flush():
+        if kind is not None:
+            body = "\n".join(lines).rstrip("\n") + "\n"
+            if body.strip():
+                blocks.append((kind, body))
+
+    for line in output.split("\n"):
+        if line.startswith("commit "):
+            flush()
+            kind, lines = "commit", [line]
+        elif line.startswith("machine "):
+            flush()
+            kind, lines = "machine", [line]
+        else:
+            lines.append(line)
+    flush()
+    return blocks
+
+
+def sanitize_node(node: str) -> str:
+    return node.replace("/", "_")
+
+
+def discover_fact_native(state: RunState) -> list[str]:
+    """Transparency pass, not a candidate source: runs the real
+    `list-candidates` binary (DMML.MachineFacts.candidateTransitions)
+    against the accumulated --world files and returns whatever
+    (machine, transition, params) triples it finds among FACT-NATIVE
+    machines -- anything a spawn produced, per that module's own
+    disclosed scope. Printed each round so it's visible whether more of
+    the world is fact-native-discoverable than this config's hand-
+    authored + spawns_followup candidates currently expose; NOT wired
+    into `legal` directly, because list-candidates reports formal param
+    NAMES, not concrete VALUES to fire with -- turning a discovered
+    triple into something fireable still needs a real binding decision,
+    which spawns_followup already makes explicitly per spawn rather
+    than guessed here.
+    """
+    import shlex
+
+    cmd = shlex.split(os.environ.get("LIST_CANDIDATES", "list-candidates")) + state.world_files
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    except FileNotFoundError:
+        return []
+    if proc.returncode != 0:
+        return []
+    lines = [ln for ln in proc.stdout.splitlines() if ln.strip()]
+    return [] if lines == ["list-candidates: no fact-native machines found in scope"] else lines
+
+
 def apply_winner(candidate: Candidate, output: str, world_dir: Path, round_no: int, state: RunState) -> int:
-    out_file = world_dir / f"{round_no:03d}-{candidate.id}.dmml"
-    out_file.write_text(output)
-    state.world_files.append(str(out_file))
+    blocks = split_output_blocks(output)
     new_nodes = set(NODE_TOKEN_RE.findall(output)) - state.known_nodes
     state.known_nodes |= new_nodes
+
+    commit_idx = 0
+    spawned_machine_file: str | None = None
+    for kind, body in blocks:
+        if kind == "commit":
+            out_file = world_dir / f"{round_no:03d}-{candidate.id}-c{commit_idx}.dmml"
+            out_file.write_text(body)
+            state.world_files.append(str(out_file))
+            commit_idx += 1
+        else:  # "machine" -- a real EffectSpawn's captured Surface block
+            node = body.splitlines()[0][len("machine "):].strip()
+            out_file = world_dir / f"machine-{sanitize_node(node)}.dmml"
+            out_file.write_text(body)
+            if str(out_file) not in state.machine_files:
+                state.machine_files.append(str(out_file))
+            spawned_machine_file = str(out_file)
+            print(f"  spawned machine: {node} -> {out_file}")
+
+    if spawned_machine_file and candidate.spawns_followup:
+        fu = candidate.spawns_followup
+        if fu["id"] not in state.candidates:
+            state.candidates[fu["id"]] = Candidate(
+                id=fu["id"],
+                machine=spawned_machine_file,
+                transition=fu["transition"],
+                verb=fu["verb"],
+                params=fu.get("params", {}),
+                description=fu["description"],
+            )
+            print(f"  registered follow-up candidate: {fu['id']}")
+
     state.minted_nodes += len(new_nodes)
     state.total_firings += 1
     candidate.firings += 1
@@ -253,6 +380,10 @@ def main() -> None:
             print(f"=== round {round_no}: fixpoint -- nothing legal and new, stopping cleanly ===")
             break
 
+        fact_native = discover_fact_native(state)
+        if fact_native:
+            print(f"  list-candidates (fact-native, informational): {fact_native}")
+
         state_summary = build_state_summary(round_no, state, legal)
 
         if args.dry_run:
@@ -260,9 +391,24 @@ def main() -> None:
             jev_response = {"dry_run": True}
         else:
             jev_response = call_jev(args.api_key, jev_cfg["model"], jev_cfg["instructions"], state_summary, legal)
-            answer = jev_response["answers"]["next_action"]
-            chosen_id = answer["choice"]
-            winner, out = next((c, o) for c, o in legal if c.id == chosen_id)
+            try:
+                chosen_id = jev_response["answers"]["next_action"]["choice"]
+            except (KeyError, TypeError) as e:
+                print(
+                    f"fatal: Jev's round {round_no} response didn't have the expected shape "
+                    f"(answers.next_action.choice): {e!r}\nraw response: {json.dumps(jev_response)}",
+                    file=sys.stderr,
+                )
+                sys.exit(4)
+            match = next(((c, o) for c, o in legal if c.id == chosen_id), None)
+            if match is None:
+                print(
+                    f"fatal: Jev chose {chosen_id!r} for round {round_no}, which is not among "
+                    f"this round's legal candidates {[c.id for c, _ in legal]}",
+                    file=sys.stderr,
+                )
+                sys.exit(4)
+            winner, out = match
 
         minted = apply_winner(winner, out, world_dir, round_no, state)
 
@@ -270,6 +416,7 @@ def main() -> None:
             "round": round_no,
             "state_summary": state_summary,
             "legal_candidate_ids": [c.id for c, _ in legal],
+            "fact_native_discovered": fact_native,
             "jev_response": jev_response,
             "chosen": winner.id,
             "minted_nodes_this_round": minted,

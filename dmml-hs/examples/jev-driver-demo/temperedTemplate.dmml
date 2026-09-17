@@ -1,0 +1,13 @@
+machine smithy/temperedTemplate
+
+  states
+    idle
+    smelted
+
+  transition superSmelt(ore)
+    idle -> smelted
+    guard self `stocked` $ore
+    assert $ore `refinedInto` ingot/tempered
+    assert self `quality` fine
+    assert smelted
+    retract idle

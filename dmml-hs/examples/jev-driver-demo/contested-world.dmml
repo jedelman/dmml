@@ -7,3 +7,4 @@ commit setup
   smithy/furnace2 `stocked` ore/raw2
   smithy/furnace2 `state` idle
   smithy/anvil `state` idle
+  smithy/catalyst `state` idle

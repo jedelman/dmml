@@ -1,0 +1,15 @@
+machine smithy/catalyst
+
+  states
+    idle
+    quenched
+
+  transition temper(oldFurnace, newFurnace, ore)
+    idle -> quenched
+    guard $oldFurnace `stocked` $ore
+    spawn $newFurnace from smithy/temperedTemplate
+    assert $newFurnace `stocked` $ore
+    assert $newFurnace `state` idle
+    retract $oldFurnace `stocked` $ore
+    assert quenched
+    retract idle

@@ -164,12 +164,32 @@ exist AS FACTS.** A machine spawned via `EffectSpawn` (now that it
 renders as commits, see above) qualifies automatically. A hand-authored
 `cascade-demo`-style Surface-text machine does NOT, unless something
 also runs it through `DMML.MachineFacts.encodeMachine` — `furnace.dmml`/
-`anvil.dmml` are still invisible to `list-candidates` as written. Wiring
-this driver's own `candidates.json` to call `list-candidates` instead
-of a hand-written list is the natural next step for a seed world whose
-producer machines spawn their own successors, but it isn't done here —
-this README documents the capability existing, not the Python driver
-having been rewired to use it.
+`anvil.dmml` are still invisible to `list-candidates` as written.
+
+**Now wired in, partially (2026-09-17, `examples/jev-driver-demo/catalyst.dmml`).**
+`driver.py` runs the real `list-candidates` binary every round as a
+transparency pass (`discover_fact_native`, printed and logged, gated
+behind the `LIST_CANDIDATES` env var the same way `fire-transition`
+already is) — but it stays informational, not auto-firing, because
+`list-candidates` reports a transition's formal PARAM NAMES, never
+concrete VALUES to fire with, and turning one into the other is a real
+binding decision. What actually makes a spawned machine fireable by a
+future round, with no path or node name predicted ahead of time: a
+config candidate that spawns something can declare `spawns_followup`
+(id/transition/verb/params/description, same shape as an ordinary
+candidate entry minus `machine`), and the instant that candidate's
+spawn produces a real captured `machine` block, `apply_winner` writes
+it to disk and registers the follow-up as a brand-new `Candidate`
+pointed at that exact file — see `catalyst.dmml`'s `temper` transition
+and `candidates-catalyst.json`'s two `temper-furnace*` entries for a
+real, live-run-verified example (a catalyst machine that quenches a
+furnace's ore instead of letting it smelt normally, spawning a
+`temperedTemplate`-based machine whose own `superSmelt` produces a
+marked finer ingot — genuinely fireable next round, confirmed both via
+`--dry-run` and a real Jev call choosing it). Still not done: nothing
+here auto-*generates* a `spawns_followup` block from a template's own
+declared params — you still write down what values a spawn's own
+transitions should be fired with, same as any other candidate.
 
 ## Known, disclosed scope limits
 
