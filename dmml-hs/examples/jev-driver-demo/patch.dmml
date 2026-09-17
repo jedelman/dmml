@@ -1,0 +1,12 @@
+machine field/patchA
+
+  states
+    lush
+    grazed
+
+  transition regrow()
+    grazed -> lush
+    assert lush
+    retract grazed
+    assert self `avail` status/lush
+    retract self `avail` status/grazed

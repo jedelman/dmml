@@ -1,0 +1,56 @@
+{
+  "world_seed": ["ecology-world.dmml"],
+  "machines": ["patch.dmml", "deer1.dmml", "deer2.dmml"],
+  "candidates": [
+    {
+      "id": "deer1-graze",
+      "machine": "deer1.dmml",
+      "transition": "graze",
+      "verb": "grazes",
+      "params": { "patch": "field/patchA" },
+      "description": "Deer 1 grazes the shared patch, becoming fed. Competes directly with deer 2 for the same single patch -- only one can graze it per round."
+    },
+    {
+      "id": "deer1-wait",
+      "machine": "deer1.dmml",
+      "transition": "wait",
+      "verb": "waits",
+      "params": {},
+      "description": "Deer 1 stays put and goes hungry this round, leaving the patch free for deer 2 (or to regrow)."
+    },
+    {
+      "id": "deer2-graze",
+      "machine": "deer2.dmml",
+      "transition": "graze",
+      "verb": "grazes",
+      "params": { "patch": "field/patchA" },
+      "description": "Deer 2 grazes the shared patch, becoming fed. Competes directly with deer 1 for the same single patch -- only one can graze it per round."
+    },
+    {
+      "id": "deer2-wait",
+      "machine": "deer2.dmml",
+      "transition": "wait",
+      "verb": "waits",
+      "params": {},
+      "description": "Deer 2 stays put and goes hungry this round, leaving the patch free for deer 1 (or to regrow)."
+    },
+    {
+      "id": "patch-regrow",
+      "machine": "patch.dmml",
+      "transition": "regrow",
+      "verb": "regrows",
+      "params": {},
+      "description": "The grazed patch regrows, becoming available to graze again."
+    }
+  ],
+  "budget": {
+    "max_rounds": 14,
+    "max_total_firings": 14,
+    "max_firings_per_candidate": 5,
+    "max_minted_nodes": 30
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "Two deer compete for one shared grazing patch, which can only be grazed by one deer at a time and needs to regrow before it can be grazed again. There is no single objectively correct action -- weigh whichever deer needs to eat, whether the patch is currently available, and whether it's worth letting the patch regrow instead of forcing a deer to wait hungry."
+  }
+}

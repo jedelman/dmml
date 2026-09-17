@@ -1,0 +1,20 @@
+machine herd/deer2
+
+  states
+    fed
+    hungry
+
+  transition graze(patch)
+    hungry -> fed
+    guard $patch `avail` status/lush
+    assert $patch `state` grazed
+    retract $patch `state` lush
+    assert $patch `avail` status/grazed
+    retract $patch `avail` status/lush
+    assert fed
+    retract hungry
+
+  transition wait()
+    fed -> hungry
+    assert hungry
+    retract fed

@@ -1,0 +1,8 @@
+commit setup
+  declare relation state
+  declare relation avail
+
+  field/patchA `state` lush
+  field/patchA `avail` status/lush
+  herd/deer1 `state` hungry
+  herd/deer2 `state` hungry
