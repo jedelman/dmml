@@ -11,6 +11,61 @@ fix for the same reason — see that script's own comments) and reuses
 `cascade-demo`'s `furnace`/`anvil`/`world.dmml` as its test bed, so it
 isn't introducing a new world to reason about on top of a new driver.
 
+## Running the first real test (needs a real network + a Jev key)
+
+Everything in this directory has been written and tested as far as
+possible without either. Two things block a genuinely live run, and
+neither is fixable from a sandbox that lacks them:
+
+1. **A real `fire-transition` binary.** `cabal build` needs Hackage
+   (megaparsec, aeson) — every previous sandbox this was developed in
+   had no working path to it (a cabal-install TUF signature mismatch,
+   confirmed unrelated to the egress proxy; disabling that
+   verification to route around it was correctly refused as
+   security-weakening and not attempted). If cabal/Hackage work
+   normally where you're running this, it's a non-issue.
+2. **`TYPESAFE_API_KEY`.**
+
+Once both are available, in order:
+
+```sh
+# 1. Build for real, confirm the toolchain actually works
+cd dmml-hs
+cabal build fire-transition
+FIRE_TRANSITION="$(cabal list-bin fire-transition)"
+export FIRE_TRANSITION
+
+# 2. Sanity-check the binary itself against cascade-demo BEFORE
+#    involving Jev at all -- proves the CLI arg shape this driver
+#    assumes (see driver.py's own module doc) is actually right
+cd examples/cascade-demo
+"$FIRE_TRANSITION" furnace.dmml smelt smelts --world world.dmml --param ore=ore/raw1
+# expect: a real, printed DMML commit (smithy/furnace `refinedInto`...) --
+# if this fails or errors, stop here and fix the mismatch before touching
+# the driver; it's a smaller surface to debug in isolation.
+
+# 3. Dry-run the driver against the real binary (still no Jev call)
+cd ../jev-driver-demo
+python3 driver.py candidates.json --dry-run
+# expect: the same "round 1 / round 2 / fixpoint" shape the
+# fake-fire-transition.py shim already produces -- if the shape
+# differs, the real binary's output doesn't match what driver.py
+# assumed and needs reconciling before step 4.
+
+# 4. The actual first live run
+export TYPESAFE_API_KEY=...
+python3 driver.py candidates.json
+# read audit.jsonl afterward -- it has the full Jev response (choice,
+# probabilities, confidence) for every round, not just which candidate won.
+```
+
+Expect to find at least one real mismatch at step 2 or 3 before step 4
+works — every piece of this has been written carefully but none of it
+has touched a real binary yet, and "read the spec/code correctly" and
+"actually works" have been two different claims all the way through
+this project. `fake-fire-transition.py`'s own doc comment says the
+same thing; delete it once step 3 passes for real.
+
 ## What this actually is
 
 Per round:
