@@ -1,0 +1,9 @@
+commit setup
+  declare relation stocked
+  declare relation state
+
+  smithy/furnace `stocked` ore/raw1
+  smithy/furnace `state` idle
+  smithy/furnace2 `stocked` ore/raw2
+  smithy/furnace2 `state` idle
+  smithy/anvil `state` idle

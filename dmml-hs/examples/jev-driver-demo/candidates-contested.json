@@ -1,0 +1,40 @@
+{
+  "world_seed": ["contested-world.dmml"],
+  "machines": ["../cascade-demo/furnace.dmml", "furnace2.dmml", "../cascade-demo/anvil.dmml"],
+  "candidates": [
+    {
+      "id": "smelt-raw1",
+      "machine": "../cascade-demo/furnace.dmml",
+      "transition": "smelt",
+      "verb": "smelts",
+      "params": { "ore": "ore/raw1" },
+      "description": "Smelt raw ore batch 1 in the primary furnace, turning it into ingot batch 1."
+    },
+    {
+      "id": "smelt-raw2",
+      "machine": "furnace2.dmml",
+      "transition": "smelt",
+      "verb": "smelts",
+      "params": { "ore": "ore/raw2" },
+      "description": "Smelt raw ore batch 2 in the second furnace, turning it into ingot batch 2."
+    },
+    {
+      "id": "forge-ingot1",
+      "machine": "../cascade-demo/anvil.dmml",
+      "transition": "forge",
+      "verb": "forges",
+      "params": {},
+      "description": "Forge ingot batch 1 at the anvil into a finished ingot."
+    }
+  ],
+  "budget": {
+    "max_rounds": 10,
+    "max_total_firings": 10,
+    "max_firings_per_candidate": 1,
+    "max_minted_nodes": 20
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "Given the actions legal this round in a small crafting world, choose the one that advances the raw-ore-to-finished-ingot process, preferring an action that has not already fired over one that has."
+  }
+}

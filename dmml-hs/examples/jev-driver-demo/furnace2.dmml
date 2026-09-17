@@ -1,0 +1,12 @@
+machine smithy/furnace2
+
+  states
+    idle
+    smelted
+
+  transition smelt(ore)
+    idle -> smelted
+    guard self `stocked` $ore
+    assert $ore `refinedInto` ingot/batch2
+    assert smelted
+    retract idle
