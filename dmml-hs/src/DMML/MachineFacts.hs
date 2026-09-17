@@ -73,10 +73,12 @@ module DMML.MachineFacts
   , decodeMachine
   , decodeMachineFromSnapshot
   , snapshotToFacts
+  , machineNodesInSnapshot
+  , candidateTransitions
   , DecodeError (..)
   ) where
 
-import Data.List (sortOn)
+import Data.List (nub, sortOn)
 import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -415,3 +417,42 @@ snapshotToFacts snap =
 -- decoded result.
 decodeMachineFromSnapshot :: NodeRef -> WorldSnapshot -> Either DecodeError MachineStmt
 decodeMachineFromSnapshot mNode snap = decodeMachine mNode (snapshotToFacts snap)
+
+-- ---------------------------------------------------------------------
+-- candidate discovery -- the actual point of unifying machines and
+-- facts for a Jev-driven loop: what exists to be chosen among, found
+-- by querying the snapshot instead of hand-authored in a config file.
+-- ---------------------------------------------------------------------
+
+-- | Every distinct node that is the subject of at least one
+-- @hasState@ or @hasTransition@ fact in @snap@ -- i.e. every machine
+-- that exists as facts (typically something 'DMML.Fire.renderFiredCommits'
+-- produced, or anything else deliberately authored through
+-- 'encodeMachine'). Says nothing about a hand-authored Surface-text
+-- machine unless it too was encoded this way -- see this module's own
+-- top-level doc comment for the real reason that limit exists (the
+-- one-hard-constraint design fits inside), not an oversight.
+machineNodesInSnapshot :: WorldSnapshot -> [NodeRef]
+machineNodesInSnapshot snap =
+  nub
+    [ NodeRef (T.splitOn "/" subj)
+    | ((subj, pred_), _) <- Map.toList (snapshotFacts snap)
+    , pred_ == "hasState" || pred_ == "hasTransition"
+    ]
+
+-- | Every (machine, transition) pair discoverable this way, decoded in
+-- full -- automatic candidate enumeration for anything fact-native.
+-- Concrete parameter BINDINGS are still the caller's job (same as a
+-- hand-authored @candidates.json@ entry already requires) -- this only
+-- discovers which pairs exist and what parameter names each one
+-- takes, not how to fill them in. A machine whose facts don't decode
+-- cleanly is silently skipped rather than failing the whole
+-- enumeration -- one malformed machine elsewhere in a large snapshot
+-- shouldn't hide every other real candidate.
+candidateTransitions :: WorldSnapshot -> [(MachineStmt, TransitionDecl)]
+candidateTransitions snap =
+  [ (m, t)
+  | node <- machineNodesInSnapshot snap
+  , Right m <- [decodeMachineFromSnapshot node snap]
+  , t <- machineTransitions m
+  ]

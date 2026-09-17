@@ -52,6 +52,7 @@ module DMML.Fire
   , fireTransition
   , fireTransitionFromFacts
   , renderFiredCommit
+  , renderFiredCommits
   , renderFiredMachine
   ) where
 
@@ -61,7 +62,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import DMML.Ast
-import DMML.MachineFacts (DecodeError, decodeMachineFromSnapshot)
+import DMML.MachineFacts (DecodeError, decodeMachineFromSnapshot, encodeMachine)
 import DMML.Guard (EvalContext (..), mayFire, resolveTerm)
 import DMML.Materialize (WorldSnapshot, applyCommit, currentValueWithProvenance)
 import DMML.Retroconsistency (BrokenGuard (..), GateResult (..), gateConsistentTree)
@@ -398,6 +399,53 @@ renderFiredCommit verb effects =
               | (subj, predRef, mVal, ref) <- retracts
               ]
 
+-- | Phase 3 of "machines and facts, unified" (dev-journal/2026-09-17):
+-- the OTHER way a 'ResolvedSpawn' can become real, applied content --
+-- as facts, straight into the same fact universe everything else
+-- lives in, never touching 'DMML.Surface'\'s parser at all. Where
+-- 'renderFiredMachine' below renders ONE spawned machine as a Surface
+-- @machine@ block (needs re-parsing before it's fireable again, and
+-- invisible to 'DMML.MachineFacts'-based candidate enumeration until
+-- it is), this renders EVERY resolved effect -- ordinary facts AND
+-- every spawned machine's own structure alike -- as real DMML Surface
+-- COMMITS, so a spawned machine is immediately fact-native: fireable
+-- via 'DMML.Fire.fireTransitionFromFacts' the instant these commits
+-- are applied, no round-trip.
+--
+-- Returns MULTIPLE commits, not one, because of the one hard
+-- constraint this whole design fits inside (confirmed by actually
+-- parsing real content, @.claude/skills/dmml-authoring@): a single
+-- commit can never assert the same (subject, predicate) key twice.
+-- 'DMML.MachineFacts.encodeMachine' emits exactly that shape for a
+-- machine with more than one state, transition, guard, or effect
+-- (@hasState@\/@hasTransition@\/@hasGuard@\/@hasEffect@, all genuinely
+-- multi-valued) -- so every spawned machine's encoded facts get ONE
+-- COMMIT EACH, never batched together. The ordinary (non-spawn)
+-- resolved facts still batch into a single leading commit exactly as
+-- 'renderFiredCommit' already does (reused directly, not
+-- reimplemented) -- there is no new duplicate-key risk there, nothing
+-- about ordinary assert\/retract resolution changed.
+renderFiredCommits :: Text -> [ResolvedEffect] -> [Text]
+renderFiredCommits verb effects =
+  [primary | not (null [() | ResolvedAssert {} <- effects]) || not (null [() | ResolvedRetract {} <- effects])]
+    ++ [renderFactAsCommit verb f | ResolvedSpawn m <- effects, f <- encodeMachine m]
+  where
+    primary = renderFiredCommit verb [e | e <- effects, not (isSpawn e)]
+    isSpawn ResolvedSpawn {} = True
+    isSpawn _ = False
+
+renderFactAsCommit :: Text -> FactStmt -> Text
+renderFactAsCommit verb f =
+  T.unlines $
+    ["commit " <> verb]
+      ++ ["  declare relation " <> p | PredIdent p <- [factPredicate f]]
+      ++ [factLine]
+  where
+    subjText = T.intercalate "/" (nodeRefSegments (factSubject f))
+    factLine = case factPredicate f of
+      RdfType -> "  " <> subjText <> " :: a " <> renderValue (factValue f)
+      PredIdent p -> "  " <> subjText <> " `" <> p <> "` " <> renderValue (factValue f)
+
 -- | The other half of "a spawned machine renders to real, re-parseable
 -- DMML Surface text" -- 'renderFiredCommit'\'s sibling for
 -- 'ResolvedSpawn' payloads, since a machine definition is a DIFFERENT
@@ -407,7 +455,12 @@ renderFiredCommit verb effects =
 -- indent per nesting level, as the door\/12 example there shows) so
 -- the output round-trips through 'DMML.Surface.parseMachineSurface' --
 -- UNVERIFIED in this sandbox (no megaparsec available to actually run
--- that parser here; see this change's own PR description).
+-- that parser here; see this change's own PR description). Kept
+-- alongside 'renderFiredCommits' above, not replaced by it -- a
+-- human-readable @machine@ block is still worth having (inspection,
+-- @--machine@ files for tools that want Surface text specifically),
+-- 'renderFiredCommits' is the path that makes a spawned machine
+-- immediately fireable without a re-parse.
 renderFiredMachine :: MachineStmt -> Text
 renderFiredMachine m =
   T.unlines $

@@ -170,3 +170,54 @@ sandbox regardless, see the PR's own testing notes). Also not
 attempted: a piece-by-piece live evaluator in `written-world`'s own
 style, noted above as a real, deliberate scope choice, not an
 oversight.
+
+## Phase 3, same day: wiring it into the Jev driver's actual problem
+
+Jason's ask, directly: "how does this affect our Jev evaluation?" then
+"wire it up." Two concrete closures against the driver's own disclosed
+gaps (`examples/jev-driver-demo/README.md`'s "Known, disclosed scope
+limits" section):
+
+1. **`DMML.Fire.renderFiredCommits`**: a spawned machine now renders as
+   real DMML Surface COMMITS (`DMML.MachineFacts.encodeMachine`'s
+   output, one commit per fact — the one hard constraint again) instead
+   of only a Surface `machine` block needing a parser round-trip.
+   Applied as `--world` files, a spawned machine is immediately
+   fireable (`fireTransitionFromFacts`) and immediately visible to
+   discovery (below) with zero re-parse. `renderFiredMachine`'s Surface
+   block is kept too, for inspection — not replaced, `renderFiredCommits`
+   is additive.
+2. **`DMML.MachineFacts.candidateTransitions`** (+ `machineNodesInSnapshot`):
+   real automatic candidate enumeration — every `(machine, transition,
+   params)` triple discoverable by querying a snapshot's own
+   `hasState`/`hasTransition` facts, no hand-authored `candidates.json`
+   entry needed. New `list-candidates` CLI exposes it. Real, disclosed
+   limit stated plainly in the driver's README: this only sees
+   FACT-NATIVE machines — a spawned one, or one deliberately authored
+   via `encodeMachine` — never a hand-authored Surface-text machine
+   (`cascade-demo`'s `furnace`/`anvil` stay invisible to it) unless that
+   too gets encoded.
+
+One real bug in the first draft of `machineNodesInSnapshot`, caught
+before compiling rather than at runtime this time: an over-engineered
+attempt at deduplication via a self-referential list comprehension with
+a repeated, nonsensical guard clause. Simplified to `nub` over the
+`NodeRef`s directly — `NodeRef` already derives `Eq`, nothing clever
+needed.
+
+Both new functions compiled and actually run for real
+(`spawn-facts-pipeline-selftest.hs`, `candidate-discovery-selftest.hs`)
+— the former proves a machine can fire a transition that never existed
+as anything but facts a PRIOR firing produced, closing the loop all the
+way from "machines and facts unified" (phases 1-2) through to "a Jev
+driver loop can discover and fire what a prior round's spawn produced,
+automatically" (this phase). `app/ListCandidates.hs` and
+`app/FireTransition.hs`'s updated output path remain UNCOMPILED, same
+disclosed reason as every other CLI touched this session (no megaparsec
+in this sandbox) — their own underlying logic is what's verified, not
+the thin CLI wrapper.
+
+Not done: the Python driver (`driver.py`) itself is not rewired to call
+`list-candidates` instead of reading `candidates.json` by hand. The
+capability exists and is documented; the driver's own candidate-loading
+code is untouched.

@@ -56,19 +56,31 @@ the first legal candidate each round — use this to check the loop's
 mechanics (legality, dedup, budgets, audit log) before spending a
 single Jev call or having a key at all.
 
-## Machines that spawn machines (not yet a candidate type here)
+## Machines that spawn machines, and where they land
 
-`DMML.Ast.EffectSpawn`/`spawn <term> from <node_ref>` (added alongside
-this driver) lets a transition mint a whole new machine instance, not
-just a fact — the mechanism for a seed world's producer machines to
-propagate their own structure, not only their own output. `candidates.json`
-in this demo doesn't exercise it yet (its two candidates are plain
-asserts, inherited from `cascade-demo`), but the driver's own dry-fire/
-dedup/budget loop applies to a spawn-firing candidate exactly the same
-way — `fire-transition` exiting 0 is still the legality oracle, a
-`ResolvedSpawn` in the output is just a different thing to write to the
-world dir (its own file, via `DMML.Fire.renderFiredMachine`, not
-appended into a commit file) and to register as a future `--machine`.
+`DMML.Ast.EffectSpawn`/`spawn <term> from <node_ref>` lets a transition
+mint a whole new machine instance, not just a fact. As of
+`DMML.Fire.renderFiredCommits`, a spawned machine renders as real DMML
+Surface **commits** — `DMML.MachineFacts.encodeMachine`'s output, one
+commit per fact (never two facts sharing a (subject, predicate) key in
+one commit — the one hard constraint the whole machines-as-facts design
+fits inside, see `dev-journal/2026-09-17-machine-facts-unification-phase1.md`)
+— not a Surface `machine` block needing a parser round-trip before it's
+usable again. Applied straight into the world dir as ordinary `--world`
+files, a spawned machine is immediately fireable via
+`DMML.Fire.fireTransitionFromFacts`, and immediately visible to
+`list-candidates`/`DMML.MachineFacts.candidateTransitions` below —
+verified end to end by `examples/jev-driver-demo/spawn-facts-pipeline-selftest.hs`:
+a machine fired a transition that had never existed as anything but
+facts a PRIOR firing produced. (`DMML.Fire.renderFiredMachine`'s Surface
+`machine` block still exists too, printed alongside, purely for human
+inspection or a tool that specifically wants Surface text.)
+
+`candidates.json` in this demo doesn't exercise spawn yet (its two
+candidates are plain asserts, inherited from `cascade-demo`), but the
+driver's own dry-fire/dedup/budget loop applies to a spawn-firing
+candidate exactly the same way — `fire-transition` exiting 0 is still
+the legality oracle.
 
 Before turning a driver loop loose on spawn-capable machines: run
 `check-spawn-cycles` over the full candidate machine set first. It
@@ -79,6 +91,30 @@ never did. A flagged cycle isn't automatically a bug (a guard could
 make the loop's next iteration unreachable in practice), but it's
 exactly the kind of thing this driver's `max_firings_per_candidate`
 budget cap exists to backstop if a real run turns out to hit it.
+
+## Automatic candidate discovery — real, for fact-native machines only
+
+`list-candidates <world.dmml>...` (new binary, `app/ListCandidates.hs`)
+prints every `(machine, transition, params)` triple it can find by
+querying a built snapshot directly — `DMML.MachineFacts.candidateTransitions`,
+compiled and tested for real (`examples/jev-driver-demo/candidate-discovery-selftest.hs`):
+built a snapshot from two real fact-native machines plus a THIRD
+machine that was only ever a Haskell value, never applied — discovery
+found exactly the first two's transitions and correctly never saw the
+third.
+
+**This is real automatic enumeration, not the same "hand-author
+`candidates.json`" limitation from before — but only for machines that
+exist AS FACTS.** A machine spawned via `EffectSpawn` (now that it
+renders as commits, see above) qualifies automatically. A hand-authored
+`cascade-demo`-style Surface-text machine does NOT, unless something
+also runs it through `DMML.MachineFacts.encodeMachine` — `furnace.dmml`/
+`anvil.dmml` are still invisible to `list-candidates` as written. Wiring
+this driver's own `candidates.json` to call `list-candidates` instead
+of a hand-written list is the natural next step for a seed world whose
+producer machines spawn their own successors, but it isn't done here —
+this README documents the capability existing, not the Python driver
+having been rewired to use it.
 
 ## Known, disclosed scope limits
 
@@ -136,3 +172,19 @@ byte. What's still unverified is anything touching the real
 `EffectSpawnInput` wire shape in `Json.hs`/`FromJson.hs` were written
 by mirroring the existing `assert`/`retract` code paths exactly, but
 neither has been compiled, let alone run.
+
+**Same session, next wave** (`renderFiredCommits`, `decodeMachineFromSnapshot`,
+`fireTransitionFromFacts`, `candidateTransitions`): compiled and
+actually run against the real, unmodified source the identical way —
+`spawn-facts-pipeline-selftest.hs` fires a spawner, checks
+`renderFiredCommits` produces one commit per encoded fact with no
+duplicate-key violations, then applies the SPAWNED machine's own facts
+and fires ITS transition too, end to end. `candidate-discovery-selftest.hs`
+builds a snapshot from two real fact-native machines and confirms
+`candidateTransitions` finds exactly their transitions, correctly
+missing a third machine that was never applied. `app/ListCandidates.hs`
+(new CLI) and `app/FireTransition.hs`'s updated `main` are, like every
+other CLI in this project, UNCOMPILED — both need `DMML.Surface` to
+parse real files, and megaparsec still isn't available here. Their own
+logic (`candidateTransitions`, `renderFiredCommits`) is the part that's
+actually verified; the thin CLI wrapper around it is not.

@@ -41,7 +41,7 @@ import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
 import DMML.Ast (MachineStmt, NodeRef (..), machineNode)
-import DMML.Fire (FireError (..), ResolvedEffect (..), fireTransition, renderFiredCommit, renderFiredMachine)
+import DMML.Fire (FireError (..), ResolvedEffect (..), fireTransition, renderFiredCommits, renderFiredMachine)
 import DMML.Guard (EvalContext (..))
 import DMML.LocalIdentity (localFileRef)
 import DMML.Materialize (IdentifiedCommit (..), applyIdentifiedCommits)
@@ -108,14 +108,18 @@ run args = do
       case fireTransition machines machine (argTransition args) ctx snap of
         Left err -> putStrLn ("fire-transition: refused -- " <> describeError err) >> exitFailure
         Right effects -> do
-          TIO.putStr (renderFiredCommit (argVerb args) effects)
-          -- A spawned machine is a SEPARATE top-level artifact from the
-          -- commit above, not part of it (see 'ResolvedSpawn's own doc
-          -- comment) -- printed after, clearly delimited, never folded
-          -- into the commit text. A caller that wants a spawned machine
-          -- to matter for FUTURE firings has to save this to a file and
-          -- pass it back in via --machine next time; this binary doesn't
-          -- do that on its own.
+          -- renderFiredCommits is the PRIMARY output: the ordinary
+          -- facts commit (if any) followed by one commit per spawned
+          -- machine's own encoded facts -- immediately re-applicable
+          -- (as --world files) with no Surface-parser round-trip, and
+          -- immediately visible to DMML.MachineFacts.candidateTransitions
+          -- once applied. Multiple commits print separated by a blank
+          -- line, matching how multiple --world files already read.
+          mapM_ (\c -> TIO.putStr c >> TIO.putStr "\n") (renderFiredCommits (argVerb args) effects)
+          -- Each spawned machine ALSO prints as a human-readable Surface
+          -- @machine@ block -- an inspection/--machine-file convenience,
+          -- not the path anything downstream needs; see renderFiredMachine's
+          -- own doc comment for why both forms are kept.
           mapM_ (\spawned -> TIO.putStr "\n" >> TIO.putStr (renderFiredMachine spawned)) [m | ResolvedSpawn m <- effects]
   where
     parseWorldFile :: FilePath -> IO IdentifiedCommit
