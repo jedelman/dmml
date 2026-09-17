@@ -99,6 +99,15 @@ class Candidate:
     # spawn's own captured Surface block gets written to, not knowable
     # ahead of time since it lives under a per-run mkdtemp world dir).
     spawns_followup: dict | None = None
+    # Optional: firing this candidate stops the round loop immediately
+    # afterward, win or lose, rather than being just another ordinary
+    # DMML transition. Deliberately still an ordinary transition (see
+    # season.dmml's `end()`) -- legal-checked, dedup-checked, offered to
+    # Jev alongside everything else -- rather than a fake pseudo-
+    # candidate bypassing dry_fire/apply_winner, so "give Jev a
+    # terminate option" doesn't require special-casing the mechanics,
+    # only the loop's own exit condition.
+    terminates: bool = False
 
 
 @dataclass
@@ -134,6 +143,7 @@ def load_config(path: Path) -> tuple[RunState, Budget, dict]:
             params=c.get("params", {}),
             description=c["description"],
             spawns_followup=c.get("spawns_followup"),
+            terminates=c.get("terminates", False),
         )
     b = cfg["budget"]
     budget = Budget(
@@ -425,6 +435,9 @@ def main() -> None:
         audit.write(json.dumps(record) + "\n")
         audit.flush()
         print(f"round {round_no}: fired {winner.id} ({minted} new node(s), {state.total_firings} total firings)")
+        if winner.terminates:
+            print(f"=== round {round_no}: {winner.id} terminates the run -- stopping by choice, not by budget ===")
+            break
         round_no += 1
 
     print(f"world dir: {world_dir}")

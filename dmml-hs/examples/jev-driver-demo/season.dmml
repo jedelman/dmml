@@ -1,0 +1,10 @@
+machine world/season
+
+  states
+    active
+    ended
+
+  transition end()
+    active -> ended
+    assert ended
+    retract active

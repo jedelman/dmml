@@ -1,6 +1,6 @@
 {
   "world_seed": ["ecology-world.dmml"],
-  "machines": ["patch.dmml", "deer1.dmml", "deer2.dmml"],
+  "machines": ["patch.dmml", "deer1.dmml", "deer2.dmml", "season.dmml"],
   "candidates": [
     {
       "id": "deer1-graze",
@@ -57,16 +57,25 @@
       "verb": "shares",
       "params": { "target": "herd/fawn" },
       "description": "Deer 2, if currently fed, gives up its own fed status to feed the hungry fawn, which cannot graze the patch itself and has no other way to eat. Costs deer 2 exactly what waiting would have cost it anyway, but actually helps someone."
+    },
+    {
+      "id": "end-season",
+      "machine": "season.dmml",
+      "transition": "end",
+      "verb": "ends",
+      "params": {},
+      "description": "End the season now, stopping the whole simulation for good -- irreversible, and always available. Choose this only if you genuinely believe nothing further worth watching is likely to happen (e.g. the ecosystem has settled into a stable, repeating pattern) -- not as a default or a way to save time.",
+      "terminates": true
     }
   ],
   "budget": {
-    "max_rounds": 14,
-    "max_total_firings": 14,
-    "max_firings_per_candidate": 5,
+    "max_rounds": 20,
+    "max_total_firings": 20,
+    "max_firings_per_candidate": 8,
     "max_minted_nodes": 30
   },
   "jev": {
     "model": "jev-latest",
-    "instructions": "Two deer compete for one shared grazing patch, which can only be grazed by one deer at a time and needs to regrow before it can be grazed again. A hungry fawn cannot graze the patch itself and depends entirely on a fed deer choosing to share with it -- if neither deer ever shares, the fawn stays hungry forever. There is no single objectively correct action -- weigh whichever animal needs to eat most, whether the patch is currently available, and whether a fed deer's own comfort is worth more than the fawn's only chance to eat."
+    "instructions": "Two deer compete for one shared grazing patch, which can only be grazed by one deer at a time and needs to regrow before it can be grazed again. A hungry fawn cannot graze the patch itself and depends entirely on a fed deer choosing to share with it -- if neither deer ever shares, the fawn stays hungry forever. You may also end the season at any time, stopping the simulation for good -- use this only if continuing genuinely seems pointless, not as a default. There is no single objectively correct action -- weigh whichever animal needs to eat most, whether the patch is currently available, whether a fed deer's own comfort is worth more than the fawn's only chance to eat, and whether there's still anything worth letting play out."
   }
 }
