@@ -56,6 +56,30 @@ the first legal candidate each round — use this to check the loop's
 mechanics (legality, dedup, budgets, audit log) before spending a
 single Jev call or having a key at all.
 
+## Machines that spawn machines (not yet a candidate type here)
+
+`DMML.Ast.EffectSpawn`/`spawn <term> from <node_ref>` (added alongside
+this driver) lets a transition mint a whole new machine instance, not
+just a fact — the mechanism for a seed world's producer machines to
+propagate their own structure, not only their own output. `candidates.json`
+in this demo doesn't exercise it yet (its two candidates are plain
+asserts, inherited from `cascade-demo`), but the driver's own dry-fire/
+dedup/budget loop applies to a spawn-firing candidate exactly the same
+way — `fire-transition` exiting 0 is still the legality oracle, a
+`ResolvedSpawn` in the output is just a different thing to write to the
+world dir (its own file, via `DMML.Fire.renderFiredMachine`, not
+appended into a commit file) and to register as a future `--machine`.
+
+Before turning a driver loop loose on spawn-capable machines: run
+`check-spawn-cycles` over the full candidate machine set first. It
+flags (never blocks) a template whose own spawn effects loop back to
+itself, directly or through others' — the "reproductive system for
+universes" risk a spawn capability raises that plain assert/retract
+never did. A flagged cycle isn't automatically a bug (a guard could
+make the loop's next iteration unreachable in practice), but it's
+exactly the kind of thing this driver's `max_firings_per_candidate`
+budget cap exists to backstop if a real run turns out to hit it.
+
 ## Known, disclosed scope limits
 
 - **Candidates are hand-authored, not auto-enumerated.** DMML has no
@@ -76,14 +100,39 @@ single Jev call or having a key at all.
 
 ## Testing status — read before trusting this
 
-This was written in a sandbox with no GHC/cabal toolchain and no Jev
-API key. `fire-transition` was never actually invoked, and no live
-call to `api.typesafe.ai` was made. The CLI argument shape comes
-straight from `FireTransition.hs`'s own `parseArgs`/usage string; the
-wire format (`POST /v1/systemone`, `Authorization: Bearer`,
-`{state, model, questions}` request, `{answers, usage}` response)
-comes from `docs.typesafe.ai`, both read directly rather than
-guessed. But "read the spec correctly" and "actually works" are
-different claims — run `--dry-run` first once `fire-transition` is
-built and on `PATH`, then a real run once the key is available, and
-expect to find at least one wiring mistake before either does.
+This was written in a sandbox with no network access to Hackage (a
+TUF signature-verification mismatch with the available cabal-install
+blocked fetching megaparsec/aeson; disabling that verification to
+route around it was correctly refused as security-weakening, not
+attempted) and no Jev API key. `fire-transition` was never actually
+invoked against real `.dmml` content, and no live call to
+`api.typesafe.ai` was made. The CLI argument shape comes straight from
+`FireTransition.hs`'s own `parseArgs`/usage string; the wire format
+(`POST /v1/systemone`, `Authorization: Bearer`, `{state, model,
+questions}` request, `{answers, usage}` response) comes from
+`docs.typesafe.ai`, both read directly rather than guessed. But "read
+the spec correctly" and "actually works" are different claims — run
+`--dry-run` first once `fire-transition` is built and on `PATH`, then a
+real run once the key is available, and expect to find at least one
+wiring mistake before either does.
+
+**What WAS actually compiled and run for real**, once a bare
+GHC/cabal-install was installed (`apt-get install ghc cabal-install`
+worked without any network dependency): every module in `dmml-hs/src`
+that doesn't transitively need megaparsec or aeson — `DMML.Ast`,
+`DMML.Guard`, `DMML.Materialize`, `DMML.Fire`, and the new
+`DMML.SpawnCycles` — was compiled against the REAL, unmodified source
+(only `DMML.Surface`/`DMML.Retroconsistency` were stubbed, with their
+real exported type signatures copied verbatim, to satisfy `Fire.hs`'s
+imports without a real parser). `spawn-cycles-selftest.hs` and
+`spawn-fire-selftest.hs` in this directory are real, executed test
+programs (not just `ghc -fno-code` type-checks) — the former caught
+and fixed a genuine off-by-one in the cycle-detection walk before it
+shipped; the latter fires a real `EffectSpawn` through the real
+`fireTransition`/`renderFiredMachine` and checks the output byte for
+byte. What's still unverified is anything touching the real
+`DMML.Surface` parser or `DMML.Json`/`DMML.FromJson`'s aeson instances
+— the new `spawn` grammar in `Surface.hs` and the new
+`EffectSpawnInput` wire shape in `Json.hs`/`FromJson.hs` were written
+by mirroring the existing `assert`/`retract` code paths exactly, but
+neither has been compiled, let alone run.

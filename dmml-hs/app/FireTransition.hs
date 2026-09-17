@@ -41,7 +41,7 @@ import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
 import DMML.Ast (MachineStmt, NodeRef (..), machineNode)
-import DMML.Fire (FireError (..), fireTransition, renderFiredCommit)
+import DMML.Fire (FireError (..), ResolvedEffect (..), fireTransition, renderFiredCommit, renderFiredMachine)
 import DMML.Guard (EvalContext (..))
 import DMML.LocalIdentity (localFileRef)
 import DMML.Materialize (IdentifiedCommit (..), applyIdentifiedCommits)
@@ -107,7 +107,16 @@ run args = do
           ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.fromList (argParams args)}
       case fireTransition machines machine (argTransition args) ctx snap of
         Left err -> putStrLn ("fire-transition: refused -- " <> describeError err) >> exitFailure
-        Right effects -> TIO.putStr (renderFiredCommit (argVerb args) effects)
+        Right effects -> do
+          TIO.putStr (renderFiredCommit (argVerb args) effects)
+          -- A spawned machine is a SEPARATE top-level artifact from the
+          -- commit above, not part of it (see 'ResolvedSpawn's own doc
+          -- comment) -- printed after, clearly delimited, never folded
+          -- into the commit text. A caller that wants a spawned machine
+          -- to matter for FUTURE firings has to save this to a file and
+          -- pass it back in via --machine next time; this binary doesn't
+          -- do that on its own.
+          mapM_ (\spawned -> TIO.putStr "\n" >> TIO.putStr (renderFiredMachine spawned)) [m | ResolvedSpawn m <- effects]
   where
     parseWorldFile :: FilePath -> IO IdentifiedCommit
     parseWorldFile path = do
@@ -138,6 +147,12 @@ describeError (FireRetractAmbiguous eff) =
   "a retract effect's (subject, predicate) currently has more than one live alternative -- refusing"
     <> " rather than cite just one of several: "
     <> show eff
+describeError (FireSpawnTemplateNotFound eff templateRef) =
+  "a spawn effect's template is not among the known machines -- pass it via --machine: "
+    <> show templateRef
+    <> " ("
+    <> show eff
+    <> ")"
 describeError (FireWouldBreakConsistency broken) =
   "firing would break the following currently-held guard(s) elsewhere in the known machine set:\n"
     <> unlines
