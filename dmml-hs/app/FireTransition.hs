@@ -41,7 +41,7 @@ import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
 import DMML.Ast (MachineStmt, NodeRef (..), machineNode)
-import DMML.Fire (FireError (..), fireTransition, renderFiredCommit)
+import DMML.Fire (FireError (..), ResolvedEffect (..), fireTransition, renderFiredCommits, renderFiredMachine)
 import DMML.Guard (EvalContext (..))
 import DMML.LocalIdentity (localFileRef)
 import DMML.Materialize (IdentifiedCommit (..), applyIdentifiedCommits)
@@ -107,7 +107,20 @@ run args = do
           ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.fromList (argParams args)}
       case fireTransition machines machine (argTransition args) ctx snap of
         Left err -> putStrLn ("fire-transition: refused -- " <> describeError err) >> exitFailure
-        Right effects -> TIO.putStr (renderFiredCommit (argVerb args) effects)
+        Right effects -> do
+          -- renderFiredCommits is the PRIMARY output: the ordinary
+          -- facts commit (if any) followed by one commit per spawned
+          -- machine's own encoded facts -- immediately re-applicable
+          -- (as --world files) with no Surface-parser round-trip, and
+          -- immediately visible to DMML.MachineFacts.candidateTransitions
+          -- once applied. Multiple commits print separated by a blank
+          -- line, matching how multiple --world files already read.
+          mapM_ (\c -> TIO.putStr c >> TIO.putStr "\n") (renderFiredCommits (argVerb args) effects)
+          -- Each spawned machine ALSO prints as a human-readable Surface
+          -- @machine@ block -- an inspection/--machine-file convenience,
+          -- not the path anything downstream needs; see renderFiredMachine's
+          -- own doc comment for why both forms are kept.
+          mapM_ (\spawned -> TIO.putStr "\n" >> TIO.putStr (renderFiredMachine spawned)) [m | ResolvedSpawn m <- effects]
   where
     parseWorldFile :: FilePath -> IO IdentifiedCommit
     parseWorldFile path = do
@@ -138,6 +151,14 @@ describeError (FireRetractAmbiguous eff) =
   "a retract effect's (subject, predicate) currently has more than one live alternative -- refusing"
     <> " rather than cite just one of several: "
     <> show eff
+describeError (FireSpawnTemplateNotFound eff templateRef) =
+  "a spawn effect's template is not among the known machines -- pass it via --machine: "
+    <> show templateRef
+    <> " ("
+    <> show eff
+    <> ")"
+describeError (FireMachineDecodeError err) =
+  "the acting machine's structure could not be decoded from the snapshot's live facts: " <> show err
 describeError (FireWouldBreakConsistency broken) =
   "firing would break the following currently-held guard(s) elsewhere in the known machine set:\n"
     <> unlines

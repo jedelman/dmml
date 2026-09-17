@@ -337,10 +337,36 @@ pEffectValue =
 -- 'pEffectValue' -- the same superset-of-'PatternTerm' parser
 -- 'pAssertGeneral' already uses, so only the terminal position can ever
 -- be a literal, matching 'DMML.Ast.Effect'\'s own doc comment.
+-- | @spawn <term> from <node_ref>@ -- added alongside 'DMML.Ast.EffectSpawn'
+-- for "machines produce machines." @<term>@ is the same
+-- 'pPatternTerm' every other effect's subject position uses (self\/
+-- @$param@\/a literal multi-segment node), the concrete node the new
+-- machine instance is minted at. @<node_ref>@ is always a literal
+-- multi-segment node reference (never @self@\/@$param@) naming an
+-- already-declared machine to copy states\/transitions from -- there
+-- is no principled way to guard "spawn from whichever machine this
+-- param happens to name" the way a fact's subject can be open, so the
+-- template position deliberately doesn't reuse 'pPatternTerm' at all.
+--
+-- UNCOMPILED in the change that introduced this: megaparsec was
+-- unavailable in the sandbox that wrote it (see this change's own PR
+-- description), so this parser was written by mirroring
+-- 'pEffectLine'\'s existing @assert@\/@retract@ idiom exactly, not
+-- verified against a real build. Compile and actually parse a real
+-- @spawn@ line before trusting it.
+pSpawnLine :: Parser Effect
+pSpawnLine = do
+  _ <- symbol "spawn"
+  newNode <- pPatternTerm
+  _ <- symbol "from"
+  template <- pNodeRefTok
+  pure (EffectSpawn newNode template)
+
 pEffectLine :: Parser Effect
 pEffectLine =
   (symbol "assert" *> (try pAssertGeneral <|> pAssertStateSugar))
     <|> (symbol "retract" *> (try pRetractGeneral <|> pRetractStateSugar))
+    <|> pSpawnLine
   where
     pAssertGeneral = do
       subj <- pPatternTerm

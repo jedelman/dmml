@@ -357,6 +357,10 @@ machineStmtFromInput input = do
           pred_ <- predicateRef (effectPointer <> "/predicate") predText
           mVal <- traverse (effectValueFromInput (effectPointer <> "/value")) mValIn
           pure (EffectRetract subj hops pred_ mVal)
+        J.EffectSpawnInput newNodeIn templateText -> do
+          newNode <- patternTermFromInput (effectPointer <> "/newNode") newNodeIn
+          template <- nodeRef (effectPointer <> "/template") templateText
+          pure (EffectSpawn newNode template)
 
     let hasContent = not (null guards) || (isJust (J.tiFrom t) && isJust (J.tiTo t)) || not (null effects)
     unless

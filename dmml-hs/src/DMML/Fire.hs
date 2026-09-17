@@ -50,7 +50,10 @@ module DMML.Fire
   , ResolvedEffect (..)
   , FireError (..)
   , fireTransition
+  , fireTransitionFromFacts
   , renderFiredCommit
+  , renderFiredCommits
+  , renderFiredMachine
   ) where
 
 import Data.List (nub)
@@ -59,6 +62,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import DMML.Ast
+import DMML.MachineFacts (DecodeError, decodeMachineFromSnapshot, encodeMachine)
 import DMML.Guard (EvalContext (..), mayFire, resolveTerm)
 import DMML.Materialize (WorldSnapshot, applyCommit, currentValueWithProvenance)
 import DMML.Retroconsistency (BrokenGuard (..), GateResult (..), gateConsistentTree)
@@ -92,6 +96,33 @@ data ResolvedEffect
     -- value, not the whole key -- see 'DMML.Ast.Effect'\'s own doc
     -- comment.
     ResolvedRetract Text PredicateRef (Maybe Value) StrongRef
+  | -- | An 'EffectSpawn' resolved: a genuinely new 'MachineStmt',
+    -- identical to its template's states\/transitions, with
+    -- 'machineNode' set to the concrete node the firing bound. Does
+    -- NOT go through 'gateCheck' or 'renderFiredCommit' -- a spawned
+    -- machine asserts and retracts no facts itself, so it has nothing
+    -- for the fact-consistency gate to check yet (its OWN guards only
+    -- start mattering once something tries to fire one of ITS
+    -- transitions, the same as any other authored machine). Rendered
+    -- separately, via 'renderFiredMachine'.
+    --
+    -- Real, disclosed caveat for any caller: this module has no view
+    -- of every machine that has EVER been spawned, only the @machines@
+    -- map a caller passed into this one 'fireTransition' call -- if a
+    -- caller doesn't register a spawned machine (by writing
+    -- 'renderFiredMachine'\'s output to a file and adding it to a
+    -- future @machines@ map, e.g. via @--machine@ the way
+    -- @app/FireTransition.hs@ already does for hand-authored ones), it
+    -- silently stops existing for firing purposes, even though the
+    -- fact-level world snapshot has no way to notice a machine went
+    -- missing (nothing about a spawn asserts a fact). Likewise, two
+    -- spawns (or a spawn and a hand-authored machine) resolving to the
+    -- SAME node collide the instant a caller merges them into one
+    -- @machines@ map -- this module doesn't know the full corpus of
+    -- every machine ever spawned, so it can't detect that collision
+    -- itself; always spawn onto a freshly-minted node, never a reused
+    -- one.
+    ResolvedSpawn MachineStmt
   deriving (Eq, Show)
 
 data FireError
@@ -138,6 +169,20 @@ data FireError
     -- rather than pick one alternative's citation to stand in for a
     -- broader deletion nobody actually authorized.
     FireRetractAmbiguous Effect
+  | -- | An 'EffectSpawn'\'s template 'NodeRef' doesn't name any machine
+    -- in the known @machines@ map this 'fireTransition' call was given
+    -- -- there is nothing to copy states\/transitions from. Unlike a
+    -- retract's provenance refusals, this is never a "materialize it
+    -- differently" fix: the caller must include the template machine
+    -- in @machines@ (the same @--machine@ gating @app/FireTransition.hs@
+    -- already uses for cross-machine guard checks covers this too).
+    FireSpawnTemplateNotFound Effect NodeRef
+  | -- | 'fireTransitionFromFacts' only: the acting machine's OWN
+    -- structure couldn't be decoded from the snapshot's live facts --
+    -- see 'DMML.MachineFacts.DecodeError'. Never produced by ordinary
+    -- 'fireTransition' (which takes an already-parsed 'MachineStmt'
+    -- directly, nothing to decode).
+    FireMachineDecodeError DecodeError
   | -- | Firing legally, and resolving every effect soundly, would still
     -- leave the world in a state where some OTHER guard -- on this
     -- machine or any other in the known set -- that held before this
@@ -174,9 +219,38 @@ fireTransition machines machine ident ctx snap =
     Nothing -> Left FireNotDeclared
     Just (False, _, _) -> Left FireBlocked
     Just (True, rawEffects, _to) -> do
-      effects <- concat <$> traverse (resolveOneEffect ctx snap) rawEffects
-      gateCheck machines snap effects
+      effects <- concat <$> traverse (resolveOneEffect machines ctx snap) rawEffects
+      -- A 'ResolvedSpawn' asserts no fact, so it has nothing for the
+      -- fact-consistency gate to check -- only the fact-shaped effects
+      -- go through 'gateCheck'\/'renderFiredCommit'; see 'ResolvedSpawn's
+      -- own doc comment for why a spawned machine's OWN guards are a
+      -- separate, later concern.
+      let factEffects = [e | e <- effects, isFactEffect e]
+      gateCheck machines snap factEffects
       pure effects
+  where
+    isFactEffect ResolvedSpawn {} = False
+    isFactEffect _ = True
+
+-- | Phase 2 of "machines and facts, unified": fires a transition on a
+-- machine whose OWN existence and structure come entirely from live
+-- facts in @snap@ -- decoded via 'DMML.MachineFacts.decodeMachineFromSnapshot',
+-- then handed to the ordinary, UNCHANGED 'fireTransition' above. A
+-- machine sourced this way is fired exactly as if it had been parsed
+-- from hand-authored Surface text; nothing about the rest of this
+-- module treats it differently once decoded.
+--
+-- @machines@ is still the caller's responsibility to assemble (same
+-- division of labor 'fireTransition' already has) -- this only decodes
+-- the ONE machine actually firing, not every machine 'gateCheck' or a
+-- spawn's template lookup might need; a caller wanting the rest of a
+-- fact-sourced world's machines in scope has to decode each of those
+-- the same way and add them to @machines@ itself.
+fireTransitionFromFacts :: Map.Map Text MachineStmt -> NodeRef -> Text -> EvalContext -> WorldSnapshot -> Either FireError [ResolvedEffect]
+fireTransitionFromFacts machines machineNodeRef ident ctx snap =
+  case decodeMachineFromSnapshot machineNodeRef snap of
+    Left err -> Left (FireMachineDecodeError err)
+    Right machine -> fireTransition machines machine ident ctx snap
 
 -- | Renders the resolved effects as a real commit, re-parses it, and
 -- applies it to @before@ to get @after@ -- gating against the ACTUAL
@@ -255,17 +329,27 @@ resolveRetractHops eff ctx snap anchor (hop : rest) = do
   (finalAnchor, more) <- resolveRetractHops eff ctx snap targetText rest
   pure (finalAnchor, retracted : more)
 
-resolveOneEffect :: EvalContext -> WorldSnapshot -> Effect -> Either FireError [ResolvedEffect]
-resolveOneEffect ctx _snap eff@(EffectAssert subjTerm predRef val) = do
+-- | Takes the known @machines@ map (needed only by 'EffectSpawn', to
+-- look up its template) alongside the context every effect kind
+-- already needed -- threaded through from 'fireTransition'\'s own
+-- first argument, not looked up some other way.
+resolveOneEffect :: Map.Map Text MachineStmt -> EvalContext -> WorldSnapshot -> Effect -> Either FireError [ResolvedEffect]
+resolveOneEffect _machines ctx _snap eff@(EffectAssert subjTerm predRef val) = do
   subjText <- resolveTermOrFail eff ctx subjTerm
   value <- resolveEffectValueToNode eff ctx val
   pure [ResolvedAssert ResolvedFact {rfSubject = subjText, rfPredicate = predRef, rfValue = value}]
-resolveOneEffect ctx snap eff@(EffectRetract subjTerm hops finalPred finalMVal) = do
+resolveOneEffect _machines ctx snap eff@(EffectRetract subjTerm hops finalPred finalMVal) = do
   subjText <- resolveTermOrFail eff ctx subjTerm
   (finalAnchor, hopRetracts) <- resolveRetractHops eff ctx snap subjText hops
   finalValResolved <- traverse (resolveEffectValueToNode eff ctx) finalMVal
   finalRetract <- resolveSingleRetract eff snap finalAnchor finalPred finalValResolved
   pure (hopRetracts ++ [finalRetract])
+resolveOneEffect machines ctx _snap eff@(EffectSpawn newNodeTerm templateRef) = do
+  newNodeText <- resolveTermOrFail eff ctx newNodeTerm
+  let templateText = T.intercalate "/" (nodeRefSegments templateRef)
+  template <- maybe (Left (FireSpawnTemplateNotFound eff templateRef)) Right (Map.lookup templateText machines)
+  let spawned = template {machineNode = NodeRef (T.splitOn "/" newNodeText)}
+  pure [ResolvedSpawn spawned]
 
 predText :: PredicateRef -> Text
 predText RdfType = "a"
@@ -314,3 +398,134 @@ renderFiredCommit verb effects =
                 ]
               | (subj, predRef, mVal, ref) <- retracts
               ]
+
+-- | Phase 3 of "machines and facts, unified" (dev-journal/2026-09-17):
+-- the OTHER way a 'ResolvedSpawn' can become real, applied content --
+-- as facts, straight into the same fact universe everything else
+-- lives in, never touching 'DMML.Surface'\'s parser at all. Where
+-- 'renderFiredMachine' below renders ONE spawned machine as a Surface
+-- @machine@ block (needs re-parsing before it's fireable again, and
+-- invisible to 'DMML.MachineFacts'-based candidate enumeration until
+-- it is), this renders EVERY resolved effect -- ordinary facts AND
+-- every spawned machine's own structure alike -- as real DMML Surface
+-- COMMITS, so a spawned machine is immediately fact-native: fireable
+-- via 'DMML.Fire.fireTransitionFromFacts' the instant these commits
+-- are applied, no round-trip.
+--
+-- Returns MULTIPLE commits, not one, because of the one hard
+-- constraint this whole design fits inside (confirmed by actually
+-- parsing real content, @.claude/skills/dmml-authoring@): a single
+-- commit can never assert the same (subject, predicate) key twice.
+-- 'DMML.MachineFacts.encodeMachine' emits exactly that shape for a
+-- machine with more than one state, transition, guard, or effect
+-- (@hasState@\/@hasTransition@\/@hasGuard@\/@hasEffect@, all genuinely
+-- multi-valued) -- so every spawned machine's encoded facts get ONE
+-- COMMIT EACH, never batched together. The ordinary (non-spawn)
+-- resolved facts still batch into a single leading commit exactly as
+-- 'renderFiredCommit' already does (reused directly, not
+-- reimplemented) -- there is no new duplicate-key risk there, nothing
+-- about ordinary assert\/retract resolution changed.
+renderFiredCommits :: Text -> [ResolvedEffect] -> [Text]
+renderFiredCommits verb effects =
+  [primary | not (null [() | ResolvedAssert {} <- effects]) || not (null [() | ResolvedRetract {} <- effects])]
+    ++ [renderFactAsCommit verb f | ResolvedSpawn m <- effects, f <- encodeMachine m]
+  where
+    primary = renderFiredCommit verb [e | e <- effects, not (isSpawn e)]
+    isSpawn ResolvedSpawn {} = True
+    isSpawn _ = False
+
+renderFactAsCommit :: Text -> FactStmt -> Text
+renderFactAsCommit verb f =
+  T.unlines $
+    ["commit " <> verb]
+      ++ ["  declare relation " <> p | PredIdent p <- [factPredicate f]]
+      ++ [factLine]
+  where
+    subjText = T.intercalate "/" (nodeRefSegments (factSubject f))
+    factLine = case factPredicate f of
+      RdfType -> "  " <> subjText <> " :: a " <> renderValue (factValue f)
+      PredIdent p -> "  " <> subjText <> " `" <> p <> "` " <> renderValue (factValue f)
+
+-- | The other half of "a spawned machine renders to real, re-parseable
+-- DMML Surface text" -- 'renderFiredCommit'\'s sibling for
+-- 'ResolvedSpawn' payloads, since a machine definition is a DIFFERENT
+-- top-level grammar production from a commit ('DMML.Ast.TopMachine' vs
+-- 'DMML.Ast.TopCommit'), never a fact a commit could carry. Mirrors
+-- 'SURFACE.md'\'s own documented machine grammar exactly (2-space
+-- indent per nesting level, as the door\/12 example there shows) so
+-- the output round-trips through 'DMML.Surface.parseMachineSurface' --
+-- UNVERIFIED in this sandbox (no megaparsec available to actually run
+-- that parser here; see this change's own PR description). Kept
+-- alongside 'renderFiredCommits' above, not replaced by it -- a
+-- human-readable @machine@ block is still worth having (inspection,
+-- @--machine@ files for tools that want Surface text specifically),
+-- 'renderFiredCommits' is the path that makes a spawned machine
+-- immediately fireable without a re-parse.
+renderFiredMachine :: MachineStmt -> Text
+renderFiredMachine m =
+  T.unlines $
+    ["machine " <> renderNodeRef (machineNode m)]
+      ++ ["  states"]
+      ++ ["    " <> stateIdent s | s <- machineStates m]
+      ++ [""]
+      ++ concatMap renderTransitionBlock (machineTransitions m)
+  where
+    renderTransitionBlock t =
+      [ "  transition " <> transitionIdent t <> "(" <> T.intercalate ", " (transitionParams t) <> ")"
+      ]
+        ++ [ "    " <> f <> " -> " <> to
+           | Just f <- [transitionFrom t]
+           , Just to <- [transitionTo t]
+           ]
+        ++ ["    " <> renderGuard g | g <- transitionGuards t]
+        ++ ["    " <> renderEffect e | e <- transitionEffects t]
+        ++ [""]
+
+renderNodeRef :: NodeRef -> Text
+renderNodeRef = T.intercalate "/" . nodeRefSegments
+
+renderPatternTerm :: PatternTerm -> Text
+renderPatternTerm TermSelf = "self"
+renderPatternTerm (TermParam p) = "$" <> p
+renderPatternTerm (TermNode n) = n
+renderPatternTerm (TermVar v) = v
+
+-- | @anchor \`predicate\` term (\`predicate\` term)*@ -- the exact
+-- textual shape 'DMML.Surface.pPattern' parses, run in reverse.
+renderPattern :: Pattern -> Text
+renderPattern (Pattern anchor hops) =
+  T.unwords (renderPatternTerm anchor : concatMap renderHop hops)
+  where
+    renderHop h = ["`" <> hopPredicate h <> "`", renderPatternTerm (hopTerm h)]
+
+renderGuard :: GuardClause -> Text
+renderGuard g =
+  "guard " <> (if guardNegated g then "not " else "") <> renderPattern (existsPattern (guardExists g))
+
+renderEffectValue :: EffectValue -> Text
+renderEffectValue (EffectValueTerm t) = renderPatternTerm t
+renderEffectValue (EffectValueLiteral lit) = renderValue (ValueLiteral lit)
+
+-- | Always renders the GENERAL form (@assert term \`pred\` value@ \/
+-- @retract term (\`pred\` term)* \`pred\` [value]@), never the old
+-- bare @assert\/retract <ident>@ state sugar -- both forms parse to
+-- the identical 'DMML.Ast.Effect' shape (a bare @assert unlocked@
+-- lowers to exactly @EffectAssert TermSelf (PredIdent "state")
+-- (EffectValueTerm (TermNode "unlocked"))@, per 'DMML.Ast.Effect'\'s
+-- own doc comment), so rendering only the general form loses no
+-- meaning; it's simply never worth reconstructing which surface
+-- spelling an already-parsed 'Effect' originally used.
+renderEffect :: Effect -> Text
+renderEffect (EffectAssert subj predRef val) =
+  "assert " <> renderPatternTerm subj <> " `" <> predText predRef <> "` " <> renderEffectValue val
+renderEffect (EffectRetract subj hops predRef mVal) =
+  "retract "
+    <> T.unwords (renderPatternTerm subj : concatMap renderHop hops)
+    <> " `"
+    <> predText predRef
+    <> "`"
+    <> maybe "" ((" " <>) . renderEffectValue) mVal
+  where
+    renderHop h = ["`" <> hopPredicate h <> "`", renderPatternTerm (hopTerm h)]
+renderEffect (EffectSpawn newNodeTerm templateRef) =
+  "spawn " <> renderPatternTerm newNodeTerm <> " from " <> renderNodeRef templateRef

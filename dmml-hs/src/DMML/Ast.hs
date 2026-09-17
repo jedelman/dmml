@@ -295,9 +295,35 @@ data PatternTerm
 -- OTHER transition's positive guard elsewhere -- see
 -- 'DMML.Retroconsistency.gateConsistentTree's 2026-09-04 generalization,
 -- now wired into every 'DMML.Fire.fireTransition' call).
+--
+-- | 'EffectSpawn' (added for the "machines produce machines" case
+-- Jason called "always in the plan" once assert/retract already let a
+-- firing mint a brand-new NODE for free) -- a transition can now also
+-- mint a brand-new MACHINE. Deliberately the smallest useful shape:
+-- @EffectSpawn newNode templateRef@ names an existing, already-declared
+-- machine (@templateRef@, looked up in the same known-machine-set every
+-- 'DMML.Fire.fireTransition' call already takes) whose 'machineStates'
+-- and 'machineTransitions' are copied verbatim onto a FRESH
+-- 'machineNode' ('newNode', resolved the same 'self'\/@$param@\/literal
+-- way any other effect's subject term is). No deep substitution is
+-- needed inside the copied body: every transition already refers to its
+-- owning node only via 'TermSelf', never by repeating the machine's own
+-- literal node, so "same body, different node identity" is the whole
+-- transformation -- matching a template MachineStmt's own commitment
+-- that nothing internal to it names itself by literal node text.
+-- Real, disclosed scope limit: the template itself is a NodeRef, not a
+-- resolvable term -- always a fixed, already-known machine kind chosen
+-- at authoring time, never itself picked from @$param@\/self at fire
+-- time (there is no principled way to guard "spawn from whichever
+-- machine this param happens to name" the same way a fact's subject
+-- can be open). See 'DMML.SpawnCycles' for the static check this
+-- capability makes newly necessary: a machine whose spawn effects loop
+-- back to its own template, directly or through others', can keep
+-- producing instances of itself forever.
 data Effect
   = EffectAssert PatternTerm PredicateRef EffectValue
   | EffectRetract PatternTerm [PatternHop] PredicateRef (Maybe EffectValue)
+  | EffectSpawn PatternTerm NodeRef
   deriving (Eq, Show)
 
 -- | An effect's asserted value: either a node reference (resolved from

@@ -260,6 +260,14 @@ data EffectInput
   | EffectRetractInput Text
   | EffectAssertGeneralInput PatternTermInput Text EffectValueInput
   | EffectRetractGeneralInput PatternTermInput [PatternHopInput] Text (Maybe EffectValueInput)
+  | -- | @{"kind": "spawn", "newNode": PatternTermInput, "template": "node/ref"}@
+    -- -- added alongside 'DMML.Ast.EffectSpawn' for "machines produce
+    -- machines." @template@ is a plain node-reference string (the same
+    -- wire shape @"node"@ fields use elsewhere, e.g. 'MachineInput's
+    -- own @miNode@), never a 'PatternTermInput' -- a spawn's template
+    -- is always a fixed, already-known machine kind, never itself
+    -- resolved from @self@\/@$param@ at fire time.
+    EffectSpawnInput PatternTermInput Text
   deriving (Eq, Show)
 
 instance FromJSON EffectInput where
@@ -272,6 +280,7 @@ instance FromJSON EffectInput where
       ("retract", Just ident) -> pure (EffectRetractInput ident)
       ("retract", Nothing) ->
         EffectRetractGeneralInput <$> o .: "subject" <*> o .:? "hops" .!= [] <*> o .: "predicate" <*> o .:? "value"
+      ("spawn", _) -> EffectSpawnInput <$> o .: "newNode" <*> o .: "template"
       (other, _) -> fail ("unknown EffectInput kind " <> show other)
 
 data TransitionInput = TransitionInput

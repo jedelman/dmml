@@ -118,6 +118,7 @@ machine <node_ref>
     retract <ident>
     assert <term> `<ident>` <value>
     retract <term> (`<ident>` <term>)* `<ident>` [<value>]
+    spawn <term> from <node_ref>
 ```
 
 - `machine <node_ref>` — the node the machine is attached to, e.g.
@@ -210,6 +211,78 @@ machine <node_ref>
   instead of firing. See `examples/chained-retract-demo/` for a real,
   worked, verified run of both the chain itself and the gate catching a
   real cross-machine break.
+- **`spawn <term> from <node_ref>`** — added alongside the general
+  assert\/retract form, for machines that produce OTHER machines, not
+  just facts. `<term>` is the same `self`\/`$param`\/literal-node
+  position every other effect's subject uses: the concrete node the
+  new machine instance is minted at. `<node_ref>` is always a literal,
+  already-declared machine — a *template* — whose `states` and
+  `transition`s are copied verbatim onto the fresh node. Real, worked
+  example:
+  ```
+  machine template/sapling
+    states
+      growing
+      grown
+
+    transition grow()
+      growing -> grown
+      guard self `watered` yes/1
+      retract growing
+      assert grown
+
+  machine forest/mother
+    states
+      idle
+
+    transition seed(name)
+      guard self `hasSpace` yes/1
+      spawn $name from template/sapling
+  ```
+  Firing `seed` with `$name` bound to `forest/sapling17` (a name
+  nobody has used before) mints a genuinely new machine — same states,
+  same transitions, `machineNode` now `forest/sapling17` — the same
+  instant it fires, the same way a general assert already mints a
+  brand-new NODE for free. **Real, disclosed scope limits**: the
+  template must already be a known machine at fire time (`--machine
+  template.dmml`, the same flag that already gates cross-machine guard
+  checks) — there is no way to spawn from a template that is itself
+  spawned earlier in the same firing. And nothing about firing a spawn
+  registers the new machine anywhere automatically — a caller that
+  wants the spawned machine to matter for FUTURE firings has to write
+  `DMML.Fire.renderFiredMachine`'s output to a file and pass it back in
+  as `--machine` next round, the same accumulation
+  `examples/jev-driver-demo/` already does for ordinary fired commits.
+  See `DMML.SpawnCycles` for the one new risk this capability raises
+  that assert/retract never did: a template whose own spawn effects
+  loop back to itself, directly or through others', can keep producing
+  instances of its own lineage forever — flagged there, not blocked,
+  since a guard elsewhere could make the loop's second iteration
+  unreachable in practice.
+
+## Substances (bulk aggregation) — no new grammar needed
+
+**`Mountain = Rock × 10000`**-shaped content — a bulk quantity of some
+kind of stuff, rather than 10000 individually-named nodes — needs no
+grammar extension at all. `Literal` already has `LitNumber`, and an
+ordinary fact's value position already accepts one. Two plain facts on
+the substance's own node say everything a discrete-node model would
+need thousands of nodes to say:
+
+```
+mountain/1 `substanceKind` rock
+mountain/1 `quantity` 10000
+```
+
+This is a convention, not a primitive — `substanceKind`/`quantity` are
+just two ordinary, `declare`-able predicates, chosen for readability,
+not enforced by anything. A real, disclosed reason NOT to add a
+dedicated `LitQuantity`\/`substance` AST node instead: nothing about
+quantity-tracking needs special parser or firing support — a
+transition can already `assert mountain/1 `quantity` 9999` to model
+one unit being consumed, the same general-form assert any other fact
+update uses. Reach for a real new primitive only if some future need
+can't already be said this way; two number-and-node facts already can.
 
 ## Example (machine)
 
