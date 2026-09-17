@@ -18,3 +18,11 @@ machine herd/deer2
     fed -> hungry
     assert hungry
     retract fed
+
+  transition share(target)
+    fed -> hungry
+    guard $target `need` status/hungry
+    assert $target `need` status/fed
+    retract $target `need` status/hungry
+    assert hungry
+    retract fed

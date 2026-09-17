@@ -41,6 +41,22 @@
       "verb": "regrows",
       "params": {},
       "description": "The grazed patch regrows, becoming available to graze again."
+    },
+    {
+      "id": "deer1-share-fawn",
+      "machine": "deer1.dmml",
+      "transition": "share",
+      "verb": "shares",
+      "params": { "target": "herd/fawn" },
+      "description": "Deer 1, if currently fed, gives up its own fed status to feed the hungry fawn, which cannot graze the patch itself and has no other way to eat. Costs deer 1 exactly what waiting would have cost it anyway, but actually helps someone."
+    },
+    {
+      "id": "deer2-share-fawn",
+      "machine": "deer2.dmml",
+      "transition": "share",
+      "verb": "shares",
+      "params": { "target": "herd/fawn" },
+      "description": "Deer 2, if currently fed, gives up its own fed status to feed the hungry fawn, which cannot graze the patch itself and has no other way to eat. Costs deer 2 exactly what waiting would have cost it anyway, but actually helps someone."
     }
   ],
   "budget": {
@@ -51,6 +67,6 @@
   },
   "jev": {
     "model": "jev-latest",
-    "instructions": "Two deer compete for one shared grazing patch, which can only be grazed by one deer at a time and needs to regrow before it can be grazed again. There is no single objectively correct action -- weigh whichever deer needs to eat, whether the patch is currently available, and whether it's worth letting the patch regrow instead of forcing a deer to wait hungry."
+    "instructions": "Two deer compete for one shared grazing patch, which can only be grazed by one deer at a time and needs to regrow before it can be grazed again. A hungry fawn cannot graze the patch itself and depends entirely on a fed deer choosing to share with it -- if neither deer ever shares, the fawn stays hungry forever. There is no single objectively correct action -- weigh whichever animal needs to eat most, whether the patch is currently available, and whether a fed deer's own comfort is worth more than the fawn's only chance to eat."
   }
 }
