@@ -1,0 +1,10 @@
+machine flora/oakTemplate
+
+  states
+    seed
+    sapling
+
+  transition sprout()
+    seed -> sapling
+    assert sapling
+    retract seed
