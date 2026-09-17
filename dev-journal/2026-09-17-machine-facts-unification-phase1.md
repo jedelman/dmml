@@ -83,3 +83,90 @@ separate work. Also not attempted: rendering the encoded facts to real
 Surface commit text (grouped into separate commits per the one hard
 constraint above) — this phase proves the STRUCTURE is soundly
 representable as facts, nothing about the render pipeline yet.
+
+## Phase 2, same day: `decodeMachineFromSnapshot` + `fireTransitionFromFacts`
+
+Before writing a line of this phase: checked whether this had prior
+art rather than assuming it didn't. `Materialize.hs`'s own header
+comment cites `written-world/dev-journal/2026-09-02-machines-as-facts-
+generic-guard-evaluator.md` — that exact path doesn't exist in the
+current `written-world` checkout (reorganized since, most likely), but
+`written-world`'s own `README.md` (which its `CLAUDE.md` explicitly
+names as the real architecture doc) does: `engine::machine` already
+runs a machine-as-graph-node model in production, on Oxigraph, with
+the identical core bet this module makes, verbatim from that crate's
+own module doc: "nothing here is a different *kind* of fact from
+anything in `graph.rs` — a requirement or effect is just another node
+with its own triples, read back the same way a room or item is."
+
+Real difference worth recording: `written-world`'s `Requirement`/
+`Effect` are three closed, hardcoded variants apiece — no general
+multi-hop pattern guard, so DMML's guard language is strictly richer
+and this module's encoding is correspondingly bigger. And
+`written-world` decodes ONE requirement/effect node at a time, on
+demand, as a live evaluation walks the graph (`requirement_met` takes
+one `Requirement` and evaluates it directly) — it never reconstructs a
+whole "Machine" struct. `decodeMachineFromSnapshot` deliberately takes
+the other real option: decode the WHOLE machine once, then hand it to
+`DMML.Guard`/`DMML.Fire`'s existing, already-tested functions
+unchanged. Lower risk (zero changes to load-bearing dispatch code) at
+the cost of being coarser-grained than a true piece-by-piece live
+evaluator — a real tradeoff, not a free lunch, and worth revisiting
+once the actual cost of decoding a whole machine per `mayFire` call is
+measured against something that matters.
+
+**`snapshotToFacts`**: flattens a real `WorldSnapshot`'s
+`Map (Text, Text) Alternatives` into ordinary `FactStmt`s — every live
+alternative becomes its own fact, so a key with several live
+alternatives (exactly `encodeMachine`'s multi-valued `hasState`/
+`hasTransition`/`hasGuard`/`hasEffect` shape) becomes exactly that many
+facts, matching what `decodeMachine` already expected from the phase-1
+test.
+
+**`fireTransitionFromFacts`**: decodes the acting machine from `snap`
+via `decodeMachineFromSnapshot`, then delegates straight to the
+ordinary, UNCHANGED `fireTransition`. New `FireMachineDecodeError`
+`FireError` case for when decode itself fails.
+
+## Two real bugs this phase's own test caught — recorded because both are informative, not just "it works now"
+
+1. **First version forgot the machine's own initial `state` fact.**
+   `fireTransitionFromFacts` refused with `FireBlocked`. Before
+   assuming a decode bug, fired the ORIGINAL, non-decoded `furnace`
+   against the identical (incomplete) snapshot first — it refused
+   identically, which proved the bug was in the test's snapshot setup,
+   not in decode. The actual cause: exactly the landmine
+   `.claude/skills/dmml-authoring` already documents — "A freshly
+   minted machine needs its own initial `state` fact... asserted in
+   the SAME commit that equips it." `encodeMachine` correctly does NOT
+   emit a `state` fact (a machine's current state is ordinary, mutable
+   WORLD data, not part of its structural definition — the same
+   distinction the skill draws), so the test had to assert one itself,
+   same as any real caller would.
+2. **Second version then hit `FireRetractNoProvenance`.** The
+   transition's `retract self \`state\`` effect needs a real
+   `StrongRef` to cite, which plain `applyCommit`/`applyCommits` never
+   provide (`DMML.Fire`'s own documented behavior, not new). Fixed by
+   switching the test to `applyIdentifiedCommits` with a synthetic-but-
+   real `StrongRef` per fact (same contract `DMML.LocalIdentity.localFileRef`
+   satisfies for a real file, minted deterministically here since the
+   test has no file to hash).
+
+Once both were fixed: firing the fact-sourced machine produces the
+BYTE-IDENTICAL rendered commit to firing the hand-authored machine
+directly, checked by actual string equality, not by inspection. That's
+the real closure claim proven, not asserted.
+
+## What's still not done
+
+`Guard.hs`/`Fire.hs`'s own source is completely unchanged — every new
+capability lives in the new functions (`decodeMachineFromSnapshot`,
+`fireTransitionFromFacts`), additively. Not attempted: rendering
+`encodeMachine`'s output to real Surface commit text (grouped into
+separate commits, per phase 1's own constraint) — everything in phase
+2's test builds `CommitStmt`/`IdentifiedCommit` values directly in
+Haskell, never through `DMML.Surface`'s parser (unavailable in this
+sandbox regardless, see the PR's own testing notes). Also not
+attempted: a piece-by-piece live evaluator in `written-world`'s own
+style, noted above as a real, deliberate scope choice, not an
+oversight.

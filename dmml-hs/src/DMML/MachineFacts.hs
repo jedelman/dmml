@@ -1,18 +1,37 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- | Phase 1 of "machines and facts, unified" (Jason: "I'd like machines
--- to have the same guards as facts -- desiring machines, remember?").
--- A real, bidirectional encoding between 'MachineStmt' and flat fact
--- lists -- proof that a machine's structure can be SAID entirely as
--- facts, before anything about @DMML.Guard@\/@DMML.Fire@\'s actual
--- dispatch is touched. Deliberately scoped no further than that: this
--- module knows nothing about 'DMML.Materialize.WorldSnapshot',
--- multi-commit assertion, or firing -- it operates on a plain
--- @[FactStmt]@, the smallest thing that could prove the encoding
--- itself is sound. Wiring @mayFire@\/@fireTransition@ to read a
--- machine's structure FROM a snapshot's live facts, instead of from an
--- already-parsed 'MachineStmt' record, is real, separate, larger work
--- this phase deliberately does not attempt.
+-- | Phases 1 AND 2 of "machines and facts, unified" (Jason: "I'd like
+-- machines to have the same guards as facts -- desiring machines,
+-- remember?"). Phase 1: a real, bidirectional encoding between
+-- 'MachineStmt' and flat fact lists -- proof that a machine's
+-- structure can be SAID entirely as facts. Phase 2:
+-- 'decodeMachineFromSnapshot', reading that structure back out of a
+-- REAL 'DMML.Materialize.WorldSnapshot' -- the thing a live commit
+-- history actually produces, not just a hand-built @[FactStmt]@.
+--
+-- This design is NOT invented from nothing: @jedelman/written-world@
+-- (a separate, working Rust prototype -- `engine::machine`) already
+-- runs a machine-as-graph-node model in production, on the identical
+-- core bet this module makes -- "nothing here is a different *kind* of
+-- fact from anything else in the graph; a requirement or effect is
+-- just another node with its own triples, read back the same way a
+-- room or item is" (that crate's own module doc, verbatim). Checked
+-- directly before writing a line of this phase, not assumed. Real
+-- differences, not oversights: `written-world`'s `Requirement`/`Effect`
+-- are three closed, hardcoded variants apiece (no general multi-hop
+-- pattern guard); DMML's guard language is strictly richer, so this
+-- module's encoding is correspondingly bigger. And `written-world`
+-- decodes ONE requirement/effect node at a time, on demand, as a live
+-- evaluation walks the graph -- it never reconstructs a whole "Machine"
+-- struct. This module's phase-2 entry point (`decodeMachineFromSnapshot`)
+-- deliberately takes the OTHER real option instead: decode the WHOLE
+-- machine once, then hand it to the existing, already-tested
+-- `DMML.Guard`/`DMML.Fire` functions unchanged -- much lower risk (zero
+-- changes to load-bearing, heavily-exercised dispatch code) at the cost
+-- of being coarser-grained than a true piece-by-piece live evaluator.
+-- Worth revisiting once this phase's real cost (decoding a whole
+-- machine's worth of facts on every `mayFire` call) is actually
+-- measured against something that matters, not before.
 --
 -- ONE hard constraint this design had to fit inside, confirmed by
 -- actually parsing real content (see @.claude/skills/dmml-authoring@):
@@ -52,6 +71,8 @@
 module DMML.MachineFacts
   ( encodeMachine
   , decodeMachine
+  , decodeMachineFromSnapshot
+  , snapshotToFacts
   , DecodeError (..)
   ) where
 
@@ -61,6 +82,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import DMML.Ast
+import DMML.Materialize (Alternatives (..), WorldSnapshot (..))
 
 sp :: Span
 sp = Span "/machine-facts"
@@ -356,3 +378,40 @@ decodeMachine mNode facts = do
         "number" -> Right (EffectValueLiteral (LitNumber txt))
         "bool" -> Right (EffectValueLiteral (LitBoolean (txt == "true")))
         other -> Left (MalformedFact eNode "effectValueKind" other)
+
+-- ---------------------------------------------------------------------
+-- phase 2: a real WorldSnapshot, not just a hand-built fact list
+-- ---------------------------------------------------------------------
+
+-- | Every LIVE alternative in @snap@, flattened to ordinary
+-- 'FactStmt's -- one per (subject, predicate, value) actually present,
+-- so a key with several live alternatives (exactly the multi-valued
+-- @hasState@\/@hasTransition@\/@hasGuard@\/@hasEffect@ shape
+-- 'encodeMachine' relies on) becomes exactly that many facts here, the
+-- same as if each had genuinely been asserted in its own commit and
+-- read back. Provenance (the label, the optional real 'StrongRef')
+-- is NOT carried through -- 'decodeMachine' never needed it, and nothing
+-- about "which commit said this" changes what a machine legally IS.
+snapshotToFacts :: WorldSnapshot -> [FactStmt]
+snapshotToFacts snap =
+  [ FactStmt {factSubject = NodeRef (T.splitOn "/" subj), factPredicate = PredIdent pred_, factValue = v, factSpan = sp}
+  | ((subj, pred_), alts) <- Map.toList (snapshotFacts snap)
+  , (_label, v) <- dedupValues alts
+  ]
+  where
+    -- 'Alternatives' is already deduped on value by construction
+    -- (DMML.Materialize.addAlternative), but reading through
+    -- 'alternativeEntries' directly here rather than importing
+    -- 'DMML.Materialize.alternativeValues' avoids a second import just
+    -- for a one-line drop of the (Maybe StrongRef) column.
+    dedupValues (Alternatives xs) = [(label, v) | (label, _ref, v) <- xs]
+
+-- | The real phase-2 entry point: decodes @mNode@\'s structure from
+-- whatever a real 'WorldSnapshot' currently holds about it (and its
+-- own minted sub-nodes), not from a hand-authored 'MachineStmt' at
+-- all. A machine sourced this way is indistinguishable, once decoded,
+-- from one parsed straight out of Surface text -- verified by this
+-- module's own round-trip test firing a transition off exactly that
+-- decoded result.
+decodeMachineFromSnapshot :: NodeRef -> WorldSnapshot -> Either DecodeError MachineStmt
+decodeMachineFromSnapshot mNode snap = decodeMachine mNode (snapshotToFacts snap)

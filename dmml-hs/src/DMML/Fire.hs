@@ -50,6 +50,7 @@ module DMML.Fire
   , ResolvedEffect (..)
   , FireError (..)
   , fireTransition
+  , fireTransitionFromFacts
   , renderFiredCommit
   , renderFiredMachine
   ) where
@@ -60,6 +61,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import DMML.Ast
+import DMML.MachineFacts (DecodeError, decodeMachineFromSnapshot)
 import DMML.Guard (EvalContext (..), mayFire, resolveTerm)
 import DMML.Materialize (WorldSnapshot, applyCommit, currentValueWithProvenance)
 import DMML.Retroconsistency (BrokenGuard (..), GateResult (..), gateConsistentTree)
@@ -174,6 +176,12 @@ data FireError
     -- in @machines@ (the same @--machine@ gating @app/FireTransition.hs@
     -- already uses for cross-machine guard checks covers this too).
     FireSpawnTemplateNotFound Effect NodeRef
+  | -- | 'fireTransitionFromFacts' only: the acting machine's OWN
+    -- structure couldn't be decoded from the snapshot's live facts --
+    -- see 'DMML.MachineFacts.DecodeError'. Never produced by ordinary
+    -- 'fireTransition' (which takes an already-parsed 'MachineStmt'
+    -- directly, nothing to decode).
+    FireMachineDecodeError DecodeError
   | -- | Firing legally, and resolving every effect soundly, would still
     -- leave the world in a state where some OTHER guard -- on this
     -- machine or any other in the known set -- that held before this
@@ -222,6 +230,26 @@ fireTransition machines machine ident ctx snap =
   where
     isFactEffect ResolvedSpawn {} = False
     isFactEffect _ = True
+
+-- | Phase 2 of "machines and facts, unified": fires a transition on a
+-- machine whose OWN existence and structure come entirely from live
+-- facts in @snap@ -- decoded via 'DMML.MachineFacts.decodeMachineFromSnapshot',
+-- then handed to the ordinary, UNCHANGED 'fireTransition' above. A
+-- machine sourced this way is fired exactly as if it had been parsed
+-- from hand-authored Surface text; nothing about the rest of this
+-- module treats it differently once decoded.
+--
+-- @machines@ is still the caller's responsibility to assemble (same
+-- division of labor 'fireTransition' already has) -- this only decodes
+-- the ONE machine actually firing, not every machine 'gateCheck' or a
+-- spawn's template lookup might need; a caller wanting the rest of a
+-- fact-sourced world's machines in scope has to decode each of those
+-- the same way and add them to @machines@ itself.
+fireTransitionFromFacts :: Map.Map Text MachineStmt -> NodeRef -> Text -> EvalContext -> WorldSnapshot -> Either FireError [ResolvedEffect]
+fireTransitionFromFacts machines machineNodeRef ident ctx snap =
+  case decodeMachineFromSnapshot machineNodeRef snap of
+    Left err -> Left (FireMachineDecodeError err)
+    Right machine -> fireTransition machines machine ident ctx snap
 
 -- | Renders the resolved effects as a real commit, re-parses it, and
 -- applies it to @before@ to get @after@ -- gating against the ACTUAL

@@ -153,6 +153,8 @@ describeError (FireSpawnTemplateNotFound eff templateRef) =
     <> " ("
     <> show eff
     <> ")"
+describeError (FireMachineDecodeError err) =
+  "the acting machine's structure could not be decoded from the snapshot's live facts: " <> show err
 describeError (FireWouldBreakConsistency broken) =
   "firing would break the following currently-held guard(s) elsewhere in the known machine set:\n"
     <> unlines
