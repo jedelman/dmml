@@ -37,6 +37,23 @@ means, and the rule is different in different grammar positions**:
     giving the door a *separate*, multi-segment, externally-checkable
     fact (`door/1 `status` status/passable`) to guard on instead of
     trying to literal-match a single-segment value from outside.
+  - **Hit again, twice more, in a single later session** (`guard
+    $patch `state` lush`, then `guard $target `state` hungry` — the
+    second masked by an unrelated downstream refusal that looked like
+    the guard had correctly failed). Getting bitten by the identical
+    mistake three times is what `check-guard-literals` exists to catch
+    mechanically instead of by re-reading this section every time —
+    **run it on every machine file before firing anything**:
+    `check-guard-literals <machine.dmml> [<machine.dmml> ...]`. It
+    scans every guard term across the given machine set and flags any
+    bare (slash-free) term whose text collides with a state name some
+    machine in that set actually declares — exactly this landmine,
+    caught before a live run rather than after a confusing refusal (or
+    worse, a guard that silently passes when it shouldn't). Non-
+    blocking by design (same posture as `check-declared`): a hit is a
+    warning to read, not proof the content is wrong, since an
+    intentionally open pattern variable can legitimately share a word
+    with an unrelated state.
 - **In a `states` block declaration**: only a **single-segment**
   identifier is legal — `pStateLine` uses `pIdent`, which has no `/`
   in its grammar at all. `states\n  state/open` is REJECTED outright
@@ -381,6 +398,10 @@ pattern for dot-syntax facts too if the file mixes styles).
 
 1. Every guard-pattern term you want to literal-match: does it have a
    `/`? If not, it's an existential variable, not what you think it is.
+   Run `check-guard-literals <machine.dmml>...` before firing anything
+   — it catches exactly this, mechanically, across every guard in the
+   given machine set (see this file's first section for what it hit
+   three separate times before it existed).
 2. Every `from -> to` transition: does it have BOTH an explicit
    `assert to` AND a `retract from`?
 3. Every transition you expect to actually *fire* (not just list): does
