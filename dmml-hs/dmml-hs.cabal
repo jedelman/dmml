@@ -38,6 +38,7 @@ library
       DMML.LocalIdentity
       DMML.Loader
       DMML.Materialize
+      DMML.MachineFacts
       DMML.Retroconsistency
       DMML.SelfDeclaration
       DMML.SpawnCycles
