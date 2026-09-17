@@ -1,0 +1,14 @@
+machine smithy/workbench
+
+  states
+    idle
+
+  transition craftBlade(spot)
+    idle -> idle
+    spawn $spot from object/bladeTemplate
+    assert $spot `state` raw
+
+  transition craftHandle(spot)
+    idle -> idle
+    spawn $spot from object/handleTemplate
+    assert $spot `state` raw

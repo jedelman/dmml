@@ -1,0 +1,10 @@
+machine object/handleTemplate
+
+  states
+    raw
+    carved
+
+  transition carve()
+    raw -> carved
+    assert carved
+    retract raw

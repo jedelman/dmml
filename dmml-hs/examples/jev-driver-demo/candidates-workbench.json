@@ -1,0 +1,46 @@
+{
+  "world_seed": ["workbench-world.dmml"],
+  "machines": ["workbench.dmml", "bladeTemplate.dmml", "handleTemplate.dmml"],
+  "candidates": [
+    {
+      "id": "craft-blade",
+      "machine": "workbench.dmml",
+      "transition": "craftBlade",
+      "verb": "crafts",
+      "params": { "spot": "object/piece1" },
+      "description": "Craft a raw blade at the workbench. A genuinely different kind of object than a handle -- the workbench can spawn either, this is one choice among several possible objects.",
+      "spawns_followup": {
+        "id": "forge-blade",
+        "transition": "forge",
+        "verb": "forges",
+        "params": {},
+        "description": "Forge the raw blade into a finished one, now that it's been crafted."
+      }
+    },
+    {
+      "id": "craft-handle",
+      "machine": "workbench.dmml",
+      "transition": "craftHandle",
+      "verb": "crafts",
+      "params": { "spot": "object/piece2" },
+      "description": "Craft a raw handle at the workbench. A genuinely different kind of object than a blade -- the workbench can spawn either, this is one choice among several possible objects.",
+      "spawns_followup": {
+        "id": "carve-handle",
+        "transition": "carve",
+        "verb": "carves",
+        "params": {},
+        "description": "Carve the raw handle into a finished one, now that it's been crafted."
+      }
+    }
+  ],
+  "budget": {
+    "max_rounds": 8,
+    "max_total_firings": 8,
+    "max_firings_per_candidate": 3,
+    "max_minted_nodes": 20
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "A workbench can craft either a blade or a handle -- two genuinely different kinds of object, your choice. There is no objectively correct order. Once crafted, a raw piece can be finished (forged or carved)."
+  }
+}

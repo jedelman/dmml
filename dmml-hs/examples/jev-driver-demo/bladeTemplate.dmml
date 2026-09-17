@@ -1,0 +1,10 @@
+machine object/bladeTemplate
+
+  states
+    raw
+    forged
+
+  transition forge()
+    raw -> forged
+    assert forged
+    retract raw

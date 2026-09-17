@@ -1,0 +1,4 @@
+commit setup
+  declare relation state
+
+  smithy/workbench `state` idle
