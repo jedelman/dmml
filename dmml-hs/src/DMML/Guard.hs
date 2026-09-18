@@ -75,7 +75,17 @@ resolveTerm :: PatternTerm -> EvalContext -> Maybe Text
 resolveTerm TermSelf ctx = Just (ctxSelfNode ctx)
 resolveTerm (TermParam name) ctx = Map.lookup name (ctxParams ctx)
 resolveTerm (TermVar _) _ = Nothing
-resolveTerm (TermBind v) ctx = Map.lookup v (ctxBindings ctx)
+-- A binder resolves from a guard that already bound it, and FAILING
+-- THAT from the caller's own params. That fallback is what makes an
+-- ambiguous refusal answerable: the engine refuses and names the
+-- candidates, the chooser picks one, and the caller passes it back in as
+-- an ordinary @--param@ that pre-binds the binder to exactly that
+-- witness. Without it, "narrow it with a --param" would be advice the
+-- engine did not actually honour.
+resolveTerm (TermBind v) ctx =
+  case Map.lookup v (ctxBindings ctx) of
+    Just x -> Just x
+    Nothing -> Map.lookup v (ctxParams ctx)
 resolveTerm (TermNode n) _ = Just n
 
 nodeRefText :: NodeRef -> Text

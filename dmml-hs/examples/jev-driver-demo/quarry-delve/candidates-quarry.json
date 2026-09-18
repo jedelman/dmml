@@ -1,0 +1,39 @@
+{
+  "world_seed": [
+    "world.dmml",
+    "rock2.dmml",
+    "rock3.dmml",
+    "grade.dmml"
+  ],
+  "machines": [
+    "digger.dmml"
+  ],
+  "candidates": [
+    {
+      "id": "dig",
+      "machine": "digger.dmml",
+      "transition": "take",
+      "verb": "takes",
+      "params": {},
+      "description": "Take a rock from the north quarry. The quarry holds several; each is spent when taken, and when they are gone there is no more stone."
+    },
+    {
+      "id": "rest",
+      "machine": "digger.dmml",
+      "transition": "rest",
+      "verb": "rests",
+      "params": {},
+      "description": "Down tools and go back to idle, so the crew can dig again."
+    }
+  ],
+  "budget": {
+    "max_rounds": 16,
+    "max_total_firings": 12,
+    "max_firings_per_candidate": 6,
+    "max_minted_nodes": 80
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "You are a quarry crew. Stone is finite: every rock you take is gone, and nothing anywhere records how many are left -- you find out by whether there is still one to take. rock/2 is graded ore/rich; the others are not."
+  }
+}

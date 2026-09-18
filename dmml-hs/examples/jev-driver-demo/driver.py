@@ -197,6 +197,13 @@ class Candidate:
     # terminate option" doesn't require special-casing the mechanics,
     # only the loop's own exit condition.
     terminates: bool = False
+    # Params set by answering an ambiguous-binding question, cleared the
+    # moment this candidate fires. A binding is a choice about ONE
+    # firing -- which rock, this time -- not a standing configuration.
+    # Left in place it would silently re-take a rock already spent, and
+    # the guard would then refuse for a reason that looks nothing like
+    # the real one.
+    bound_params: set[str] = field(default_factory=set)
 
 
 @dataclass
@@ -324,6 +331,33 @@ def dry_fire(candidate: Candidate, state: RunState, extra_world_files: list[str]
     return True, proc.stdout
 
 
+AMBIG_VAR_RE = re.compile(r"^ambiguous-binding:\s*(\S+)\s*$", re.M)
+AMBIG_CAND_RE = re.compile(r"^candidate:\s*(\S+)\s*$", re.M)
+
+
+def parse_ambiguity(stderr: str) -> tuple[str, list[str]] | None:
+    """Read `fire-transition`'s ambiguous-binding refusal back out.
+
+    A `?binder` that matches several witnesses is refused rather than
+    resolved, deliberately: picking one would be an arbitrary choice with
+    fully observable consequences, so the engine hands it over instead
+    (DMML.Guard.GuardAmbiguousBinding). It prints the candidates on
+    stable `ambiguous-binding:` / `candidate:` lines precisely so a
+    driver can turn the refusal into a real question without scraping
+    prose.
+
+    That is the whole point of refusing: the engine enumerates the
+    options, the chooser picks, and the pick comes back as an ordinary
+    `--param` that pre-binds the binder. A refusal is a question with its
+    answers already listed, not a dead end.
+    """
+    var = AMBIG_VAR_RE.search(stderr)
+    if not var:
+        return None
+    options = AMBIG_CAND_RE.findall(stderr)
+    return (var.group(1), options) if options else None
+
+
 def legal_candidates(state: RunState) -> list[tuple[Candidate, str]]:
     legal = []
     for c in state.candidates.values():
@@ -335,6 +369,35 @@ def legal_candidates(state: RunState) -> list[tuple[Candidate, str]]:
             continue  # legal, but identical to its own last firing -- not new
         legal.append((c, out))
     return legal
+
+
+def scan_candidates(state: RunState) -> tuple[list[tuple[Candidate, str]], list[tuple[Candidate, str, list[str]]]]:
+    """One dry-fire pass, two answers: what is legal now, and what is
+    refused ONLY because a binder is ambiguous.
+
+    Deliberately one pass. Dry-firing is a subprocess per candidate that
+    re-parses every accumulated world file, which is far and away the
+    most expensive thing this loop does; scanning twice to answer two
+    questions about the same call would double the dominant cost for
+    nothing.
+
+    A pending candidate is not illegal -- it is legal several ways at
+    once, and the engine refuses to choose among them. Each is a question
+    with its options already enumerated by the guard evaluator.
+    """
+    legal: list[tuple[Candidate, str]] = []
+    pending: list[tuple[Candidate, str, list[str]]] = []
+    for c in state.candidates.values():
+        ok, out = dry_fire(c, state)
+        if ok:
+            h = hashlib.sha256(out.encode()).hexdigest()
+            if h != c.last_hash:  # legal, but identical to its own last firing -- not new
+                legal.append((c, out))
+            continue
+        amb = parse_ambiguity(out)
+        if amb:
+            pending.append((c, amb[0], amb[1]))
+    return legal, pending
 
 
 def group_into_generations(
@@ -439,6 +502,7 @@ def call_jev_batch(
     state_summary: str,
     groups: list[list[tuple]],
     frontier: list[tuple[str, str]] = (),
+    bindings: list[tuple[str, str, str, list[str]]] = (),
 ) -> dict:
     questions = {}
     for i, group in enumerate(groups):
@@ -446,6 +510,16 @@ def call_jev_batch(
             "type": "choice",
             "instructions": instructions,
             "criteria": {c.id: c.description for c, _ in group},
+        }
+    for key, var, desc, options in bindings:
+        questions[key] = {
+            "type": "choice",
+            "instructions": (
+                desc
+                + " Choose as the delver, by what you want. The engine found these and refused to"
+                + " pick for you."
+            ),
+            "criteria": {o: o for o in options},
         }
     if frontier:
         questions["frontier"] = {
@@ -919,6 +993,9 @@ def apply_winner(candidate: Candidate, output: str, world_dir: Path, round_no: i
     state.total_firings += 1
     candidate.firings += 1
     candidate.last_hash = hashlib.sha256(output.encode()).hexdigest()
+    for k in candidate.bound_params:
+        candidate.params.pop(k, None)
+    candidate.bound_params.clear()
     return len(new_nodes)
 
 
@@ -954,11 +1031,9 @@ def main() -> None:
             print(f"=== stopped: hit max_minted_nodes={budget.max_minted_nodes} ===")
             break
 
-        legal = [
-            (c, out)
-            for c, out in legal_candidates(state)
-            if c.firings < budget.max_firings_per_candidate
-        ]
+        scanned, pending = scan_candidates(state)
+        legal = [(c, out) for c, out in scanned if c.firings < budget.max_firings_per_candidate]
+        pending = [p for p in pending if p[0].firings < budget.max_firings_per_candidate]
         # An unmapped edge is DEMAND, not exhaustion. The old loop
         # stopped the moment nothing was legal; that treated the frontier
         # running dry as the end of the run, when it is precisely the
@@ -966,7 +1041,11 @@ def main() -> None:
         # nothing to do AND nowhere left that anyone opened and never
         # entered.
         unmapped = unmapped_frontier(state) if extend.enabled else []
-        if not legal and not unmapped:
+        # A pending binding is a QUESTION, not an absence of work. Left
+        # out of this condition the loop stops with a decision sitting
+        # unasked on the table -- which is exactly the bug a first
+        # dry run of this scenario showed.
+        if not legal and not unmapped and not pending:
             if extend.enabled:
                 print(
                     f"=== round {round_no}: fixpoint -- nothing legal, and no unmapped edge left to "
@@ -987,6 +1066,21 @@ def main() -> None:
         # Only ASK when there is a real decision. One unmapped edge is
         # not a choice, it is the only way on -- spending a question on
         # it would burn the scarce thing to be told what we already know.
+        # A binder the engine refused to resolve is a decision waiting to
+        # be made, so it rides in this same batched call alongside the
+        # action choices. The answer is applied as a --param, which
+        # pre-binds the binder, and the candidate becomes legal in the
+        # NEXT round's pass -- a one-round lag, taken deliberately over
+        # resolving mid-round, since a candidate's legality depends on
+        # the binding and it cannot be in this round's action groups
+        # until it has one.
+        binding_q = [
+            (f"bind_{c.id}", var, f"{c.description} Which one do you take?", opts)
+            for c, var, opts in pending
+        ]
+        if binding_q:
+            state_summary += f" {len(binding_q)} choice(s) of WHICH thing to act on are open."
+
         frontier_q: list[tuple[str, str]] = []
         if len(unmapped) > 1:
             frontier_q = [(n, describe_frontier_node(n, state)) for n in unmapped]
@@ -995,7 +1089,7 @@ def main() -> None:
                 " the dungeon takes shape next."
             )
 
-        if not groups and not frontier_q:
+        if not groups and not frontier_q and not binding_q:
             # Nothing to decide: no legal action, and at most one opened
             # way, which is not a choice but the only way on. Calling Jev
             # here would spend the one genuinely scarce resource to ask
@@ -1008,10 +1102,20 @@ def main() -> None:
         elif args.dry_run:
             winners = [group[0] for group in groups]
             pressed = unmapped[0] if unmapped else None
+            for c, var, opts in pending:
+                c.params[var] = opts[0]
+                c.bound_params.add(var)
+                print(f"round {round_no}: bound {c.id}'s ?{var} = {opts[0]} (dry-run: first option)")
             jev_response = {"dry_run": True}
         else:
             jev_response = call_jev_batch(
-                args.api_key, jev_cfg["model"], jev_cfg["instructions"], state_summary, groups, frontier_q
+                args.api_key,
+                jev_cfg["model"],
+                jev_cfg["instructions"],
+                state_summary,
+                groups,
+                frontier_q,
+                binding_q,
             )
             answers = jev_response.get("answers") if isinstance(jev_response, dict) else None
             if not isinstance(answers, dict):
@@ -1042,6 +1146,29 @@ def main() -> None:
                     )
                     sys.exit(4)
                 winners.append(match)
+
+            # Which thing each ambiguous action acts on. A malformed or
+            # off-menu answer is fatal for the same reason an action
+            # answer is: silently picking would put the choice back with
+            # the engine, which is exactly what refusing it was for.
+            for (key, var, _desc, opts), (c, _v, _o) in zip(binding_q, pending):
+                try:
+                    pick = answers[key]["choice"]
+                except (KeyError, TypeError) as e:
+                    print(
+                        f"fatal: Jev's round {round_no} response missing/malformed {key!r}: {e!r}",
+                        file=sys.stderr,
+                    )
+                    sys.exit(4)
+                if pick not in opts:
+                    print(
+                        f"fatal: Jev chose {pick!r} for {key!r}, not among {opts}",
+                        file=sys.stderr,
+                    )
+                    sys.exit(4)
+                c.params[var] = pick
+                c.bound_params.add(var)
+                print(f"round {round_no}: bound {c.id}'s ?{var} = {pick}")
 
             # Where the delve presses on. One unmapped edge needs no
             # question; several do, and a malformed answer is fatal for
@@ -1147,6 +1274,7 @@ def main() -> None:
             "minted_nodes_this_round": minted_total,
             "unmapped_frontier": unmapped,
             "pressed_into": pressed,
+            "bindings_resolved": {c.id: dict(c.params) for c, _, _ in pending},
             "minted_machines_this_round": minted_machines,
             "total_firings": state.total_firings,
         }

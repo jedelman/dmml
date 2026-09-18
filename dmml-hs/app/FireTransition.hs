@@ -138,6 +138,17 @@ run args = do
 
 describeError :: FireError -> String
 describeError (FireGuardError (GuardAmbiguousBinding v cands)) =
+  -- Two audiences in one message. The prose is for a person; the
+  -- `ambiguous-binding:` / `candidate:` lines are a stable contract for
+  -- a driver, so turning this refusal into a real question does not
+  -- require anyone to scrape English. Deliberately not JSON: this is the
+  -- only structured thing this CLI emits on stderr, and one grep-able
+  -- line per fact is cheaper to consume than a second output format.
+  "\nambiguous-binding: "
+    <> T.unpack v
+    <> "\n"
+    <> unlines ["candidate: " <> T.unpack c | c <- cands]
+    <> 
   -- Printed as a QUESTION, not just a complaint. The whole reason an
   -- ambiguous binder refuses instead of picking is so that the choice
   -- reaches whoever is making decisions, and a refusal that withheld the
