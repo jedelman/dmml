@@ -387,17 +387,74 @@ def scan_candidates(state: RunState) -> tuple[list[tuple[Candidate, str]], list[
     """
     legal: list[tuple[Candidate, str]] = []
     pending: list[tuple[Candidate, str, list[str]]] = []
-    for c in state.candidates.values():
-        ok, out = dry_fire(c, state)
-        if ok:
+    for cand, status, out, var, options in scan_results(state):
+        if status == "legal":
             h = hashlib.sha256(out.encode()).hexdigest()
-            if h != c.last_hash:  # legal, but identical to its own last firing -- not new
-                legal.append((c, out))
-            continue
-        amb = parse_ambiguity(out)
-        if amb:
-            pending.append((c, amb[0], amb[1]))
+            if h != cand.last_hash:  # legal, but identical to its own last firing -- not new
+                legal.append((cand, out))
+        elif status == "ambiguous":
+            pending.append((cand, var, options))
     return legal, pending
+
+
+def scan_binary() -> list[str] | None:
+    import shlex
+
+    raw = os.environ.get("SCAN_CANDIDATES")
+    return shlex.split(raw) if raw else None
+
+
+def scan_results(state: RunState):
+    """Every candidate's verdict, preferring the BATCH path.
+
+    `scan-candidates` materializes the world once and reuses that
+    snapshot for every candidate; the per-candidate `fire-transition`
+    fallback re-parses every world file per call, so a round costs
+    (candidates x world-files) parses of files that did not change. That
+    repetition, not the engine, is what made large runs slow -- measured
+    at 0.39s per dry-fire against 3200 facts, essentially all of it
+    re-reading.
+
+    The fallback is kept deliberately: it needs no extra binary, it is
+    what every earlier run used, and having both means the batch path can
+    be checked against it rather than trusted.
+    """
+    binary = scan_binary()
+    if not binary:
+        for c in state.candidates.values():
+            ok, out = dry_fire(c, state)
+            if ok:
+                yield (c, "legal", out, None, None)
+            else:
+                amb = parse_ambiguity(out)
+                yield (c, "ambiguous", "", amb[0], amb[1]) if amb else (c, "blocked", "", None, None)
+        return
+
+    cands = list(state.candidates.values())
+    payload = [
+        {"id": c.id, "machine": c.machine, "transition": c.transition, "verb": c.verb, "params": c.params}
+        for c in cands
+    ]
+    import tempfile
+
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+        json.dump(payload, fh)
+        path = fh.name
+    cmd = binary + [path]
+    for w in state.world_files:
+        cmd += ["--world", w]
+    for m in state.machine_files:
+        cmd += ["--machine", m]
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    os.unlink(path)
+    if proc.returncode != 0:
+        print(f"fatal: scan-candidates failed: {proc.stdout.strip()} {proc.stderr.strip()}", file=sys.stderr)
+        sys.exit(2)
+    by_id = {c.id: c for c in cands}
+    for row in json.loads(proc.stdout):
+        c = by_id[row["id"]]
+        st = row["status"]
+        yield (c, st, row.get("output", ""), row.get("var"), row.get("candidates"))
 
 
 def group_into_generations(
@@ -674,6 +731,80 @@ def guarded_nodes(state: RunState) -> set[str]:
                 if parts:
                     anchors.add(parts[0])
     return anchors
+
+
+SUBJECT_RE = re.compile(r"^\s{2}([A-Za-z0-9_.\-/]+)\s+`[A-Za-z0-9_]+`", re.M)
+
+
+def world_entities(state: RunState) -> list[str]:
+    """Every node the world says something ABOUT -- i.e. every fact
+    subject, in first-seen order.
+
+    "Something with properties" is the least conventional definition of
+    an entity available here: it needs no domain vocabulary, and it
+    correctly excludes the value-position nodes (`mark/yes`, a state
+    ident) that are vocabulary rather than things.
+    """
+    seen: list[str] = []
+    for wf in state.world_files:
+        try:
+            text = Path(wf).read_text()
+        except OSError:
+            continue
+        for m in SUBJECT_RE.finditer(text):
+            if m.group(1) not in seen:
+                seen.append(m.group(1))
+    return seen
+
+
+def anchorable_nodes(state: RunState) -> set[str]:
+    """Nodes something in the world can ever assert `cleared` on.
+
+    The cannon anchors every room it fires with
+    `guard <parent> `cleared` mark/yes`, so a node nothing ever clears is
+    a node nothing can ever be built beyond. A machine that clears itself
+    makes its own node anchorable; a fork makes the path nodes it opens
+    anchorable; a machine that clears neither makes nothing anchorable,
+    and anything anchored on it is unreachable architecture.
+
+    Checking this is the LOOP doing its own job, not the chooser doing
+    it. Jev is asked where it wants to go; whether a place can ever be
+    reached is a structural fact about the machines, and making the
+    chooser responsible for it was the mistake.
+    """
+    ok: set[str] = set()
+    for mf in state.machine_files:
+        try:
+            machine = parse_machine_text(Path(mf).read_text())
+        except OSError:
+            continue
+        for t in machine["transitions"]:
+            for e in t["effects"]:
+                parts = e.split()
+                if len(parts) >= 4 and parts[0] == "assert" and parts[2] == "`cleared`":
+                    ok.add(machine["node"] if parts[1] == "self" else parts[1])
+    return ok
+
+
+def growable_leaves(state: RunState) -> list[str]:
+    """Every entity with no architecture built on it -- the places the
+    WORLD can grow, as distinct from where the DELVE can currently walk.
+
+    Those two were the same thing until 2026-09-18 and should not have
+    been. Keying growth to `cleared` nodes meant the world could only
+    take shape where the delve had already been, which quietly made the
+    chooser responsible for keeping the generator alive: a run's length
+    depended on whether Jev happened to pick transitions that opened new
+    ground. That is a meta-burden a chooser should never carry. Jev's job
+    is to want things, not to feed the cannon.
+
+    So: any leaf is a valid place to build. Whether the delve can reach
+    it yet is a separate question, and the delve's own frontier
+    ('unmapped_frontier') stays the thing Jev is actually asked about.
+    """
+    built_on = guarded_nodes(state)
+    reachable = anchorable_nodes(state)
+    return [n for n in world_entities(state) if n not in built_on and n in reachable]
 
 
 def unmapped_frontier(state: RunState) -> list[str]:
@@ -1041,11 +1172,12 @@ def main() -> None:
         # nothing to do AND nowhere left that anyone opened and never
         # entered.
         unmapped = unmapped_frontier(state) if extend.enabled else []
+        leaves = growable_leaves(state) if extend.enabled else []
         # A pending binding is a QUESTION, not an absence of work. Left
         # out of this condition the loop stops with a decision sitting
         # unasked on the table -- which is exactly the bug a first
         # dry run of this scenario showed.
-        if not legal and not unmapped and not pending:
+        if not legal and not unmapped and not pending and not leaves:
             if extend.enabled:
                 print(
                     f"=== round {round_no}: fixpoint -- nothing legal, and no unmapped edge left to "
@@ -1242,8 +1374,13 @@ def main() -> None:
         # item, deliberately spent and reported, never free.
         minted_machines = []
         if not stop_reason and extend.enabled:
-            if pressed:
-                m = extend_world(state, extend, world_dir, round_no, pressed, bidden=True)
+            # Prefer where the delve pressed. Failing that, ANY leaf --
+            # the world does not stop taking shape just because this
+            # particular path dead-ended, and the alternative is making
+            # the chooser responsible for fertility.
+            anchor = pressed or (leaves[0] if leaves else None)
+            if anchor:
+                m = extend_world(state, extend, world_dir, round_no, anchor, bidden=bool(pressed))
                 if m:
                     minted_machines.append(m)
             if extend.unbidden_every and round_no % extend.unbidden_every == 0:
@@ -1251,17 +1388,14 @@ def main() -> None:
                 # place; otherwise any standing edge. Deterministic, so a
                 # --dry-run rehearsal spends the allocation exactly where
                 # a live run will.
-                remaining = [n for n in unmapped_frontier(state) if n != pressed]
+                remaining = [n for n in growable_leaves(state) if n != anchor]
                 elsewhere = remaining[0] if remaining else None
-                if elsewhere is None:
-                    standing = [n for n in frontier_nodes(state) if n != pressed]
-                    elsewhere = standing[0] if standing else None
                 if elsewhere:
                     m = extend_world(state, extend, world_dir, round_no, elsewhere, bidden=False)
                     if m:
                         minted_machines.append(m)
                 else:
-                    print("  extend: unbidden allocation due, but nowhere to spend it")
+                    print("  extend: unbidden allocation due, but nowhere anchorable to spend it")
 
         record = {
             "round": round_no,
@@ -1273,6 +1407,7 @@ def main() -> None:
             "chosen": [w.id for w, _ in applied],
             "minted_nodes_this_round": minted_total,
             "unmapped_frontier": unmapped,
+            "growable_leaves": leaves,
             "pressed_into": pressed,
             "bindings_resolved": {c.id: dict(c.params) for c, _, _ in pending},
             "minted_machines_this_round": minted_machines,

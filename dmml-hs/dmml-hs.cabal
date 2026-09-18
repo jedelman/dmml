@@ -143,6 +143,30 @@ executable cannon
 -- is invisible to a compile check. A ?binder that silently stopped
 -- binding would leave every machine still parsing, still rendering, and
 -- quietly spending the wrong rock.
+-- Batch dry-firing against ONE materialized snapshot. See its own
+-- haddock for the measurement that motivated it: the driver was paying
+-- (candidates x world-files) parses per round for files that never
+-- changed, and the engine was never the cost.
+-- Static fertility prediction for a seed world. A diagnostic, not a
+-- gate: a legitimately sterile seed is a real thing to have, and this
+-- exits non-zero to say so, which is why it is built by CI but not run
+-- as a pass/fail over the demo seeds.
+executable check-fertility
+  import:           warnings
+  main-is:          CheckFertility.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, megaparsec, text
+
+  default-language: Haskell2010
+
+executable scan-candidates
+  import:           warnings
+  main-is:          ScanCandidates.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, megaparsec, text
+
+  default-language: Haskell2010
+
 executable guard-binding-selftest
   import:           warnings
   main-is:          guard-binding-selftest.hs
