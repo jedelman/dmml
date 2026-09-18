@@ -3,7 +3,10 @@
 
 Orchestration on top of an unmodified CLI primitive, the same
 relationship cascade-demo/run.sh has to `fire-transition` -- nothing
-here is a new DMML engine primitive. Each round:
+here is a new DMML engine primitive. Each round is now a whole
+GENERATION (2026-09-18, Jason's framing: "Jev can handle massive
+parallelism. Send them the entire horizon each request, with mutually
+exclusive transitions grouped into choices."), not a single action:
 
   1. Dry-fire every candidate in the config against the current world
      snapshot. A candidate is "legal" iff `fire-transition` exits 0
@@ -15,9 +18,19 @@ here is a new DMML engine primitive. Each round:
      termination case.
   3. If a budget cap is hit first, stop and say exactly which cap and
      why -- never silently keep going, never silently raise the cap.
-  4. Otherwise, hand the legal candidates to Jev as a Choice question,
-     apply whichever one it picks, append the round to the audit log,
-     and loop.
+  4. Otherwise, partition the legal candidates into mutually-exclusive
+     GROUPS (group_into_generations -- same machine is always one
+     group; different machines are grouped together only if actually
+     re-simulating with the real guard evaluator shows a real
+     conflict, never a text-scanned guess), send Jev ONE request with
+     one `choice` question per group (call_jev_batch -- confirmed live
+     that Jev genuinely resolves multiple independent `questions` keys
+     in a single call, each with its own confidence/probabilities),
+     apply every group's winner in sequence (re-validating each one
+     for real against the state as it stands, since a wrong grouping
+     would be a real correctness bug, not caught by trusting the
+     proof), append the whole generation to the audit log as one
+     round, and loop.
 
 KNOWN, DISCLOSED SCOPE LIMITS (not oversights):
   - Candidate (machine, transition, params) tuples are still mostly
@@ -164,9 +177,9 @@ def fire_binary() -> list[str]:
     return shlex.split(os.environ.get("FIRE_TRANSITION", "fire-transition"))
 
 
-def dry_fire(candidate: Candidate, state: RunState) -> tuple[bool, str]:
+def dry_fire(candidate: Candidate, state: RunState, extra_world_files: list[str] = ()) -> tuple[bool, str]:
     cmd = fire_binary() + [candidate.machine, candidate.transition, candidate.verb]
-    for w in state.world_files:
+    for w in list(state.world_files) + list(extra_world_files):
         cmd += ["--world", w]
     for m in state.machine_files:
         if m != candidate.machine:
@@ -200,27 +213,93 @@ def legal_candidates(state: RunState) -> list[tuple[Candidate, str]]:
     return legal
 
 
-def build_state_summary(round_no: int, state: RunState, legal: list[tuple]) -> str:
-    return (
-        f"Round {round_no}. World has {len(state.world_files)} committed fact files, "
-        f"{state.total_firings} prior firings, {len(state.known_nodes)} known nodes. "
-        f"{len(legal)} actions are legal this round."
-    )
+def group_into_generations(
+    legal: list[tuple[Candidate, str]], state: RunState, world_dir: Path
+) -> list[list[tuple[Candidate, str]]]:
+    """Partitions this round's legal candidates into conflict-free
+    groups -- "a whole generation" per Jason's framing: every group
+    becomes one independent `choice` question in a single Jev call, and
+    every group's winner gets applied in the same round, since nothing
+    in a DIFFERENT group can invalidate it.
+
+    Two candidates on the SAME machine are always unioned -- a machine
+    fires at most one of its own transitions at a time, a hard
+    constraint of the whole `fire-transition` model, not a heuristic.
+
+    Two candidates on DIFFERENT machines are unioned only if actually
+    re-simulating shows a real conflict: candidate A's already-known
+    dry-fire output is materialized as a real temp --world file, and B
+    is dry-fired AGAIN against (state's current world + that file). If
+    B is no longer legal, or produces different output than its
+    original dry-fire (meaning its provenance citation would have
+    changed), A and B are NOT independent and must share a group. This
+    is the real guard evaluator doing the check, not a text-scanned
+    approximation of which facts overlap -- O(candidates^2) extra
+    dry-fire subprocess calls in the worst case, which is fine at the
+    scale every scenario built so far actually reaches; a real,
+    disclosed cost to revisit if the cannon ever produces enough
+    candidates in one round to make that quadratic cost matter.
+    """
+    parent = {c.id: c.id for c, _ in legal}
+
+    def find(x: str) -> str:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a: str, b: str) -> None:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+
+    by_id = {c.id: (c, out) for c, out in legal}
+
+    # Hard rule: same machine -> same group, always.
+    by_machine: dict[str, list[str]] = {}
+    for c, _ in legal:
+        by_machine.setdefault(c.machine, []).append(c.id)
+    for ids in by_machine.values():
+        for other in ids[1:]:
+            union(ids[0], other)
+
+    # Real-simulation rule: different machines, but does firing one
+    # actually change the other's legality/output?
+    conflict_dir = world_dir / "_conflict_probe"
+    conflict_dir.mkdir(exist_ok=True)
+    checked: set[tuple[str, str]] = set()
+    ids = [c.id for c, _ in legal]
+    for i, a_id in enumerate(ids):
+        for b_id in ids[i + 1 :]:
+            if find(a_id) == find(b_id):
+                continue  # already grouped (e.g. via a same-machine chain)
+            key = (a_id, b_id)
+            if key in checked:
+                continue
+            checked.add(key)
+            a_cand, a_out = by_id[a_id]
+            b_cand, b_out = by_id[b_id]
+            probe_file = conflict_dir / f"probe-{sanitize_node(a_id)}.dmml"
+            probe_file.write_text(a_out)
+            ok, out2 = dry_fire(b_cand, state, extra_world_files=[str(probe_file)])
+            if (not ok) or out2 != b_out:
+                union(a_id, b_id)
+
+    groups: dict[str, list[tuple[Candidate, str]]] = {}
+    for c, out in legal:
+        groups.setdefault(find(c.id), []).append((c, out))
+    return list(groups.values())
 
 
-def call_jev(api_key: str, model: str, instructions: str, state_summary: str, legal: list[tuple]) -> dict:
-    criteria = {c.id: c.description for c, _ in legal}
-    body = {
-        "state": state_summary,
-        "model": model,
-        "questions": {
-            "next_action": {
-                "type": "choice",
-                "instructions": instructions,
-                "criteria": criteria,
-            }
-        },
-    }
+def call_jev_batch(api_key: str, model: str, instructions: str, state_summary: str, groups: list[list[tuple]]) -> dict:
+    questions = {}
+    for i, group in enumerate(groups):
+        questions[f"gen_{i}"] = {
+            "type": "choice",
+            "instructions": instructions,
+            "criteria": {c.id: c.description for c, _ in group},
+        }
+    body = {"state": state_summary, "model": model, "questions": questions}
     req = urllib.request.Request(
         JEV_ENDPOINT,
         data=json.dumps(body).encode(),
@@ -228,11 +307,19 @@ def call_jev(api_key: str, model: str, instructions: str, state_summary: str, le
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:
             return json.loads(resp.read())
     except urllib.error.HTTPError as e:
         print(f"fatal: Jev call failed: {e.code} {e.read().decode()}", file=sys.stderr)
         sys.exit(3)
+
+
+def build_state_summary(round_no: int, state: RunState, legal: list[tuple]) -> str:
+    return (
+        f"Round {round_no}. World has {len(state.world_files)} committed fact files, "
+        f"{state.total_firings} prior firings, {len(state.known_nodes)} known nodes. "
+        f"{len(legal)} actions are legal this round."
+    )
 
 
 def split_output_blocks(output: str) -> list[tuple[str, str]]:
@@ -394,49 +481,91 @@ def main() -> None:
         if fact_native:
             print(f"  list-candidates (fact-native, informational): {fact_native}")
 
+        groups = group_into_generations(legal, state, world_dir)
         state_summary = build_state_summary(round_no, state, legal)
+        state_summary += f" Grouped into {len(groups)} mutually-independent decision(s) this generation."
 
         if args.dry_run:
-            winner, out = legal[0]
+            winners = [group[0] for group in groups]
             jev_response = {"dry_run": True}
         else:
-            jev_response = call_jev(args.api_key, jev_cfg["model"], jev_cfg["instructions"], state_summary, legal)
-            try:
-                chosen_id = jev_response["answers"]["next_action"]["choice"]
-            except (KeyError, TypeError) as e:
+            jev_response = call_jev_batch(args.api_key, jev_cfg["model"], jev_cfg["instructions"], state_summary, groups)
+            answers = jev_response.get("answers") if isinstance(jev_response, dict) else None
+            if not isinstance(answers, dict):
                 print(
-                    f"fatal: Jev's round {round_no} response didn't have the expected shape "
-                    f"(answers.next_action.choice): {e!r}\nraw response: {json.dumps(jev_response)}",
+                    f"fatal: Jev's round {round_no} response didn't have the expected shape (answers): "
+                    f"raw response: {json.dumps(jev_response)}",
                     file=sys.stderr,
                 )
                 sys.exit(4)
-            match = next(((c, o) for c, o in legal if c.id == chosen_id), None)
-            if match is None:
-                print(
-                    f"fatal: Jev chose {chosen_id!r} for round {round_no}, which is not among "
-                    f"this round's legal candidates {[c.id for c, _ in legal]}",
-                    file=sys.stderr,
-                )
-                sys.exit(4)
-            winner, out = match
+            winners = []
+            for i, group in enumerate(groups):
+                key = f"gen_{i}"
+                try:
+                    chosen_id = answers[key]["choice"]
+                except (KeyError, TypeError) as e:
+                    print(
+                        f"fatal: Jev's round {round_no} response missing/malformed answer for {key!r}: {e!r}\n"
+                        f"raw response: {json.dumps(jev_response)}",
+                        file=sys.stderr,
+                    )
+                    sys.exit(4)
+                match = next(((c, o) for c, o in group if c.id == chosen_id), None)
+                if match is None:
+                    print(
+                        f"fatal: Jev chose {chosen_id!r} for {key!r} in round {round_no}, which is not among "
+                        f"that group's own candidates {[c.id for c, _ in group]}",
+                        file=sys.stderr,
+                    )
+                    sys.exit(4)
+                winners.append(match)
 
-        minted = apply_winner(winner, out, world_dir, round_no, state)
+        applied: list[tuple[Candidate, str]] = []
+        minted_total = 0
+        stop_reason = None
+        for idx, (winner, out) in enumerate(winners):
+            if state.total_firings >= budget.max_total_firings:
+                print(f"  stopping mid-generation: hit max_total_firings={budget.max_total_firings}")
+                break
+            if idx > 0:
+                # Grouping proved independence at compute time -- this is the
+                # cheap, honest check that it actually held once earlier
+                # winners in this same generation have already applied,
+                # rather than trusting the proof and moving on.
+                ok, fresh_out = dry_fire(winner, state)
+                if not ok:
+                    print(
+                        f"fatal: {winner.id!r} was grouped as independent this round but is no longer legal "
+                        f"after applying {[w.id for w, _ in applied]} -- a real conflict the grouping missed; "
+                        "refusing to silently apply it",
+                        file=sys.stderr,
+                    )
+                    sys.exit(5)
+                out = fresh_out
+            minted = apply_winner(winner, out, world_dir, round_no, state)
+            minted_total += minted
+            applied.append((winner, out))
+            print(f"round {round_no}: fired {winner.id} ({minted} new node(s), {state.total_firings} total firings)")
+            if winner.terminates:
+                stop_reason = f"{winner.id} terminates the run -- stopping by choice, not by budget"
+                break
 
         record = {
             "round": round_no,
             "state_summary": state_summary,
             "legal_candidate_ids": [c.id for c, _ in legal],
+            "groups": [[c.id for c, _ in g] for g in groups],
             "fact_native_discovered": fact_native,
             "jev_response": jev_response,
-            "chosen": winner.id,
-            "minted_nodes_this_round": minted,
+            "chosen": [w.id for w, _ in applied],
+            "minted_nodes_this_round": minted_total,
             "total_firings": state.total_firings,
         }
         audit.write(json.dumps(record) + "\n")
         audit.flush()
-        print(f"round {round_no}: fired {winner.id} ({minted} new node(s), {state.total_firings} total firings)")
-        if winner.terminates:
-            print(f"=== round {round_no}: {winner.id} terminates the run -- stopping by choice, not by budget ===")
+
+        if stop_reason:
+            print(f"=== round {round_no}: {stop_reason} ===")
             break
         round_no += 1
 
