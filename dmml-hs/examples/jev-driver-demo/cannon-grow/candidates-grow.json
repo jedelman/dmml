@@ -1,0 +1,53 @@
+{
+  "world_seed": [
+    "grow-world.dmml"
+  ],
+  "machines": [
+    "fork-mouth.dmml"
+  ],
+  "candidates": [
+    {
+      "id": "mouth-left",
+      "machine": "fork-mouth.dmml",
+      "transition": "goLeft",
+      "verb": "forks",
+      "params": {},
+      "description": "At the mouth, commit the delve LEFT. Opens path/left and seals path/right forever."
+    },
+    {
+      "id": "mouth-right",
+      "machine": "fork-mouth.dmml",
+      "transition": "goRight",
+      "verb": "forks",
+      "params": {},
+      "description": "At the mouth, commit the delve RIGHT. Opens path/right and seals path/left forever."
+    }
+  ],
+  "budget": {
+    "max_rounds": 20,
+    "max_total_firings": 30,
+    "max_firings_per_candidate": 1,
+    "max_minted_nodes": 200
+  },
+  "extend": {
+    "enabled": true,
+    "max_minted_machines": 10,
+    "breed_after": 2,
+    "unbidden_every": 4,
+    "variants": [
+      "hall",
+      "forge",
+      "vault",
+      "spur"
+    ],
+    "modes": [
+      "chimera",
+      "union",
+      "splice1"
+    ]
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "You are delving a dungeon that does not exist yet. Beyond the mouth there is nothing -- no rooms, no corridors, nothing built. The dungeon takes shape only where you press into it, and only as you press. Some of what appears is stamped from known room types; most is BRED by crossing rooms that already exist, so the deeper you go the stranger it gets -- a room may demand what a vault demands and open what a fork opens, a shape no room type here originally had. Rooms are described flatly and mechanically, by their real requirements and yields, because nobody has seen them before and there is no lore to tell you. Read what they DO."
+  }
+}

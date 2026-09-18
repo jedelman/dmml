@@ -71,9 +71,9 @@
   },
   "extend": {
     "enabled": true,
-    "per_round": 1,
     "max_minted_machines": 8,
     "breed_after": 2,
+    "unbidden_every": 3,
     "variants": [
       "hall",
       "forge",

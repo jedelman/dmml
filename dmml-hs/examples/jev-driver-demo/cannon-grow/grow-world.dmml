@@ -1,0 +1,8 @@
+commit setup
+  declare relation state
+  declare relation cleared
+  declare relation has
+  declare relation yields
+
+  room/entry `cleared` mark/yes
+  fork/mouth `state` unchosen

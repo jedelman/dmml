@@ -33,29 +33,65 @@ exclusive transitions grouped into choices."), not a single action:
      round, and loop.
 
 SELF-EXTENDING GROWTH (2026-09-18): with an `extend` block in the
-config, the loop no longer draws from a fixed pool. At the end of each
-round it fires the CANNON (app/Cannon.hs) at the live frontier -- the
-nodes the world currently records as `cleared` -- minting brand-new
-architecture, seeding its initial state, and registering its
-zero-parameter transitions as ordinary candidates for the next round.
-Growth compounds because the cannon's `breed` mode (DMML.Recombine)
-takes two machines that ALREADY EXIST, most-recently-minted first, so
-generation N+1 is bred from generation N and the vocabulary deepens
-instead of re-stamping the same five hand-authored shapes forever.
+config, the loop no longer draws from a fixed pool. It fires the CANNON
+(app/Cannon.hs) to mint brand-new architecture mid-run, seeding its
+initial state and registering its zero-parameter transitions as ordinary
+candidates. Growth compounds because the cannon's `breed` mode
+(DMML.Recombine) crosses two machines that ALREADY EXIST, newest
+offspring first, so generation N+1 is bred from generation N and the
+vocabulary deepens instead of re-stamping five hand-authored shapes
+forever.
 
-Without `extend`, the loop terminates at a real fixpoint once the
-config's candidates are exhausted -- which is the honest description of
-every run before this: bounded by how much architecture a human wrote
-into the JSON. With it, the fixpoint moves: the run ends on a budget, on
-a terminate candidate, or when the frontier itself is empty.
+GROWTH IS PULLED, NOT PUSHED. The first version of this fired once per
+round off a clock, which was backwards, and the reason is worth keeping:
+written-world -- this project's sibling -- generates a room when a player
+ARRIVES AT AN UNMAPPED FRONTIER POINT, and once made it is never remade.
+That is not lazy evaluation as an optimization. It is what a world made
+of attention looks like when you implement it, because attention is the
+only genuinely scarce resource here (see THE ECONOMY below) and building
+where nobody went spends it on nothing.
 
-There is deliberately NO FITNESS FUNCTION. The cannon fires a frontier;
-which offspring becomes real is still entirely the chooser's decision,
-same as every other candidate. A breeder without selection is half an
-evolutionary loop, and the missing half is a decision not yet made, not
-an oversight.
+So: the demand signal is an UNMAPPED EDGE -- a node the world records as
+cleared that nothing is built on yet (`unmapped_frontier`). Such an edge
+is not exhaustion, it is a request. The run ends only when there is
+nothing legal AND no opened way left unentered.
+
+AND JEV CHOOSES WHERE. When several edges stand open, "where do you press
+on?" rides along in the SAME batched call as that round's action choices
+-- one more question, no extra call. It is phrased IN-FICTION on purpose
+(see FRONTIER_INSTRUCTIONS): asking "which node should the generator
+expand" invites an answer from a level designer with taste, while asking
+a delver where they are going gets an answer from desire. A world built
+where a character wants to go is producing in response to wanting; a
+world built where a reader's eye lingers is a slot machine. The frame is
+what holds those apart. The anchor used to be chosen here by a modulo
+over the frontier -- the single most consequential knob in this file,
+since it decides the world's shape.
+
+TWO DESIRES. Pull-only growth has a cost: nothing ever arrives unbidden,
+so nothing in the dungeon appears to want anything, and the world is
+summoned rather than inhabited. `unbidden_every: N` buys that back --
+every Nth round the cannon also builds somewhere the delve did NOT
+choose. It is an explicit line item because it is not free: it spends
+the scarce resource on what nobody asked for, which is exactly what
+makes a world feel like it has its own weather.
+
+THE ECONOMY, and why there is still NO FITNESS FUNCTION. There is no
+scoring function anywhere and there does not need to be one. The real
+economy is this loop's token budget and its reader's attention: a room
+nobody finds interesting costs the same to generate and describe as one
+that changes the delve, so boring architecture is literally expensive,
+and selection is just what gets pressed into again. A fitness function
+would be transcendent -- someone writing down what counts as good.
+Scarcity is immanent. The budget knobs below are that economy, and they
+are still denominated in counts rather than calls, which is a known
+mis-denomination, not a claim that counts are the right unit.
 
 KNOWN, DISCLOSED SCOPE LIMITS (not oversights):
+  - Whether a node is "built on" is decided by scanning machines in
+    scope for a guard anchored on it (`guarded_nodes`). A machine that
+    relates to a place without guarding on it is invisible to that, so
+    such a place reads as unmapped and can be built on twice.
   - The frontier is found by TEXT-SCANNING the accumulated world files
     for the dungeon's own reachability convention (`X `cleared`
     mark/yes`), the same convention app/Cannon.hs emits and
@@ -174,8 +210,17 @@ class ExtendPolicy:
     """
 
     enabled: bool = False
-    per_round: int = 1
     max_minted_machines: int = 0
+    # How often the world builds somewhere NOBODY asked for: every Nth
+    # round, 0 to never. This is the second desire, and it is a line
+    # item on purpose. Growth is otherwise entirely pull-based -- the
+    # world only appears where the delve pressed for it -- and a world
+    # that is purely pull is summoned rather than inhabited: nothing
+    # ever arrives unbidden, no weather, nothing else in the dungeon
+    # wanting anything. Buying that back costs the one genuinely scarce
+    # resource (tokens, attention), so it is spent deliberately and
+    # reported, never sprinkled in for free.
+    unbidden_every: int = 0
     # Variants cycled through when STAMPING a fresh room, and crossover
     # modes cycled through when BREEDING. Cycled by index rather than
     # chosen, for the determinism above.
@@ -238,8 +283,8 @@ def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, dict]:
     ex = cfg.get("extend") or {}
     extend = ExtendPolicy(
         enabled=bool(ex.get("enabled", False)),
-        per_round=int(ex.get("per_round", 1)),
         max_minted_machines=int(ex.get("max_minted_machines", 0)),
+        unbidden_every=int(ex.get("unbidden_every", 0)),
         variants=list(ex.get("variants", ["hall", "forge", "vault", "spur"])),
         modes=list(ex.get("modes", ["chimera", "union", "splice1"])),
         breed_after=int(ex.get("breed_after", 2)),
@@ -370,13 +415,43 @@ def group_into_generations(
     return list(groups.values())
 
 
-def call_jev_batch(api_key: str, model: str, instructions: str, state_summary: str, groups: list[list[tuple]]) -> dict:
+# Asked IN-FICTION, on purpose. The same information could be got by
+# asking "which node should the generator expand next," but that is a
+# different question to a different addressee: it invites Jev to answer
+# as a level designer, with taste, when what steers this well is the
+# delver answering with desire. A world built where a character wants to
+# go is producing in response to wanting. A world built where a reader's
+# eye lingers is a slot machine. Keeping the question inside the frame
+# is what holds those apart.
+FRONTIER_INSTRUCTIONS = (
+    "You stand at the edge of what has been built. Each option is a way you have opened "
+    "but not yet pressed into -- there is nothing beyond any of them yet, and whichever "
+    "you choose is where the dungeon will take shape. The ones you do not choose stay as "
+    "they are: unbuilt, still open, still there to come back to. Choose as the delver, by "
+    "what you want, not by what would make a tidy map."
+)
+
+
+def call_jev_batch(
+    api_key: str,
+    model: str,
+    instructions: str,
+    state_summary: str,
+    groups: list[list[tuple]],
+    frontier: list[tuple[str, str]] = (),
+) -> dict:
     questions = {}
     for i, group in enumerate(groups):
         questions[f"gen_{i}"] = {
             "type": "choice",
             "instructions": instructions,
             "criteria": {c.id: c.description for c, _ in group},
+        }
+    if frontier:
+        questions["frontier"] = {
+            "type": "choice",
+            "instructions": FRONTIER_INSTRUCTIONS,
+            "criteria": dict(frontier),
         }
     body = {"state": state_summary, "model": model, "questions": questions}
     req = urllib.request.Request(
@@ -505,6 +580,68 @@ def frontier_nodes(state: RunState) -> list[str]:
     return seen
 
 
+def guarded_nodes(state: RunState) -> set[str]:
+    """Every literal node any machine in scope currently guards on.
+
+    A node that something guards on is BUILT-UPON: there is architecture
+    downstream of it. One that nothing guards on is an edge of the map.
+    """
+    anchors: set[str] = set()
+    for mf in state.machine_files:
+        try:
+            machine = parse_machine_text(Path(mf).read_text())
+        except OSError:
+            continue
+        for t in machine["transitions"]:
+            for g in t["guards"]:
+                parts = g.split()
+                if parts and parts[0] == "not":
+                    parts = parts[1:]
+                if parts:
+                    anchors.add(parts[0])
+    return anchors
+
+
+def unmapped_frontier(state: RunState) -> list[str]:
+    """The live edge of the map: nodes the world records as cleared that
+    NOTHING is built on yet.
+
+    This is the demand signal, and it is the whole difference between a
+    world generated on a clock and one generated the way written-world
+    generates: there, arriving at an unmapped frontier point is what
+    causes generation, and once a place is made it is never remade. Here
+    the same thing, one articulation down -- written-world generates a
+    room's DESCRIPTION on arrival, this generates a room's MECHANISM.
+
+    A node the delve never opens is never built, which is the point:
+    the only genuinely scarce resource is attention, and building where
+    nobody went spends it on nothing.
+    """
+    built_on = guarded_nodes(state)
+    return [n for n in frontier_nodes(state) if n not in built_on]
+
+
+def describe_frontier_node(node: str, state: RunState) -> str:
+    """What can be said about an edge of the map WITHOUT inventing it.
+
+    Nothing has been built past this node, so there is nothing there to
+    describe -- and making something up would be putting words in the
+    mouth of architecture that does not exist yet. What is true and
+    useful to a chooser: how this way was opened, and that it is unbuilt.
+    """
+    opener = None
+    for wf in reversed(state.world_files):
+        try:
+            text = Path(wf).read_text()
+        except OSError:
+            continue
+        if any(CLEARED_RE.match(ln) and CLEARED_RE.match(ln).group(1) == node for ln in text.splitlines()):
+            opener = Path(wf).stem
+            break
+    how = f" (opened by {opener})" if opener else ""
+    return f"Press on past {node}{how}. Nothing has been built beyond it yet."
+
+
 def parse_machine_text(text: str) -> dict:
     """Read a rendered Surface `machine` block back into the few pieces
     this driver needs: its node, its declared states in order, and each
@@ -594,9 +731,14 @@ def run_cannon(args: list[str]) -> str | None:
     return proc.stdout
 
 
-def plan_extension(state: RunState, extend: ExtendPolicy, frontier: list[str], seq: int) -> tuple[str, list[str], str]:
-    """Decide the next shot, deterministically. Returns (kind, cannon
-    args, human provenance).
+def plan_extension(state: RunState, extend: ExtendPolicy, anchor: str, seq: int) -> tuple[str, list[str], str]:
+    """Decide the next shot, deterministically, at an anchor CHOSEN
+    ELSEWHERE. Returns (kind, cannon args, human provenance).
+
+    The anchor used to be picked here, by cycling the frontier. That was
+    the single most consequential knob in this file -- it decided the
+    shape of the world -- and it was a modulo. It belongs to whoever is
+    making decisions, which in this loop is Jev.
 
     STAMP while there is not yet enough material to cross, then BREED --
     and breed with the most recently MINTED machine as parent A, so each
@@ -604,7 +746,6 @@ def plan_extension(state: RunState, extend: ExtendPolicy, frontier: list[str], s
     re-crossing the seed pair. Parent B cycles through everything else
     in scope, which keeps the lineage deep without making it narrow.
     """
-    anchor = frontier[seq % len(frontier)]
     new_node = f"room/g{seq}"
     pool = state.minted_machine_files + [
         m for m in state.machine_files if m not in state.minted_machine_files
@@ -641,96 +782,102 @@ def plan_extension(state: RunState, extend: ExtendPolicy, frontier: list[str], s
     )
 
 
-def extend_world(state: RunState, extend: ExtendPolicy, world_dir: Path, round_no: int) -> list[dict]:
-    """Fire the cannon at the live frontier and fold whatever it mints
+def extend_world(
+    state: RunState,
+    extend: ExtendPolicy,
+    world_dir: Path,
+    round_no: int,
+    anchor: str,
+    bidden: bool,
+) -> dict | None:
+    """Fire the cannon once, at a named anchor, and fold what it mints
     into the run: machine file, seeded initial state, new candidates.
 
-    This is the step that makes the loop self-extending. Everything it
-    adds is ORDINARY -- an ordinary Surface machine file, an ordinary
-    world commit seeding its state, ordinary candidates that go through
-    the same dry_fire/dedup/grouping path as the hand-authored ones.
-    Nothing downstream knows or cares that a machine was minted mid-run
-    rather than written into the config, which is the whole point.
+    Everything it adds is ORDINARY -- an ordinary Surface machine file,
+    an ordinary world commit seeding its state, ordinary candidates
+    through the same dry_fire/dedup/grouping path as the hand-authored
+    ones. Nothing downstream knows or cares that a machine was minted
+    mid-run rather than written into the config, which is the point.
+
+    `bidden` records WHOSE desire caused this: the delve's (Jev pressed
+    into that edge) or the world's own (the unbidden allocation). It
+    changes nothing mechanically and is logged, because the difference
+    between a world that answers you and one that also wants things is
+    worth being able to read back out of an audit log.
     """
-    minted: list[dict] = []
     if not extend.enabled:
-        return minted
+        return None
+    if state.minted_machines >= extend.max_minted_machines:
+        print(f"  extend: at max_minted_machines={extend.max_minted_machines}, no more growth")
+        return None
 
-    for _ in range(extend.per_round):
-        if state.minted_machines >= extend.max_minted_machines:
-            print(f"  extend: at max_minted_machines={extend.max_minted_machines}, stopping growth")
-            break
-        frontier = frontier_nodes(state)
-        if not frontier:
-            print("  extend: frontier is empty -- nothing cleared yet to attach to")
-            break
+    seq = state.minted_machines
+    kind, args, provenance = plan_extension(state, extend, anchor, seq)
+    out = run_cannon(args)
+    if out is None:
+        return None
 
-        seq = state.minted_machines
-        kind, args, provenance = plan_extension(state, extend, frontier, seq)
-        out = run_cannon(args)
-        if out is None:
-            break
+    machine = parse_machine_text(out)
+    if not machine["node"] or not machine["states"]:
+        print(f"  extend: cannon output for {args} had no node/states -- refusing to register it")
+        return None
 
-        machine = parse_machine_text(out)
-        if not machine["node"] or not machine["states"]:
-            print(f"  extend: cannon output for {args} had no node/states -- refusing to register it")
-            break
+    machine_file = world_dir / f"minted-{sanitize_node(machine['node'])}.dmml"
+    machine_file.write_text(out)
+    state.machine_files.append(str(machine_file))
+    state.minted_machine_files.append(str(machine_file))
+    state.minted_machines += 1
 
-        machine_file = world_dir / f"minted-{sanitize_node(machine['node'])}.dmml"
-        machine_file.write_text(out)
-        state.machine_files.append(str(machine_file))
-        state.minted_machine_files.append(str(machine_file))
-        state.minted_machines += 1
+    # A machine's current state is mutable world data, not structural
+    # definition -- app/Cannon.hs deliberately does not emit it, so the
+    # caller seeds it. Its FIRST declared state is its initial one, the
+    # same lifecycle-order convention DMML.Recombine's state alignment
+    # already relies on.
+    seed = world_dir / f"{round_no:03d}-extend-{sanitize_node(machine['node'])}.dmml"
+    seed.write_text(f"commit extends\n  {machine['node']} `state` {machine['states'][0]}\n")
+    state.world_files.append(str(seed))
+    # Count cannon-minted nodes against the SAME max_minted_nodes cap
+    # firings are counted against. Growth is the dominant source of new
+    # world once `extend` is on, so a node budget that quietly stopped
+    # covering it would be a cap that reads as a bound and is not one.
+    fresh = set(NODE_TOKEN_RE.findall(out)) - state.known_nodes
+    state.known_nodes |= fresh
+    state.minted_nodes += len(fresh)
 
-        # A machine's current state is mutable world data, not structural
-        # definition -- app/Cannon.hs deliberately does not emit it, so
-        # the caller seeds it. Its FIRST declared state is its initial
-        # one, which is the same lifecycle-order convention
-        # DMML.Recombine's state alignment already relies on.
-        seed = world_dir / f"{round_no:03d}-extend-{sanitize_node(machine['node'])}.dmml"
-        seed.write_text(f"commit extends\n  {machine['node']} `state` {machine['states'][0]}\n")
-        state.world_files.append(str(seed))
-        # Count cannon-minted nodes against the SAME max_minted_nodes cap
-        # firings are counted against. Growth is the dominant source of
-        # new world once `extend` is on, so a node budget that quietly
-        # stopped covering it would be a cap that reads as a bound and
-        # is not one.
-        fresh = set(NODE_TOKEN_RE.findall(out)) - state.known_nodes
-        state.known_nodes |= fresh
-        state.minted_nodes += len(fresh)
+    registered, skipped = [], []
+    for t in machine["transitions"]:
+        if t["params"]:
+            skipped.append(f"{t['ident']}({', '.join(t['params'])})")
+            continue
+        cid = f"{sanitize_node(machine['node'])}-{t['ident']}"
+        if cid in state.candidates:
+            continue
+        state.candidates[cid] = Candidate(
+            id=cid,
+            machine=str(machine_file),
+            transition=t["ident"],
+            verb="breaches",
+            params={},
+            description=describe_minted(machine, t, provenance),
+        )
+        registered.append(cid)
 
-        registered, skipped = [], []
-        for t in machine["transitions"]:
-            if t["params"]:
-                skipped.append(f"{t['ident']}({', '.join(t['params'])})")
-                continue
-            cid = f"{sanitize_node(machine['node'])}-{t['ident']}"
-            if cid in state.candidates:
-                continue
-            state.candidates[cid] = Candidate(
-                id=cid,
-                machine=str(machine_file),
-                transition=t["ident"],
-                verb="breaches",
-                params={},
-                description=describe_minted(machine, t, provenance),
-            )
-            registered.append(cid)
-
-        print(f"  extend: {kind} -> {machine['node']} ({provenance})")
-        print(f"          registered {len(registered)} candidate(s): {registered}")
-        if skipped:
-            print(f"          skipped {len(skipped)} parameterized transition(s), needs real bindings: {skipped}")
-        minted.append({
-            "kind": kind,
-            "node": machine["node"],
-            "provenance": provenance,
-            "cannon_args": args,
-            "machine_file": str(machine_file),
-            "registered_candidates": registered,
-            "skipped_parameterized": skipped,
-        })
-    return minted
+    whose = "pressed into" if bidden else "UNBIDDEN at"
+    print(f"  extend: {whose} {anchor} -> {machine['node']} ({kind}; {provenance})")
+    print(f"          registered {len(registered)} candidate(s): {registered}")
+    if skipped:
+        print(f"          skipped {len(skipped)} parameterized transition(s), needs real bindings: {skipped}")
+    return {
+        "kind": kind,
+        "bidden": bidden,
+        "anchor": anchor,
+        "node": machine["node"],
+        "provenance": provenance,
+        "cannon_args": args,
+        "machine_file": str(machine_file),
+        "registered_candidates": registered,
+        "skipped_parameterized": skipped,
+    }
 
 
 def apply_winner(candidate: Candidate, output: str, world_dir: Path, round_no: int, state: RunState) -> int:
@@ -812,11 +959,18 @@ def main() -> None:
             for c, out in legal_candidates(state)
             if c.firings < budget.max_firings_per_candidate
         ]
-        if not legal:
+        # An unmapped edge is DEMAND, not exhaustion. The old loop
+        # stopped the moment nothing was legal; that treated the frontier
+        # running dry as the end of the run, when it is precisely the
+        # signal to build. The run is only really over when there is
+        # nothing to do AND nowhere left that anyone opened and never
+        # entered.
+        unmapped = unmapped_frontier(state) if extend.enabled else []
+        if not legal and not unmapped:
             if extend.enabled:
                 print(
-                    f"=== round {round_no}: fixpoint -- nothing legal and new, even with growth enabled "
-                    f"({state.minted_machines} machine(s) minted). Stopping cleanly ==="
+                    f"=== round {round_no}: fixpoint -- nothing legal, and no unmapped edge left to "
+                    f"press into ({state.minted_machines} machine(s) minted). Stopping cleanly ==="
                 )
             else:
                 print(f"=== round {round_no}: fixpoint -- nothing legal and new, stopping cleanly ===")
@@ -830,11 +984,35 @@ def main() -> None:
         state_summary = build_state_summary(round_no, state, legal)
         state_summary += f" Grouped into {len(groups)} mutually-independent decision(s) this generation."
 
-        if args.dry_run:
+        # Only ASK when there is a real decision. One unmapped edge is
+        # not a choice, it is the only way on -- spending a question on
+        # it would burn the scarce thing to be told what we already know.
+        frontier_q: list[tuple[str, str]] = []
+        if len(unmapped) > 1:
+            frontier_q = [(n, describe_frontier_node(n, state)) for n in unmapped]
+            state_summary += (
+                f" {len(unmapped)} opened ways stand unbuilt; whichever you press into is where"
+                " the dungeon takes shape next."
+            )
+
+        if not groups and not frontier_q:
+            # Nothing to decide: no legal action, and at most one opened
+            # way, which is not a choice but the only way on. Calling Jev
+            # here would spend the one genuinely scarce resource to ask
+            # an empty question -- exactly the leak this loop is supposed
+            # to be careful about. Build and move on.
+            winners = []
+            pressed = unmapped[0] if unmapped else None
+            jev_response = {"skipped": "nothing to decide"}
+            print(f"round {round_no}: nothing to decide -- the world takes shape without a question")
+        elif args.dry_run:
             winners = [group[0] for group in groups]
+            pressed = unmapped[0] if unmapped else None
             jev_response = {"dry_run": True}
         else:
-            jev_response = call_jev_batch(args.api_key, jev_cfg["model"], jev_cfg["instructions"], state_summary, groups)
+            jev_response = call_jev_batch(
+                args.api_key, jev_cfg["model"], jev_cfg["instructions"], state_summary, groups, frontier_q
+            )
             answers = jev_response.get("answers") if isinstance(jev_response, dict) else None
             if not isinstance(answers, dict):
                 print(
@@ -864,6 +1042,31 @@ def main() -> None:
                     )
                     sys.exit(4)
                 winners.append(match)
+
+            # Where the delve presses on. One unmapped edge needs no
+            # question; several do, and a malformed answer is fatal for
+            # the same reason a malformed action answer is -- silently
+            # picking for Jev would put this file's thumb back on the
+            # single knob the whole change exists to hand over.
+            if len(unmapped) > 1:
+                try:
+                    pressed = answers["frontier"]["choice"]
+                except (KeyError, TypeError) as e:
+                    print(
+                        f"fatal: Jev's round {round_no} response missing/malformed 'frontier' answer: {e!r}\n"
+                        f"raw response: {json.dumps(jev_response)}",
+                        file=sys.stderr,
+                    )
+                    sys.exit(4)
+                if pressed not in unmapped:
+                    print(
+                        f"fatal: Jev chose to press into {pressed!r}, which is not among the unmapped "
+                        f"edges {unmapped}",
+                        file=sys.stderr,
+                    )
+                    sys.exit(4)
+            else:
+                pressed = unmapped[0] if unmapped else None
 
         applied: list[tuple[Candidate, str]] = []
         minted_total = 0
@@ -895,13 +1098,43 @@ def main() -> None:
                 stop_reason = f"{winner.id} terminates the run -- stopping by choice, not by budget"
                 break
 
-        # Grow the world AFTER this generation has applied, so the cannon
-        # fires at the frontier as it actually stands now -- including
-        # anything this round's winners just cleared. The machines it
-        # mints become ordinary candidates in the NEXT round's `legal`
-        # pass, which is exactly what keeps that pass from draining to a
-        # fixpoint.
-        minted_machines = [] if stop_reason else extend_world(state, extend, world_dir, round_no)
+        # TWO DESIRES.
+        #
+        # The delve's, first: build where Jev chose to press on. Pull,
+        # not push -- the world appears because someone went there, and
+        # the edges nobody chose stay unbuilt and still open. That is not
+        # an optimization, it is the only honest way to spend a budget
+        # whose real denomination is attention: building where nobody
+        # went spends the scarce thing on nothing.
+        #
+        # Then the world's own, on an explicit allocation: every Nth
+        # round, build somewhere that was NOT chosen. A world that only
+        # ever grows where you look is summoned rather than inhabited --
+        # nothing arrives unbidden, nothing else in the dungeon wants
+        # anything. Buying that back costs real tokens, so it is a line
+        # item, deliberately spent and reported, never free.
+        minted_machines = []
+        if not stop_reason and extend.enabled:
+            if pressed:
+                m = extend_world(state, extend, world_dir, round_no, pressed, bidden=True)
+                if m:
+                    minted_machines.append(m)
+            if extend.unbidden_every and round_no % extend.unbidden_every == 0:
+                # Somewhere the delve did NOT choose, if there is such a
+                # place; otherwise any standing edge. Deterministic, so a
+                # --dry-run rehearsal spends the allocation exactly where
+                # a live run will.
+                remaining = [n for n in unmapped_frontier(state) if n != pressed]
+                elsewhere = remaining[0] if remaining else None
+                if elsewhere is None:
+                    standing = [n for n in frontier_nodes(state) if n != pressed]
+                    elsewhere = standing[0] if standing else None
+                if elsewhere:
+                    m = extend_world(state, extend, world_dir, round_no, elsewhere, bidden=False)
+                    if m:
+                        minted_machines.append(m)
+                else:
+                    print("  extend: unbidden allocation due, but nowhere to spend it")
 
         record = {
             "round": round_no,
@@ -912,6 +1145,8 @@ def main() -> None:
             "jev_response": jev_response,
             "chosen": [w.id for w, _ in applied],
             "minted_nodes_this_round": minted_total,
+            "unmapped_frontier": unmapped,
+            "pressed_into": pressed,
             "minted_machines_this_round": minted_machines,
             "total_firings": state.total_firings,
         }
@@ -924,7 +1159,7 @@ def main() -> None:
         round_no += 1
 
     if extend.enabled:
-        print(f"minted {state.minted_machines} machine(s) mid-run off the live frontier")
+        print(f"minted {state.minted_machines} machine(s) mid-run, where the delve pressed and where it didn't")
     print(f"world dir: {world_dir}")
     print(f"audit log: {audit_path}")
     audit.close()
