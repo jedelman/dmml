@@ -1,0 +1,12 @@
+machine room/eSpur
+  states
+    sealed
+    open
+
+  transition breach()
+    sealed -> open
+    guard room/eHall `cleared` mark/yes
+    assert self `yields` relic/eSpur
+    assert self `state` open
+    retract self `state`
+

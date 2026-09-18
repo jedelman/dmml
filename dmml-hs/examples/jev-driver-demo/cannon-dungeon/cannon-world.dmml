@@ -1,0 +1,12 @@
+commit setup
+  declare relation state
+  declare relation cleared
+  declare relation has
+  declare relation yields
+
+  room/entry `cleared` mark/yes
+  fork/main `state` unchosen
+  room/wForge `state` sealed
+  room/wVault `state` sealed
+  room/eHall `state` sealed
+  room/eSpur `state` sealed

@@ -1,0 +1,64 @@
+{
+  "world_seed": ["cannon-world.dmml"],
+  "machines": ["fork-main.dmml", "room-wForge.dmml", "room-wVault.dmml", "room-eHall.dmml", "room-eSpur.dmml"],
+  "candidates": [
+    {
+      "id": "fork-west",
+      "machine": "fork-main.dmml",
+      "transition": "goLeft",
+      "verb": "forks",
+      "params": {},
+      "description": "At the entry fork, commit the delve to the WEST. This opens the western path (a forge, then a vault beyond it) and seals the eastern path forever. The west is more work -- you must breach the forge for its key before the vault will open -- but the vault yields a sigil, the richer prize."
+    },
+    {
+      "id": "fork-east",
+      "machine": "fork-main.dmml",
+      "transition": "goRight",
+      "verb": "forks",
+      "params": {},
+      "description": "At the entry fork, commit the delve to the EAST. This opens the eastern path (a hall, then a spur beyond it) and seals the western path forever. The east is easier -- a straight hall to a spur -- but the spur is only a relic in a dead end, a lesser prize than the western vault's sigil."
+    },
+    {
+      "id": "breach-wForge",
+      "machine": "room-wForge.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach the western forge. Produces a gold key (needed by the vault) and clears the way to the vault beyond. Reachable only if the delve was forked west."
+    },
+    {
+      "id": "breach-wVault",
+      "machine": "room-wVault.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach the western vault, yielding its sigil. Requires both the forge cleared (to reach it) and the gold key (from the forge)."
+    },
+    {
+      "id": "breach-eHall",
+      "machine": "room-eHall.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach the eastern hall, clearing the way to the spur beyond. Reachable only if the delve was forked east."
+    },
+    {
+      "id": "breach-eSpur",
+      "machine": "room-eSpur.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach the eastern spur, yielding its relic. A dead end -- nothing lies beyond it."
+    }
+  ],
+  "budget": {
+    "max_rounds": 12,
+    "max_total_firings": 20,
+    "max_firings_per_candidate": 1,
+    "max_minted_nodes": 60
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "You are delving a dungeon the cannon has laid out. At the entry, a single fork forces one irreversible choice: WEST (harder -- a forge whose key opens a vault holding a sigil) or EAST (easier -- a hall to a spur holding only a relic). Choosing one seals the other path forever. After the fork, breach the rooms of the chosen path in whatever order their requirements allow. There is no single correct delve -- weigh the richer western prize against the easier eastern one."
+  }
+}
