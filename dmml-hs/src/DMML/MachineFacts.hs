@@ -222,6 +222,11 @@ encodeMachine m =
               , strF eNode "effectSubject" (termToText newNodeTerm)
               , strF eNode "effectTemplate" (T.intercalate "/" (nodeRefSegments templateRef))
               ]
+            EffectGraft targetTerm sourceTerm ->
+              [ strF eNode "effectKind" "graft"
+              , strF eNode "effectSubject" (termToText targetTerm)
+              , strF eNode "effectSource" (termToText sourceTerm)
+              ]
 
     encodeEffectValue eNode val = case val of
       EffectValueTerm t -> [strF eNode "effectValueKind" "term", strF eNode "effectValueText" (termToText t)]
@@ -369,6 +374,9 @@ decodeMachine mNode facts = do
         "spawn" -> do
           templateText <- lookupOneStr idx eNode "effectTemplate"
           pure (EffectSpawn (termFromText subjText) (NodeRef (T.splitOn "/" templateText)))
+        "graft" -> do
+          srcText <- lookupOneStr idx eNode "effectSource"
+          pure (EffectGraft (termFromText subjText) (termFromText srcText))
         other -> Left (MalformedFact eNode "effectKind" other)
 
     decodeEffectValue idx eNode = do

@@ -361,6 +361,10 @@ machineStmtFromInput input = do
           newNode <- patternTermFromInput (effectPointer <> "/newNode") newNodeIn
           template <- nodeRef (effectPointer <> "/template") templateText
           pure (EffectSpawn newNode template)
+        J.EffectGraftInput targetIn sourceIn -> do
+          target <- patternTermFromInput (effectPointer <> "/newNode") targetIn
+          source <- patternTermFromInput (effectPointer <> "/source") sourceIn
+          pure (EffectGraft target source)
 
     let hasContent = not (null guards) || (isJust (J.tiFrom t) && isJust (J.tiTo t)) || not (null effects)
     unless

@@ -362,11 +362,25 @@ pSpawnLine = do
   template <- pNodeRefTok
   pure (EffectSpawn newNode template)
 
+-- | @graft <term> from <term>@ -- added alongside 'DMML.Ast.EffectGraft'
+-- for runtime machine copying. Unlike 'pSpawnLine', the source is a full
+-- 'pPatternTerm' (self\/@$param@\/a literal node), resolved at fire time,
+-- not a fixed authored node reference -- that runtime resolution is the
+-- whole point of a graft over a spawn.
+pGraftLine :: Parser Effect
+pGraftLine = do
+  _ <- symbol "graft"
+  target <- pPatternTerm
+  _ <- symbol "from"
+  source <- pPatternTerm
+  pure (EffectGraft target source)
+
 pEffectLine :: Parser Effect
 pEffectLine =
   (symbol "assert" *> (try pAssertGeneral <|> pAssertStateSugar))
     <|> (symbol "retract" *> (try pRetractGeneral <|> pRetractStateSugar))
     <|> pSpawnLine
+    <|> pGraftLine
   where
     pAssertGeneral = do
       subj <- pPatternTerm

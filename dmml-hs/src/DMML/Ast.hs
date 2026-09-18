@@ -320,10 +320,37 @@ data PatternTerm
 -- capability makes newly necessary: a machine whose spawn effects loop
 -- back to its own template, directly or through others', can keep
 -- producing instances of itself forever.
+-- | 'EffectGraft' (added 2026-09-18, Jason: "we were relying on the
+-- LLMs to perform copying and references -- let's move that
+-- functionality into the machines"). Where 'EffectSpawn' copies a
+-- FIXED, authored template (a 'NodeRef' resolved against the known-
+-- machine set at authoring time), a graft copies whatever machine its
+-- SOURCE term names AT FIRE TIME: @EffectGraft target source@ resolves
+-- both terms (each @self@\/@$param@\/a literal node, the ordinary
+-- 'DMML.Guard.resolveTerm' way), decodes the source machine's whole
+-- structure from the live snapshot's own facts
+-- ('DMML.MachineFacts.decodeMachineFromSnapshot' -- so the source must
+-- be fact-native, exactly what a prior spawn or graft produced), rebinds
+-- it onto @target@, and re-encodes ('DMML.MachineFacts.encodeMachine'
+-- derives every sub-node from the machine node, so all internal
+-- references rewrite to the target's namespace for free). It resolves
+-- to the same 'DMML.Fire.ResolvedSpawn' a spawn does, so nothing
+-- downstream changes. This is the runtime copy 'EffectSpawn'
+-- deliberately refused -- the price is that a graft's source is dynamic,
+-- so 'DMML.SpawnCycles' cannot statically follow it (a real, disclosed
+-- gap: graft cycles are a run-time budget concern, not a static one).
+-- Recombination is then expressible without any further primitive:
+-- graft parent A onto a fresh node, then graft parent B onto the same
+-- node, and its @hasState@\/@hasTransition@ facts become the union of
+-- both parents (clean when the parents' transition idents are disjoint;
+-- overlapping idents collide on the shared sub-node, which fine-grained
+-- crossover at authoring time -- the recombinant cannon -- handles by
+-- renaming, not this primitive).
 data Effect
   = EffectAssert PatternTerm PredicateRef EffectValue
   | EffectRetract PatternTerm [PatternHop] PredicateRef (Maybe EffectValue)
   | EffectSpawn PatternTerm NodeRef
+  | EffectGraft PatternTerm PatternTerm
   deriving (Eq, Show)
 
 -- | An effect's asserted value: either a node reference (resolved from

@@ -268,6 +268,12 @@ data EffectInput
     -- is always a fixed, already-known machine kind, never itself
     -- resolved from @self@\/@$param@ at fire time.
     EffectSpawnInput PatternTermInput Text
+  | -- | @{"kind": "graft", "newNode": PatternTermInput, "source": PatternTermInput}@
+    -- -- added alongside 'DMML.Ast.EffectGraft'. Unlike a spawn's fixed
+    -- @template@ string, @source@ is a full 'PatternTermInput' resolved
+    -- at fire time -- the runtime copy that is a graft's whole reason to
+    -- exist.
+    EffectGraftInput PatternTermInput PatternTermInput
   deriving (Eq, Show)
 
 instance FromJSON EffectInput where
@@ -281,6 +287,7 @@ instance FromJSON EffectInput where
       ("retract", Nothing) ->
         EffectRetractGeneralInput <$> o .: "subject" <*> o .:? "hops" .!= [] <*> o .: "predicate" <*> o .:? "value"
       ("spawn", _) -> EffectSpawnInput <$> o .: "newNode" <*> o .: "template"
+      ("graft", _) -> EffectGraftInput <$> o .: "newNode" <*> o .: "source"
       (other, _) -> fail ("unknown EffectInput kind " <> show other)
 
 data TransitionInput = TransitionInput

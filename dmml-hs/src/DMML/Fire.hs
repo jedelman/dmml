@@ -350,6 +350,13 @@ resolveOneEffect machines ctx _snap eff@(EffectSpawn newNodeTerm templateRef) = 
   template <- maybe (Left (FireSpawnTemplateNotFound eff templateRef)) Right (Map.lookup templateText machines)
   let spawned = template {machineNode = NodeRef (T.splitOn "/" newNodeText)}
   pure [ResolvedSpawn spawned]
+resolveOneEffect _machines ctx snap eff@(EffectGraft targetTerm sourceTerm) = do
+  targetText <- resolveTermOrFail eff ctx targetTerm
+  sourceText <- resolveTermOrFail eff ctx sourceTerm
+  let sourceNode = NodeRef (T.splitOn "/" sourceText)
+  case decodeMachineFromSnapshot sourceNode snap of
+    Left err -> Left (FireMachineDecodeError err)
+    Right m -> pure [ResolvedSpawn (m {machineNode = NodeRef (T.splitOn "/" targetText)})]
 
 predText :: PredicateRef -> Text
 predText RdfType = "a"
@@ -529,3 +536,5 @@ renderEffect (EffectRetract subj hops predRef mVal) =
     renderHop h = ["`" <> hopPredicate h <> "`", renderPatternTerm (hopTerm h)]
 renderEffect (EffectSpawn newNodeTerm templateRef) =
   "spawn " <> renderPatternTerm newNodeTerm <> " from " <> renderNodeRef templateRef
+renderEffect (EffectGraft targetTerm sourceTerm) =
+  "graft " <> renderPatternTerm targetTerm <> " from " <> renderPatternTerm sourceTerm
