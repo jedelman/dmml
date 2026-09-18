@@ -1,0 +1,12 @@
+machine room/cnSpur
+  states
+    sealed
+    open
+
+  transition breach()
+    sealed -> open
+    guard path/cn `cleared` mark/yes
+    assert self `yields` relic/cnSpur
+    assert self `state` open
+    retract self `state`
+

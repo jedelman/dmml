@@ -1,0 +1,19 @@
+machine fork/c
+  states
+    unchosen
+    chosen
+
+  transition goLeft()
+    unchosen -> chosen
+    guard room/cHall2 `cleared` mark/yes
+    assert path/cn `cleared` mark/yes
+    assert self `state` chosen
+    retract self `state`
+
+  transition goRight()
+    unchosen -> chosen
+    guard room/cHall2 `cleared` mark/yes
+    assert path/cs `cleared` mark/yes
+    assert self `state` chosen
+    retract self `state`
+

@@ -1,0 +1,19 @@
+machine fork/b
+  states
+    unchosen
+    chosen
+
+  transition goLeft()
+    unchosen -> chosen
+    guard room/bForge `cleared` mark/yes
+    assert path/bn `cleared` mark/yes
+    assert self `state` chosen
+    retract self `state`
+
+  transition goRight()
+    unchosen -> chosen
+    guard room/bForge `cleared` mark/yes
+    assert path/bs `cleared` mark/yes
+    assert self `state` chosen
+    retract self `state`
+

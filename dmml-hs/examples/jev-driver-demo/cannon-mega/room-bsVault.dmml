@@ -1,0 +1,14 @@
+machine room/bsVault
+  states
+    sealed
+    open
+
+  transition breach()
+    sealed -> open
+    guard room/bsHall `cleared` mark/yes
+    guard vault/keyring `has` key/gold
+    assert self `cleared` mark/yes
+    assert self `yields` sigil/bsVault
+    assert self `state` open
+    retract self `state`
+
