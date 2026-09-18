@@ -32,7 +32,47 @@ exclusive transitions grouped into choices."), not a single action:
      proof), append the whole generation to the audit log as one
      round, and loop.
 
+SELF-EXTENDING GROWTH (2026-09-18): with an `extend` block in the
+config, the loop no longer draws from a fixed pool. At the end of each
+round it fires the CANNON (app/Cannon.hs) at the live frontier -- the
+nodes the world currently records as `cleared` -- minting brand-new
+architecture, seeding its initial state, and registering its
+zero-parameter transitions as ordinary candidates for the next round.
+Growth compounds because the cannon's `breed` mode (DMML.Recombine)
+takes two machines that ALREADY EXIST, most-recently-minted first, so
+generation N+1 is bred from generation N and the vocabulary deepens
+instead of re-stamping the same five hand-authored shapes forever.
+
+Without `extend`, the loop terminates at a real fixpoint once the
+config's candidates are exhausted -- which is the honest description of
+every run before this: bounded by how much architecture a human wrote
+into the JSON. With it, the fixpoint moves: the run ends on a budget, on
+a terminate candidate, or when the frontier itself is empty.
+
+There is deliberately NO FITNESS FUNCTION. The cannon fires a frontier;
+which offspring becomes real is still entirely the chooser's decision,
+same as every other candidate. A breeder without selection is half an
+evolutionary loop, and the missing half is a decision not yet made, not
+an oversight.
+
 KNOWN, DISCLOSED SCOPE LIMITS (not oversights):
+  - The frontier is found by TEXT-SCANNING the accumulated world files
+    for the dungeon's own reachability convention (`X `cleared`
+    mark/yes`), the same convention app/Cannon.hs emits and
+    DMML.Recombine.reanchor keys on. Same class of heuristic as the
+    minted-node tracking below, and disclosed for the same reason: it
+    is not a real DMML.Ast parse, and it would not see a `cleared` fact
+    that some later commit retracted (nothing in this dungeon does).
+  - Only ZERO-PARAMETER transitions of a minted machine are registered
+    as candidates. A parameterized one needs a real binding decision --
+    exactly the reason `discover_fact_native` stays informational --
+    and guessing values here would be worse than skipping them. Skipped
+    ones are printed and logged, never silently dropped.
+  - Minted candidates' descriptions are generated MECHANICALLY from the
+    machine's actual guard and effect lines. They are deliberately flat
+    and factual rather than evocative: a description is what the
+    chooser reasons over, and inventing flavour for architecture no
+    human has seen would be putting words in the world's mouth.
   - Candidate (machine, transition, params) tuples are still mostly
     hand-authored in the config file -- DMML has no generic "for every
     node of type X, what fires" query with values already bound.
@@ -124,6 +164,30 @@ class Candidate:
 
 
 @dataclass
+class ExtendPolicy:
+    """How much brand-new architecture the cannon may add per round.
+
+    Everything here is deterministic -- no randomness anywhere -- so a
+    --dry-run rehearsal of a config produces exactly the machines a
+    live run will, which is the only way to check a growth policy
+    without spending real chooser calls on it.
+    """
+
+    enabled: bool = False
+    per_round: int = 1
+    max_minted_machines: int = 0
+    # Variants cycled through when STAMPING a fresh room, and crossover
+    # modes cycled through when BREEDING. Cycled by index rather than
+    # chosen, for the determinism above.
+    variants: list[str] = field(default_factory=lambda: ["hall", "forge", "vault", "spur"])
+    modes: list[str] = field(default_factory=lambda: ["chimera", "union", "splice1"])
+    # Below this many machines in scope there is nothing worth crossing,
+    # so the cannon stamps a template instead. Two is the real minimum;
+    # raising it delays the first breeding.
+    breed_after: int = 2
+
+
+@dataclass
 class Budget:
     max_rounds: int
     max_total_firings: int
@@ -139,9 +203,15 @@ class RunState:
     known_nodes: set[str] = field(default_factory=set)
     total_firings: int = 0
     minted_nodes: int = 0
+    minted_machines: int = 0
+    # Machine files the cannon itself minted during this run, oldest
+    # first. Kept separate from `machine_files` (which also holds the
+    # config's seed machines) so breeding can reach for the most recent
+    # OFFSPRING and actually deepen a lineage.
+    minted_machine_files: list[str] = field(default_factory=list)
 
 
-def load_config(path: Path) -> tuple[RunState, Budget, dict]:
+def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, dict]:
     cfg = json.loads(path.read_text())
     base = path.parent
     world_files = [str((base / w).resolve()) for w in cfg["world_seed"]]
@@ -165,10 +235,19 @@ def load_config(path: Path) -> tuple[RunState, Budget, dict]:
         max_firings_per_candidate=b["max_firings_per_candidate"],
         max_minted_nodes=b["max_minted_nodes"],
     )
+    ex = cfg.get("extend") or {}
+    extend = ExtendPolicy(
+        enabled=bool(ex.get("enabled", False)),
+        per_round=int(ex.get("per_round", 1)),
+        max_minted_machines=int(ex.get("max_minted_machines", 0)),
+        variants=list(ex.get("variants", ["hall", "forge", "vault", "spur"])),
+        modes=list(ex.get("modes", ["chimera", "union", "splice1"])),
+        breed_after=int(ex.get("breed_after", 2)),
+    )
     state = RunState(world_files=world_files, machine_files=machine_files, candidates=candidates)
     for wf in world_files:
         state.known_nodes |= set(NODE_TOKEN_RE.findall(Path(wf).read_text()))
-    return state, budget, cfg["jev"]
+    return state, budget, extend, cfg["jev"]
 
 
 def fire_binary() -> list[str]:
@@ -394,6 +473,266 @@ def discover_fact_native(state: RunState) -> list[str]:
     return [] if lines == ["list-candidates: no fact-native machines found in scope"] else lines
 
 
+CLEARED_RE = re.compile(r"^\s*([A-Za-z0-9_.\-/]+)\s+`cleared`\s+mark/yes\s*$")
+
+
+def cannon_binary() -> list[str]:
+    import shlex
+
+    return shlex.split(os.environ.get("CANNON", "cannon"))
+
+
+def frontier_nodes(state: RunState) -> list[str]:
+    """The live frontier: every node the accumulated world currently
+    records as cleared, in first-seen order.
+
+    This is where new architecture can legally attach, because every
+    room app/Cannon.hs fires guards on its parent being cleared. Found
+    by text-scan over the world files rather than by a real parse --
+    see the module docstring's disclosure. Order is stable so that
+    cycling through it stays deterministic.
+    """
+    seen: list[str] = []
+    for wf in state.world_files:
+        try:
+            text = Path(wf).read_text()
+        except OSError:
+            continue
+        for line in text.splitlines():
+            m = CLEARED_RE.match(line)
+            if m and m.group(1) not in seen:
+                seen.append(m.group(1))
+    return seen
+
+
+def parse_machine_text(text: str) -> dict:
+    """Read a rendered Surface `machine` block back into the few pieces
+    this driver needs: its node, its declared states in order, and each
+    transition's ident, formal params, guard lines and effect lines.
+
+    Deliberately a small line reader over DMML.Fire.renderFiredMachine's
+    own exact output shape, not a DMML parser -- the driver already
+    treats fire-transition's stdout this way (split_output_blocks), and
+    a real parse would mean reimplementing DMML.Surface in Python. What
+    it must not do is guess: any line it does not recognise inside a
+    transition is kept verbatim under `other`, so nothing is silently
+    dropped.
+    """
+    node = ""
+    states: list[str] = []
+    transitions: list[dict] = []
+    section = None
+    cur: dict | None = None
+
+    for raw in text.splitlines():
+        line = raw.rstrip()
+        if not line.strip():
+            continue
+        if line.startswith("machine "):
+            node = line[len("machine "):].strip()
+            section = None
+            continue
+        if line.strip() == "states":
+            section = "states"
+            continue
+        if line.strip().startswith("transition "):
+            head = line.strip()[len("transition "):]
+            ident, _, rest = head.partition("(")
+            params = [x.strip() for x in rest.rstrip(")").split(",") if x.strip()]
+            cur = {"ident": ident.strip(), "params": params, "from": None, "to": None,
+                   "guards": [], "effects": [], "other": []}
+            transitions.append(cur)
+            section = "transition"
+            continue
+        body = line.strip()
+        if section == "states":
+            states.append(body)
+        elif section == "transition" and cur is not None:
+            if "->" in body and not body.startswith(("guard ", "assert ", "retract ", "spawn ", "graft ")):
+                a, _, b = body.partition("->")
+                cur["from"], cur["to"] = a.strip(), b.strip()
+            elif body.startswith("guard "):
+                cur["guards"].append(body[len("guard "):])
+            elif body.startswith(("assert ", "retract ", "spawn ", "graft ")):
+                cur["effects"].append(body)
+            else:
+                cur["other"].append(body)
+    return {"node": node, "states": states, "transitions": transitions}
+
+
+def describe_minted(machine: dict, t: dict, provenance: str) -> str:
+    """A candidate description built ONLY from what the machine actually
+    says. No invented flavour -- see the module docstring."""
+    reqs = [g for g in t["guards"]] or ["nothing"]
+    # The lifecycle bookkeeping is noise to a chooser; what it needs is
+    # what firing this does to the WORLD.
+    world = [
+        e for e in t["effects"]
+        if not (e.startswith("assert self `state`") or e.startswith("retract self `state`"))
+    ] or ["nothing beyond advancing its own state"]
+    return (
+        f"{t['ident']} on {machine['node']} — {provenance}. "
+        f"Requires: {'; '.join(reqs)}. "
+        f"Yields: {'; '.join(world)}. "
+        f"Lifecycle: {t['from']} -> {t['to']}."
+    )
+
+
+def run_cannon(args: list[str]) -> str | None:
+    try:
+        proc = subprocess.run(cannon_binary() + args, capture_output=True, text=True, timeout=30)
+    except FileNotFoundError:
+        print(
+            f"fatal: '{' '.join(cannon_binary())}' not found -- build dmml-hs's `cannon` and put it on PATH, "
+            "or set CANNON. Required because this config enables `extend`.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    if proc.returncode != 0:
+        print(f"  cannon refused ({' '.join(args)}): {proc.stderr.strip()}")
+        return None
+    return proc.stdout
+
+
+def plan_extension(state: RunState, extend: ExtendPolicy, frontier: list[str], seq: int) -> tuple[str, list[str], str]:
+    """Decide the next shot, deterministically. Returns (kind, cannon
+    args, human provenance).
+
+    STAMP while there is not yet enough material to cross, then BREED --
+    and breed with the most recently MINTED machine as parent A, so each
+    generation is crossed with the one before it rather than endlessly
+    re-crossing the seed pair. Parent B cycles through everything else
+    in scope, which keeps the lineage deep without making it narrow.
+    """
+    anchor = frontier[seq % len(frontier)]
+    new_node = f"room/g{seq}"
+    pool = state.minted_machine_files + [
+        m for m in state.machine_files if m not in state.minted_machine_files
+    ]
+
+    def stamp():
+        variant = extend.variants[seq % len(extend.variants)]
+        return "stamp", [variant, new_node, anchor], f"stamped as a {variant} onto {anchor}"
+
+    if len(pool) < max(2, extend.breed_after):
+        return stamp()
+
+    # Parent A is the newest OFFSPRING when one exists, so generation
+    # N+1 crosses generation N and the lineage actually deepens.
+    # Falling back to the newest seed only happens on a run's very
+    # first breeding.
+    a = state.minted_machine_files[-1] if state.minted_machine_files else state.machine_files[-1]
+    # Parent B cycles over the SEED machines, which is a fixed-length
+    # list. Cycling over the whole pool instead looks equivalent and is
+    # not: the pool grows by one every time `seq` does, so `seq % len`
+    # lands on the same file over and over and breadth silently
+    # collapses to a single parent. Caught in a dry run where eight
+    # straight generations all crossed with room-wForge.
+    seeds = [m for m in state.machine_files if m not in state.minted_machine_files]
+    others = [m for m in seeds if m != a] or [m for m in pool if m != a]
+    if not others:
+        return stamp()
+    b = others[seq % len(others)]
+    mode = extend.modes[seq % len(extend.modes)]
+    return (
+        "breed",
+        ["breed", mode, new_node, a, b, anchor],
+        f"bred by crossing {Path(a).stem} with {Path(b).stem} ({mode}), anchored on {anchor}",
+    )
+
+
+def extend_world(state: RunState, extend: ExtendPolicy, world_dir: Path, round_no: int) -> list[dict]:
+    """Fire the cannon at the live frontier and fold whatever it mints
+    into the run: machine file, seeded initial state, new candidates.
+
+    This is the step that makes the loop self-extending. Everything it
+    adds is ORDINARY -- an ordinary Surface machine file, an ordinary
+    world commit seeding its state, ordinary candidates that go through
+    the same dry_fire/dedup/grouping path as the hand-authored ones.
+    Nothing downstream knows or cares that a machine was minted mid-run
+    rather than written into the config, which is the whole point.
+    """
+    minted: list[dict] = []
+    if not extend.enabled:
+        return minted
+
+    for _ in range(extend.per_round):
+        if state.minted_machines >= extend.max_minted_machines:
+            print(f"  extend: at max_minted_machines={extend.max_minted_machines}, stopping growth")
+            break
+        frontier = frontier_nodes(state)
+        if not frontier:
+            print("  extend: frontier is empty -- nothing cleared yet to attach to")
+            break
+
+        seq = state.minted_machines
+        kind, args, provenance = plan_extension(state, extend, frontier, seq)
+        out = run_cannon(args)
+        if out is None:
+            break
+
+        machine = parse_machine_text(out)
+        if not machine["node"] or not machine["states"]:
+            print(f"  extend: cannon output for {args} had no node/states -- refusing to register it")
+            break
+
+        machine_file = world_dir / f"minted-{sanitize_node(machine['node'])}.dmml"
+        machine_file.write_text(out)
+        state.machine_files.append(str(machine_file))
+        state.minted_machine_files.append(str(machine_file))
+        state.minted_machines += 1
+
+        # A machine's current state is mutable world data, not structural
+        # definition -- app/Cannon.hs deliberately does not emit it, so
+        # the caller seeds it. Its FIRST declared state is its initial
+        # one, which is the same lifecycle-order convention
+        # DMML.Recombine's state alignment already relies on.
+        seed = world_dir / f"{round_no:03d}-extend-{sanitize_node(machine['node'])}.dmml"
+        seed.write_text(f"commit extends\n  {machine['node']} `state` {machine['states'][0]}\n")
+        state.world_files.append(str(seed))
+        # Count cannon-minted nodes against the SAME max_minted_nodes cap
+        # firings are counted against. Growth is the dominant source of
+        # new world once `extend` is on, so a node budget that quietly
+        # stopped covering it would be a cap that reads as a bound and
+        # is not one.
+        fresh = set(NODE_TOKEN_RE.findall(out)) - state.known_nodes
+        state.known_nodes |= fresh
+        state.minted_nodes += len(fresh)
+
+        registered, skipped = [], []
+        for t in machine["transitions"]:
+            if t["params"]:
+                skipped.append(f"{t['ident']}({', '.join(t['params'])})")
+                continue
+            cid = f"{sanitize_node(machine['node'])}-{t['ident']}"
+            if cid in state.candidates:
+                continue
+            state.candidates[cid] = Candidate(
+                id=cid,
+                machine=str(machine_file),
+                transition=t["ident"],
+                verb="breaches",
+                params={},
+                description=describe_minted(machine, t, provenance),
+            )
+            registered.append(cid)
+
+        print(f"  extend: {kind} -> {machine['node']} ({provenance})")
+        print(f"          registered {len(registered)} candidate(s): {registered}")
+        if skipped:
+            print(f"          skipped {len(skipped)} parameterized transition(s), needs real bindings: {skipped}")
+        minted.append({
+            "kind": kind,
+            "node": machine["node"],
+            "provenance": provenance,
+            "cannon_args": args,
+            "machine_file": str(machine_file),
+            "registered_candidates": registered,
+            "skipped_parameterized": skipped,
+        })
+    return minted
+
+
 def apply_winner(candidate: Candidate, output: str, world_dir: Path, round_no: int, state: RunState) -> int:
     blocks = split_output_blocks(output)
     new_nodes = set(NODE_TOKEN_RE.findall(output)) - state.known_nodes
@@ -445,7 +784,7 @@ def main() -> None:
     ap.add_argument("--api-key", default=os.environ.get("TYPESAFE_API_KEY"))
     args = ap.parse_args()
 
-    state, budget, jev_cfg = load_config(args.config)
+    state, budget, extend, jev_cfg = load_config(args.config)
 
     world_dir = args.world_dir or Path(subprocess_mkdtemp())
     world_dir.mkdir(parents=True, exist_ok=True)
@@ -474,7 +813,13 @@ def main() -> None:
             if c.firings < budget.max_firings_per_candidate
         ]
         if not legal:
-            print(f"=== round {round_no}: fixpoint -- nothing legal and new, stopping cleanly ===")
+            if extend.enabled:
+                print(
+                    f"=== round {round_no}: fixpoint -- nothing legal and new, even with growth enabled "
+                    f"({state.minted_machines} machine(s) minted). Stopping cleanly ==="
+                )
+            else:
+                print(f"=== round {round_no}: fixpoint -- nothing legal and new, stopping cleanly ===")
             break
 
         fact_native = discover_fact_native(state)
@@ -550,6 +895,14 @@ def main() -> None:
                 stop_reason = f"{winner.id} terminates the run -- stopping by choice, not by budget"
                 break
 
+        # Grow the world AFTER this generation has applied, so the cannon
+        # fires at the frontier as it actually stands now -- including
+        # anything this round's winners just cleared. The machines it
+        # mints become ordinary candidates in the NEXT round's `legal`
+        # pass, which is exactly what keeps that pass from draining to a
+        # fixpoint.
+        minted_machines = [] if stop_reason else extend_world(state, extend, world_dir, round_no)
+
         record = {
             "round": round_no,
             "state_summary": state_summary,
@@ -559,6 +912,7 @@ def main() -> None:
             "jev_response": jev_response,
             "chosen": [w.id for w, _ in applied],
             "minted_nodes_this_round": minted_total,
+            "minted_machines_this_round": minted_machines,
             "total_firings": state.total_firings,
         }
         audit.write(json.dumps(record) + "\n")
@@ -569,6 +923,8 @@ def main() -> None:
             break
         round_no += 1
 
+    if extend.enabled:
+        print(f"minted {state.minted_machines} machine(s) mid-run off the live frontier")
     print(f"world dir: {world_dir}")
     print(f"audit log: {audit_path}")
     audit.close()

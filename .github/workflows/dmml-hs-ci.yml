@@ -21,11 +21,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # cabal 3.8.1.0 was pinned here originally and NEVER built this
+      # package once: every run died at `cabal update` with
+      #   <repo>/root.json does not have enough signatures signed with
+      #   the appropriate keys
+      # because that cabal ships a Hackage TUF root predating Hackage's
+      # current signing keys, and there is no way to refresh it in place.
+      # The job failed before `cabal build all` ever ran, which is the
+      # structural reason so many caveats in this package say
+      # "uncompiled, disclosed" -- it was never a sandbox quirk, it was
+      # pinned into CI. 3.10.3.0 ships a current root.
       - uses: haskell-actions/setup@v2
         id: setup
         with:
           ghc-version: "9.4.7"
-          cabal-version: "3.8.1.0"
+          cabal-version: "3.10.3.0"
 
       - name: Cache cabal store
         uses: actions/cache@v4

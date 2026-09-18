@@ -93,6 +93,39 @@
 --   and moves to another. The rule that avoids it is crisp: the
 --   lifecycle belongs to A, the consequences come from B.
 --
+-- == Recombination cannot preserve cross-machine exclusivity
+--
+-- Found in a real self-extending run (2026-09-18), not by reasoning:
+-- a delve took the WEST branch of @app\/Cannon.hs@'s fork, which is
+-- supposed to seal the east permanently, and eight generations later
+-- was breaching eastern rooms anyway.
+--
+-- The mechanism is exact, and it is a property of the language rather
+-- than a defect here. A fork's two transitions are mutually exclusive
+-- because they SHARE ONE @unchosen -> chosen@ lock on ONE machine;
+-- firing either moves that machine, and the other can never fire. That
+-- exclusivity is not a property of the transitions, it is a property of
+-- the machine they sit in. Breed one of them onto a different machine
+-- and it arrives with its EFFECT (@assert path\/east \`cleared\`
+-- mark\/yes@) but under a different lock -- so an offspring can hand
+-- out a yield the parent had permanently foreclosed.
+--
+-- Generalized: **any invariant this language enforces through a shared
+-- lifecycle lock is breakable by breeding a transition out of the
+-- machine that holds it.** Exclusivity is per-machine; crossover moves
+-- transitions between machines; the two compose exactly as badly as
+-- that sentence implies.
+--
+-- Deliberately NOT prevented. A room that reopens a foreclosed path is
+-- precisely the architecture neither parent had, which is what this
+-- module exists to produce, and the alternative -- refusing to copy any
+-- transition whose lock it shares with a sibling -- would forbid
+-- breeding forks at all, the richest parents in the corpus. Whoever
+-- wants the guarantee back should reach for a guard that encodes the
+-- foreclosure as a FACT (a @path\/east \`sealed\` mark\/yes@ the
+-- offspring must also test), because a fact survives recombination and
+-- a lifecycle lock does not.
+--
 -- == Node re-derivation
 --
 -- A generated room bakes its own identity into the literals it asserts
