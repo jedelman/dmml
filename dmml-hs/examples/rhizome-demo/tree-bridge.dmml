@@ -1,0 +1,21 @@
+machine corridor/ac
+  states
+    sealed
+    open
+
+  transition crossFromA()
+    sealed -> open
+    guard room/a `cleared` mark/yes
+    assert self `cleared` mark/yes
+    assert room/c `cleared` mark/yes
+    assert self `state` open
+    retract self `state`
+
+  transition crossFromB()
+    sealed -> open
+    guard room/c `cleared` mark/yes
+    assert self `cleared` mark/yes
+    assert room/a `cleared` mark/yes
+    assert self `state` open
+    retract self `state`
+

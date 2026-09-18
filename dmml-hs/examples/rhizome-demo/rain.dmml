@@ -1,0 +1,18 @@
+machine weather/rain
+  states
+    gathering
+    spent
+
+  transition fall(unit)
+    gathering -> spent
+    guard cliff/face `cleared` mark/yes
+    assert $unit `is` clay/raw
+    assert self `cleared` mark/yes
+    assert self `state` spent
+    retract self `state`
+
+  transition gather()
+    spent -> gathering
+    assert self `state` gathering
+    retract self `state`
+

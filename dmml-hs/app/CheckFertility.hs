@@ -46,6 +46,42 @@
 -- One such crossover ends a lineage, and this tool says which one and
 -- when.
 --
+-- == Two different questions, because there are two different shapes
+--
+-- Extended 2026-09-18 (Jason: "we're missing a crucial transition --
+-- relationship... See the web densify? A rhizome, not a tree"), because
+-- the lineage analysis above answers a question about a TREE, and a
+-- world is not only a tree.
+--
+-- The variants in @app\/Cannon.hs@ are arborescent by signature --
+-- @mkRoom variant newNode parent@, one parent, one child -- so a world
+-- built from them has leaves, and "can it keep growing" reduces to "do
+-- leaves keep appearing." That is the walk above.
+--
+-- The connective operators (@bridge@, @feed@, @replenish@, @vista@) take
+-- nodes that ALREADY EXIST and relate them. A corridor has two ends. A
+-- world built with those has no leaves to run out of: the possible
+-- relations among N nodes grow as N squared, so it densifies rather than
+-- exhausts. Asking "do leaves keep appearing" of such a world is asking
+-- the wrong question of the wrong shape.
+--
+-- The right question there is about FLOW, and it has an equally sharp
+-- answer. A transition's guards are what must come in; its effects are
+-- what goes out; so a set of machines induces a directed graph on
+-- SUBSTANCES, and:
+--
+--   * a DAG runs down -- every substance traces back to a finite stock,
+--     and the world depletes no matter how much architecture exists;
+--   * a graph with a CYCLE sustains.
+--
+-- "Quarries that fill with rain" is not a metaphor for sustainability.
+-- It is literally a cycle in that graph, and cycle-detection on a finite
+-- graph is trivial -- so the rhizomatic question is as decidable as the
+-- arborescent one, just about something else.
+--
+-- Both sections are reported because a seed needs both: architecture
+-- that can be extended, and flows that do not all terminate.
+--
 -- Usage: check-fertility <seed.dmml>... [--generations N]
 module Main (main) where
 
@@ -57,6 +93,7 @@ import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
+import Data.List (nub)
 import DMML.Ast
 import DMML.Recombine (Crossover (..), breed, crossoverLabel)
 import DMML.Surface (parseMachineSurface)
@@ -123,6 +160,59 @@ walk seeds n = go 0 (last seeds) []
                         then [row]
                         else row : go (i + 1) off (sh : seen)
 
+-- Flow analysis -------------------------------------------------------
+
+-- | A substance, as this corpus actually writes one: a (predicate,
+-- object) pair asserted or retracted about a UNIT -- a @?binder@ or
+-- @$param@ subject, never @self@ and never a literal place.
+--
+-- That distinction is the whole trick. @assert self \`cleared\`
+-- mark\/yes@ is a machine saying something about itself; @retract ?unit
+-- \`is\` clay\/raw@ is matter moving. Only the second is a flow, and
+-- only flows can cycle.
+substanceOf :: Effect -> Maybe Text
+substanceOf (EffectAssert subj (PredIdent p) (EffectValueTerm (TermNode o)))
+  | isUnit subj = Just (p <> " " <> o)
+substanceOf (EffectRetract subj [] (PredIdent p) (Just (EffectValueTerm (TermNode o))))
+  | isUnit subj = Just (p <> " " <> o)
+substanceOf _ = Nothing
+
+isUnit :: PatternTerm -> Bool
+isUnit (TermBind _) = True
+isUnit (TermParam _) = True
+isUnit _ = False
+
+isRetract :: Effect -> Bool
+isRetract EffectRetract {} = True
+isRetract _ = False
+
+-- | (consumed, produced) for one transition.
+flowOf :: TransitionDecl -> ([Text], [Text])
+flowOf t =
+  ( [x | e <- transitionEffects t, isRetract e, Just x <- [substanceOf e]]
+  , [x | e <- transitionEffects t, not (isRetract e), Just x <- [substanceOf e]]
+  )
+
+-- | Every substance edge the machine set induces, plus the substances
+-- produced with nothing consumed (the sources -- rain).
+flowGraph :: [MachineStmt] -> ([(Text, Text)], [Text], [Text])
+flowGraph ms = (nub edges, nub sources, nub allSubs)
+  where
+    flows = [flowOf t | m <- ms, t <- machineTransitions m]
+    edges = [(c, p) | (cs, ps) <- flows, c <- cs, p <- ps]
+    sources = concat [ps | (cs, ps) <- flows, null cs]
+    allSubs = concat [cs ++ ps | (cs, ps) <- flows]
+
+-- | Any cycle in the substance graph, as a reachable-from-itself list.
+cyclic :: [(Text, Text)] -> [Text]
+cyclic edges = [s | s <- nub (map fst edges ++ map snd edges), s `elem` reach s]
+  where
+    reach s = go [s] []
+    go [] seen = seen
+    go (x : xs) seen =
+      let nexts = [b | (a, b) <- edges, a == x, b `notElem` seen]
+       in go (xs ++ nexts) (seen ++ nexts)
+
 main :: IO ()
 main = do
   args <- getArgs
@@ -138,10 +228,28 @@ main = do
       putStrLn ""
       let rows = walk seeds gens
           firstSterile = [i | (i, _, _, False, _) <- rows]
-      putStrLn ("bred lineage (parent A = newest offspring, B cycles seeds, mode cycles), " <> show (length rows) <> " generation(s):")
+      putStrLn ("bred lineage (the TREE question -- parent A = newest offspring, B cycles seeds, mode cycles), " <> show (length rows) <> " generation(s):")
       mapM_
         (\(i, how, _, f, _) -> putStrLn ("  g" <> show i <> "  " <> T.unpack how <> fert f))
         rows
+      putStrLn ""
+      let (edges, sources, subs) = flowGraph seeds
+          sinks = [x | x <- subs, x `notElem` map fst edges, x `notElem` sources]
+          loops = cyclic edges
+      putStrLn "substance flow (the rhizome question -- a DAG runs down, a cycle sustains):"
+      if null subs
+        then putStrLn "  none. No transition moves a unit, so there is no flow layer at all --\n  this is a pure reachability world and only the lineage above applies."
+        else do
+          mapM_ (\(a, b) -> putStrLn ("  " <> T.unpack a <> "  ->  " <> T.unpack b)) edges
+          putStrLn ("  sources (produced consuming nothing): " <> showList' sources)
+          putStrLn ("  sinks (consumed, never produced):     " <> showList' sinks)
+          putStrLn $
+            if not (null loops)
+              then "  CYCLE: " <> showList' loops <> " -- this world SUSTAINS."
+              else
+                if null sources
+                  then "  no cycle and no source -- every substance is a finite stock. This world RUNS DOWN."
+                  else "  no cycle, but " <> showList' sources <> " is produced from nothing -- sustained by a source."
       putStrLn ""
       case firstSterile of
         [] ->
@@ -164,6 +272,9 @@ main = do
             (take 1 [r | r@(i, _, _, False, _) <- rows, i == k])
           exitFailure
   where
+    showList' [] = "(none)"
+    showList' xs = T.unpack (T.intercalate ", " xs)
+
     fert True = "   [fertile -- clears itself]"
     fert False = "   [STERILE -- never clears itself]"
 

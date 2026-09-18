@@ -159,6 +159,218 @@ mkRoom variant newNode parent =
         , transitionSpan = sp
         }
 
+-- Connective operators ----------------------------------------------
+--
+-- Everything above is ARBORESCENT and it is visible in the signatures:
+-- @mkRoom variant newNode parent@ -- one parent, one child. The word
+-- "parent" is in the API. Every variant hangs a new node off exactly one
+-- existing node, so a world built from them is a tree, its frontier is a
+-- set of leaves, and "can this keep growing" reduces to "do leaves keep
+-- appearing." That is why a single sterile crossover ends a lineage: in
+-- a tree, a node that cannot bear children ends a branch.
+--
+-- A corridor has TWO ENDS. It is not a child of a room; it is an edge
+-- between two rooms that already exist, and nothing above can express
+-- one. These operators can. Jason, 2026-09-18: "Quarries that fill with
+-- rain. Rivers that erode cliffs, exposing clay for bricks. Bricks that
+-- build walls. Walls that enclose gardens. Corridors that connect rooms.
+-- Towers that rise to a view of... The quarry. See the web densify? A
+-- rhizome, not a tree."
+--
+-- The counting is different, and that is the point. A tree's frontier
+-- grows linearly with its nodes; the possible RELATIONS among N nodes
+-- grow as N squared. A tree exhausts. A rhizome densifies -- the later
+-- something is built, the more there is for it to relate to.
+--
+-- What keeps that from being noise is that a relation should carry
+-- something. A rhizome is not arbitrary connection, it is connection
+-- that is not hierarchically constrained, which still leaves the
+-- question of what makes any particular connection real. These answer it
+-- with flow: a transition's guards are what must come in and its effects
+-- are what goes out, so two machines are genuinely connected when one's
+-- output meets the other's input. Substances are the lines.
+
+-- | A BRIDGE: a corridor, defined by having two ends.
+--
+-- Guards on either end being cleared and clears the other, in both
+-- directions. That is the operator that makes a world stop being a tree,
+-- precisely: it creates a CYCLE in reachability, a second way to arrive
+-- somewhere already reachable. Nothing above can produce one, because
+-- everything above descends from a single parent.
+mkBridge :: Text -> Text -> Text -> MachineStmt
+mkBridge bridgeNode endA endB =
+  MachineStmt
+    { machineNode = nr bridgeNode
+    , machineStates = [StateDecl "sealed" sp, StateDecl "open" sp]
+    , machineTransitions = [cross "crossFromA" endA endB, cross "crossFromB" endB endA]
+    , machineSpan = sp
+    }
+  where
+    cross name from to =
+      TransitionDecl
+        { transitionIdent = name
+        , transitionParams = []
+        , transitionFrom = Just "sealed"
+        , transitionTo = Just "open"
+        , transitionGuards = [guardFact from "cleared" "mark/yes"]
+        , transitionEffects =
+            [ assertSelf "cleared" "mark/yes"
+            , assertNode to "cleared" "mark/yes"
+            , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "open"))
+            , EffectRetract TermSelf [] (PredIdent "state") Nothing
+            ]
+        , transitionSpan = sp
+        }
+
+-- | A FEED: a transformer. Consumes one unit of one substance and
+-- produces one unit of another, IN PLACE -- the same unit node changes
+-- what it is. Clay becomes brick; the matter is conserved and only its
+-- kind changes.
+--
+-- This is the operator @?binder@ was built for. The guard finds a unit,
+-- and the effects spend THAT unit rather than some unit -- which is what
+-- makes a transformation a real transformation rather than an assertion
+-- about inventory. It resets so it can run again: a mill that could fire
+-- one brick would be a room with extra steps.
+mkFeed :: Text -> Text -> Text -> MachineStmt
+mkFeed millNode fromKind toKind =
+  MachineStmt
+    { machineNode = nr millNode
+    , machineStates = [StateDecl "idle" sp, StateDecl "working" sp]
+    , machineTransitions = [transform, reset]
+    , machineSpan = sp
+    }
+  where
+    transform =
+      TransitionDecl
+        { transitionIdent = "transform"
+        , transitionParams = []
+        , transitionFrom = Just "idle"
+        , transitionTo = Just "working"
+        , transitionGuards =
+            [ GuardClause False (ExistsExpr (Pattern (TermBind "unit") [PatternHop "is" (TermNode fromKind)]) sp) sp
+            ]
+        , transitionEffects =
+            [ EffectRetract (TermBind "unit") [] (PredIdent "is") (Just (EffectValueTerm (TermNode fromKind)))
+            -- Same predicate as the retract, deliberately: the unit's
+            -- KIND changes, it does not gain a second attribute. Checked
+            -- rather than assumed -- a retract lowers into the commit's
+            -- `consumes` block and an assert into its facts, so there is
+            -- no duplicate (subject, predicate) collision. An earlier
+            -- draft dodged this with a separate `becomes` predicate and
+            -- thereby broke the only thing that matters here: a second
+            -- mill must be able to consume the first's output.
+            , EffectAssert (TermBind "unit") (PredIdent "is") (EffectValueTerm (TermNode toKind))
+            , assertSelf "cleared" "mark/yes"
+            , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "working"))
+            , EffectRetract TermSelf [] (PredIdent "state") Nothing
+            ]
+        , transitionSpan = sp
+        }
+    reset =
+      TransitionDecl
+        { transitionIdent = "reset"
+        , transitionParams = []
+        , transitionFrom = Just "working"
+        , transitionTo = Just "idle"
+        , transitionGuards = []
+        , transitionEffects =
+            [ EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "idle"))
+            , EffectRetract TermSelf [] (PredIdent "state") Nothing
+            ]
+        , transitionSpan = sp
+        }
+
+-- | A REPLENISH: rain. Produces a fresh unit of a substance, consuming
+-- nothing.
+--
+-- The cycle-closer, and the only operator here that can make a world
+-- sustain rather than run down. Everything else moves matter along; this
+-- puts some back. A quarry that fills with rain is not a metaphor for
+-- sustainability -- it is literally a cycle in the substance-flow graph,
+-- which is the structural difference between a world that depletes and
+-- one that does not.
+--
+-- The new unit's node comes from a @$param@: the caller names what
+-- arrives, the same division of labour every other minting in this
+-- project uses. An effect whose subject is a @$param@ brings a node into
+-- existence the instant it resolves (open-world -- see
+-- 'DMML.Ast.Effect').
+mkReplenish :: Text -> Text -> Text -> MachineStmt
+mkReplenish node kind source =
+  MachineStmt
+    { machineNode = nr node
+    , machineStates = [StateDecl "gathering" sp, StateDecl "spent" sp]
+    , machineTransitions = [fall, gather]
+    , machineSpan = sp
+    }
+  where
+    fall =
+      TransitionDecl
+        { transitionIdent = "fall"
+        , transitionParams = ["unit"]
+        , transitionFrom = Just "gathering"
+        , transitionTo = Just "spent"
+        , transitionGuards = [guardFact source "cleared" "mark/yes"]
+        , transitionEffects =
+            [ EffectAssert (TermParam "unit") (PredIdent "is") (EffectValueTerm (TermNode kind))
+            , assertSelf "cleared" "mark/yes"
+            , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "spent"))
+            , EffectRetract TermSelf [] (PredIdent "state") Nothing
+            ]
+        , transitionSpan = sp
+        }
+    gather =
+      TransitionDecl
+        { transitionIdent = "gather"
+        , transitionParams = []
+        , transitionFrom = Just "spent"
+        , transitionTo = Just "gathering"
+        , transitionGuards = []
+        , transitionEffects =
+            [ EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "gathering"))
+            , EffectRetract TermSelf [] (PredIdent "state") Nothing
+            ]
+        , transitionSpan = sp
+        }
+
+-- | A VISTA: the tower that rises to a view of the quarry.
+--
+-- Relates two existing places and moves nothing between them. Requires
+-- BOTH to be real before the view exists, and changes neither. This is
+-- the reference half of the distinction this project drew earlier the
+-- same day -- copies act, references remember -- and it needs no
+-- primitive at all, because a fact with a node value already IS an edge.
+--
+-- It densifies without flowing, which is worth having on its own: a
+-- rhizome whose every line carried substance would be a supply chain,
+-- not a world.
+mkVista :: Text -> Text -> Text -> MachineStmt
+mkVista node anchor target =
+  MachineStmt
+    { machineNode = nr node
+    , machineStates = [StateDecl "sealed" sp, StateDecl "open" sp]
+    , machineTransitions = [climb]
+    , machineSpan = sp
+    }
+  where
+    climb =
+      TransitionDecl
+        { transitionIdent = "climb"
+        , transitionParams = []
+        , transitionFrom = Just "sealed"
+        , transitionTo = Just "open"
+        , transitionGuards =
+            [guardFact anchor "cleared" "mark/yes", guardFact target "cleared" "mark/yes"]
+        , transitionEffects =
+            [ EffectAssert TermSelf (PredIdent "overlooks") (EffectValueTerm (TermNode target))
+            , assertSelf "cleared" "mark/yes"
+            , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "open"))
+            , EffectRetract TermSelf [] (PredIdent "state") Nothing
+            ]
+        , transitionSpan = sp
+        }
+
 -- | A fork: one machine, two mutually-exclusive transitions sharing a
 -- single unchosen -> chosen lock. Each clears a different onward
 -- frontier node; the from->to lifecycle (not a negated guard, which the
@@ -242,6 +454,14 @@ main = do
                     TIO.putStr (renderFiredMachine placed)
                 )
                 candidates
+    ["bridge", node, endA, endB] ->
+      TIO.putStr (renderFiredMachine (mkBridge (T.pack node) (T.pack endA) (T.pack endB)))
+    ["feed", node, fromKind, toKind] ->
+      TIO.putStr (renderFiredMachine (mkFeed (T.pack node) (T.pack fromKind) (T.pack toKind)))
+    ["replenish", node, kind, source] ->
+      TIO.putStr (renderFiredMachine (mkReplenish (T.pack node) (T.pack kind) (T.pack source)))
+    ["vista", node, anchor, target] ->
+      TIO.putStr (renderFiredMachine (mkVista (T.pack node) (T.pack anchor) (T.pack target)))
     ["fork", forkNode, parent, left, right] ->
       TIO.putStr (renderFiredMachine (mkFork (T.pack forkNode) (T.pack parent) (T.pack left) (T.pack right)))
     [v, newNode, parent] ->
@@ -253,4 +473,9 @@ main = do
         >> putStrLn "       cannon fork <forkNode> <parentNode> <leftFrontier> <rightFrontier>"
         >> putStrLn "       cannon breed <union|chimera|spliceK> <newNode> <a.dmml> <b.dmml> [anchorNode]"
         >> putStrLn "       cannon pool <nodePrefix> <a.dmml> <b.dmml> [anchorNode]"
+        >> putStrLn "  connective (two ends, not one parent -- a rhizome, not a tree):"
+        >> putStrLn "       cannon bridge <node> <endA> <endB>        -- a corridor; makes a reachability CYCLE"
+        >> putStrLn "       cannon feed <node> <fromKind> <toKind>    -- a mill; clay becomes brick, in place"
+        >> putStrLn "       cannon replenish <node> <kind> <source>   -- rain; produces, consuming nothing"
+        >> putStrLn "       cannon vista <node> <anchor> <target>     -- a tower; relates without flowing"
         >> exitFailure

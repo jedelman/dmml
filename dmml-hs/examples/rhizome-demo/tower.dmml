@@ -1,0 +1,14 @@
+machine tower/watch
+  states
+    sealed
+    open
+
+  transition climb()
+    sealed -> open
+    guard room/b `cleared` mark/yes
+    guard quarry/north `cleared` mark/yes
+    assert self `overlooks` quarry/north
+    assert self `cleared` mark/yes
+    assert self `state` open
+    retract self `state`
+

@@ -1,0 +1,19 @@
+machine mill/mason
+  states
+    idle
+    working
+
+  transition transform()
+    idle -> working
+    guard ?unit `is` brick/fired
+    retract ?unit `is` brick/fired
+    assert ?unit `is` wall/section
+    assert self `cleared` mark/yes
+    assert self `state` working
+    retract self `state`
+
+  transition reset()
+    working -> idle
+    assert self `state` idle
+    retract self `state`
+

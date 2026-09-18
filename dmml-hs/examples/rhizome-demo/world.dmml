@@ -1,0 +1,15 @@
+commit setup
+  declare relation state
+  declare relation is
+  declare relation cleared
+  declare relation overlooks
+
+  room/a `cleared` mark/yes
+  cliff/face `cleared` mark/yes
+  quarry/north `cleared` mark/yes
+  corridor/ab `state` sealed
+  mill/kiln `state` idle
+  mill/mason `state` idle
+  weather/rain `state` gathering
+  tower/watch `state` sealed
+  room/b `state` sealed

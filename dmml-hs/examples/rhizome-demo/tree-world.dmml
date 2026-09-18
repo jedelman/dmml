@@ -1,0 +1,8 @@
+commit setup
+  declare relation state
+  declare relation cleared
+
+  room/a `cleared` mark/yes
+  room/b `state` sealed
+  room/c `state` sealed
+  corridor/ac `state` sealed
