@@ -1,0 +1,19 @@
+machine altar/central
+
+  states
+    empty
+    filled
+
+  transition enshrineWest()
+    empty -> filled
+    guard chamber/west `holds` sigil/west
+    assert altar/central `bears` sigil/west
+    assert filled
+    retract empty
+
+  transition enshrineEast()
+    empty -> filled
+    guard chamber/east `holds` sigil/east
+    assert altar/central `bears` sigil/east
+    assert filled
+    retract empty

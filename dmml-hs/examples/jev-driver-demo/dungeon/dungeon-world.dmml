@@ -1,0 +1,11 @@
+commit setup
+  declare relation state
+  declare relation barrier
+  declare relation holds
+  declare relation bears
+
+  party/west `state` arrived
+  party/east `state` arrived
+  gate/west `barrier` state/shut
+  gate/east `barrier` state/shut
+  altar/central `state` empty

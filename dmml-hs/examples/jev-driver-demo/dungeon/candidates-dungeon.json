@@ -1,0 +1,80 @@
+{
+  "world_seed": ["dungeon-world.dmml"],
+  "machines": ["party-west.dmml", "party-east.dmml", "altar.dmml"],
+  "candidates": [
+    {
+      "id": "west-pullLever",
+      "machine": "party-west.dmml",
+      "transition": "pullLever",
+      "verb": "pulls",
+      "params": {},
+      "description": "West party pulls the west lever, which unseals the west gate elsewhere in the dungeon. Independent of anything the east party is doing."
+    },
+    {
+      "id": "west-advance",
+      "machine": "party-west.dmml",
+      "transition": "advance",
+      "verb": "advances",
+      "params": {},
+      "description": "West party advances through the now-open west gate into the west chamber. Only possible once the west gate has been unsealed."
+    },
+    {
+      "id": "west-plunder",
+      "machine": "party-west.dmml",
+      "transition": "plunder",
+      "verb": "plunders",
+      "params": {},
+      "description": "West party plunders the west chamber, taking the west sigil. Only possible once inside the west chamber."
+    },
+    {
+      "id": "east-pullLever",
+      "machine": "party-east.dmml",
+      "transition": "pullLever",
+      "verb": "pulls",
+      "params": {},
+      "description": "East party pulls the east lever, which unseals the east gate elsewhere in the dungeon. Independent of anything the west party is doing."
+    },
+    {
+      "id": "east-advance",
+      "machine": "party-east.dmml",
+      "transition": "advance",
+      "verb": "advances",
+      "params": {},
+      "description": "East party advances through the now-open east gate into the east chamber. Only possible once the east gate has been unsealed."
+    },
+    {
+      "id": "east-plunder",
+      "machine": "party-east.dmml",
+      "transition": "plunder",
+      "verb": "plunders",
+      "params": {},
+      "description": "East party plunders the east chamber, taking the east sigil. Only possible once inside the east chamber."
+    },
+    {
+      "id": "enshrine-west",
+      "machine": "altar.dmml",
+      "transition": "enshrineWest",
+      "verb": "enshrines",
+      "params": {},
+      "description": "Place the west sigil on the central altar. The altar has ONE slot -- enshrining either sigil fills it permanently, and the other sigil can then never be enshrined. Requires the west sigil to have been plundered."
+    },
+    {
+      "id": "enshrine-east",
+      "machine": "altar.dmml",
+      "transition": "enshrineEast",
+      "verb": "enshrines",
+      "params": {},
+      "description": "Place the east sigil on the central altar. The altar has ONE slot -- enshrining either sigil fills it permanently, and the other sigil can then never be enshrined. Requires the east sigil to have been plundered."
+    }
+  ],
+  "budget": {
+    "max_rounds": 12,
+    "max_total_firings": 20,
+    "max_firings_per_candidate": 1,
+    "max_minted_nodes": 40
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "Two parties delve two independent wings of a dungeon -- each must pull its lever to unseal its gate, advance through it, and plunder its chamber's sigil. The two wings never interfere until the end: a single central altar has ONE slot, so only ONE sigil can ever be enshrined, and choosing one strands the other forever. Actions in different wings are independent and can both happen the same turn; choose freely, and at the altar, decide which sigil claims the one slot."
+  }
+}

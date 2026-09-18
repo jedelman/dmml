@@ -1,0 +1,26 @@
+machine party/east
+
+  states
+    arrived
+    pulled
+    advanced
+    plundered
+
+  transition pullLever()
+    arrived -> pulled
+    assert gate/east `barrier` state/open
+    retract gate/east `barrier` state/shut
+    assert pulled
+    retract arrived
+
+  transition advance()
+    pulled -> advanced
+    guard gate/east `barrier` state/open
+    assert advanced
+    retract pulled
+
+  transition plunder()
+    advanced -> plundered
+    assert chamber/east `holds` sigil/east
+    assert plundered
+    retract advanced
