@@ -1,0 +1,12 @@
+machine delver/second
+
+  states
+    arrived
+    read
+
+  transition readTraces()
+    arrived -> read
+    guard self `standsIn` room/vault
+    guard room/vault `holdsRelicOf` party `felledBy` peril
+    assert read
+    retract arrived

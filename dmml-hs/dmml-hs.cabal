@@ -129,6 +129,14 @@ executable cannon
 
   default-language: Haskell2010
 
+executable retro-imply
+  import:           warnings
+  main-is:          RetroImply.hs
+  hs-source-dirs:   app
+  build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+
+  default-language: Haskell2010
+
 executable list-candidates
   import:           warnings
   main-is:          ListCandidates.hs

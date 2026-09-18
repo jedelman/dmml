@@ -1,0 +1,6 @@
+commit present
+  declare relation state
+  declare relation standsIn
+
+  delver/second `state` arrived
+  delver/second `standsIn` room/vault
