@@ -289,9 +289,19 @@ main = do
             | t <- machineTransitions m
             ]
 
-    parseArgs as = (mapMaybe keep (zip as (drop 1 as ++ [""])), gensOf as)
+    -- Pair each arg with the one BEFORE it, not the one after. The
+    -- original paired forward and then ignored the pair's second
+    -- element, so `--generations` was dropped and its VALUE was not --
+    -- `--generations 8` fed "8" through as a seed path and died on
+    -- openFile. Found by using the flag (2026-09-18); it had never
+    -- worked, and the default 40 is rarely reached anyway because the
+    -- walk stops at the first repeated shape.
+    parseArgs as = (mapMaybe keep (zip ("" : as) as), gensOf as)
       where
-        keep (a, _) = if take 2 a == "--" then Nothing else Just a
+        keep (prev, a)
+          | take 2 a == "--" = Nothing
+          | take 2 prev == "--" = Nothing
+          | otherwise = Just a
         gensOf ("--generations" : n : _) = read n
         gensOf (_ : more) = gensOf more
         gensOf [] = 40

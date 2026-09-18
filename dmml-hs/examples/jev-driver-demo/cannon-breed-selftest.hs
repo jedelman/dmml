@@ -109,6 +109,81 @@ fork =
         , transitionSpan = sp
         }
 
+-- Parent D: a binder-driven machine -- the case that produced corpses.
+-- Its guard BINDS @?rock@ and its effects SPEND that same rock, so the
+-- guard is not a test the machine passes, it is a query supplying a
+-- witness. Chimera takes A's guards and B's effects; before the repair,
+-- crossing this in as B handed the offspring effects naming a @?rock@
+-- nothing bound, and 'DMML.Fire' refuses at the first unresolvable
+-- effect term whatever the world looks like. Also carries a formal param
+-- used by nothing, the other half of the same corpse.
+digger :: MachineStmt
+digger =
+  MachineStmt
+    { machineNode = nr "crew/digger"
+    , machineStates = [StateDecl "idle" sp, StateDecl "working" sp]
+    , machineTransitions =
+        [ TransitionDecl
+            { transitionIdent = "take"
+            , transitionParams = ["unused"]
+            , transitionFrom = Just "idle"
+            , transitionTo = Just "working"
+            , transitionGuards = [bindFact "rock" "in" "quarry/north"]
+            , transitionEffects =
+                [ EffectAssert TermSelf (PredIdent "took") (EffectValueTerm (TermBind "rock"))
+                , EffectRetract (TermBind "rock") [] (PredIdent "in") (Just (EffectValueTerm (TermNode "quarry/north")))
+                , assertSelf "state" "working"
+                , EffectRetract TermSelf [] (PredIdent "state") Nothing
+                ]
+            , transitionSpan = sp
+            }
+        ]
+    , machineSpan = sp
+    }
+
+-- Parent E: an offspring that already CARRIES the corpse -- effects
+-- naming @?rock@ with no guard to bind it, plus a param used by nothing.
+-- This is what generation 1 looked like in the measured run, and what
+-- Union and Splice then copied forward unchanged for eleven generations.
+-- Without a fixture in this shape the inheritance checks are vacuous:
+-- crossing two SOUND parents can't test pruning.
+orphaned :: MachineStmt
+orphaned =
+  MachineStmt
+    { machineNode = nr "room/g1"
+    , machineStates = [StateDecl "gathering" sp, StateDecl "spent" sp]
+    , machineTransitions =
+        [ TransitionDecl
+            { transitionIdent = "fall"
+            , transitionParams = ["unit"]
+            , transitionFrom = Just "gathering"
+            , transitionTo = Just "spent"
+            , transitionGuards = []
+            , transitionEffects =
+                [ EffectAssert TermSelf (PredIdent "took") (EffectValueTerm (TermBind "rock"))
+                , EffectRetract (TermBind "rock") [] (PredIdent "in") (Just (EffectValueTerm (TermNode "quarry/north")))
+                , assertSelf "state" "spent"
+                , EffectRetract TermSelf [] (PredIdent "state") Nothing
+                ]
+            , transitionSpan = sp
+            }
+        ]
+    , machineSpan = sp
+    }
+
+-- @guard ?v `pred` obj@ -- a QUERY, as against guardFact's test.
+bindFact :: Text -> Text -> Text -> GuardClause
+bindFact v predicate obj =
+  GuardClause
+    { guardNegated = False
+    , guardExists =
+        ExistsExpr
+          { existsPattern = Pattern (TermBind v) [PatternHop predicate (TermNode obj)]
+          , existsSpan = sp
+          }
+    , guardSpan = sp
+    }
+
 -- Parent C: a THREE-state machine whose state idents collide with A's,
 -- to exercise the surplus-state path and its collision rename at once.
 -- @sealed@ and @open@ align positionally onto A's; the third state is
@@ -358,6 +433,64 @@ main = do
           , g <- transitionGuards t
           ]
       ok "re-anchoring still round-trips" $ roundTrips m
+
+  putStrLn "orphan binders: an effect cannot outlive the guard that bound it"
+  case breed sp Chimera (nr "room/x") vault digger of
+    Left e -> ok ("chimera vault x digger breeds: " <> T.pack (show e)) False
+    Right m -> case machineTransitions m of
+      (t : _) -> do
+        ok "no offspring transition names a binder nothing supplies" $
+          all (null . orphanBinders) (machineTransitions m)
+        -- The repair is to CARRY the query, not to drop the effect --
+        -- dropping would reduce chimera to lifecycle whenever B is
+        -- binder-driven, deleting the mode's whole point.
+        ok "the guard that BINDS ?rock travels with the effects that spend it" $
+          bindFact "rock" "in" "quarry/north" `elem` transitionGuards t
+        ok "and A's own conditions are all still there" $
+          all (`elem` transitionGuards t) (transitionGuards (head (machineTransitions vault)))
+        ok "so the offspring really does take a rock -- B's consequence survived" $
+          EffectAssert TermSelf (PredIdent "took") (EffectValueTerm (TermBind "rock"))
+            `elem` transitionEffects t
+        ok "the repaired offspring still round-trips" $ roundTrips m
+      [] -> ok "chimera produced a transition" False
+
+  -- Chimera keeps A's params, so the param sweep is only testable with
+  -- the parameterized machine on the A side.
+  ok "a formal param nothing references is dropped" $
+    case breed sp Chimera (nr "room/x") digger vault of
+      Right m -> all (null . transitionParams) (machineTransitions m)
+      Left _ -> False
+  ok "the fixture really does carry a param to drop" $
+    transitionParams (head (machineTransitions digger)) == ["unused"]
+
+  -- The measured failure was not the injection, it was the INHERITANCE:
+  -- parent A of each generation is the last offspring, so one orphan bred
+  -- in generation 0 rode every later cross forever. 9 of 12 machines in a
+  -- real 20-round run were dead this way.
+  putStrLn "orphans are not inherited down a lineage"
+  let lineage 0 m = Right m
+      lineage n m = breed sp Chimera (nr "room/x") m digger >>= lineage (n - 1 :: Int)
+  case lineage 4 orphaned of
+    Left e -> ok ("four generations breed: " <> T.pack (show e)) False
+    Right m -> do
+      ok "after four generations, still no orphan anywhere" $
+        all (null . orphanBinders) (machineTransitions m)
+      ok "and still no param standing for nothing" $
+        all (null . transitionParams) (machineTransitions m)
+
+  -- Union and Splice never INJECT an orphan; they propagate one. Both
+  -- must therefore also prune, or an orphaned parent poisons them.
+  putStrLn "union and splice prune what they inherit"
+  ok "the fixture really is orphaned to begin with" $
+    orphanBinders (head (machineTransitions orphaned)) == ["rock"]
+  forM_ [(Union, "union" :: Text), (Splice 1, "splice1")] $ \(mode, label) ->
+    case breed sp mode (nr "room/x") orphaned vault of
+      Left e -> ok (label <> " breeds: " <> T.pack (show e)) False
+      Right m -> do
+        ok (label <> " carries no orphan through") $
+          all (null . orphanBinders) (machineTransitions m)
+        ok (label <> " drops the param that went with it") $
+          all (null . transitionParams) (machineTransitions m)
 
   putStrLn "pool"
   let candidates = breedPool sp (nr "room/bred") vault fork

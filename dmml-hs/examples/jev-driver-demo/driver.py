@@ -160,6 +160,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import subprocess
@@ -312,6 +313,129 @@ def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, dict]:
     for wf in world_files:
         state.known_nodes |= set(NODE_TOKEN_RE.findall(Path(wf).read_text()))
     return state, budget, extend, cfg["jev"]
+
+
+# The dry-run chooser -------------------------------------------------------
+#
+# `--dry-run` used to take `group[0]` -- the first legal candidate, the
+# first unmapped edge, the first binding option. That is not "no
+# chooser", it is a chooser with a very strong opinion, and the opinion
+# is an artifact of list order. Measured 2026-09-18: in a 20-round
+# quarry-delve run, several bred rooms competing for the same scarce rock
+# never fired once, not because they could not but because a sibling was
+# listed ahead of them every single round. Reading that as "those
+# machines are dead" would have been reading the sort order as biology.
+#
+# So: PERLIN NOISE, and deliberately not a hash.
+#
+# A hash would de-bias it -- uncorrelated, uniform, fine. But a hash is
+# memoryless, and a real chooser is not. Jev has intent that persists
+# across rounds: a crew that has been digging keeps digging for a while,
+# then its attention moves. Perlin is smooth, so sampling it along a time
+# axis gives exactly that -- a preference field that DRIFTS. A dry run
+# then rehearses the shape of a live run (coherent, with momentum)
+# instead of the shape of a shuffle.
+#
+# Still fully deterministic, which `ExtendPolicy` depends on: fixed
+# permutation table, fixed constants, no `random` module anywhere (so
+# nothing else seeding the global RNG can perturb a rehearsal). Same
+# config, same run, every time.
+#
+# Each candidate gets a fixed LANE in the field, derived from its id --
+# never from its index in any list, which is the whole point.
+
+
+def _perm_table(seed: int) -> list[int]:
+    """Classic Perlin permutation, shuffled by an explicit LCG.
+
+    Hand-rolled rather than `random.shuffle` so this table cannot be
+    changed by anything else in the process seeding the global RNG -- a
+    rehearsal that silently differs run to run would be worse than the
+    positional bias it replaces.
+    """
+    table = list(range(256))
+    state = seed & 0xFFFFFFFF
+    for i in range(255, 0, -1):
+        state = (state * 1664525 + 1013904223) & 0xFFFFFFFF
+        j = state % (i + 1)
+        table[i], table[j] = table[j], table[i]
+    return table + table
+
+
+_PERM = _perm_table(0x736D6F6B65)
+# Rounds per unit of noise. Smaller drifts more slowly (a chooser that
+# sticks with a thing); larger approaches white noise. 0.35 gives roughly
+# a three-round attention span, which is about what the live runs show.
+DRIFT_TIME_SCALE = 0.35
+# How far an option's lane slides sideways per round.
+#
+# Without it, each option sits on ONE curve through the field forever, and
+# over a finite run some curves simply run higher than others -- a
+# persistent per-option preference that is not positional bias but is
+# still bias. Sliding the lanes decorrelates the long-run means while
+# leaving short-term coherence intact.
+#
+# Chosen by sweeping 0.0-0.3 over 120 key-sets (sizes 3/6/12, 200 rounds
+# each) rather than one draw -- on a single draw 0.1 looked twice as good
+# as 0.05, and averaged it is not. Mean spread (max-min share of wins,
+# normalized) 0.88 -> 0.60, mean run-length 1.88 -> 1.84. The curve is
+# flat from 0.02 to 0.15, so this constant is not load-bearing.
+#
+# The residual 0.60 does not go away at any setting: argmax over a smooth
+# field is lumpier than uniform, and that is the price of coherence, not
+# a bug left in.
+DRIFT_LANE_SCALE = 0.05
+
+
+def _fade(t: float) -> float:
+    return t * t * t * (t * (t * 6 - 15) + 10)
+
+
+def _grad(h: int, x: float, y: float) -> float:
+    h &= 3
+    return (x if h in (0, 1) else -x) + (y if h in (0, 2) else -y)
+
+
+def perlin2(x: float, y: float) -> float:
+    """2D Perlin noise, roughly [-1, 1]. Textbook implementation."""
+    x0, y0 = math.floor(x), math.floor(y)
+    xi, yi = x0 & 255, y0 & 255
+    xf, yf = x - x0, y - y0
+    u, v = _fade(xf), _fade(yf)
+    aa = _PERM[_PERM[xi] + yi]
+    ab = _PERM[_PERM[xi] + yi + 1]
+    ba = _PERM[_PERM[xi + 1] + yi]
+    bb = _PERM[_PERM[xi + 1] + yi + 1]
+    lo = _grad(aa, xf, yf) + u * (_grad(ba, xf - 1, yf) - _grad(aa, xf, yf))
+    hi = _grad(ab, xf, yf - 1) + u * (_grad(bb, xf - 1, yf - 1) - _grad(ab, xf, yf - 1))
+    return lo + v * (hi - lo)
+
+
+def _lane(key: str) -> float:
+    """A stable coordinate for one option, from its NAME.
+
+    From the name and nothing else -- not its index, not the order it was
+    discovered, not how many siblings it has. That is what makes the
+    chooser indifferent to list order, and it also means an option keeps
+    its lane as the world grows around it.
+    """
+    h = hashlib.sha256(key.encode()).digest()
+    return int.from_bytes(h[:8], "big") / 2.0**64 * 256.0
+
+
+def drift(key: str, round_no: int, salt: str = "") -> float:
+    """How much this chooser wants `key` this round."""
+    return perlin2(
+        round_no * DRIFT_TIME_SCALE,
+        _lane(f"{salt}|{key}") + round_no * DRIFT_LANE_SCALE,
+    )
+
+
+def drift_pick(keys, round_no: int, salt: str = ""):
+    """The most-wanted option this round. Ties break on the key itself,
+    so the result is total and reproducible even in the degenerate case
+    where two options land on identical noise."""
+    return max(keys, key=lambda k: (drift(str(k), round_no, salt), str(k)))
 
 
 def fire_binary() -> list[str]:
@@ -1500,7 +1624,12 @@ def main() -> None:
     ap.add_argument("config", type=Path)
     ap.add_argument("--world-dir", type=Path, default=None, help="scratch dir for accumulating firings (default: mkdtemp)")
     ap.add_argument("--audit-log", type=Path, default=None)
-    ap.add_argument("--dry-run", action="store_true", help="skip the Jev call, pick the first legal candidate deterministically")
+    ap.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="skip the Jev call; choose by a deterministic Perlin drift field instead "
+        "(reproducible, order-independent, and coherent across rounds -- see 'The dry-run chooser')",
+    )
     ap.add_argument("--api-key", default=os.environ.get("TYPESAFE_API_KEY"))
     args = ap.parse_args()
 
@@ -1616,14 +1745,27 @@ def main() -> None:
             jev_response = {"skipped": "nothing to decide"}
             print(f"round {round_no}: nothing to decide -- the world takes shape without a question")
         elif args.dry_run:
-            winners = [group[0] for group in groups]
-            pressed = unmapped[0] if unmapped else None
-            connected = connect_q[0] if connect_q else None
+            # Every choice a live run would put to Jev, made by the drift
+            # field instead -- same four decisions, no thumb on the list
+            # order. Each gets its own salt so the four fields are
+            # independent: where the delve presses should not be
+            # correlated with which rock it takes.
+            winners = [
+                max(group, key=lambda co: (drift(co[0].id, round_no, f"gen{i}"), co[0].id))
+                for i, group in enumerate(groups)
+            ]
+            pressed = drift_pick(unmapped, round_no, "frontier") if unmapped else None
+            connected = (
+                max(connect_q, key=lambda q: (drift(q[0], round_no, "connect"), q[0]))
+                if connect_q
+                else None
+            )
             for c, var, opts in pending:
-                c.params[var] = opts[0]
+                pick = drift_pick(opts, round_no, f"bind|{c.id}|{var}")
+                c.params[var] = pick
                 c.bound_params.add(var)
-                print(f"round {round_no}: bound {c.id}'s ?{var} = {opts[0]} (dry-run: first option)")
-            jev_response = {"dry_run": True}
+                print(f"round {round_no}: bound {c.id}'s ?{var} = {pick} (dry-run: drift)")
+            jev_response = {"dry_run": True, "chooser": "perlin-drift"}
         else:
             jev_response = call_jev_batch(
                 args.api_key,

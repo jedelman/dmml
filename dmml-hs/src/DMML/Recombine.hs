@@ -151,6 +151,7 @@ module DMML.Recombine
   , breedPool
   , reanchor
   , crossoverLabel
+  , orphanBinders
   ) where
 
 import Data.List (nub)
@@ -160,6 +161,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import DMML.Ast
+import DMML.Guard (binderNames)
 
 -- | How two parents' transition lists are combined. See the module
 -- haddock for what each one means architecturally.
@@ -344,6 +346,104 @@ remapLifecycle m t =
       EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode (look s)))
     onEffect e = e
 
+-- Binders and params -------------------------------------------------------
+
+-- Measured 2026-09-18, and the reason any of this exists. A 20-round
+-- quarry-delve run minted 12 machines; 9 never fired once, and all 11
+-- bred rooms carried the same corpse -- a @fall(unit)@ whose effects
+-- named @?rock@ with no guard to bind it, and whose formal @unit@ was
+-- used nowhere. Firing both exits of one confirmed it was dead under
+-- any chooser:
+--
+-- >  fall -> refused -- an effect's asserted value term did not resolve: TermBind "rock"
+-- >  rest -> refused -- transition's guards do not currently hold
+--
+-- The injection point is 'Chimera', which takes A's guards with B's
+-- world effects; 'Union' and 'Splice' then carry an offspring's orphans
+-- forward forever, since parent A of the next generation is the last
+-- offspring. So the repair has to happen at BOTH ends: supply the
+-- missing binding where a donor has it, and prune what is still orphaned
+-- afterwards.
+
+termBinder :: PatternTerm -> [Text]
+termBinder (TermBind v) = [v]
+termBinder _ = []
+
+termParam :: PatternTerm -> [Text]
+termParam (TermParam v) = [v]
+termParam _ = []
+
+valueTerms :: EffectValue -> [PatternTerm]
+valueTerms (EffectValueTerm t) = [t]
+valueTerms (EffectValueLiteral _) = []
+
+-- | Every 'PatternTerm' an effect mentions, anywhere.
+effectTerms :: Effect -> [PatternTerm]
+effectTerms (EffectAssert s _ v) = s : valueTerms v
+effectTerms (EffectRetract s hops _ mv) =
+  s : map hopTerm hops ++ maybe [] valueTerms mv
+effectTerms (EffectSpawn s _) = [s]
+effectTerms (EffectGraft a b) = [a, b]
+
+patternTerms :: Pattern -> [PatternTerm]
+patternTerms pat = patternAnchor pat : map hopTerm (patternHops pat)
+
+guardPattern :: GuardClause -> Pattern
+guardPattern = existsPattern . guardExists
+
+-- | The @?binders@ a transition's guards actually supply.
+--
+-- Positive guards only. Nothing can be bound from the absence of a fact
+-- -- 'DMML.Guard.GuardBinderInNegatedGuard' refuses that outright -- so
+-- a binder named only inside a @not@ is not bound, it is malformed.
+boundBinders :: TransitionDecl -> [Text]
+boundBinders t =
+  nub [v | g <- transitionGuards t, not (guardNegated g), v <- binderNames (guardPattern g)]
+
+-- | The @?binders@ a transition's EFFECTS need but its guards never
+-- supply. Non-empty means the transition is dead: 'DMML.Fire' refuses at
+-- the first unresolvable effect term, whatever the world looks like.
+--
+-- Exported so a caller can assert directly that no offspring carries one,
+-- rather than inferring it from a firing that happened not to happen.
+orphanBinders :: TransitionDecl -> [Text]
+orphanBinders t =
+  nub
+    [ v
+    | e <- transitionEffects t
+    , term <- effectTerms e
+    , v <- termBinder term
+    , v `notElem` boundBinders t
+    ]
+
+-- | Drop what a transition cannot possibly use, after crossing.
+--
+-- Two sweeps, both measured rather than imagined:
+--
+-- * An effect naming an unbound @?binder@ is removed. Keeping it makes
+--   the whole transition unfireable, so this trades one dead transition
+--   for one that does less -- strictly better, and it is the only repair
+--   available once no donor guard supplies the witness.
+-- * A formal param left referenced by nothing is removed. Breeding
+--   produces these constantly (a mode can take one parent's signature
+--   over the other's effects), and they are not harmless: the Jev
+--   driver reads a transition's params to decide what kind of decision
+--   it faces, so a param standing for nothing is a question about
+--   nothing.
+--
+-- Lifecycle effects are never touched -- they are all @self@, so they
+-- name no binder and survive both sweeps by construction.
+pruneOrphans :: TransitionDecl -> TransitionDecl
+pruneOrphans t =
+  t {transitionEffects = kept, transitionParams = filter (`elem` usedParams) (transitionParams t)}
+  where
+    bound = boundBinders t
+    kept = [e | e <- transitionEffects t, all (`elem` bound) (concatMap termBinder (effectTerms e))]
+    usedParams =
+      nub $
+        concatMap termParam (concatMap effectTerms kept)
+          ++ concatMap termParam (concatMap (patternTerms . guardPattern) (transitionGuards t))
+
 -- Lifecycle effects --------------------------------------------------------
 
 -- | An effect that moves the machine through its own state machine,
@@ -406,18 +506,57 @@ breed sp mode child a b
     -- B's consequences. World effects lead, lifecycle effects trail --
     -- the same order every hand-written and cannon-fired machine in this
     -- project already renders in.
+    --
+    -- Plus the guards that BIND what B's effects name. This is the fix
+    -- for the orphan corpses described above, and it is a real semantic
+    -- call, so: a @?binder@ is a variable, not a condition. The surface
+    -- writes both as @guard@, but @guard room\/x `cleared` mark\/yes@ is a
+    -- test the machine must pass, while @guard ?rock `in` quarry\/north@
+    -- is a QUERY that hands a witness to whatever comes after it. Chimera's
+    -- contract is A's conditions with B's consequences -- and the query
+    -- supplying a witness to B's consequence is part of that consequence,
+    -- not a separate condition being smuggled in. So it travels with the
+    -- effect that needs it.
+    --
+    -- The alternative was to drop any effect A's guards cannot satisfy.
+    -- That also yields a fireable offspring, and yields one that does
+    -- nothing: crossing any binder-driven machine as B would reduce
+    -- chimera to lifecycle, which is the mode's whole point deleted. The
+    -- drop is still the fallback, in 'pruneOrphans', for a binder NO
+    -- donor guard supplies.
+    --
+    -- One pass suffices. A positive guard binds every binder it names at
+    -- once (@guard ?rock `grade` ?ore@ binds both), so a carried guard
+    -- never creates a further debt.
     chimeraOf ta tb =
-      ta
-        { transitionEffects =
-            filter (not . isLifecycleEffect) (transitionEffects tb)
-              ++ filter isLifecycleEffect (transitionEffects ta)
-        }
+      let worldB = filter (not . isLifecycleEffect) (transitionEffects tb)
+          missing =
+            [ v
+            | v <- nub (concatMap termBinder (concatMap effectTerms worldB))
+            , v `notElem` boundBinders ta
+            ]
+          carried =
+            [ g
+            | g <- transitionGuards tb
+            , not (guardNegated g)
+            , any (`elem` missing) (binderNames (guardPattern g))
+            ]
+       in ta
+            { transitionGuards = transitionGuards ta ++ carried
+            , transitionEffects = worldB ++ filter isLifecycleEffect (transitionEffects ta)
+            }
 
     offspring =
       MachineStmt
         { machineNode = child
         , machineStates = map (\s -> s {stateSpan = sp}) states
-        , machineTransitions = map dedup (renameCollisions combined)
+        , -- pruneOrphans runs LAST, over every transition whatever mode
+          -- made it. Chimera's carry above fixes the injection point;
+          -- this catches what a donor could not supply, and -- the part
+          -- that actually mattered in the measured run -- the orphans
+          -- Union and Splice inherit wholesale from an offspring bred
+          -- one generation earlier.
+          machineTransitions = map (pruneOrphans . dedup) (renameCollisions combined)
         , machineSpan = sp
         }
 
