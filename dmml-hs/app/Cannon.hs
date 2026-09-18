@@ -23,6 +23,24 @@
 -- Usage:
 --   cannon <hall|forge|vault|spur> <newNode> <parentNode>
 --   cannon fork <forkNode> <parentNode> <leftFrontier> <rightFrontier>
+--   cannon breed <union|chimera|spliceK> <newNode> <a.dmml> <b.dmml> [anchorNode]
+--   cannon pool <nodePrefix> <a.dmml> <b.dmml> [anchorNode]
+--
+-- The four variants and the fork are the cannon as a TEMPLATE STAMP:
+-- every shot comes from a shape hand-authored here, so the pool of
+-- possible architecture is exactly as large as this file. `breed` and
+-- `pool` are the cannon as a BREEDER: they take two machines that
+-- already exist -- including two the cannon fired earlier, or two an
+-- earlier breeding produced -- and cross them into offspring whose
+-- shape is in neither this file nor either parent. That is the
+-- difference between a generator with a fixed vocabulary and one whose
+-- vocabulary grows with its own output. See "DMML.Recombine" for what
+-- crossover means here and which invariants it has to keep.
+--
+-- `breed` prints one machine; `pool` prints a whole frontier of them,
+-- each preceded by a `# <label> <node>` comment line, which is not
+-- DMML -- pool output is a catalogue for a chooser to read and split,
+-- not a file to feed the parser.
 --
 -- A room's variant is its RELATIONSHIP to the rest of the dungeon. A
 -- fork is the sharper architectural element: one machine with two
@@ -38,14 +56,19 @@
 -- same as every other fact-native machine in this project).
 module Main (main) where
 
+import Data.Char (isDigit)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
+import System.IO (hPutStrLn, stderr)
+import Text.Megaparsec (errorBundlePretty)
 
 import DMML.Ast
 import DMML.Fire (renderFiredMachine)
+import DMML.Recombine (Crossover (..), breed, breedPool, reanchor)
+import DMML.Surface (parseMachineSurface)
 
 sp :: Span
 sp = Span "cannon"
@@ -164,10 +187,61 @@ mkFork forkNode parent leftFrontier rightFrontier =
         , transitionSpan = sp
         }
 
+-- | Read a parent machine off disk. A parent is ordinary Surface DMML
+-- -- whatever this cannon printed earlier, or any hand-authored machine
+-- -- so the breeder's input language is exactly its output language and
+-- nothing special has to be persisted to make a machine breedable.
+loadParent :: FilePath -> IO MachineStmt
+loadParent path = do
+  txt <- TIO.readFile path
+  case parseMachineSurface txt of
+    Left err -> do
+      hPutStrLn stderr ("cannon: cannot parse " <> path <> ":")
+      hPutStrLn stderr (errorBundlePretty err)
+      exitFailure
+    Right m -> pure m
+
+parseCrossover :: String -> Maybe Crossover
+parseCrossover "union" = Just Union
+parseCrossover "chimera" = Just Chimera
+parseCrossover s
+  | ("splice", k) <- splitAt 6 s
+  , not (null k)
+  , all isDigit k =
+      Just (Splice (read k))
+parseCrossover _ = Nothing
+
+-- | Apply the optional re-anchor, if the caller named one.
+place :: [String] -> MachineStmt -> MachineStmt
+place [anchor] = reanchor (T.pack anchor)
+place _ = id
+
 main :: IO ()
 main = do
   args <- getArgs
   case args of
+    ("breed" : modeStr : newNode : aPath : bPath : rest)
+      | Just mode <- parseCrossover modeStr
+      , length rest <= 1 -> do
+          a <- loadParent aPath
+          b <- loadParent bPath
+          case breed sp mode (nr (T.pack newNode)) a b of
+            Left err -> hPutStrLn stderr ("cannon: cannot breed: " <> show err) >> exitFailure
+            Right child -> TIO.putStr (renderFiredMachine (place rest child))
+    ("pool" : prefix : aPath : bPath : rest)
+      | length rest <= 1 -> do
+          a <- loadParent aPath
+          b <- loadParent bPath
+          case breedPool sp (nr (T.pack prefix)) a b of
+            [] -> hPutStrLn stderr "cannon: nothing to breed from this pair" >> exitFailure
+            candidates ->
+              mapM_
+                ( \(label, child) -> do
+                    let placed = place rest child
+                    TIO.putStrLn ("# " <> label <> " " <> T.intercalate "/" (nodeRefSegments (machineNode placed)))
+                    TIO.putStr (renderFiredMachine placed)
+                )
+                candidates
     ["fork", forkNode, parent, left, right] ->
       TIO.putStr (renderFiredMachine (mkFork (T.pack forkNode) (T.pack parent) (T.pack left) (T.pack right)))
     [v, newNode, parent] ->
@@ -177,4 +251,6 @@ main = do
     _ ->
       putStrLn "usage: cannon <hall|forge|vault|spur> <newNode> <parentNode>"
         >> putStrLn "       cannon fork <forkNode> <parentNode> <leftFrontier> <rightFrontier>"
+        >> putStrLn "       cannon breed <union|chimera|spliceK> <newNode> <a.dmml> <b.dmml> [anchorNode]"
+        >> putStrLn "       cannon pool <nodePrefix> <a.dmml> <b.dmml> [anchorNode]"
         >> exitFailure

@@ -58,6 +58,16 @@ jobs:
             cabal run "$demo"
           done
 
+      # DMML.Recombine's failure mode is invisible to every other check
+      # in this job: a bred offspring that parses, renders and type-checks
+      # perfectly, and is dead the first time it fires (see that module's
+      # "state-alignment problem"). Only a real assertion over real
+      # offspring catches it, so this selftest is a first-class executable
+      # rather than an ad hoc `ghc -isrc` script like its neighbours under
+      # examples/jev-driver-demo/.
+      - name: Run cannon-breed-selftest
+        run: cabal run cannon-breed-selftest
+
       - name: Run cascade-demo (the one example with a committed run.sh)
         run: |
           FIRE_TRANSITION="$(cabal list-bin fire-transition)" \

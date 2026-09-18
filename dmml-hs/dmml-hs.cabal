@@ -40,6 +40,7 @@ library
       DMML.Loader
       DMML.Materialize
       DMML.MachineFacts
+      DMML.Recombine
       DMML.Retroconsistency
       DMML.SelfDeclaration
       DMML.SpawnCycles
@@ -126,6 +127,22 @@ executable cannon
   main-is:          Cannon.hs
   hs-source-dirs:   app
   build-depends:    base, dmml-hs, aeson, bytestring, containers, directory, filepath, megaparsec, text
+
+  default-language: Haskell2010
+
+-- The one selftest under examples/ that is a real cabal executable
+-- rather than an ad hoc `ghc -isrc` script. The others were written in
+-- sandboxes without megaparsec and run against local stubs; this one
+-- runs against the genuine modules, including the real
+-- DMML.Surface.parseMachineSurface, so it belongs in `cabal build all`
+-- and in CI. It matters more than most: DMML.Recombine's failure mode
+-- is an offspring that parses, renders and type-checks perfectly and is
+-- dead the first time it fires, which no compile check can see.
+executable cannon-breed-selftest
+  import:           warnings
+  main-is:          cannon-breed-selftest.hs
+  hs-source-dirs:   examples/jev-driver-demo
+  build-depends:    base, dmml-hs, megaparsec, text
 
   default-language: Haskell2010
 

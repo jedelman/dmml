@@ -9,27 +9,22 @@
 -- against the exact lines 'SURFACE.md'\'s documented machine grammar
 -- would produce.
 --
--- Built and run for real (not just type-checked) in a sandbox with
--- GHC but no network access to Hackage (a TUF signature-verification
--- mismatch with this cabal-install version blocked fetching
--- megaparsec/aeson; disabling that verification to route around it
--- was correctly refused as security-weakening, not attempted). Fire.hs
--- itself imports DMML.Surface (needs megaparsec) and
--- DMML.Retroconsistency (imports megaparsec's errorBundlePretty
--- directly), neither buildable here -- so this ran against LOCAL,
--- interface-only STUBS of those two modules, with their real exported
--- type signatures copied verbatim from src/DMML/Surface.hs and
--- src/DMML/Retroconsistency.hs (confirmed by reading them directly,
--- not guessed). Every module actually exercised here by real
--- 'EffectSpawn' logic -- DMML.Ast, DMML.Guard, DMML.Materialize,
--- DMML.Fire itself -- is the genuine, unmodified-elsewhere source,
--- not a stub. What's UNVERIFIED: whether 'renderFiredMachine's output
--- actually re-parses through the real 'DMML.Surface.parseMachineSurface'
--- (megaparsec unavailable here to check), and the new Surface.hs
--- grammar addition for `spawn` itself (also uncompiled, see this
--- change's own PR description). Re-run this against the real build
--- once a toolchain with network access to Hackage is available, and
--- delete this doc-comment's caveats once it has been.
+-- This was originally written in a sandbox with GHC but no reachable
+-- Hackage, so 'DMML.Fire''s own imports of "DMML.Surface" (megaparsec)
+-- and "DMML.Retroconsistency" could not be built, and it ran against
+-- local interface-only STUBS of those two. It left one thing explicitly
+-- unverified -- whether 'renderFiredMachine''s output actually
+-- re-parses through the real 'DMML.Surface.parseMachineSurface' -- and
+-- asked for a re-run against a real build.
+--
+-- That re-run happened 2026-09-18, on a box with megaparsec and aeson
+-- from the distro rather than Hackage. No stubs: every module here is
+-- the genuine source. And the gap is closed rather than merely
+-- re-asserted -- the round-trip check below actually calls the real
+-- parser on the rendered spawn output and compares the result
+-- structurally, which is the check the caveat said was missing. The
+-- `spawn` grammar addition in Surface.hs is exercised by exactly that
+-- call, so it is no longer uncompiled or untested either.
 module Main (main) where
 
 import qualified Data.Map.Strict as Map
@@ -42,6 +37,7 @@ import DMML.Ast
 import DMML.Fire
 import DMML.Guard (EvalContext (..))
 import DMML.Materialize (emptySnapshot)
+import DMML.Surface (parseMachineSurface)
 
 sp :: Span
 sp = Span "/test"
@@ -116,6 +112,19 @@ main = do
               && "    assert self `state` grown" `elem` linesOf rendered
               then putStrLn "ok   rendered machine text matches expected SURFACE.md-shaped lines"
               else putStrLn "FAIL: rendered machine text missing expected lines" >> exitFailure
+            -- The round-trip this file's original caveat listed as
+            -- UNVERIFIED. Matching expected LINES only proves the
+            -- renderer emits the text someone expected; it says nothing
+            -- about whether the grammar can read it back. Spans differ
+            -- (the parser records real pointers where this test stamped
+            -- its own), so compare span-erased.
+            case parseMachineSurface rendered of
+              Left _ -> putStrLn "FAIL: rendered spawn output does not re-parse" >> exitFailure
+              Right back
+                | eraseSpans back == eraseSpans spawned ->
+                    putStrLn "ok   rendered machine re-parses through the real parseMachineSurface, unchanged"
+                | otherwise ->
+                    putStrLn "FAIL: rendered spawn output re-parses to a DIFFERENT machine" >> exitFailure
       other -> putStrLn ("FAIL: unexpected resolved effects: " ++ show other) >> exitFailure
 
   -- Template-not-found should refuse cleanly, not crash.
@@ -125,4 +134,21 @@ main = do
     other -> putStrLn ("FAIL: missing template case: " ++ show other) >> exitFailure
   where
     linesOf = T.lines
+
+    eraseSpans m =
+      m
+        { machineSpan = z
+        , machineStates = [st {stateSpan = z} | st <- machineStates m]
+        , machineTransitions = map eraseT (machineTransitions m)
+        }
+      where
+        z = Span ""
+        eraseT t =
+          t
+            { transitionSpan = z
+            , transitionGuards =
+                [ g {guardSpan = z, guardExists = (guardExists g) {existsSpan = z}}
+                | g <- transitionGuards t
+                ]
+            }
 
