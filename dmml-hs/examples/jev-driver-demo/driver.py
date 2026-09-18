@@ -543,6 +543,18 @@ def group_into_generations(
 # go is producing in response to wanting. A world built where a reader's
 # eye lingers is a slot machine. Keeping the question inside the frame
 # is what holds those apart.
+# Also in-fiction, for the same reason the frontier question is. The
+# difference between "which relation should the generator add" and "what
+# should be built between these" is the difference between a level
+# designer and someone who lives there.
+CONNECT_INSTRUCTIONS = (
+    "These are things that already exist in the world and do not yet have anything to do with "
+    "each other. Each option would make one relation real -- a way between two places, a way "
+    "one material turns into another, a way something arrives, a way two places come to see "
+    "each other. Nothing here extends the world outward; all of it thickens what is already "
+    "here. Choose by what you want to be true of this place, not by what would tidy the map."
+)
+
 FRONTIER_INSTRUCTIONS = (
     "You stand at the edge of what has been built. Each option is a way you have opened "
     "but not yet pressed into -- there is nothing beyond any of them yet, and whichever "
@@ -560,6 +572,7 @@ def call_jev_batch(
     groups: list[list[tuple]],
     frontier: list[tuple[str, str]] = (),
     bindings: list[tuple[str, str, str, list[str]]] = (),
+    connect: list[tuple[str, str, list[str]]] = (),
 ) -> dict:
     questions = {}
     for i, group in enumerate(groups):
@@ -577,6 +590,12 @@ def call_jev_batch(
                 + " pick for you."
             ),
             "criteria": {o: o for o in options},
+        }
+    if len(connect) > 1:
+        questions["connect"] = {
+            "type": "choice",
+            "instructions": CONNECT_INSTRUCTIONS,
+            "criteria": {cid: desc for cid, desc, _args in connect},
         }
     if frontier:
         questions["frontier"] = {
@@ -755,6 +774,45 @@ def world_entities(state: RunState) -> list[str]:
             if m.group(1) not in seen:
                 seen.append(m.group(1))
     return seen
+
+
+UNIT_EFFECT_RE = re.compile(r"^(assert|retract)\s+(\?\w+|\$\w+)\s+`(\w+)`\s+(\S+)")
+
+
+def substance_flow(state: RunState) -> tuple[set[str], set[str], set[str]]:
+    """Read the substance graph off the machines: (roots, terminals, all).
+
+    A SUBSTANCE is a (predicate, object) pair asserted or retracted about
+    a UNIT -- a `?binder` or `$param` subject, never `self` and never a
+    literal place. That distinction is the whole trick: `assert self
+    `cleared` mark/yes` is a machine saying something about itself, while
+    `retract ?unit `is` clay/raw` is matter moving. Only the second is a
+    flow, and only flows can cycle.
+
+    A ROOT is consumed by something and produced by nothing -- the world
+    starts with a finite stock of it and then it is gone. A TERMINAL is
+    produced and consumed by nothing -- matter piles up there. A flow
+    graph with roots and terminals is a DAG, and a DAG runs down.
+
+    Which makes closing it mechanical: a `feed` from a terminal back to a
+    root turns the DAG into a cycle. Walls crumble to clay. That is not a
+    heuristic about what would be nice, it is the one edge that changes
+    the graph's verdict.
+    """
+    consumed: set[str] = set()
+    produced: set[str] = set()
+    for mf in state.machine_files:
+        try:
+            text = Path(mf).read_text()
+        except OSError:
+            continue
+        for line in text.splitlines():
+            m = UNIT_EFFECT_RE.match(line.strip())
+            if not m:
+                continue
+            kind, _unit, pred, obj = m.groups()
+            (consumed if kind == "retract" else produced).add(f"{pred} {obj}")
+    return (consumed - produced, produced - consumed, consumed | produced)
 
 
 def anchorable_nodes(state: RunState) -> set[str]:
@@ -987,6 +1045,133 @@ def plan_extension(state: RunState, extend: ExtendPolicy, anchor: str, seq: int)
     )
 
 
+def bridged_pairs(state: RunState) -> set[frozenset[str]]:
+    """Pairs of nodes some machine already guards on BOTH of -- i.e.
+    already related. Proposing a second corridor between the same two
+    rooms is densification with no new information in it."""
+    pairs: set[frozenset[str]] = set()
+    for mf in state.machine_files:
+        try:
+            machine = parse_machine_text(Path(mf).read_text())
+        except OSError:
+            continue
+        anchors = {
+            g.split()[1] if g.split()[0] == "not" else g.split()[0]
+            for t in machine["transitions"]
+            for g in t["guards"]
+            if g.split()
+        }
+        for a in anchors:
+            for b in anchors:
+                if a != b:
+                    pairs.add(frozenset((a, b)))
+        # A bridge's two ends are in DIFFERENT transitions, so collect
+        # across the machine as a whole too.
+        ends = {
+            g.split()[0]
+            for t in machine["transitions"]
+            for g in t["guards"]
+            if g.split() and g.split()[0] != "not"
+        }
+        for a in ends:
+            for b in ends:
+                if a != b:
+                    pairs.add(frozenset((a, b)))
+    return pairs
+
+
+def connective_proposals(state: RunState, seq: int) -> list[tuple[str, str, list[str]]]:
+    """What relations could exist that do not yet, as (id, description,
+    cannon args).
+
+    This is the rhizome half of growth, and it asks a different question
+    from the arborescent half. Stamping and breeding ask "where do I
+    attach" -- a question about leaves, with as many answers as there are
+    leaves. These ask "which two things that already exist should now
+    relate" -- a question with N-squared answers, which is why the world
+    densifies rather than exhausting, and equally why the CHOOSING
+    matters more here than it did there.
+
+    Deliberately proposes a handful rather than enumerating the whole
+    N-squared space: the budget is attention, and handing a chooser two
+    hundred indistinguishable corridors would spend it on nothing.
+    """
+    cleared = [n for n in frontier_nodes(state)]
+    already = bridged_pairs(state)
+    roots, terminals, _all_subs = substance_flow(state)
+    out: list[tuple[str, str, list[str]]] = []
+
+    # A bridge between two cleared places not already related: the one
+    # move that puts a CYCLE in reachability, which no amount of stamping
+    # or breeding can produce.
+    unrelated = [
+        (a, b)
+        for i, a in enumerate(cleared)
+        for b in cleared[i + 1 :]
+        if frozenset((a, b)) not in already
+    ]
+    for a, b in unrelated[:2]:
+        node = f"corridor/c{seq}_{len(out)}"
+        out.append(
+            (
+                f"bridge-{a}-{b}",
+                f"Cut a corridor between {a} and {b}. Both already stand; this makes a second "
+                f"way between them, so neither is reachable only one way any more.",
+                ["bridge", node, a, b],
+            )
+        )
+
+    # Close a flow loop: a terminal feeding back to a root turns a DAG
+    # into a cycle, which is the difference between a world that runs
+    # down and one that does not.
+    for t in sorted(terminals)[:1]:
+        for r in sorted(roots)[:1]:
+            tp, to = t.split(" ", 1)
+            rp, ro = r.split(" ", 1)
+            if tp != rp:
+                continue
+            node = f"decay/d{seq}"
+            out.append(
+                (
+                    f"feed-{to}-to-{ro}",
+                    f"Let {to} break back down into {ro}. Nothing currently returns {to} to the "
+                    f"world, and nothing currently makes {ro}; this closes that loop, and a world "
+                    f"whose matter circulates does not run out.",
+                    ["feed", node, tp, to, ro],
+                )
+            )
+
+    # A source for something consumed and never made. Needs no cleared
+    # node to anchor on -- a source is unconditioned by definition, which
+    # also means this works in a world with no reachability convention at
+    # all (a pure substance world has no `cleared` facts anywhere).
+    for r in sorted(roots)[:1]:
+        rp, ro = r.split(" ", 1)
+        node = f"weather/w{seq}"
+        out.append(
+            (
+                f"replenish-{ro}",
+                f"Have more arrive from outside -- rain, silt, drift -- so that {rp} {ro} keeps "
+                f"being true of new things. It is consumed here and made nowhere, so as the world "
+                f"stands it can only ever run out.",
+                ["replenish", node, rp, ro],
+            )
+        )
+
+    # A vista: relates without moving anything.
+    if len(cleared) >= 2:
+        node = f"tower/t{seq}"
+        out.append(
+            (
+                f"vista-{cleared[-1]}",
+                f"Raise something at {cleared[0]} that looks out over {cleared[-1]}. Nothing "
+                f"passes between them; they simply become visible to each other.",
+                ["vista", node, cleared[0], cleared[-1]],
+            )
+        )
+    return out
+
+
 def extend_world(
     state: RunState,
     extend: ExtendPolicy,
@@ -1018,6 +1203,28 @@ def extend_world(
 
     seq = state.minted_machines
     kind, args, provenance = plan_extension(state, extend, anchor, seq)
+    return mint(state, world_dir, round_no, kind, args, provenance, anchor, bidden)
+
+
+def mint(
+    state: RunState,
+    world_dir: Path,
+    round_no: int,
+    kind: str,
+    args: list[str],
+    provenance: str,
+    anchor: str,
+    bidden: bool,
+) -> dict | None:
+    """Fire the cannon once and fold what it mints into the run.
+
+    Shared by both halves of growth on purpose. An arborescent shot and a
+    connective one differ entirely in WHAT they build and not at all in
+    what happens next: a machine file, a seeded initial state, ordinary
+    candidates through the same dry_fire/grouping path. Nothing
+    downstream knows or cares which kind it was, which is the same
+    property that let minted machines be ordinary in the first place.
+    """
     out = run_cannon(args)
     if out is None:
         return None
@@ -1213,6 +1420,17 @@ def main() -> None:
         if binding_q:
             state_summary += f" {len(binding_q)} choice(s) of WHICH thing to act on are open."
 
+        # The rhizome question, asked alongside everything else: which
+        # two things that already exist should now relate? Only asked
+        # when growth is on and there is more than one answer -- a lone
+        # proposal is not a choice, and spending a question on it would
+        # burn the scarce thing to be told what we already know.
+        connect_q = connective_proposals(state, state.minted_machines) if extend.enabled else []
+        if len(connect_q) > 1:
+            state_summary += f" {len(connect_q)} relation(s) could be made between things that already exist."
+        elif connect_q:
+            state_summary += " One relation could be made between things that already exist."
+
         frontier_q: list[tuple[str, str]] = []
         if len(unmapped) > 1:
             frontier_q = [(n, describe_frontier_node(n, state)) for n in unmapped]
@@ -1221,7 +1439,7 @@ def main() -> None:
                 " the dungeon takes shape next."
             )
 
-        if not groups and not frontier_q and not binding_q:
+        if not groups and not frontier_q and not binding_q and len(connect_q) < 2:
             # Nothing to decide: no legal action, and at most one opened
             # way, which is not a choice but the only way on. Calling Jev
             # here would spend the one genuinely scarce resource to ask
@@ -1229,11 +1447,13 @@ def main() -> None:
             # to be careful about. Build and move on.
             winners = []
             pressed = unmapped[0] if unmapped else None
+            connected = connect_q[0] if connect_q else None
             jev_response = {"skipped": "nothing to decide"}
             print(f"round {round_no}: nothing to decide -- the world takes shape without a question")
         elif args.dry_run:
             winners = [group[0] for group in groups]
             pressed = unmapped[0] if unmapped else None
+            connected = connect_q[0] if connect_q else None
             for c, var, opts in pending:
                 c.params[var] = opts[0]
                 c.bound_params.add(var)
@@ -1248,6 +1468,7 @@ def main() -> None:
                 groups,
                 frontier_q,
                 binding_q,
+                connect_q,
             )
             answers = jev_response.get("answers") if isinstance(jev_response, dict) else None
             if not isinstance(answers, dict):
@@ -1301,6 +1522,22 @@ def main() -> None:
                 c.params[var] = pick
                 c.bound_params.add(var)
                 print(f"round {round_no}: bound {c.id}'s ?{var} = {pick}")
+
+            # Which relation becomes real.
+            connected = None
+            if len(connect_q) > 1:
+                try:
+                    pick = answers["connect"]["choice"]
+                except (KeyError, TypeError) as e:
+                    print(f"fatal: round {round_no} missing/malformed 'connect' answer: {e!r}", file=sys.stderr)
+                    sys.exit(4)
+                match = [c for c in connect_q if c[0] == pick]
+                if not match:
+                    print(f"fatal: Jev chose relation {pick!r}, not among {[c[0] for c in connect_q]}", file=sys.stderr)
+                    sys.exit(4)
+                connected = match[0]
+            elif connect_q:
+                connected = connect_q[0]
 
             # Where the delve presses on. One unmapped edge needs no
             # question; several do, and a malformed answer is fatal for
@@ -1383,6 +1620,17 @@ def main() -> None:
                 m = extend_world(state, extend, world_dir, round_no, anchor, bidden=bool(pressed))
                 if m:
                     minted_machines.append(m)
+            # The relation, if one was chosen. Deliberately AFTER the
+            # arborescent shot: extending and thickening are different
+            # moves and a round may legitimately do both.
+            if connected:
+                cid, desc, cargs = connected
+                m = mint(state, world_dir, round_no, cargs[0], cargs, desc, cargs[2], bidden=True)
+                if m:
+                    m["relation"] = cid
+                    minted_machines.append(m)
+                    print(f"  connect: {cid}")
+
             if extend.unbidden_every and round_no % extend.unbidden_every == 0:
                 # Somewhere the delve did NOT choose, if there is such a
                 # place; otherwise any standing edge. Deterministic, so a
@@ -1409,6 +1657,8 @@ def main() -> None:
             "unmapped_frontier": unmapped,
             "growable_leaves": leaves,
             "pressed_into": pressed,
+            "relations_offered": [c[0] for c in connect_q],
+            "relation_made": connected[0] if connected else None,
             "bindings_resolved": {c.id: dict(c.params) for c, _, _ in pending},
             "minted_machines_this_round": minted_machines,
             "total_firings": state.total_firings,

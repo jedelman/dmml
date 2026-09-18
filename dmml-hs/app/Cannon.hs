@@ -232,8 +232,8 @@ mkBridge bridgeNode endA endB =
 -- makes a transformation a real transformation rather than an assertion
 -- about inventory. It resets so it can run again: a mill that could fire
 -- one brick would be a room with extra steps.
-mkFeed :: Text -> Text -> Text -> MachineStmt
-mkFeed millNode fromKind toKind =
+mkFeed :: Text -> Text -> Text -> Text -> MachineStmt
+mkFeed millNode substPred fromKind toKind =
   MachineStmt
     { machineNode = nr millNode
     , machineStates = [StateDecl "idle" sp, StateDecl "working" sp]
@@ -248,10 +248,10 @@ mkFeed millNode fromKind toKind =
         , transitionFrom = Just "idle"
         , transitionTo = Just "working"
         , transitionGuards =
-            [ GuardClause False (ExistsExpr (Pattern (TermBind "unit") [PatternHop "is" (TermNode fromKind)]) sp) sp
+            [ GuardClause False (ExistsExpr (Pattern (TermBind "unit") [PatternHop substPred (TermNode fromKind)]) sp) sp
             ]
         , transitionEffects =
-            [ EffectRetract (TermBind "unit") [] (PredIdent "is") (Just (EffectValueTerm (TermNode fromKind)))
+            [ EffectRetract (TermBind "unit") [] (PredIdent substPred) (Just (EffectValueTerm (TermNode fromKind)))
             -- Same predicate as the retract, deliberately: the unit's
             -- KIND changes, it does not gain a second attribute. Checked
             -- rather than assumed -- a retract lowers into the commit's
@@ -260,7 +260,7 @@ mkFeed millNode fromKind toKind =
             -- draft dodged this with a separate `becomes` predicate and
             -- thereby broke the only thing that matters here: a second
             -- mill must be able to consume the first's output.
-            , EffectAssert (TermBind "unit") (PredIdent "is") (EffectValueTerm (TermNode toKind))
+            , EffectAssert (TermBind "unit") (PredIdent substPred) (EffectValueTerm (TermNode toKind))
             , assertSelf "cleared" "mark/yes"
             , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "working"))
             , EffectRetract TermSelf [] (PredIdent "state") Nothing
@@ -296,8 +296,8 @@ mkFeed millNode fromKind toKind =
 -- project uses. An effect whose subject is a @$param@ brings a node into
 -- existence the instant it resolves (open-world -- see
 -- 'DMML.Ast.Effect').
-mkReplenish :: Text -> Text -> Text -> MachineStmt
-mkReplenish node kind source =
+mkReplenish :: Text -> Text -> Text -> Text -> MachineStmt
+mkReplenish node substPred substObj _unused =
   MachineStmt
     { machineNode = nr node
     , machineStates = [StateDecl "gathering" sp, StateDecl "spent" sp]
@@ -311,9 +311,18 @@ mkReplenish node kind source =
         , transitionParams = ["unit"]
         , transitionFrom = Just "gathering"
         , transitionTo = Just "spent"
-        , transitionGuards = [guardFact source "cleared" "mark/yes"]
+        -- GUARDS ON NOTHING, deliberately. A source is by definition
+        -- unconditioned -- that is the whole content of the word, and it
+        -- is what makes this the operator that can turn a DAG into a
+        -- cycle. An earlier draft gated it on the source node being
+        -- `cleared`, which quietly made rain a dungeon-reachability
+        -- concept: in a world with no cleared nodes at all (a pure
+        -- substance world, like examples/quarry-demo) it could never
+        -- fall, which is exactly backwards. Rain does not need
+        -- permission.
+        , transitionGuards = []
         , transitionEffects =
-            [ EffectAssert (TermParam "unit") (PredIdent "is") (EffectValueTerm (TermNode kind))
+            [ EffectAssert (TermParam "unit") (PredIdent substPred) (EffectValueTerm (TermNode substObj))
             , assertSelf "cleared" "mark/yes"
             , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "spent"))
             , EffectRetract TermSelf [] (PredIdent "state") Nothing
@@ -456,10 +465,10 @@ main = do
                 candidates
     ["bridge", node, endA, endB] ->
       TIO.putStr (renderFiredMachine (mkBridge (T.pack node) (T.pack endA) (T.pack endB)))
-    ["feed", node, fromKind, toKind] ->
-      TIO.putStr (renderFiredMachine (mkFeed (T.pack node) (T.pack fromKind) (T.pack toKind)))
-    ["replenish", node, kind, source] ->
-      TIO.putStr (renderFiredMachine (mkReplenish (T.pack node) (T.pack kind) (T.pack source)))
+    ["feed", node, pred_, fromKind, toKind] ->
+      TIO.putStr (renderFiredMachine (mkFeed (T.pack node) (T.pack pred_) (T.pack fromKind) (T.pack toKind)))
+    ["replenish", node, pred_, obj] ->
+      TIO.putStr (renderFiredMachine (mkReplenish (T.pack node) (T.pack pred_) (T.pack obj) ""))
     ["vista", node, anchor, target] ->
       TIO.putStr (renderFiredMachine (mkVista (T.pack node) (T.pack anchor) (T.pack target)))
     ["fork", forkNode, parent, left, right] ->
@@ -475,7 +484,7 @@ main = do
         >> putStrLn "       cannon pool <nodePrefix> <a.dmml> <b.dmml> [anchorNode]"
         >> putStrLn "  connective (two ends, not one parent -- a rhizome, not a tree):"
         >> putStrLn "       cannon bridge <node> <endA> <endB>        -- a corridor; makes a reachability CYCLE"
-        >> putStrLn "       cannon feed <node> <fromKind> <toKind>    -- a mill; clay becomes brick, in place"
-        >> putStrLn "       cannon replenish <node> <kind> <source>   -- rain; produces, consuming nothing"
+        >> putStrLn "       cannon feed <node> <pred> <from> <to>      -- a mill; clay becomes brick, in place"
+        >> putStrLn "       cannon replenish <node> <pred> <obj>       -- rain; produces, guarding on nothing"
         >> putStrLn "       cannon vista <node> <anchor> <target>     -- a tower; relates without flowing"
         >> exitFailure

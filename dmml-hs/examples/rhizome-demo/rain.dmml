@@ -5,7 +5,6 @@ machine weather/rain
 
   transition fall(unit)
     gathering -> spent
-    guard cliff/face `cleared` mark/yes
     assert $unit `is` clay/raw
     assert self `cleared` mark/yes
     assert self `state` spent
