@@ -262,6 +262,13 @@ pPatternTerm :: Parser PatternTerm
 pPatternTerm =
   (TermSelf <$ try (pKeyword "self"))
     <|> (TermParam <$> try (char '$' *> pIdentRaw <* sc))
+    -- `?name`: a real BINDING variable. Unambiguous by construction --
+    -- `?` appears nowhere else in this grammar and pIdentRaw requires a
+    -- letter, so this was a parse error before and no committed content
+    -- can contain one. That is the whole reason it is spelled
+    -- differently from the bareword below, which binds nothing and which
+    -- this surface produces by accident (see DMML.Ast.TermBind).
+    <|> (TermBind <$> try (char '?' *> pIdentRaw <* sc))
     <|> try (do
           t <- pNodeRefText
           if T.any (== '/') t then pure (TermNode t) else fail "not a multi-segment node reference"
@@ -303,6 +310,12 @@ pEffectValue :: Parser EffectValue
 pEffectValue =
   (EffectValueTerm TermSelf <$ try (pKeyword "self"))
     <|> (EffectValueTerm . TermParam <$> try (char '$' *> pIdentRaw <* sc))
+    -- A `?binder` IS legal here, unlike the TermVar this position
+    -- excludes: by the time effects resolve, a binder is bound to
+    -- context exactly the way `$param` is, which is precisely what the
+    -- note below says an effect value may be. Using the witness a guard
+    -- found is the entire point of having one.
+    <|> (EffectValueTerm . TermBind <$> try (char '?' *> pIdentRaw <* sc))
     <|> (EffectValueLiteral . LitString <$> pStringLit)
     <|> (EffectValueLiteral . LitBoolean <$> try pBoolLit)
     <|> (EffectValueLiteral . LitNumber <$> try pNumberLit)

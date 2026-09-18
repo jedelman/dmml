@@ -87,7 +87,7 @@ worldFact subj p v = FactStmt {factSubject = subj, factPredicate = PredIdent p, 
 main :: IO ()
 main = do
   let machines = Map.fromList [("forest/mother", spawnerMachine), ("template/sapling", templateMachine)]
-      ctx = EvalContext {ctxSelfNode = "forest/mother", ctxParams = Map.fromList [("name", "forest/sapling1")]}
+      ctx = EvalContext {ctxSelfNode = "forest/mother", ctxParams = Map.fromList [("name", "forest/sapling1")], ctxBindings = Map.empty}
 
   spawnedFacts <- case fireTransition machines spawnerMachine "seed" ctx (applyIdentifiedCommits "empty" []) of
     Left err -> putStrLn ("FAIL: seed refused: " ++ show err) >> exitFailure
@@ -119,7 +119,7 @@ main = do
       commits2 = zipWith factToIdentifiedCommit [0 ..] allFacts
       snap = applyIdentifiedCommits "world" commits2
 
-  case fireTransitionFromFacts machines (nodeRef "forest/sapling1") "grow" (EvalContext {ctxSelfNode = "forest/sapling1", ctxParams = Map.empty}) snap of
+  case fireTransitionFromFacts machines (nodeRef "forest/sapling1") "grow" (EvalContext {ctxSelfNode = "forest/sapling1", ctxParams = Map.empty, ctxBindings = Map.empty}) snap of
     Left err -> putStrLn ("FAIL: firing the SPAWNED machine's own transition refused: " ++ show err) >> exitFailure
     Right effects -> do
       putStrLn "ok   fired a transition on a machine that never existed as anything but facts a PRIOR firing produced"

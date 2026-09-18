@@ -147,6 +147,36 @@ machine <node_ref>
   and is always read as a variable — write a real multi-segment
   reference if a literal single-word node is what's meant. JSON doesn't
   have this gap (`kind: "node"` vs `kind: "var"` is explicit there).
+- **`?name` — a BINDING variable** (added 2026-09-18). Distinct from the
+  bareword above in every way that matters: it can only be written on
+  purpose (`?` occurs nowhere else in this grammar, and an identifier
+  must start with a letter, so `?rock` was a parse error before this),
+  and the witness it matches is carried out of the guard into later
+  guards and into the transition's effects.
+
+  ```
+  transition take()
+    idle -> working
+    guard ?rock `in` quarry/north
+    assert self `took` ?rock
+    retract ?rock `in` quarry/north
+  ```
+
+  Three rules, all of them deliberate:
+  - **A repeated `?name` must agree with itself**, within a pattern and
+    across a transition's guards. `guard ?rock `in` quarry/north` then
+    `guard ?rock `grade` ore/rich` narrows to rocks that are both. This
+    is the unification a bareword deliberately lacks.
+  - **More than one witness is REFUSED, not picked from.** The refusal
+    names every candidate, so it reads as a question ("which rock?")
+    rather than a dead end; a `$param` in the same guard narrows it. Same
+    principle as a value-less `retract` over several live alternatives.
+  - **A `?name` in a negated guard is an error.** Nothing can be bound
+    from the absence of a fact.
+
+  A `?name` is also legal in effect-value position, unlike a bareword: by
+  the time effects resolve it is bound to context exactly the way
+  `$param` is.
 - `assert <ident>` / `retract <ident>` — the OLD, still-fully-supported
   sugar, always implicitly `(self, "state", <ident>)`. Use this when a
   transition is ONLY changing the machine's own state and nothing else.

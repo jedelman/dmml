@@ -138,6 +138,19 @@ executable cannon
 -- and in CI. It matters more than most: DMML.Recombine's failure mode
 -- is an offspring that parses, renders and type-checks perfectly and is
 -- dead the first time it fires, which no compile check can see.
+-- Same reasoning as cannon-breed-selftest below: a real executable and
+-- a CI step, not an ad hoc `ghc -isrc` script, because what it protects
+-- is invisible to a compile check. A ?binder that silently stopped
+-- binding would leave every machine still parsing, still rendering, and
+-- quietly spending the wrong rock.
+executable guard-binding-selftest
+  import:           warnings
+  main-is:          guard-binding-selftest.hs
+  hs-source-dirs:   examples/jev-driver-demo
+  build-depends:    base, dmml-hs, containers, megaparsec, text
+
+  default-language: Haskell2010
+
 executable cannon-breed-selftest
   import:           warnings
   main-is:          cannon-breed-selftest.hs

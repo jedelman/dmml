@@ -48,7 +48,7 @@ main = do
   machine <- case parseMachineSurface machineSrc of
     Left e -> putStrLn (errorBundlePretty e) >> exitFailure
     Right m -> pure m
-  let ctx = EvalContext {ctxSelfNode = "contest/x", ctxParams = Map.empty}
+  let ctx = EvalContext {ctxSelfNode = "contest/x", ctxParams = Map.empty, ctxBindings = Map.empty}
 
   -- Case 1: contested but unwitnessed -- resolve must be blocked.
   unwitnessedCommit <- case parseCommitSurface unwitnessedSrc of

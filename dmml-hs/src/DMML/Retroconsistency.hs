@@ -105,6 +105,10 @@ data RetroResult
   deriving (Eq, Show)
 
 resolveTerm :: PatternTerm -> EvalContext -> Maybe Text
+-- A ?binder is existentially open here for the same reason a ?var is:
+-- retroaction SYNTHESIZES the facts a guard needs, so there is nothing
+-- yet for a binder to have been bound to.
+resolveTerm (TermBind _) _ = Nothing
 resolveTerm TermSelf ctx = Just (ctxSelfNode ctx)
 resolveTerm (TermParam name) ctx = Map.lookup name (ctxParams ctx)
 resolveTerm (TermVar _) _ = Nothing
@@ -265,12 +269,29 @@ data GateResult
 -- as data," not "would this specific firing still succeed"). Excluded
 -- from the scan, not silently treated as passing -- a real, disclosed
 -- gap, not a gap in coverage nobody chose.
+-- Extended 2026-09-18 to cover @?binder@ terms for exactly the reason
+-- above, found by a real selftest rather than by reasoning: a crew
+-- taking the last rock out of a quarry it guards on
+-- (@guard ?rock \`in\` quarry\/north@ + @retract ?rock \`in\`
+-- quarry\/north@) was refused by this gate, because retracting the rock
+-- does break that guard -- which is not damage, it is DEPLETION, the
+-- entire point of a consumable substance.
+--
+-- The honest framing is the one this function already had for
+-- @$param@: a guard whose variables are unbound has no determinate
+-- meaning to a whole-tree scan. Evaluated here with empty bindings, a
+-- @?binder@ fans out and matches anything, so "it held before and
+-- doesn't after" is a statement about a guard nobody is actually
+-- firing. Excluded for the same reason and with the same disclosed
+-- cost: real breakage involving a binder-bearing guard elsewhere in the
+-- tree is not caught by this scan.
 usesParam :: GuardClause -> Bool
-usesParam g = any isParam (patternAnchor pat : map hopTerm (patternHops pat))
+usesParam g = any isOpen (patternAnchor pat : map hopTerm (patternHops pat))
   where
     pat = existsPattern (guardExists g)
-    isParam (TermParam _) = True
-    isParam _ = False
+    isOpen (TermParam _) = True
+    isOpen (TermBind _) = True
+    isOpen _ = False
 
 -- | Checks whether applying a candidate commit's own content (facts
 -- ADDED, facts RETRACTED, or both) would break any currently-satisfied
@@ -297,7 +318,7 @@ gateConsistentTree machines before after =
       , t <- machineTransitions m
       , g <- transitionGuards t
       , not (usesParam g)
-      , let ctx = EvalContext {ctxSelfNode = nodeRefText (machineNode m), ctxParams = Map.empty}
+      , let ctx = EvalContext {ctxSelfNode = nodeRefText (machineNode m), ctxParams = Map.empty, ctxBindings = Map.empty}
       , evalGuard g ctx before
       , not (evalGuard g ctx after)
       , let lastHop = last (patternHops (existsPattern (guardExists g)))
@@ -389,7 +410,7 @@ fixpointRetroconsistency machines rootMachine rootTransition snap0 =
       | otherwise = case Map.lookup mText machines of
           Nothing -> ChainFailed (mText, tName) "no machine declared with this node -- can't be reached, only reported here as a defensive check"
           Just m ->
-            let ctx = EvalContext {ctxSelfNode = mText, ctxParams = Map.empty}
+            let ctx = EvalContext {ctxSelfNode = mText, ctxParams = Map.empty, ctxBindings = Map.empty}
                 visited' = Set.insert (mText, tName) visited
              in case retroconsistency m tName ctx snap of
                   Nothing -> ChainFailed (mText, tName) "no such transition declared on this machine"

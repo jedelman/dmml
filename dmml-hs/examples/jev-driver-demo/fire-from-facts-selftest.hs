@@ -100,7 +100,7 @@ main = do
       commits = zipWith factToIdentifiedCommit [0 ..] allFacts
       snap = applyIdentifiedCommits "world" commits
       machines = Map.fromList [("smithy/furnace", furnace)]
-      ctx = EvalContext {ctxSelfNode = "smithy/furnace", ctxParams = Map.fromList [("ore", "ore/raw1")]}
+      ctx = EvalContext {ctxSelfNode = "smithy/furnace", ctxParams = Map.fromList [("ore", "ore/raw1")], ctxBindings = Map.empty}
 
   -- The real closure claim: firing the fact-sourced machine produces
   -- the SAME commit as firing the hand-authored one, against the same

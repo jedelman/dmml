@@ -1,0 +1,12 @@
+machine crew/digger
+  states
+    idle
+    working
+
+  transition take()
+    idle -> working
+    guard ?rock `in` quarry/north
+    assert self `took` ?rock
+    retract ?rock `in` quarry/north
+    assert self `state` working
+    retract self `state`

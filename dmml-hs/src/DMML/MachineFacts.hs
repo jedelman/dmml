@@ -118,6 +118,7 @@ childNode (NodeRef segs) suffix = NodeRef (segs ++ suffix)
 -- decode -- a real bug the test caught before this shipped, not a
 -- hypothetical one.
 termToText :: PatternTerm -> Text
+termToText (TermBind b) = "bind:" <> b
 termToText TermSelf = "self"
 termToText (TermParam p) = "$" <> p
 termToText (TermNode n) = "node:" <> n
@@ -129,6 +130,7 @@ termFromText t
   | Just p <- T.stripPrefix "$" t = TermParam p
   | Just n <- T.stripPrefix "node:" t = TermNode n
   | Just v <- T.stripPrefix "var:" t = TermVar v
+  | Just b <- T.stripPrefix "bind:" t = TermBind b
   | otherwise = TermVar t -- unreachable via encodeMachine; kept total rather than partial
 
 -- ---------------------------------------------------------------------

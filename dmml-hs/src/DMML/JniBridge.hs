@@ -162,7 +162,7 @@ actionsBridge :: Text -> Text -> Text -> Either String Text
 actionsBridge worldSrc machineSrc selfNode = do
   (snap, machine) <- materialize worldSrc machineSrc
   let machineMap = maybe Map.empty (\(k, m) -> Map.singleton k m) machine
-      ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+      ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty, ctxBindings = Map.empty}
       actions = availableTransitions machineMap ctx snap
   pure (T.unlines [m <> "/" <> t | (m, t) <- actions])
 
@@ -186,7 +186,7 @@ fireBridge worldSrc machineSrc selfNode transitionIdent = do
     Nothing -> Left "no machine supplied to fire a transition against"
     Just (machineKey, m) -> do
       let machineMap = Map.singleton machineKey m
-          ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+          ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty, ctxBindings = Map.empty}
       case fireTransition machineMap m transitionIdent ctx snap of
         Left err -> Left (renderFireError err)
         Right effects -> pure (renderFiredCommit "android_fire" effects)
@@ -234,7 +234,7 @@ actionsHistoryBridge :: Text -> Text -> Text -> Either String Text
 actionsHistoryBridge historyJson machineSrc selfNode = do
   (snap, machine) <- materializeHistory historyJson machineSrc
   let machineMap = maybe Map.empty (\(k, m) -> Map.singleton k m) machine
-      ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+      ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty, ctxBindings = Map.empty}
       actions = availableTransitions machineMap ctx snap
   pure (T.unlines [m <> "/" <> t | (m, t) <- actions])
 
@@ -251,7 +251,7 @@ fireHistoryBridge historyJson machineSrc selfNode transitionIdent = do
     Nothing -> Left "no machine supplied to fire a transition against"
     Just (machineKey, m) -> do
       let machineMap = Map.singleton machineKey m
-          ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+          ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty, ctxBindings = Map.empty}
       case fireTransition machineMap m transitionIdent ctx snap of
         Left err -> Left (renderFireError err)
         Right effects -> pure (renderFiredCommit "android_fire" effects)
@@ -279,7 +279,7 @@ actionsDirBridge dirPath selfNode = do
   pure $ case result of
     Left err -> Left err
     Right (snap, machines) ->
-      let ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+      let ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty, ctxBindings = Map.empty}
           actions = availableTransitions machines ctx snap
        in Right (T.unlines [m <> "/" <> t | (m, t) <- actions])
 
@@ -299,7 +299,7 @@ fireDirBridge dirPath selfNode machineNodeText transitionIdent = do
     Right (snap, machines) -> case Map.lookup machineNodeText machines of
       Nothing -> Left ("no such machine in directory: " <> T.unpack machineNodeText)
       Just m ->
-        let ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+        let ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty, ctxBindings = Map.empty}
          in case fireTransition machines m transitionIdent ctx snap of
               Left err -> Left (renderFireError err)
               Right effects -> Right (renderFiredCommit "android_fire" effects)

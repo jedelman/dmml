@@ -79,7 +79,7 @@ main = do
       classified <- mapM (uncurry classify) (zip (argWorlds args) worldSrcs)
       let commits = [c | Left c <- classified]
           snap = applyCommits "world" commits
-          ctx = EvalContext {ctxSelfNode = nodeRefText machine, ctxParams = Map.fromList (argParams args)}
+          ctx = EvalContext {ctxSelfNode = nodeRefText machine, ctxParams = Map.fromList (argParams args), ctxBindings = Map.empty}
       case retroconsistency machine (argTransition args) ctx snap of
         Nothing -> putStrLn ("retro-imply: no transition named " <> T.unpack (argTransition args) <> " on this machine") >> exitFailure
         Just AlreadyConsistent -> putStrLn "retro-imply: already consistent -- every guard already holds, nothing to imply"

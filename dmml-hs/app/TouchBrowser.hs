@@ -125,7 +125,7 @@ fireOne machine historyRef transitionIdent = do
   let snap = applyIdentifiedCommits "world" history
       machineKey = nodeRefText (machineNode machine)
       machineMap = Map.singleton machineKey machine
-      ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+      ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty, ctxBindings = Map.empty}
   case fireTransition machineMap machine transitionIdent ctx snap of
     Left err -> pure (Left (show err))
     Right effects -> do
@@ -150,7 +150,7 @@ renderPage conn machine historyRef mErr = do
   let snap = applyIdentifiedCommits "world" history
       machineKey = nodeRefText (machineNode machine)
       machineMap = Map.singleton machineKey machine
-      ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+      ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty, ctxBindings = Map.empty}
       actions = availableTransitions machineMap ctx snap
       rendered = renderSnapshot snap
       buttons =

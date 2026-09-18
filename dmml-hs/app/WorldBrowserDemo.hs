@@ -177,7 +177,7 @@ browse snap machines = do
             | v <- map snd (currentValue (player, "equips") snap)
             ]
           inScope = Map.filterWithKey (\k _ -> k `elem` equippedMachines) machines
-          ctx = EvalContext {ctxSelfNode = player, ctxParams = Map.empty}
+          ctx = EvalContext {ctxSelfNode = player, ctxParams = Map.empty, ctxBindings = Map.empty}
           actions = availableTransitions inScope ctx snap
       if null actions
         then putStrLn "You can: nothing, right now."

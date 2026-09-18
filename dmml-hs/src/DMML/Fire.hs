@@ -63,7 +63,7 @@ import qualified Data.Text as T
 
 import DMML.Ast
 import DMML.MachineFacts (DecodeError, decodeMachineFromSnapshot, encodeMachine)
-import DMML.Guard (EvalContext (..), mayFire, resolveTerm)
+import DMML.Guard (EvalContext (..), GuardError, evalGuardsBinding, lookupTransition, resolveTerm, resolveTransition)
 import DMML.Materialize (WorldSnapshot, applyCommit, currentValueWithProvenance)
 import DMML.Retroconsistency (BrokenGuard (..), GateResult (..), gateConsistentTree)
 import DMML.Surface (parseCommitSurface)
@@ -126,7 +126,14 @@ data ResolvedEffect
   deriving (Eq, Show)
 
 data FireError
-  = -- | No such transition declared on this machine.
+  = -- | A guard could not produce a binding it was asked for -- see
+    -- 'DMML.Guard.GuardError'. Distinct from 'FireBlocked': the guard
+    -- may well HOLD, and the refusal is that firing on it would make the
+    -- engine pick a witness it has no principled basis to pick. An
+    -- ambiguous one carries every candidate, which is what turns the
+    -- refusal into a question a chooser can answer.
+    FireGuardError GuardError
+  | -- | No such transition declared on this machine.
     FireNotDeclared
   | -- | The transition is declared, but its guards don't currently hold.
     FireBlocked
@@ -215,19 +222,31 @@ data FireError
 -- a real world's machines.
 fireTransition :: Map.Map Text MachineStmt -> MachineStmt -> Text -> EvalContext -> WorldSnapshot -> Either FireError [ResolvedEffect]
 fireTransition machines machine ident ctx snap =
-  case mayFire machine ident ctx snap of
+  case lookupTransition machine ident of
     Nothing -> Left FireNotDeclared
-    Just (False, _, _) -> Left FireBlocked
-    Just (True, rawEffects, _to) -> do
-      effects <- concat <$> traverse (resolveOneEffect machines ctx snap) rawEffects
-      -- A 'ResolvedSpawn' asserts no fact, so it has nothing for the
-      -- fact-consistency gate to check -- only the fact-shaped effects
-      -- go through 'gateCheck'\/'renderFiredCommit'; see 'ResolvedSpawn's
-      -- own doc comment for why a spawned machine's OWN guards are a
-      -- separate, later concern.
-      let factEffects = [e | e <- effects, isFactEffect e]
-      gateCheck machines snap factEffects
-      pure effects
+    Just decl -> do
+      let (guards, rawEffects) = resolveTransition decl
+      -- Guards are evaluated for their WITNESSES, not just their truth.
+      -- Any `?binder` a guard matched is threaded into the context the
+      -- effects resolve against, so `retract quarry/north `holds` ?rock`
+      -- takes the particular rock the guard just found. A transition
+      -- with no binders evaluates exactly as it always did.
+      (ok, binds) <- case evalGuardsBinding guards ctx snap of
+        Left err -> Left (FireGuardError err)
+        Right r -> Right r
+      if not ok
+        then Left FireBlocked
+        else do
+          let ctx' = ctx {ctxBindings = Map.union binds (ctxBindings ctx)}
+          effects <- concat <$> traverse (resolveOneEffect machines ctx' snap) rawEffects
+          -- A 'ResolvedSpawn' asserts no fact, so it has nothing for the
+          -- fact-consistency gate to check -- only the fact-shaped
+          -- effects go through 'gateCheck'\/'renderFiredCommit'; see
+          -- 'ResolvedSpawn's own doc comment for why a spawned machine's
+          -- OWN guards are a separate, later concern.
+          let factEffects = [e | e <- effects, isFactEffect e]
+          gateCheck machines snap factEffects
+          pure effects
   where
     isFactEffect ResolvedSpawn {} = False
     isFactEffect _ = True
@@ -496,6 +515,7 @@ renderPatternTerm TermSelf = "self"
 renderPatternTerm (TermParam p) = "$" <> p
 renderPatternTerm (TermNode n) = n
 renderPatternTerm (TermVar v) = v
+renderPatternTerm (TermBind b) = "?" <> b
 
 -- | @anchor \`predicate\` term (\`predicate\` term)*@ -- the exact
 -- textual shape 'DMML.Surface.pPattern' parses, run in reverse.

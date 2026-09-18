@@ -36,6 +36,9 @@ module DMML.Guard
   , evalExists
   , evalGuard
   , evalGuards
+  , GuardError (..)
+  , evalGuardsBinding
+  , binderNames
   , resolveTransition
   , lookupTransition
   , mayFire
@@ -49,13 +52,17 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import DMML.Ast
-import DMML.Materialize (Alternatives (..), WorldSnapshot (..), alternativeValues)
+import DMML.Materialize (WorldSnapshot (..), alternativeValues)
 
 -- | Which node is @self@, and current transition-parameter (@$param@)
 -- bindings for this evaluation.
 data EvalContext = EvalContext
   { ctxSelfNode :: Text
   , ctxParams :: Map Text Text
+  , -- | Bindings a guard already produced, visible to later guards in
+    -- the same transition and to every effect. Empty at the start of an
+    -- evaluation; 'evalGuardsBinding' fills it in left to right.
+    ctxBindings :: Map Text Text
   }
 
 -- | Resolves a 'PatternTerm' to a concrete node string, or 'Nothing' if
@@ -68,6 +75,7 @@ resolveTerm :: PatternTerm -> EvalContext -> Maybe Text
 resolveTerm TermSelf ctx = Just (ctxSelfNode ctx)
 resolveTerm (TermParam name) ctx = Map.lookup name (ctxParams ctx)
 resolveTerm (TermVar _) _ = Nothing
+resolveTerm (TermBind v) ctx = Map.lookup v (ctxBindings ctx)
 resolveTerm (TermNode n) _ = Just n
 
 nodeRefText :: NodeRef -> Text
@@ -191,3 +199,131 @@ availableTransitions machines ctx snap =
   , decl <- machineTransitions machine
   , Just (True, _, _) <- [mayFire machine (transitionIdent decl) ctx snap]
   ]
+
+-- Guard binding ------------------------------------------------------------
+
+-- | Why a guard could not produce a binding. Both cases are refusals,
+-- not falsehoods: the guard might well hold, but firing on it would
+-- require the engine to make a choice that is not its to make.
+data GuardError
+  = -- | A @?binder@ matched more than one witness, with the candidates.
+    --
+    -- Deliberately a refusal rather than "pick the first." Picking would
+    -- be an arbitrary choice whose consequences are fully observable
+    -- (the effects use the witness), and this project already has the
+    -- precedent: 'DMML.Fire.FireRetractAmbiguous' refuses for exactly
+    -- this reason -- there is no principled way to pick one of several
+    -- without something to match against.
+    --
+    -- The refusal is meant to be PRODUCTIVE. It names every candidate,
+    -- and a @$param@ in the same guard narrows it to one, so an
+    -- ambiguous guard is a well-formed question for whoever is making
+    -- decisions ("which rock do you take?") with the options already
+    -- enumerated by the engine. Refusing here is how the choice reaches
+    -- the chooser instead of being silently made by a fold.
+    GuardAmbiguousBinding Text [Text]
+  | -- | A @?binder@ inside a negated guard. Nothing can be bound from
+    -- the absence of a fact, so this is malformed rather than merely
+    -- unsatisfied, and saying so beats binding nothing and carrying on.
+    GuardBinderInNegatedGuard Text
+  deriving (Eq, Show)
+
+-- | Every @?binder@ named anywhere in a pattern, anchor included.
+binderNames :: Pattern -> [Text]
+binderNames p =
+  [v | TermBind v <- patternAnchor p : map hopTerm (patternHops p)]
+
+-- | One candidate walk: where it currently stands, and what it has bound
+-- to get there.
+type Env = (Text, Map Text Text)
+
+-- | 'resolveTerm', but consulting bindings made earlier in THIS pattern
+-- before those already in the context.
+resolveWith :: Map Text Text -> PatternTerm -> EvalContext -> Maybe Text
+resolveWith binds t@(TermBind v) ctx = case Map.lookup v binds of
+  Just x -> Just x
+  Nothing -> resolveTerm t ctx
+resolveWith _ t ctx = resolveTerm t ctx
+
+-- | Match one term against one reached object, extending the bindings.
+-- 'Nothing' means this walk is dead.
+matchTerm :: EvalContext -> PatternTerm -> Text -> Map Text Text -> Maybe (Map Text Text)
+matchTerm ctx term objText binds = case resolveWith binds term ctx of
+  -- Already fixed (literal, self, bound $param, or a ?binder bound
+  -- earlier): this is a filter. A repeated ?name must agree with itself
+  -- -- the intra-pattern unification a bare TermVar deliberately lacks.
+  Just want -> if want == objText then Just binds else Nothing
+  Nothing -> case term of
+    TermBind v -> Just (Map.insert v objText binds)
+    -- A TermVar or unbound $param stays what it has always been: open,
+    -- matching anything, binding nothing.
+    _ -> Just binds
+
+stepHopEnv :: EvalContext -> WorldSnapshot -> [Env] -> PatternHop -> [Env]
+stepHopEnv ctx snap envs hop =
+  [ (objText, binds')
+  | (subj, binds) <- envs
+  , (factSubj, objText) <- factsForPredicate (hopPredicate hop) snap
+  , factSubj == subj
+  , Just binds' <- [matchTerm ctx (hopTerm hop) objText binds]
+  ]
+
+-- | 'evalExists', keeping the witnesses instead of discarding them.
+--
+-- This is the same walk 'evalExists' does. The only difference is that
+-- 'evalExists' ends in @not . null@ and throws away the very thing it
+-- just computed -- which is why binding needed no new search, only the
+-- decision to stop dropping the answer.
+evalExistsEnv :: Pattern -> EvalContext -> WorldSnapshot -> [Env]
+evalExistsEnv pattern ctx snap =
+  foldl' (stepHopEnv ctx snap) startEnvs (patternHops pattern)
+  where
+    anchor = patternAnchor pattern
+    allSubjects = nub [subj | (subj, _pred) <- Map.keys (snapshotFacts snap)]
+    startEnvs = case resolveTerm anchor ctx of
+      Just n -> [(n, Map.empty)]
+      Nothing -> case anchor of
+        TermBind v -> [(subj, Map.singleton v subj) | subj <- allSubjects]
+        _ -> [(subj, Map.empty) | subj <- allSubjects]
+
+-- | Every guard, as one conjunctive query: a SET of candidate binding
+-- environments is threaded through all of them, each guard filtering and
+-- extending it, and ambiguity is judged only at the end.
+--
+-- Judging it per-guard was the first implementation and it was wrong, in
+-- a way a real test caught: @guard ?rock \`in\` quarry\/north@ followed by
+-- @guard ?rock \`grade\` ore\/rich@ would refuse on the first guard's
+-- three candidates without ever consulting the second, which exists
+-- precisely to narrow them. Guards are a conjunction; a binder is
+-- ambiguous only if it is still ambiguous once every guard has had its
+-- say.
+--
+-- Returns the accumulated bindings alongside the verdict. On @False@ the
+-- bindings are empty -- a transition that cannot fire has no effects to
+-- resolve.
+evalGuardsBinding :: [GuardClause] -> EvalContext -> WorldSnapshot -> Either GuardError (Bool, Map Text Text)
+evalGuardsBinding gs ctx snap = go gs [Map.empty]
+  where
+    allBinders = nub (concatMap (binderNames . existsPattern . guardExists) gs)
+
+    go [] envs = finish envs
+    go (g : rest) envs = do
+      envs' <- stepGuard g envs
+      if null envs' then Right (False, Map.empty) else go rest envs'
+
+    stepGuard g envs
+      | guardNegated g, (v : _) <- binderNames pat = Left (GuardBinderInNegatedGuard v)
+      | guardNegated g = Right [e | e <- envs, null (evalExistsEnv pat (with e) snap)]
+      | otherwise =
+          Right (nub [Map.union b e | e <- envs, (_, b) <- evalExistsEnv pat (with e) snap])
+      where
+        pat = existsPattern (guardExists g)
+        with e = ctx {ctxBindings = Map.union e (ctxBindings ctx)}
+
+    finish envs
+      | null envs = Right (False, Map.empty)
+      | otherwise = case [(v, vals) | v <- allBinders, let vals = valuesFor v, length vals > 1] of
+          ((v, vals) : _) -> Left (GuardAmbiguousBinding v vals)
+          [] -> Right (True, Map.fromList [(v, x) | v <- allBinders, x : _ <- [valuesFor v]])
+      where
+        valuesFor v = nub [x | e <- envs, Just x <- [Map.lookup v e]]

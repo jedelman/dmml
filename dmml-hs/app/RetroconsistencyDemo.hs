@@ -118,7 +118,7 @@ main = do
     Right c -> pure c
 
   let snap0 = applyCommits "world" [worldCommit]
-      ctx = EvalContext {ctxSelfNode = "forest/clearing", ctxParams = Map.empty}
+      ctx = EvalContext {ctxSelfNode = "forest/clearing", ctxParams = Map.empty, ctxBindings = Map.empty}
 
   -- Sanity: the transition should NOT be firing-eligible yet -- the
   -- guard genuinely isn't satisfied, this isn't a vacuous test.
@@ -187,7 +187,7 @@ main = do
   unboundMachine <- case parseMachineSurface unboundAnchorMachineSrc of
     Left e -> putStrLn (errorBundlePretty e) >> exitFailure
     Right m -> pure m
-  let riverCtx = EvalContext {ctxSelfNode = "river/bend", ctxParams = Map.empty}
+  let riverCtx = EvalContext {ctxSelfNode = "river/bend", ctxParams = Map.empty, ctxBindings = Map.empty}
   case retroconsistency unboundMachine "arrive" riverCtx snap0 of
     Just (Irreconcilable msg) -> putStrLn ("PASS: unbound-anchor guard correctly refused -- " <> T.unpack msg)
     other -> putStrLn ("FAIL: expected Irreconcilable for an unbound anchor, got " <> show other) >> exitFailure
@@ -200,7 +200,7 @@ main = do
     Left e -> putStrLn (errorBundlePretty e) >> exitFailure
     Right c -> pure c
   let cursedSnap = applyCommits "world" [worldCommit, cursedCommit]
-      altarCtx = EvalContext {ctxSelfNode = "shrine/altar", ctxParams = Map.empty}
+      altarCtx = EvalContext {ctxSelfNode = "shrine/altar", ctxParams = Map.empty, ctxBindings = Map.empty}
   case retroconsistency negMachine "bless" altarCtx cursedSnap of
     Just (Irreconcilable msg) -> putStrLn ("PASS: blocked negated guard correctly refused -- " <> T.unpack msg)
     other -> putStrLn ("FAIL: expected Irreconcilable for a blocked negated guard, got " <> show other) >> exitFailure
@@ -209,7 +209,7 @@ main = do
   chainMachine <- case parseMachineSurface chainMachineSrc of
     Left e -> putStrLn (errorBundlePretty e) >> exitFailure
     Right m -> pure m
-  let outpostCtx = EvalContext {ctxSelfNode = "outpost/north", ctxParams = Map.empty}
+  let outpostCtx = EvalContext {ctxSelfNode = "outpost/north", ctxParams = Map.empty, ctxBindings = Map.empty}
   case retroconsistency chainMachine "waylay" outpostCtx snap0 of
     Just (Implied [f1, f2]) ->
       if impliedSubject f1 == "outpost/north"

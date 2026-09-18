@@ -63,7 +63,7 @@ loop history machine selfNode round_ = do
   let snap = applyIdentifiedCommits "world" history
       machineKey = nodeRefText (machineNode machine)
       machineMap = Map.singleton machineKey machine
-      ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty}
+      ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.empty, ctxBindings = Map.empty}
       actions = availableTransitions machineMap ctx snap
 
   putStrLn (replicate 60 '=')

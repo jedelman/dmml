@@ -217,10 +217,41 @@ data PatternHop = PatternHop
   deriving (Eq, Show)
 
 -- | @self@ carries no payload -- it always means the machine's own node.
+--
+-- 'TermBind' (added 2026-09-18, Jason: "build the guard binding. No
+-- wasted data!") is a real BINDING variable, written @?name@ in Surface,
+-- and it is deliberately a NEW constructor rather than a change to
+-- 'TermVar'. The two look similar and are not:
+--
+-- * 'TermVar' is a slash-free bareword. It matches anything, never
+--   binds, and a second occurrence of the same name is independent of
+--   the first -- documented as deliberate in 'DMML.Guard.resolveTerm'
+--   and @SURFACE.md@. Critically it is also what this surface produces
+--   BY ACCIDENT: every slash-free token in a guard pattern parses as
+--   one, which is the single most-repeated real authoring mistake in
+--   this project and the whole reason "DMML.GuardLiterals" exists.
+-- * 'TermBind' can only be written on purpose: @?@ appears nowhere else
+--   in the grammar, and @pIdentRaw@ requires a letter, so @?rock@ was a
+--   parse error until now and no existing content can contain one.
+--
+-- Making 'TermVar' bind instead would have silently changed the meaning
+-- of every accidental bareword already committed -- a guard that used to
+-- match anything would start demanding consistency, and one matching
+-- several facts would start refusing. New constructor, zero blast
+-- radius on existing content, and you cannot get a binder by accident.
+--
+-- What a binder does: the witness a guard finds is carried out of the
+-- guard and into later guards and the transition's effects
+-- ('DMML.Guard.evalGuardsBinding'). @guard quarry\/north \\`holds\\` ?rock@
+-- followed by @retract quarry\/north \\`holds\\` ?rock@ takes the
+-- particular rock the guard found. Within one pattern a repeated @?name@
+-- must match consistently -- the unification 'TermVar' deliberately
+-- lacks, now available where it is asked for by name.
 data PatternTerm
   = TermSelf
   | TermParam Text
   | TermVar Text
+  | TermBind Text
   | TermNode Text
   deriving (Eq, Show)
 

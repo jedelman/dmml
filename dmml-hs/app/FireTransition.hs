@@ -42,7 +42,7 @@ import Text.Megaparsec (errorBundlePretty)
 
 import DMML.Ast (MachineStmt, NodeRef (..), machineNode)
 import DMML.Fire (FireError (..), ResolvedEffect (..), fireTransition, renderFiredCommits, renderFiredMachine)
-import DMML.Guard (EvalContext (..))
+import DMML.Guard (EvalContext (..), GuardError (..))
 import DMML.LocalIdentity (localFileRef)
 import DMML.Materialize (IdentifiedCommit (..), applyIdentifiedCommits)
 import DMML.Retroconsistency (BrokenGuard (..))
@@ -104,7 +104,7 @@ run args = do
       let snap = applyIdentifiedCommits "world" identified
           machines = Map.fromList [(nodeRefText (machineNode m), m) | m <- machine : extraMachines]
           selfNode = nodeRefText (machineNode machine)
-          ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.fromList (argParams args)}
+          ctx = EvalContext {ctxSelfNode = selfNode, ctxParams = Map.fromList (argParams args), ctxBindings = Map.empty}
       case fireTransition machines machine (argTransition args) ctx snap of
         Left err -> putStrLn ("fire-transition: refused -- " <> describeError err) >> exitFailure
         Right effects -> do
@@ -137,6 +137,18 @@ run args = do
         Left err -> putStrLn (path <> ":\n" <> errorBundlePretty err) >> exitFailure
 
 describeError :: FireError -> String
+describeError (FireGuardError (GuardAmbiguousBinding v cands)) =
+  -- Printed as a QUESTION, not just a complaint. The whole reason an
+  -- ambiguous binder refuses instead of picking is so that the choice
+  -- reaches whoever is making decisions, and a refusal that withheld the
+  -- options would be a dead end rather than a handoff.
+  "?"
+    <> T.unpack v
+    <> " matches more than one thing, and choosing between them is not this engine's to make.\n"
+    <> "Narrow it with a --param, or pick one of:\n"
+    <> unlines ["  " <> T.unpack c | c <- cands]
+describeError (FireGuardError (GuardBinderInNegatedGuard v)) =
+  "?" <> T.unpack v <> " appears in a negated guard -- nothing can be bound from the absence of a fact"
 describeError FireNotDeclared = "no such transition declared on this machine"
 describeError FireBlocked = "transition's guards do not currently hold"
 describeError (FireUnresolvedSubject eff) = "an effect's subject term did not resolve: " <> show eff

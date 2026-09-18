@@ -84,7 +84,7 @@ data Template = Template
 eligibleTemplates :: WorldSnapshot -> Text -> [Template] -> [Template]
 eligibleTemplates snap subject = filter isEligible
   where
-    ctx = EvalContext {ctxSelfNode = subject, ctxParams = Map.empty}
+    ctx = EvalContext {ctxSelfNode = subject, ctxParams = Map.empty, ctxBindings = Map.empty}
     isEligible tpl = evalGuards (templateGuards tpl) ctx snap
 
 -- | Deterministic slot-fill: the only substitution is the subject's own

@@ -69,7 +69,7 @@ main = do
     Right c -> pure c
 
   let before = applyCommits "world" [worldCommit]
-      ctx = EvalContext {ctxSelfNode = "forest/clearing", ctxParams = Map.empty}
+      ctx = EvalContext {ctxSelfNode = "forest/clearing", ctxParams = Map.empty, ctxBindings = Map.empty}
       machines = Map.fromList [(nodeRefText (machineNode machine), machine)]
 
   implied <- case retroconsistency machine "deplete" ctx before of

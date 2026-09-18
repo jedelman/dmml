@@ -78,6 +78,9 @@ jobs:
       - name: Run cannon-breed-selftest
         run: cabal run cannon-breed-selftest
 
+      - name: Run guard-binding-selftest
+        run: cabal run guard-binding-selftest
+
       - name: Run cascade-demo (the one example with a committed run.sh)
         run: |
           FIRE_TRANSITION="$(cabal list-bin fire-transition)" \

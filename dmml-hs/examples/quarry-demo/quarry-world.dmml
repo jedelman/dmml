@@ -1,0 +1,7 @@
+commit setup
+  declare relation state
+  declare relation in
+  declare relation took
+
+  crew/digger `state` idle
+  rock/1 `in` quarry/north

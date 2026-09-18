@@ -114,7 +114,7 @@ arbitrate machines key snap =
       | (label, v) <- alternatives
       , ValueNode targetIdent <- [v]
       , let targetText = nodeRefText targetIdent
-            ctx = EvalContext {ctxSelfNode = machineNode, ctxParams = Map.empty}
+            ctx = EvalContext {ctxSelfNode = machineNode, ctxParams = Map.empty, ctxBindings = Map.empty}
       , TransitionDecl {transitionIdent = tident} <- machineTransitions machine
       , Just (True, effects, _to) <- [mayFire machine tident ctx snap]
       , -- Preserves the pre-generalization semantics exactly: only an

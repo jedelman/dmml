@@ -89,7 +89,7 @@ spawnerMachine =
 main :: IO ()
 main = do
   let machines = Map.fromList [("forest/mother", spawnerMachine), ("template/sapling", templateMachine)]
-      ctx = EvalContext {ctxSelfNode = "forest/mother", ctxParams = Map.fromList [("name", "forest/sapling17")]}
+      ctx = EvalContext {ctxSelfNode = "forest/mother", ctxParams = Map.fromList [("name", "forest/sapling17")], ctxBindings = Map.empty}
   case fireTransition machines spawnerMachine "seed" ctx emptySnapshot of
     Left err -> putStrLn ("FAIL: fire refused: " ++ show err) >> exitFailure
     Right effects -> case effects of
