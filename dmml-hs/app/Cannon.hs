@@ -320,6 +320,15 @@ mkReplenish node substPred substObj _unused =
         -- substance world, like examples/quarry-demo) it could never
         -- fall, which is exactly backwards. Rain does not need
         -- permission.
+        --
+        -- @unit@ is therefore a MINTING param, not a binding one: it is
+        -- guarded by nothing and asserted into existence, so there is
+        -- nothing for the engine to enumerate and no question to put to
+        -- a chooser. Whoever fires this names the new thing. The Jev
+        -- driver reads exactly that shape (a param in no guard, appearing
+        -- as an effect subject) to tell the two apart -- it skipped every
+        -- parameterized transition before, which meant this machine was
+        -- built, offered and never once fired.
         , transitionGuards = []
         , transitionEffects =
             [ EffectAssert (TermParam "unit") (PredIdent substPred) (EffectValueTerm (TermNode substObj))

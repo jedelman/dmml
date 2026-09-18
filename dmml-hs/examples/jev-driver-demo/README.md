@@ -263,3 +263,34 @@ other CLI in this project, UNCOMPILED — both need `DMML.Surface` to
 parse real files, and megaparsec still isn't available here. Their own
 logic (`candidateTransitions`, `renderFiredCommits`) is the part that's
 actually verified; the thin CLI wrapper around it is not.
+
+**2026-09-18 — the driver itself now has a test.** Everything above tests
+Haskell. `minting-params-selftest.py` is the first check on *this* side of
+the line, and it exists because the bug it catches was invisible to every
+Haskell check in the repo.
+
+The driver used to skip every parameterized transition of a minted
+machine. That is right for a param a guard could resolve — which rock you
+take is a decision, and the driver does not make decisions — and exactly
+wrong for a param nothing guards, which in an open world is a *name for
+something arriving*. `cannon replenish` emits `fall(unit)`: rain. Its
+`$unit` is guarded by nothing and asserted into existence. So the rain
+existed, parsed, rendered, round-tripped, passed `check-guard-literals`,
+and never once fell. `check-fertility` would report the flow graph
+"sustained by a source" while the run still ran down.
+
+`classify_params` now splits a transition's params three ways — **guarded**
+(a binding decision, still left to the binding question), **minting**
+(registered, with a fresh name read off the world each round), **opaque**
+(declared and used nowhere, which breeding produces routinely; skipped,
+and no longer misreported as needing a binding). The selftest asserts all
+three against fixtures and, when a `cannon` binary is available, against
+the cannon's own real output. Reverting the classification turns three of
+its checks red.
+
+Names are not invented: the *kind* is read off the world (two `rock/N `in`
+quarry/north` facts say what falls into that quarry is a rock), falling
+back to the machine's own word for it (the formal param name) when nothing
+yet stands in that relation. Freshness is checked against every node the
+world already knows, because a source that brought the same rock back is
+not a source, it is an undo.

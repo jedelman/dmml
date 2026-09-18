@@ -81,6 +81,19 @@ jobs:
       - name: Run guard-binding-selftest
         run: cabal run guard-binding-selftest
 
+      # The rain that never fell (2026-09-18). driver.py used to skip
+      # EVERY parameterized transition of a minted machine -- correct for
+      # a param a guard could resolve, exactly wrong for one that names
+      # something arriving. Nothing else in this job could see the
+      # difference, because the machine it silently discarded
+      # (`cannon replenish`'s `fall(unit)`) parses, renders and
+      # round-trips perfectly. A classification mistake on the Python
+      # side needs a check on the Python side.
+      - name: Run minting-params-selftest (driver.py's param classification)
+        run: |
+          CANNON="$(cabal list-bin cannon)" \
+            python3 examples/jev-driver-demo/minting-params-selftest.py
+
       - name: Run cascade-demo (the one example with a committed run.sh)
         run: |
           FIRE_TRANSITION="$(cabal list-bin fire-transition)" \

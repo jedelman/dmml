@@ -99,11 +99,14 @@ KNOWN, DISCLOSED SCOPE LIMITS (not oversights):
     minted-node tracking below, and disclosed for the same reason: it
     is not a real DMML.Ast parse, and it would not see a `cleared` fact
     that some later commit retracted (nothing in this dungeon does).
-  - Only ZERO-PARAMETER transitions of a minted machine are registered
-    as candidates. A parameterized one needs a real binding decision --
-    exactly the reason `discover_fact_native` stays informational --
-    and guessing values here would be worse than skipping them. Skipped
-    ones are printed and logged, never silently dropped.
+  - A minted machine's parameterized transitions are registered only
+    when every param is a MINTING one -- guarded by nothing, asserted
+    into existence (see `classify_params`). Those get a fresh name read
+    off the world each round. A param that appears in a GUARD is a real
+    binding decision -- exactly the reason `discover_fact_native` stays
+    informational -- and is still skipped, as is any param this reader
+    cannot account for. Skipped ones are printed and logged, never
+    silently dropped.
   - Minted candidates' descriptions are generated MECHANICALLY from the
     machine's actual guard and effect lines. They are deliberately flat
     and factual rather than evocative: a description is what the
@@ -204,6 +207,15 @@ class Candidate:
     # the guard would then refuse for a reason that looks nothing like
     # the real one.
     bound_params: set[str] = field(default_factory=set)
+    # Formal params this transition MINTS rather than binds, mapped to
+    # the substance each one arrives as ("in quarry/north"). A minting
+    # param names something that does not exist yet -- it appears only
+    # as an effect subject, never in a guard -- so there is nothing for
+    # the engine to enumerate and no question to ask: the world is open,
+    # and naming the new thing is the driver's job. Refreshed every round
+    # (see refresh_minting_params) because a source that brought the
+    # SAME rock every time would not be a source.
+    minting_params: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -815,6 +827,119 @@ def substance_flow(state: RunState) -> tuple[set[str], set[str], set[str]]:
     return (consumed - produced, produced - consumed, consumed | produced)
 
 
+def classify_params(t: dict) -> tuple[list[str], dict[str, str], list[str]]:
+    """Split a transition's formal params into (guarded, minting, opaque).
+
+    A param is not one kind of thing. `DMML.Ast.Effect`'s haddock is
+    explicit that the world is OPEN: an effect may name a node that does
+    not exist yet, and asserting about it is what brings it into being.
+    So a param that appears in a GUARD is a question about what is
+    already there -- which rock -- and a param that appears only as an
+    effect SUBJECT is the opposite, a name for something arriving. The
+    two look identical in the grammar and are nothing alike to a chooser.
+
+    This distinction is what the loop was missing. It skipped every
+    parameterized transition on the honest ground that binding a param is
+    a real decision it would not guess -- true of the first kind, and
+    exactly wrong about the second. `cannon replenish` emits
+    `fall(unit)`, whose `$unit` is guarded by nothing and asserted into
+    existence; skipping it meant the rain existed and never fell, and the
+    flow graph kept its source on paper while still running down.
+
+    - GUARDED: still skipped here. It is a binding decision over existing
+      nodes, and there is already a path for that
+      ('DMML.Guard.GuardAmbiguousBinding' -> the round's binding
+      question). Routing it through minting would invent a node where the
+      world already has candidates, which is the one thing open-world
+      minting must not do.
+    - MINTING: registered, with the substance ("in quarry/north") it
+      arrives as, so a fresh name can be read off the world rather than
+      invented.
+    - OPAQUE: a param used somewhere this reader cannot account for (an
+      effect VALUE, a spawn body). Skipped, and reported as skipped.
+      Guessing here would be the same mistake in a new place.
+    """
+    guarded: list[str] = []
+    minting: dict[str, str] = {}
+    opaque: list[str] = []
+    for param in t["params"]:
+        tok = re.compile(r"\$" + re.escape(param) + r"\b")
+        if any(tok.search(g) for g in t["guards"]):
+            guarded.append(param)
+            continue
+        substance = None
+        for e in t["effects"]:
+            m = UNIT_EFFECT_RE.match(e)
+            if m and m.group(1) == "assert" and m.group(2) == f"${param}":
+                substance = f"{m.group(3)} {m.group(4)}"
+                break
+        if substance is None:
+            opaque.append(param)
+        else:
+            minting[param] = substance
+    return guarded, minting, opaque
+
+
+def unit_kind(state: RunState, pred: str, obj: str) -> str | None:
+    """What KIND of thing already stands in `<x> `pred` obj`, if anything.
+
+    Read off the world, never invented. If `rock/1 `in` quarry/north` and
+    `rock/2 `in` quarry/north` are facts, then what falls into
+    quarry/north is a rock, and the run says so because the world already
+    did. Returns None when nothing stands in that relation yet -- the
+    caller then falls back to the machine's OWN word for it (the formal
+    param name, `unit`), which is likewise not a guess.
+    """
+    rx = re.compile(
+        r"^\s+([A-Za-z0-9_.\-/]+)\s+`" + re.escape(pred) + r"`\s+" + re.escape(obj) + r"\s*$"
+    )
+    counts: dict[str, int] = {}
+    for wf in state.world_files:
+        try:
+            text = Path(wf).read_text()
+        except OSError:
+            continue
+        for line in text.splitlines():
+            m = rx.match(line)
+            if m and "/" in m.group(1):
+                kind = m.group(1).split("/", 1)[0]
+                counts[kind] = counts.get(kind, 0) + 1
+    if not counts:
+        return None
+    return sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+
+
+def refresh_minting_params(state: RunState) -> list[str]:
+    """Give every minting param a fresh name, once per round.
+
+    Freshness is decided by what the world already knows
+    (`state.known_nodes`), not by a counter this file keeps, because the
+    world is the only thing that can say whether a name is taken. A
+    second rock must be a second rock: re-asserting `rock/fall0 `in`
+    quarry/north` would resurrect the one already spent rather than bring
+    another, which is not replenishment, it is an undo.
+
+    Names carry their provenance -- `rock/fall0` is a rock that arrived
+    by falling -- and are allocated against a set that also holds the
+    names handed out earlier in this same pass, because several groups
+    can fire in one round and two sources must not mint the same node.
+    """
+    taken = set(state.known_nodes)
+    touched: list[str] = []
+    for c in sorted(state.candidates.values(), key=lambda c: c.id):
+        for param, substance in c.minting_params.items():
+            pred, _, obj = substance.partition(" ")
+            kind = unit_kind(state, pred, obj) or param
+            n = 0
+            while f"{kind}/{c.transition}{n}" in taken:
+                n += 1
+            name = f"{kind}/{c.transition}{n}"
+            taken.add(name)
+            c.params[param] = name
+            touched.append(f"{c.id}:${param}={name}")
+    return touched
+
+
 def anchorable_nodes(state: RunState) -> set[str]:
     """Nodes something in the world can ever assert `cleared` on.
 
@@ -1256,29 +1381,60 @@ def mint(
     state.known_nodes |= fresh
     state.minted_nodes += len(fresh)
 
-    registered, skipped = [], []
+    registered, skipped, minted_params, vestigial = [], [], [], []
     for t in machine["transitions"]:
-        if t["params"]:
-            skipped.append(f"{t['ident']}({', '.join(t['params'])})")
+        guarded, minting, opaque = classify_params(t)
+        # A param the engine could resolve from the world is a decision,
+        # and this file does not make decisions about which thing to act
+        # on -- that is the binding question's job. A param nothing can
+        # account for is skipped for the same reason. A MINTING param is
+        # neither: nothing exists to choose among, so naming it is not a
+        # choice being taken away from anyone.
+        if guarded:
+            skipped.append(f"{t['ident']}({', '.join(guarded)})")
+            continue
+        if opaque:
+            # Not the same complaint. These params are declared and then
+            # used in no way this reader can account for -- breeding
+            # produces them routinely, since a mode can take one parent's
+            # signature and the other's effects. Reported separately so
+            # "needs a binding" does not get said about a param nothing
+            # needs.
+            vestigial.append(f"{t['ident']}({', '.join(opaque)})")
             continue
         cid = f"{sanitize_node(machine['node'])}-{t['ident']}"
         if cid in state.candidates:
             continue
+        description = describe_minted(machine, t, provenance)
+        if minting:
+            description += (
+                " Something new arrives each time this fires ("
+                + "; ".join(f"a fresh {obj} by `{pred}`" for pred, _, obj in
+                            (m.partition(" ") for m in minting.values()))
+                + "), so firing it again is not a repeat."
+            )
         state.candidates[cid] = Candidate(
             id=cid,
             machine=str(machine_file),
             transition=t["ident"],
             verb="breaches",
             params={},
-            description=describe_minted(machine, t, provenance),
+            description=description,
+            minting_params=minting,
         )
         registered.append(cid)
+        if minting:
+            minted_params.append(f"{cid}({', '.join(sorted(minting))})")
 
     whose = "pressed into" if bidden else "UNBIDDEN at"
     print(f"  extend: {whose} {anchor} -> {machine['node']} ({kind}; {provenance})")
     print(f"          registered {len(registered)} candidate(s): {registered}")
+    if minted_params:
+        print(f"          {len(minted_params)} transition(s) MINT a new thing each firing: {minted_params}")
     if skipped:
-        print(f"          skipped {len(skipped)} parameterized transition(s), needs real bindings: {skipped}")
+        print(f"          skipped {len(skipped)} transition(s) whose param is a binding decision: {skipped}")
+    if vestigial:
+        print(f"          skipped {len(vestigial)} transition(s) with a param used nowhere: {vestigial}")
     return {
         "kind": kind,
         "bidden": bidden,
@@ -1288,7 +1444,9 @@ def mint(
         "cannon_args": args,
         "machine_file": str(machine_file),
         "registered_candidates": registered,
+        "minting_candidates": minted_params,
         "skipped_parameterized": skipped,
+        "skipped_vestigial": vestigial,
     }
 
 
@@ -1368,6 +1526,13 @@ def main() -> None:
         if state.minted_nodes >= budget.max_minted_nodes:
             print(f"=== stopped: hit max_minted_nodes={budget.max_minted_nodes} ===")
             break
+
+        # Every source names what it brings BEFORE anything is dry-fired,
+        # because a minting param is an argument to the firing, not a
+        # result of it -- the scan has to see the name the fire would use.
+        minted_names = refresh_minting_params(state)
+        if minted_names:
+            print(f"  arriving this round: {minted_names}")
 
         scanned, pending = scan_candidates(state)
         legal = [(c, out) for c, out in scanned if c.firings < budget.max_firings_per_candidate]
