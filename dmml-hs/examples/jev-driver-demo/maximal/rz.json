@@ -280,6 +280,14 @@
       "union",
       "chimera",
       "splice1"
+    ],
+    "bridge_cost": "is clay/raw",
+    "regards": [
+      "admires",
+      "inspiredBy",
+      "adaptsTo",
+      "desires",
+      "loves"
     ]
   },
   "interest": {

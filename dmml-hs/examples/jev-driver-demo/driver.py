@@ -287,6 +287,17 @@ class ExtendPolicy:
     # this round's growth allowance is already spent"). Flip it when
     # thickening the web matters more than extending it.
     relations_first: bool = False
+    # Relational predicates the world may come to hold between two
+    # things that already exist -- the pairing axis `bridge` was the
+    # only member of. Measured on the maximal run: 81 of 112 machines
+    # built were bridges, and predicate evenness came out at 0.21 on a
+    # scale where 1.00 is every relation equally used. Not a taste
+    # problem: bridge was the only operator proposable N-squared.
+    regards: list[str] = field(default_factory=lambda: ["admires", "inspiredBy", "adaptsTo", "desires"])
+    # What a corridor is cut OUT of, as "<pred> <obj>". Empty means the
+    # old free bridge, which the pure-reachability demos still need
+    # because they have no matter to spend.
+    bridge_cost: str = ""
     # Variants cycled through when STAMPING a fresh room, and crossover
     # modes cycled through when BREEDING. Cycled by index rather than
     # chosen, for the determinism above.
@@ -461,6 +472,8 @@ def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, InterestPol
         shape_every=int(ex.get("shape_every", 0)),
         proposals_per_kind=int(ex.get("proposals_per_kind", 2)),
         relations_first=bool(ex.get("relations_first", False)),
+        regards=list(ex.get("regards", ["admires", "inspiredBy", "adaptsTo", "desires"])),
+        bridge_cost=str(ex.get("bridge_cost", "")),
         variants=list(ex.get("variants", ["hall", "forge", "vault", "spur"])),
         modes=list(ex.get("modes", ["chimera", "union", "splice1"])),
         breed_after=int(ex.get("breed_after", 2)),
@@ -2003,7 +2016,9 @@ def bridged_pairs(state: RunState) -> set[frozenset[str]]:
     return pairs
 
 
-def connective_proposals(state: RunState, seq: int, cap: int = 2) -> list[tuple[str, str, list[str]]]:
+def connective_proposals(
+    state: RunState, seq: int, cap: int = 2, regards: list[str] = (), bridge_cost: str = ""
+) -> list[tuple[str, str, list[str]]]:
     """What relations could exist that do not yet, as (id, description,
     cannon args).
 
@@ -2040,7 +2055,7 @@ def connective_proposals(state: RunState, seq: int, cap: int = 2) -> list[tuple[
                 f"bridge-{a}-{b}",
                 f"Cut a corridor between {a} and {b}. Both already stand; this makes a second "
                 f"way between them, so neither is reachable only one way any more.",
-                ["bridge", node, a, b],
+                ["bridge", node, a, b] + (bridge_cost.split() if bridge_cost else []),
             )
         )
 
@@ -2243,6 +2258,47 @@ def connective_proposals(state: RunState, seq: int, cap: int = 2) -> list[tuple[
                     f"word starts to matter and can be built on. Nothing is consumed or moved; "
                     f"what changes is what the world is able to notice about itself.",
                     ["imply", node, fp, fo, tp, to],
+                )
+            )
+
+    # REGARD: two things that already exist come to stand in a relation
+    # that is not spatial and moves nothing.
+    #
+    # The axis the world was missing. `bridge` relates PLACES and
+    # `feed` moves MATTER; nothing related agents, so nothing could,
+    # and the measurement said so -- predicate evenness 0.21, every
+    # predicate acyclic, no reciprocity anywhere in a 134-machine world.
+    #
+    # Paired on a shared WITNESS predicate: both ends must already carry
+    # the same kind of property, which is a real condition read off the
+    # world and is what keeps this from becoming a second N-squared
+    # flood. Two things that both have a `role` may come to admire each
+    # other; a corridor and a role may not.
+    if regards:
+        by_witness: dict[str, list[str]] = {}
+        for subj in world_entities(state):
+            for pred, _obj in facts_about(subj, state):
+                if pred in NOT_MATTER_PREDS or pred in ("name", "epithet", "description"):
+                    continue
+                by_witness.setdefault(pred, []).append(subj)
+        pairs = [
+            (w, a, b)
+            for w, subjects in sorted(by_witness.items())
+            for i, a in enumerate(sorted(set(subjects)))
+            for b in sorted(set(subjects))[i + 1 :]
+        ]
+        pairs.sort(key=lambda t: (drift(f"{t[0]}|{t[1]}|{t[2]}", seq, "regard"), t[1], t[2]), reverse=True)
+        for i, (witness, a, b) in enumerate(pairs[:cap]):
+            rel = regards[(seq + i) % len(regards)]
+            node = f"bond/b{seq}_{i}"
+            out.append(
+                (
+                    f"regard-{a}-{rel}-{b}",
+                    f"{a} and {b} have nothing to do with each other, except that the world says "
+                    f"each of them has a `{witness}`. This would have {a} come to {rel} {b} -- "
+                    f"nothing moved, nowhere new to go, just two things that now stand in a "
+                    f"relation they did not. It can lapse again.",
+                    ["regard", node, a, rel, b, witness],
                 )
             )
 
@@ -2563,7 +2619,10 @@ def main() -> None:
         # proposal is not a choice, and spending a question on it would
         # burn the scarce thing to be told what we already know.
         connect_q = (
-            connective_proposals(state, state.minted_machines, extend.proposals_per_kind)
+            connective_proposals(
+                state, state.minted_machines, extend.proposals_per_kind,
+                extend.regards, extend.bridge_cost,
+            )
             if extend.enabled
             else []
         )

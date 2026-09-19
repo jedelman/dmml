@@ -93,7 +93,7 @@ import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
-import Data.List (nub, sort)
+import Data.List (nub, sort, sortOn)
 import DMML.Ast
 import DMML.Recombine (Crossover (..), breed, crossoverLabel)
 import DMML.Surface (parseMachineSurface)
@@ -280,6 +280,60 @@ reachFrom edges s = go [s] []
 -- boundary instead, and @vista@ adds an edge carrying no flow at all --
 -- a circuit in the reference graph and none in this one.
 
+-- Predicate topology ---------------------------------------------------------
+
+-- | Every predicate's OWN subgraph, and what shape it is.
+--
+-- Jason, 2026-09-19: *"we don't have any other pairing predicates, huh…
+-- apply topological diversity metrics to our predicates as well."*
+--
+-- The flow analysis above looks at one graph -- substances, linked by
+-- what transforms into what. But a world is a MULTIGRAPH: every
+-- predicate carries its own edge set over the same nodes, and those
+-- edge sets have wildly different shapes. @at@ is a forest (everything
+-- is somewhere, nothing is two places). @feeds@ is a chain.
+-- @admires@ can have cycles, and reciprocity, and triangles. Reporting
+-- one number for "the world" hides all of that.
+--
+-- The concentration figure is the one that bites. A run that builds 81
+-- corridors and 9 of everything else has a large graph and one
+-- relation; without measuring it the world looks dense and is
+-- monotonous. Shannon entropy over the predicate distribution, in bits,
+-- against the maximum for that many predicates -- so 1.00 is perfectly
+-- even and a world dominated by one predicate tends to 0.
+predicateShapes :: [MachineStmt] -> [(Text, Int, Int, Bool)]
+predicateShapes ms =
+  [ (p, length es, length (nub (concatMap (\(a, b) -> [a, b]) es)), not (null (cyclic es)))
+  | p <- nub (map fst3 rel)
+  , let es = [(a, b) | (q, a, b) <- rel, q == p]
+  ]
+  where
+    fst3 (x, _, _) = x
+    rel =
+      [ (p, a, o)
+      | m <- ms
+      , t <- machineTransitions m
+      , EffectAssert subj (PredIdent p) (EffectValueTerm (TermNode o)) <- transitionEffects t
+      , p /= "state"
+      , Just a <- [nodeOf subj m]
+      ]
+    -- Only effects whose SUBJECT is a real node count as an edge. A
+    -- `?binder` subject is matter moving, which the flow graph above
+    -- already reports; a relation is between two nameable things.
+    nodeOf TermSelf m = Just (nodeText m)
+    nodeOf (TermNode n) _ = Just n
+    nodeOf _ _ = Nothing
+
+-- | How evenly a world spreads itself across its predicates, 0..1.
+predicateEvenness :: [(Text, Int, Int, Bool)] -> Double
+predicateEvenness rows
+  | length rows < 2 = 0
+  | total <= 0 = 0
+  | otherwise = negate (sum [pr * logBase 2 pr | (_, c, _, _) <- rows, c > 0, let pr = fromIntegral c / total])
+      / logBase 2 (fromIntegral (length rows))
+  where
+    total = fromIntegral (sum [c | (_, c, _, _) <- rows])
+
 -- | Strongly connected components with more than one member (or a
 -- self-loop): the parts of the flow graph where matter can actually go
 -- round. Mutual reachability, computed directly -- these graphs have a
@@ -355,6 +409,29 @@ main = do
                       <> "  Not the same property as a cycle and worth not conflating: a source is not a\n"
                       <> "  shape in this graph at all, it is an opening. The world is sustained because it\n"
                       <> "  is OPEN, not because it circulates, and it stops the moment the outside does."
+      let shapes = predicateShapes seeds
+      if null shapes
+        then putStrLn "predicate topology: no relational effect asserts a node value -- nothing to shape."
+        else do
+          putStrLn "predicate topology (each predicate is its own graph over the same nodes):"
+          mapM_
+            ( \(p, es, vs, cyc) ->
+                putStrLn
+                  ( "  "
+                      <> pad 20 (T.unpack p)
+                      <> pad 10 (show es <> " edge" <> (if es == 1 then "" else "s"))
+                      <> pad 10 (show vs <> " node" <> (if vs == 1 then "" else "s"))
+                      <> (if cyc then "has a cycle" else "acyclic")
+                  )
+            )
+            (sortOn (\(_, es, _, _) -> negate es) shapes)
+          putStrLn
+            ( "  evenness across "
+                <> show (length shapes)
+                <> " predicate(s): "
+                <> show (fromIntegral (round (predicateEvenness shapes * 100) :: Int) / (100 :: Double))
+                <> "  (1.00 = every predicate equally used; near 0 = one relation does everything)"
+            )
       putStrLn ""
       case firstSterile of
         [] ->
@@ -401,6 +478,8 @@ main = do
     -- openFile. Found by using the flag (2026-09-18); it had never
     -- worked, and the default 40 is rarely reached anyway because the
     -- walk stops at the first repeated shape.
+    pad n str = str <> replicate (max 1 (n - length str)) ' '
+
     parseArgs as = (mapMaybe keep (zip ("" : as) as), gensOf as)
       where
         keep (prev, a)

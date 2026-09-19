@@ -197,8 +197,26 @@ mkRoom variant newNode parent =
 -- precisely: it creates a CYCLE in reachability, a second way to arrive
 -- somewhere already reachable. Nothing above can produce one, because
 -- everything above descends from a single parent.
-mkBridge :: Text -> Text -> Text -> MachineStmt
-mkBridge bridgeNode endA endB =
+-- A bridge may now COST something, and usually should.
+--
+-- Measured on the maximal run: 81 of 112 machines built were bridges.
+-- The cause is structural rather than anyone's taste -- a bridge is
+-- proposable between any two unrelated cleared places, which is
+-- N-squared, while every other operator is gated on scarcer structure.
+-- Raising `proposals_per_kind` did not rebalance that, it scaled it.
+--
+-- The honest correction is not a smaller quota, it is a price. A
+-- corridor has to be CUT, out of something, by someone. With a cost
+-- the operator stops being free and starts competing on the same terms
+-- as everything else: it is gated on available matter, which is
+-- scarcity expressed as an external relation rather than as a knob in
+-- this file -- the same move as depletion-by-guard-failure.
+--
+-- @Nothing@ keeps the old free bridge, because the pure-reachability
+-- demos have no substance to spend and a bridge that can never be dug
+-- is worse than a cheap one.
+mkBridge :: Text -> Text -> Text -> Maybe (Text, Text) -> MachineStmt
+mkBridge bridgeNode endA endB cost =
   MachineStmt
     { machineNode = nr bridgeNode
     , machineStates = [StateDecl "sealed" sp, StateDecl "open" sp]
@@ -206,19 +224,27 @@ mkBridge bridgeNode endA endB =
     , machineSpan = sp
     }
   where
+    costGuard = case cost of
+      Nothing -> []
+      Just (p, o) ->
+        [GuardClause False (ExistsExpr (Pattern (TermBind "spent") [PatternHop p (TermNode o)]) sp) sp]
+    costEffect = case cost of
+      Nothing -> []
+      Just (p, o) -> [EffectRetract (TermBind "spent") [] (PredIdent p) (Just (EffectValueTerm (TermNode o)))]
     cross name from to =
       TransitionDecl
         { transitionIdent = name
         , transitionParams = []
         , transitionFrom = Just "sealed"
         , transitionTo = Just "open"
-        , transitionGuards = [guardFact from "cleared" "mark/yes"]
+        , transitionGuards = guardFact from "cleared" "mark/yes" : costGuard
         , transitionEffects =
-            [ assertSelf "cleared" "mark/yes"
-            , assertNode to "cleared" "mark/yes"
-            , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "open"))
-            , EffectRetract TermSelf [] (PredIdent "state") Nothing
-            ]
+            costEffect
+              ++ [ assertSelf "cleared" "mark/yes"
+                 , assertNode to "cleared" "mark/yes"
+                 , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "open"))
+                 , EffectRetract TermSelf [] (PredIdent "state") Nothing
+                 ]
         , transitionSpan = sp
         }
 
@@ -455,6 +481,82 @@ mkVista node anchor target =
         , transitionSpan = sp
         }
 
+-- | A REGARD: two things that already exist come to stand in some
+-- relation that is not spatial and moves nothing.
+--
+-- The missing pairing axis, and the reason @bridge@ dominated every run.
+-- Measured on the maximal run: of 112 machines built, **81 were
+-- bridges**. Not because anyone wanted corridors -- because @bridge@
+-- was the only operator whose proposals grow as N-squared (any two
+-- unrelated cleared places), while @feed@ and @imply@ are gated on much
+-- scarcer structure. It won by volume of offers, not by being chosen.
+--
+-- @vista@ was the general case sitting in plain sight, hard-coded: it
+-- relates two places through the fixed predicate @overlooks@. Here the
+-- predicate is a parameter and the subject need not be the machine, so
+-- the same operator writes @loves@, @admires@, @inspiredBy@,
+-- @adaptsTo@, @desires@ -- relations between AGENTS rather than between
+-- places, which this corpus could not previously express at all.
+--
+-- Deliberately asserts about @subj@ rather than about @self@. A vista
+-- IS the thing that overlooks; a matchmaker is not the thing that
+-- loves. Effects have carried arbitrary subject terms since
+-- 'DMML.Ast.Effect' was generalized, so this needs no new primitive.
+--
+-- The guard is the honest part. "Does this node exist" is not
+-- expressible -- guards walk facts, not existence -- so both ends are
+-- instead required to CARRY THE SAME KIND OF PROPERTY, named by
+-- @witness@. Two things that both have a @role@ may come to admire each
+-- other; a corridor and a role may not. That is a real condition read
+-- off the world rather than a formality, and it is what stops this
+-- operator becoming a second N-squared flood.
+mkRegard :: Text -> Text -> Text -> Text -> Text -> MachineStmt
+mkRegard node subj predicate obj witness =
+  MachineStmt
+    { machineNode = nr node
+    , machineStates = [StateDecl "apart" sp, StateDecl "joined" sp]
+    , machineTransitions = [comeTo, part]
+    , machineSpan = sp
+    }
+  where
+    comeTo =
+      TransitionDecl
+        { transitionIdent = "comeTo"
+        , transitionParams = []
+        , transitionFrom = Just "apart"
+        , transitionTo = Just "joined"
+        , transitionGuards =
+            [ GuardClause False (ExistsExpr (Pattern (TermNode subj) [PatternHop witness (TermBind "sw")]) sp) sp
+            , GuardClause False (ExistsExpr (Pattern (TermNode obj) [PatternHop witness (TermBind "ow")]) sp) sp
+            ]
+        , transitionEffects =
+            [ EffectAssert (TermNode subj) (PredIdent predicate) (EffectValueTerm (TermNode obj))
+            , assertSelf "cleared" "mark/yes"
+            , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "joined"))
+            , EffectRetract TermSelf [] (PredIdent "state") Nothing
+            ]
+        , transitionSpan = sp
+        }
+    -- Regard can lapse. A relation nothing can undo is not a relation,
+    -- it is a fact of geometry -- and without a way back this machine
+    -- fires once and is spent, which is the ratchet cannon-grow already
+    -- measured (every transition firing exactly once, the world with no
+    -- refrain).
+    part =
+      TransitionDecl
+        { transitionIdent = "part"
+        , transitionParams = []
+        , transitionFrom = Just "joined"
+        , transitionTo = Just "apart"
+        , transitionGuards = []
+        , transitionEffects =
+            [ EffectRetract (TermNode subj) [] (PredIdent predicate) (Just (EffectValueTerm (TermNode obj)))
+            , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "apart"))
+            , EffectRetract TermSelf [] (PredIdent "state") Nothing
+            ]
+        , transitionSpan = sp
+        }
+
 -- | A fork: one machine, two mutually-exclusive transitions sharing a
 -- single unchosen -> chosen lock. Each clears a different onward
 -- frontier node; the from->to lifecycle (not a negated guard, which the
@@ -538,14 +640,24 @@ main = do
                     TIO.putStr (renderFiredMachine placed)
                 )
                 candidates
+    ["bridge", node, endA, endB, costPred, costObj] ->
+      TIO.putStr
+        ( renderFiredMachine
+            (mkBridge (T.pack node) (T.pack endA) (T.pack endB) (Just (T.pack costPred, T.pack costObj)))
+        )
     ["bridge", node, endA, endB] ->
-      TIO.putStr (renderFiredMachine (mkBridge (T.pack node) (T.pack endA) (T.pack endB)))
+      TIO.putStr (renderFiredMachine (mkBridge (T.pack node) (T.pack endA) (T.pack endB) Nothing))
     ["feed", node, pred_, fromKind, toKind] ->
       TIO.putStr (renderFiredMachine (mkFeed (T.pack node) (T.pack pred_) (T.pack fromKind) (T.pack toKind)))
     ["replenish", node, pred_, obj] ->
       TIO.putStr (renderFiredMachine (mkReplenish (T.pack node) (T.pack pred_) (T.pack obj) ""))
     ["imply", node, fp, fo, tp, to] ->
       TIO.putStr (renderFiredMachine (mkImply (T.pack node) (T.pack fp) (T.pack fo) (T.pack tp) (T.pack to)))
+    ["regard", node, subj, predicate, obj, witness] ->
+      TIO.putStr
+        ( renderFiredMachine
+            (mkRegard (T.pack node) (T.pack subj) (T.pack predicate) (T.pack obj) (T.pack witness))
+        )
     ["vista", node, anchor, target] ->
       TIO.putStr (renderFiredMachine (mkVista (T.pack node) (T.pack anchor) (T.pack target)))
     ["fork", forkNode, parent, left, right] ->
@@ -560,10 +672,13 @@ main = do
         >> putStrLn "       cannon breed <union|chimera|spliceK> <newNode> <a.dmml> <b.dmml> [anchorNode]"
         >> putStrLn "       cannon pool <nodePrefix> <a.dmml> <b.dmml> [anchorNode]"
         >> putStrLn "  connective (two ends, not one parent -- a rhizome, not a tree):"
-        >> putStrLn "       cannon bridge <node> <endA> <endB>        -- a corridor; makes a reachability CYCLE"
+        >> putStrLn "       cannon bridge <node> <endA> <endB> [<costPred> <costObj>]\n                                                  -- a corridor; makes a reachability CYCLE.\n                                                     With a cost it must be CUT out of real matter"
         >> putStrLn "       cannon feed <node> <pred> <from> <to>      -- a mill; clay becomes brick, in place"
         >> putStrLn "       cannon replenish <node> <pred> <obj>       -- rain; produces, guarding on nothing"
         >> putStrLn "       cannon vista <node> <anchor> <target>     -- a tower; relates without flowing"
+        >> putStrLn "       cannon regard <node> <subj> <pred> <obj> <witness>"
+        >> putStrLn "                                                  -- two things come to stand in a relation:"
+        >> putStrLn "                                                     loves, admires, inspiredBy, desires"
         >> putStrLn "       cannon imply <node> <fromPred> <fromObj> <toPred> <toObj>"
         >> putStrLn "                                                  -- a unit that is one thing is also another;"
         >> putStrLn "                                                     a NEW SHAPE, which no crossover can invent"
