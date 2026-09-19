@@ -1,0 +1,109 @@
+# Canonical prose templates.
+#
+# Written against `check-prose-coverage`'s ranked gap report rather than
+# against a predicate list, so the catalog grows where worlds actually
+# are rather than where someone guessed they would be. Commonest first.
+#
+# THREE THINGS TO KNOW BEFORE ADDING TO THIS FILE.
+#
+# 1. A guard whose object is a `?binder` (or a slash-free bareword)
+#    matches any value. "X has something" is the condition; the specific
+#    value is rendered, not tested. Elsewhere in this project a
+#    slash-free bareword is a BUG and `check-guard-literals` exists to
+#    catch it -- here it is the idiom, so prefer the explicit `?binder`.
+#
+# 2. Prefer `{attr:<pred>}` to `{attr:<pred>.name}` unless the object
+#    really carries a `name` fact. An unresolved marker is not an error
+#    at render time: `renderTemplateWith` substitutes what it can and
+#    leaves the rest verbatim, so the brace ships inside the sentence.
+#    `check-prose-coverage` fails on that, which is how it was caught.
+#
+# 3. LITERAL-VALUED predicates (`year 1740`, `count 40`, `weight 1400`)
+#    have NO template here, and that is a finding rather than an
+#    omission. `DMML.Guard` structurally excludes literal-valued facts
+#    from a guard walk, so no guard on the predicate itself can ever
+#    match. Covering one needs a guard on some NODE-valued fact that
+#    reliably CO-OCCURS with it, which is a per-world authoring fact:
+#    guarding on something loose like `self `a` ?type` makes the
+#    template eligible for every typed subject and produces "There are
+#    {attr:count} of Wren Aldy, Apprentice." Tried, caught, removed.
+
+template is-a
+  guard self `a` ?type
+  text "{subject} is {attr:a}."
+
+template at-place
+  guard self `at` ?place
+  text "{subject} stands at {attr:at}."
+
+template located-in
+  guard self `locatedIn` ?place
+  text "{subject} lies within {attr:locatedIn}."
+
+template location-of
+  guard self `location` ?place
+  text "{subject} is to be found at {attr:location}."
+
+template in-container
+  guard self `in` ?holder
+  text "{subject} lies in {attr:in}."
+
+template has-feature
+  guard self `has` ?feature
+  text "{subject} has {attr:has} about it."
+
+template yields-sign
+  guard self `yields` ?sign
+  text "What comes off {subject} is {attr:yields}."
+
+template role-of
+  guard self `role` ?r
+  text "{subject} serves as {attr:role}."
+
+template tends-charge
+  guard self `tends` ?charge
+  text "{subject} keeps {attr:tends}, and it is theirs to keep."
+
+template condition-of
+  guard self `condition` ?c
+  text "{subject} is {attr:condition}."
+
+template stocked-with
+  guard self `stocked` ?stock
+  text "{subject} is stocked with {attr:stocked}."
+
+template works-at
+  guard self `worksAt` ?place
+  text "{subject} works at {attr:worksAt}."
+
+template witnessed-by
+  guard self `witnessedBy` ?witness
+  text "{attr:witnessedBy} stood witness to {subject}."
+
+template warded-by
+  guard self `wardedBy` ?warden
+  text "{subject} is warded by {attr:wardedBy}."
+
+template overlooks-target
+  guard self `overlooks` ?target
+  text "From {subject} you can see {attr:overlooks}, and nothing passes between them."
+
+template material-of
+  guard self `material` ?m
+  text "{subject} is built of {attr:material}."
+
+template holds-thing
+  guard self `holds` ?held
+  text "{subject} holds {attr:holds}."
+
+template quarters-at
+  guard self `quarters` ?place
+  text "{subject} quarters at {attr:quarters}."
+
+template equips-thing
+  guard self `equips` ?gear
+  text "{subject} carries {attr:equips}."
+
+template is-substance
+  guard self `is` ?kind
+  text "{subject} is {attr:is}."

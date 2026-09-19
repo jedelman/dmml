@@ -46,14 +46,29 @@ module DMML.TemplateBank
   , renderTemplate
   , renderTemplateWith
   , displayNameOf
+  , guardsFromText
+  , parseCatalog
+  , templatePredicates
   ) where
 
-import Data.List (isInfixOf)
+import Data.List (isInfixOf, nub)
 import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as T
+import Text.Megaparsec (errorBundlePretty)
 
-import DMML.Ast (GuardClause, Literal (..), NodeRef (..), Value (..))
+import DMML.Ast
+  ( ExistsExpr (..)
+  , GuardClause (..)
+  , Literal (..)
+  , NodeRef (..)
+  , Pattern (..)
+  , PatternHop (..)
+  , Value (..)
+  , machineTransitions
+  , transitionGuards
+  )
+import DMML.Surface (parseMachineSurface)
 import DMML.Governance (findGoverningMachine)
 import DMML.Guard (EvalContext (..), evalGuards)
 import DMML.Materialize (WorldSnapshot, currentValue)
@@ -235,3 +250,94 @@ substituteAll subs haystack = foldl (\h (needle, repl) -> substitute needle repl
            in before <> replacement <> substitute needle replacement (T.drop (T.length needle) after)
       | otherwise = h
     isInfixOfT n h = T.unpack n `isInfixOf` T.unpack h
+
+-- Catalog as a file ---------------------------------------------------------
+
+-- | Parse guard text by wrapping it in a scratch machine and running the
+-- REAL 'DMML.Surface' parser over it.
+--
+-- Lifted here from the four demo binaries that had each copied it
+-- verbatim. That duplication was tolerable while a catalog was a
+-- hard-coded Haskell value in one demo; it stops being tolerable the
+-- moment a catalog lives in a FILE, because then a tool outside those
+-- demos needs the same trick and there is no honest reason for a fifth
+-- copy.
+--
+-- Nothing here parses guards itself. The wrapper exists so that a
+-- template's eligibility condition is written in exactly the grammar a
+-- machine transition uses, checked by exactly the same parser -- which
+-- is the whole point of this module's 2026-09-04 correction.
+guardsFromText :: Text -> Either Text [GuardClause]
+guardsFromText src = case parseMachineSurface wrapped of
+  Left err -> Left (T.pack (errorBundlePretty err))
+  Right m -> case machineTransitions m of
+    (t : _) -> Right (transitionGuards t)
+    [] -> Left "template guard text produced no transition"
+  where
+    wrapped =
+      "machine tmpl/scratch\n\n  states\n    unused\n\n  transition check()\n"
+        <> T.unlines (map ("    " <>) (T.lines src))
+
+-- | Read a catalog file: blocks of @template \<id\>@, each with its
+-- @guard@ lines (real DMML) and one @text@ line.
+--
+-- > template worn-corroded
+-- >   guard self `a` type/metalobject
+-- >   guard self `condition` state/corroded
+-- >   text "{subject} looks worn, its surface corroded with age."
+--
+-- The container is new; the part that matters is not. Guard lines go
+-- through 'guardsFromText' verbatim, so a catalog cannot express an
+-- eligibility condition a machine could not, and a typo in one is the
+-- same parse error it would be anywhere else. Deliberately NOT a new
+-- surface for guards -- only a wrapper around them, which is the
+-- narrowest thing that lets a catalog leave a Haskell literal.
+parseCatalog :: Text -> Either Text [Template]
+parseCatalog src = traverse build (blocks (zip [1 :: Int ..] (T.lines src)))
+  where
+    blocks [] = []
+    blocks ((n, l) : rest)
+      | Just tid <- T.stripPrefix "template " (T.strip l)
+      , not (T.null (T.strip tid)) =
+          let (body, more) = break (isHeader . snd) rest
+           in (n, T.strip tid, map snd body) : blocks more
+      | T.null (T.strip l) || "#" `T.isPrefixOf` T.strip l = blocks rest
+      | otherwise = blocks rest
+    isHeader l = "template " `T.isPrefixOf` T.strip l
+
+    build (n, tid, body) =
+      let gs = [T.strip x | x <- body, "guard " `T.isPrefixOf` T.strip x]
+          txts = [T.strip x | x <- body, "text " `T.isPrefixOf` T.strip x]
+       in case (gs, txts) of
+            ([], _) -> Left (loc n tid <> "has no guard line; a template with no condition would match everything")
+            (_, []) -> Left (loc n tid <> "has no text line")
+            (_, _ : _ : _) -> Left (loc n tid <> "has more than one text line")
+            (_, [t]) -> do
+              parsed <- guardsFromText (T.unlines gs)
+              pure (Template tid parsed (unquote (T.strip (T.drop 5 t))))
+    loc n tid = "catalog line " <> T.pack (show n) <> ": template " <> tid <> " "
+    unquote t
+      | T.length t >= 2 && T.head t == '"' && T.last t == '"' = T.init (T.tail t)
+      | otherwise = t
+
+-- | Every predicate a template is ABOUT: those its guards test, plus
+-- those its text renders through an @{attr:...}@ or @{via:...}@ marker.
+--
+-- Both halves count, and the second is not a technicality. A template
+-- can be made eligible by one fact and then say something about
+-- another -- @guard self `a` type/smith@ with text
+-- @"{subject} works at {attr:worksAt.name}"@ describes @worksAt@
+-- without ever guarding on it. Counting only guards would report that
+-- predicate as uncovered while a perfectly good sentence already exists
+-- for it.
+templatePredicates :: Template -> [Text]
+templatePredicates tpl = nub (concatMap guardPreds (templateGuards tpl) ++ markerPreds)
+  where
+    guardPreds g = map hopPredicate (patternHops (existsPattern (guardExists g)))
+    markerPreds =
+      [ head (T.splitOn "." path)
+      | marker <- ["{attr:", "{via:"]
+      , chunk <- drop 1 (T.splitOn marker (templateText tpl))
+      , let path = T.takeWhile (/= '}') chunk
+      , not (T.null path)
+      ]

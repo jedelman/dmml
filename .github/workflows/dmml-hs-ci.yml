@@ -94,6 +94,19 @@ jobs:
           CANNON="$(cabal list-bin cannon)" \
             python3 examples/jev-driver-demo/minting-params-selftest.py
 
+      # Prose coverage against the shipped catalog. Pinned to the
+      # cannon-fanout world because that one is CLOSED -- its whole
+      # vocabulary is covered, so any regression (a template broken, a
+      # marker stopped resolving, a predicate added to the seed without
+      # prose) turns this red. The wider examples/ corpus is deliberately
+      # NOT pinned: it has a long tail of one-fact predicates and a known
+      # literal-valued gap, so it would be red on day one and stay red.
+      - name: Run check-prose-coverage on the closed demo world
+        run: |
+          cabal run check-prose-coverage -- \
+            --catalog examples/prose-catalog/core.catalog \
+            examples/jev-driver-demo/cannon-fanout/world.dmml
+
       - name: Run cascade-demo (the one example with a committed run.sh)
         run: |
           FIRE_TRANSITION="$(cabal list-bin fire-transition)" \
