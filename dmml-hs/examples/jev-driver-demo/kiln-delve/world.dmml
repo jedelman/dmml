@@ -1,0 +1,13 @@
+commit setup
+  declare relation state
+  declare relation is
+  declare relation cleared
+  declare relation in
+
+  yard/works `cleared` mark/yes
+  mill/kiln `state` idle
+  mill/mason `state` idle
+  weather/rain `state` gathering
+
+  clay/lump1 `is` clay/raw
+  clay/lump2 `is` clay/raw

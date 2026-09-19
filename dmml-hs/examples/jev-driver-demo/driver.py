@@ -1364,6 +1364,85 @@ def refresh_minting_params(state: RunState) -> list[str]:
     return touched
 
 
+def flow_digraph(state: RunState) -> tuple[set[str], set[tuple[str, str]]]:
+    """The substance-flow DIGRAPH: (substances, directed edges).
+
+    An edge c -> p means some transition consumes c and produces p in the
+    same firing, so matter moves that way and only that way. Same reading
+    as `DMML.CheckFertility.flowGraph`, kept in step with it deliberately
+    (see that module's note on the coupling).
+    """
+    nodes: set[str] = set()
+    edges: set[tuple[str, str]] = set()
+    for mf in state.machine_files:
+        try:
+            machine = parse_machine_text(Path(mf).read_text())
+        except OSError:
+            continue
+        for t in machine["transitions"]:
+            cons, prod = set(), set()
+            for e in t["effects"]:
+                m = UNIT_EFFECT_RE.match(e)
+                if not m:
+                    continue
+                kind, _u, pred, obj = m.groups()
+                (cons if kind == "retract" else prod).add(f"{pred} {obj}")
+            nodes |= cons | prod
+            edges |= {(c, pr) for c in cons for pr in prod}
+    return nodes, edges
+
+
+def _reach(edges: set[tuple[str, str]], start: str) -> set[str]:
+    seen, stack = set(), [start]
+    while stack:
+        x = stack.pop()
+        for a, b in edges:
+            if a == x and b not in seen:
+                seen.add(b)
+                stack.append(b)
+    return seen
+
+
+def cycle_rank(nodes: set[str], edges: set[tuple[str, str]]) -> int:
+    """Total independent circuits: sum of E - V + 1 over the non-trivial
+    strongly connected components.
+
+    This is the magnitude behind `check-fertility`'s CIRCULATES verdict --
+    how many flow edges you would have to cut before matter stops going
+    round. Deliberately NOT the first Betti number of the underlying
+    undirected graph: a diamond (clay->brick, clay->tile, brick->wall,
+    tile->wall) has b1 = 1 and still runs down, because matter only goes
+    one way round it. Direction is not topological data and direction is
+    what decides it. See examples/rhizome-demo/diamond.dmml.
+    """
+    reach = {n: _reach(edges, n) for n in nodes}
+    comps: list[frozenset[str]] = []
+    for a in nodes:
+        if a not in reach[a]:
+            continue
+        comp = frozenset(b for b in nodes if b in reach[a] and a in reach[b])
+        if comp not in comps:
+            comps.append(comp)
+    total = 0
+    for c in comps:
+        inner = [(a, b) for a, b in edges if a in c and b in c]
+        total += len(inner) - len(c) + 1
+    return total
+
+
+def rank_delta(nodes: set[str], edges: set[tuple[str, str]], new: tuple[str, str]) -> int:
+    """How many independent circuits adding this one edge would create.
+
+    Computed, not judged. Whether an edge closes a circuit is an exact
+    question about a digraph with an exact answer, and no amount of good
+    taste substitutes for running it: 0 means the edge merely adds
+    another one-way path, and the world still runs down with it.
+    """
+    if new in edges:
+        return 0
+    return cycle_rank(nodes | {new[0], new[1]}, edges | {new}) - cycle_rank(nodes, edges)
+
+
 def anchorable_nodes(state: RunState) -> set[str]:
     """Nodes something in the world can ever assert `cleared` on.
 
@@ -1699,25 +1778,54 @@ def connective_proposals(state: RunState, seq: int) -> list[tuple[str, str, list
             )
         )
 
-    # Close a flow loop: a terminal feeding back to a root turns a DAG
-    # into a cycle, which is the difference between a world that runs
-    # down and one that does not.
-    for t in sorted(terminals)[:1]:
-        for r in sorted(roots)[:1]:
-            tp, to = t.split(" ", 1)
-            rp, ro = r.split(" ", 1)
-            if tp != rp:
+    # Close a flow circuit. This used to propose exactly one feed --
+    # sorted(terminals)[0] back to sorted(roots)[0] -- on the reasonable
+    # but unchecked assumption that terminal-to-root is where the loop
+    # wants closing. Two things wrong with that. It misses every feed
+    # that would close a circuit somewhere in the middle of the graph,
+    # and it cannot tell a feed that actually closes one from a feed that
+    # just adds another one-way path.
+    #
+    # Whether an edge closes a circuit is an exact question about a
+    # digraph. So it is COMPUTED, over every pair of substances sharing a
+    # predicate (the only pairs `cannon feed` can actually connect), and
+    # the ones that raise the rank are offered first.
+    #
+    # Note what is and is not delegated. The rank delta is not a matter of
+    # taste and no chooser is asked to intuit it -- an LLM cannot know
+    # whether adding an edge merges two strongly connected components,
+    # and would guess fluently. What IS delegated is whether closing that
+    # particular circuit is worth having, which is a question about the
+    # world and not about the graph.
+    fnodes, fedges = flow_digraph(state)
+    feeds: list[tuple[int, str, str, str, str]] = []
+    for a in sorted(fnodes):
+        ap, ao = a.split(" ", 1)
+        for b in sorted(fnodes):
+            if a == b or (a, b) in fedges:
                 continue
-            node = f"decay/d{seq}"
-            out.append(
-                (
-                    f"feed-{to}-to-{ro}",
-                    f"Let {to} break back down into {ro}. Nothing currently returns {to} to the "
-                    f"world, and nothing currently makes {ro}; this closes that loop, and a world "
-                    f"whose matter circulates does not run out.",
-                    ["feed", node, tp, to, ro],
-                )
+            bp, bo = b.split(" ", 1)
+            if ap != bp:  # `cannon feed` moves a unit BETWEEN objects of one predicate
+                continue
+            feeds.append((rank_delta(fnodes, fedges, (a, b)), ap, ao, bo, b))
+    feeds.sort(key=lambda f: (-f[0], f[2], f[3]))
+    have_rank = cycle_rank(fnodes, fedges)
+    for i, (delta, pred, frm, to, _b) in enumerate(feeds[:2]):
+        node = f"decay/d{seq}_{i}"
+        if delta > 0:
+            why = (
+                f"This CLOSES A CIRCUIT: matter already travels {to} -> ... -> {frm} and stops there; "
+                f"this sends it back, so the world would have {have_rank + delta} independent "
+                f"circuit(s) where it now has {have_rank}. A world whose matter circulates does not "
+                f"run out."
             )
+        else:
+            why = (
+                f"This closes no circuit -- nothing currently leads from {to} back to {frm}, so "
+                f"matter would still only go one way and the world would still run down. It would "
+                f"be a new path, not a loop."
+            )
+        out.append((f"feed-{frm}-to-{to}", f"Let {frm} become {to}. {why}", ["feed", node, pred, frm, to]))
 
     # A source for something consumed and never made. Needs no cleared
     # node to anchor on -- a source is unconditioned by definition, which

@@ -1,0 +1,26 @@
+{
+  "world_seed": ["world.dmml"],
+  "machines": ["../../rhizome-demo/kiln.dmml", "../../rhizome-demo/mason.dmml", "../../rhizome-demo/rain.dmml"],
+  "candidates": [
+    {"id": "fire", "machine": "../../rhizome-demo/kiln.dmml", "transition": "transform", "verb": "fires", "params": {},
+     "description": "Fire a lump of raw clay in the kiln, turning it into a fired brick."},
+    {"id": "kiln-reset", "machine": "../../rhizome-demo/kiln.dmml", "transition": "reset", "verb": "cools", "params": {},
+     "description": "Let the kiln cool so it can fire again."},
+    {"id": "lay", "machine": "../../rhizome-demo/mason.dmml", "transition": "transform", "verb": "lays", "params": {},
+     "description": "Lay a fired brick into a section of wall."},
+    {"id": "mason-reset", "machine": "../../rhizome-demo/mason.dmml", "transition": "reset", "verb": "rests", "params": {},
+     "description": "Let the mason rest so they can lay again."},
+    {"id": "rain", "machine": "../../rhizome-demo/rain.dmml", "transition": "fall", "verb": "rains", "params": {},
+     "description": "Rain washes down fresh raw clay from the hillside."},
+    {"id": "rain-gather", "machine": "../../rhizome-demo/rain.dmml", "transition": "gather", "verb": "gathers", "params": {},
+     "description": "The weather gathers again."}
+  ],
+  "budget": {"max_rounds": 10, "max_total_firings": 30, "max_firings_per_candidate": 5, "max_minted_nodes": 300},
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "You are the works: a clay pit, a kiln, a mason. Raw clay is fired into brick, brick is laid into wall, and there it stops -- wall is the end of the line for matter here. Rain brings more clay down from the hillside, but only while the weather holds. You can also have the works BUILD something new: a process that turns one kind of matter into another. Read what each proposal actually does to where matter can go."
+  },
+  "extend": {"enabled": true, "max_minted_machines": 8, "breed_after": 99, "unbidden_every": 0,
+             "variants": ["forge"], "modes": ["union"]},
+  "interest": {"enabled": true, "temperature": 1.0, "max_growth_per_round": 3, "max_questions": 40, "score_actions": true}
+}
