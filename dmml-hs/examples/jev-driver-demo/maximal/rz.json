@@ -1,0 +1,297 @@
+{
+  "world_seed": [
+    "world.dmml"
+  ],
+  "machines": [
+    "../../jev-driver-demo/furnace2.dmml",
+    "../../endurance/machines/culture-riverfolk.dmml",
+    "../../opus-world-test/machine-uppergate.dmml",
+    "../../jev-driver-demo/temperedTemplate.dmml",
+    "../../haiku-world-test/machine.dmml",
+    "../../cascade-demo/anvil.dmml",
+    "../../jev-driver-demo/cannon-dungeon/room-wForge.dmml",
+    "../../opus-world-test/machine-barge.dmml",
+    "../../fire-demo/named-key.dmml",
+    "../../shrine.dmml",
+    "../../jev-driver-demo/cannon-mega/room-bnVault.dmml",
+    "../../opus-world-test/machine-mast.dmml",
+    "../../jev-driver-demo/dungeon/party-east.dmml",
+    "../../jev-driver-demo/cannon-mega/room-asSpur.dmml",
+    "../../retract-value-demo/keeper.dmml",
+    "../../opus-world-test/machine-mill.dmml",
+    "../../endurance/machines/path-stonemasonry.dmml",
+    "../../opus-world-test/machine-keeper.dmml",
+    "../../rhizome-demo/tree-bridge.dmml",
+    "../../rhizome-demo/rain.dmml",
+    "../../quarry-demo/picky.dmml",
+    "../../jev-driver-demo/cannon-dungeon/room-wVault.dmml"
+  ],
+  "candidates": [
+    {
+      "id": "gate_upper-unseal",
+      "machine": "../../opus-world-test/machine-uppergate.dmml",
+      "transition": "unseal",
+      "verb": "acts",
+      "params": {},
+      "description": "unseal on gate/upper. Requires: station/stillwater `warden` apprentice/wren; mast/signal `signal` signal/green. Yields: assert cracked; retract sealed; assert self `leaf` leaf/ajar; retract self `leaf` leaf/shut."
+    },
+    {
+      "id": "gate_upper-secure",
+      "machine": "../../opus-world-test/machine-uppergate.dmml",
+      "transition": "secure",
+      "verb": "acts",
+      "params": {},
+      "description": "secure on gate/upper. Requires: ledger/tolls `entry` entry/heronone. Yields: assert secured; retract open; assert self `leaf` leaf/shut; retract self `leaf` leaf/open."
+    },
+    {
+      "id": "keeper_mei-awaken",
+      "machine": "../../haiku-world-test/machine.dmml",
+      "transition": "awaken",
+      "verb": "acts",
+      "params": {},
+      "description": "awaken on keeper/mei. Requires: self `at` teahouse/serenity. Yields: assert preparing; retract resting."
+    },
+    {
+      "id": "keeper_mei-lightStove",
+      "machine": "../../haiku-world-test/machine.dmml",
+      "transition": "lightStove",
+      "verb": "acts",
+      "params": {},
+      "description": "lightStove on keeper/mei. Requires: self `at` teahouse/serenity; room/storage `state` state/open. Yields: assert serving; retract preparing; assert stove/brass `temperature` 90; retract stove/brass `temperature` 20."
+    },
+    {
+      "id": "keeper_mei-extinguishAndClose",
+      "machine": "../../haiku-world-test/machine.dmml",
+      "transition": "extinguishAndClose",
+      "verb": "acts",
+      "params": {},
+      "description": "extinguishAndClose on keeper/mei. Requires: self `at` teahouse/serenity. Yields: assert closing; retract serving."
+    },
+    {
+      "id": "keeper_mei-retireForNight",
+      "machine": "../../haiku-world-test/machine.dmml",
+      "transition": "retireForNight",
+      "verb": "acts",
+      "params": {},
+      "description": "retireForNight on keeper/mei. Requires: nothing. Yields: assert sleeping; retract closing."
+    },
+    {
+      "id": "smithy_anvil-forge",
+      "machine": "../../cascade-demo/anvil.dmml",
+      "transition": "forge",
+      "verb": "acts",
+      "params": {},
+      "description": "forge on smithy/anvil. Requires: ore/raw1 `refinedInto` ingot/batch1. Yields: assert ingot/batch1 `title` \"A forged ingot\"; assert forged; retract idle."
+    },
+    {
+      "id": "room_wForge-breach",
+      "machine": "../../jev-driver-demo/cannon-dungeon/room-wForge.dmml",
+      "transition": "breach",
+      "verb": "acts",
+      "params": {},
+      "description": "breach on room/wForge. Requires: path/west `cleared` mark/yes. Yields: assert self `cleared` mark/yes; assert vault/keyring `has` key/gold."
+    },
+    {
+      "id": "barge_heron-hailStation",
+      "machine": "../../opus-world-test/machine-barge.dmml",
+      "transition": "hailStation",
+      "verb": "acts",
+      "params": {},
+      "description": "hailStation on barge/heron. Requires: self `hull` hull/sound; station/stillwater `access` access/open. Yields: assert waiting; retract moored; assert self `awaits` station/stillwater."
+    },
+    {
+      "id": "barge_heron-rise",
+      "machine": "../../opus-world-test/machine-barge.dmml",
+      "transition": "rise",
+      "verb": "acts",
+      "params": {},
+      "description": "rise on barge/heron. Requires: chamber/lock `level` level/high. Yields: assert risen; retract inchamber; assert self `berth` berth/upperpound; retract self `berth` berth/chamber; assert self `at` reach/upper; retract self `at` chamber/lock."
+    },
+    {
+      "id": "room_bnVault-breach",
+      "machine": "../../jev-driver-demo/cannon-mega/room-bnVault.dmml",
+      "transition": "breach",
+      "verb": "acts",
+      "params": {},
+      "description": "breach on room/bnVault. Requires: path/bn `cleared` mark/yes; vault/keyring `has` key/gold. Yields: assert self `cleared` mark/yes; assert self `yields` sigil/bnVault."
+    },
+    {
+      "id": "mast_signal-raiseAmber",
+      "machine": "../../opus-world-test/machine-mast.dmml",
+      "transition": "raiseAmber",
+      "verb": "acts",
+      "params": {},
+      "description": "raiseAmber on mast/signal. Requires: station/stillwater `access` access/open. Yields: assert amber; retract dark; assert self `signal` signal/amber; retract self `signal` signal/dark."
+    },
+    {
+      "id": "party_east-pullLever",
+      "machine": "../../jev-driver-demo/dungeon/party-east.dmml",
+      "transition": "pullLever",
+      "verb": "acts",
+      "params": {},
+      "description": "pullLever on party/east. Requires: nothing. Yields: assert gate/east `barrier` state/open; retract gate/east `barrier` state/shut; assert pulled; retract arrived."
+    },
+    {
+      "id": "party_east-advance",
+      "machine": "../../jev-driver-demo/dungeon/party-east.dmml",
+      "transition": "advance",
+      "verb": "acts",
+      "params": {},
+      "description": "advance on party/east. Requires: gate/east `barrier` state/open. Yields: assert advanced; retract pulled."
+    },
+    {
+      "id": "party_east-plunder",
+      "machine": "../../jev-driver-demo/dungeon/party-east.dmml",
+      "transition": "plunder",
+      "verb": "acts",
+      "params": {},
+      "description": "plunder on party/east. Requires: nothing. Yields: assert chamber/east `holds` sigil/east; assert plundered; retract advanced."
+    },
+    {
+      "id": "room_asSpur-breach",
+      "machine": "../../jev-driver-demo/cannon-mega/room-asSpur.dmml",
+      "transition": "breach",
+      "verb": "acts",
+      "params": {},
+      "description": "breach on room/asSpur. Requires: path/as `cleared` mark/yes. Yields: assert self `yields` relic/asSpur."
+    },
+    {
+      "id": "npc_keeper-withdraw",
+      "machine": "../../retract-value-demo/keeper.dmml",
+      "transition": "withdraw",
+      "verb": "acts",
+      "params": {},
+      "description": "withdraw on npc/keeper. Requires: self `witnessedBy` mountain/ashkar. Yields: retract self `witnessedBy` mountain/ashkar; assert withdrawn."
+    },
+    {
+      "id": "npc_keeper-reawaken",
+      "machine": "../../retract-value-demo/keeper.dmml",
+      "transition": "reawaken",
+      "verb": "acts",
+      "params": {},
+      "description": "reawaken on npc/keeper. Requires: herd/stagfolk `grazesIn` forest/oldroot. Yields: assert self `witnessedBy` herd/stagfolk; assert warding."
+    },
+    {
+      "id": "mill_nire-engage",
+      "machine": "../../opus-world-test/machine-mill.dmml",
+      "transition": "engage",
+      "verb": "acts",
+      "params": {},
+      "description": "engage on mill/nire. Requires: race/mill `flow` flow/running. Yields: assert turning; retract idle; assert stone/grinding `motion` motion/spinning; retract stone/grinding `motion` motion/rest."
+    },
+    {
+      "id": "mill_nire-bank",
+      "machine": "../../opus-world-test/machine-mill.dmml",
+      "transition": "bank",
+      "verb": "acts",
+      "params": {},
+      "description": "bank on mill/nire. Requires: self `output` sack/flourone. Yields: assert banked; retract ground; assert granary/stillwater `stock` stock/flour; retract granary/stillwater `stock` stock/empty; assert sack/flourone `at` granary/stillwater; retract sack/flourone `at` mill/nire; retract self `grinds` stone/grinding `motion` motion/spinning."
+    },
+    {
+      "id": "path_stonemasonry-forget",
+      "machine": "../../endurance/machines/path-stonemasonry.dmml",
+      "transition": "forget",
+      "verb": "acts",
+      "params": {},
+      "description": "forget on path/stonemasonry. Requires: nothing. Yields: assert lost; retract mastered."
+    },
+    {
+      "id": "keeper_orrin-wake",
+      "machine": "../../opus-world-test/machine-keeper.dmml",
+      "transition": "wake",
+      "verb": "acts",
+      "params": {},
+      "description": "wake on keeper/orrin. Requires: self `at` station/stillwater. Yields: assert onwatch; retract abed; assert station/stillwater `access` access/open; retract station/stillwater `access` access/shut."
+    },
+    {
+      "id": "keeper_orrin-standDown",
+      "machine": "../../opus-world-test/machine-keeper.dmml",
+      "transition": "standDown",
+      "verb": "acts",
+      "params": {},
+      "description": "standDown on keeper/orrin. Requires: granary/stillwater `stock` stock/flour; mill/nire `output` sack/flourone `at` granary/stillwater. Yields: assert standdown; retract atledger; assert station/stillwater `watch` watch/ended."
+    },
+    {
+      "id": "corridor_ac-crossFromA",
+      "machine": "../../rhizome-demo/tree-bridge.dmml",
+      "transition": "crossFromA",
+      "verb": "acts",
+      "params": {},
+      "description": "crossFromA on corridor/ac. Requires: room/a `cleared` mark/yes. Yields: assert self `cleared` mark/yes; assert room/c `cleared` mark/yes."
+    },
+    {
+      "id": "corridor_ac-crossFromB",
+      "machine": "../../rhizome-demo/tree-bridge.dmml",
+      "transition": "crossFromB",
+      "verb": "acts",
+      "params": {},
+      "description": "crossFromB on corridor/ac. Requires: room/c `cleared` mark/yes. Yields: assert self `cleared` mark/yes; assert room/a `cleared` mark/yes."
+    },
+    {
+      "id": "weather_rain-gather",
+      "machine": "../../rhizome-demo/rain.dmml",
+      "transition": "gather",
+      "verb": "acts",
+      "params": {},
+      "description": "gather on weather/rain. Requires: nothing. Yields: nothing beyond advancing its own state."
+    },
+    {
+      "id": "crew_picky-take",
+      "machine": "../../quarry-demo/picky.dmml",
+      "transition": "take",
+      "verb": "acts",
+      "params": {},
+      "description": "take on crew/picky. Requires: ?rock `in` quarry/north; ?rock `grade` ore/rich. Yields: assert self `took` ?rock."
+    },
+    {
+      "id": "room_wVault-breach",
+      "machine": "../../jev-driver-demo/cannon-dungeon/room-wVault.dmml",
+      "transition": "breach",
+      "verb": "acts",
+      "params": {},
+      "description": "breach on room/wVault. Requires: room/wForge `cleared` mark/yes; vault/keyring `has` key/gold. Yields: assert self `cleared` mark/yes; assert self `yields` sigil/wVault."
+    }
+  ],
+  "budget": {
+    "max_rounds": 30,
+    "max_total_firings": 400,
+    "max_firings_per_candidate": 4,
+    "max_minted_nodes": 3000
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "You are building a world out of what is already in it. There are mills and gates and herds and shrines and barges here, and a great deal of raw matter with nowhere in particular to be. Nothing is described for you in advance: read what each thing actually REQUIRES and what it actually YIELDS, and judge from that. You are not choosing one thing at a time -- of each option separately, say whether it is something you actually want."
+  },
+  "extend": {
+    "enabled": true,
+    "max_minted_machines": 80,
+    "breed_after": 2,
+    "unbidden_every": 6,
+    "shape_every": 4,
+    "proposals_per_kind": 6,
+    "relations_first": true,
+    "variants": [
+      "hall",
+      "forge",
+      "vault",
+      "spur"
+    ],
+    "modes": [
+      "union",
+      "chimera",
+      "splice1"
+    ]
+  },
+  "interest": {
+    "enabled": true,
+    "temperature": 1.0,
+    "max_growth_per_round": 6,
+    "max_questions": 60,
+    "score_actions": true
+  },
+  "prose": {
+    "catalogs": [
+      "../../prose-catalog/core.catalog"
+    ]
+  }
+}

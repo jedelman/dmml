@@ -165,8 +165,10 @@ import os
 import re
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -934,6 +936,14 @@ def call_jev_batch(
             },
         }
     body = {"state": state_summary, "model": model, "questions": questions}
+    # Performance instrumentation. Jev is the one genuinely scarce thing
+    # in this loop and until now nothing measured it: not how long a call
+    # takes, not what it costs, not whether it actually discriminates.
+    # The vendor's own claim -- "all questions are evaluated in parallel,
+    # so adding more questions typically doesn't add any latency" -- is
+    # the load-bearing assumption behind the whole fan-out design and has
+    # never been tested against a real spread of question counts.
+    t0 = time.monotonic()
     req = urllib.request.Request(
         JEV_ENDPOINT,
         data=json.dumps(body).encode(),
@@ -941,11 +951,42 @@ def call_jev_batch(
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            return json.loads(resp.read())
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            out = json.loads(resp.read())
     except urllib.error.HTTPError as e:
         print(f"fatal: Jev call failed: {e.code} {e.read().decode()}", file=sys.stderr)
         sys.exit(3)
+    elapsed = time.monotonic() - t0
+    kinds = Counter(q["type"] for q in questions.values())
+    answers = out.get("answers") or {}
+    # Decisiveness, per primitive and on one scale: how far from a
+    # shrug. A `choice` reports its own confidence; a `noul` does not,
+    # because its single probability IS the answer and its certainty at
+    # once -- so 0.5 is maximal indecision and either end is maximal
+    # decision.
+    conf = [a["confidence"] for a in answers.values()
+            if isinstance(a, dict) and isinstance(a.get("confidence"), (int, float))]
+    nouls = [a["noul"] for a in answers.values()
+             if isinstance(a, dict) and isinstance(a.get("noul"), (int, float))]
+    out["_perf"] = {
+        "seconds": round(elapsed, 3),
+        "questions": len(questions),
+        "by_kind": dict(kinds),
+        "input_tokens": (out.get("usage") or {}).get("input_tokens"),
+        "output_tokens": (out.get("usage") or {}).get("output_tokens"),
+        "state_chars": len(state_summary),
+        "choice_confidence_mean": round(sum(conf) / len(conf), 3) if conf else None,
+        "noul_decisiveness_mean": round(sum(abs(n - 0.5) * 2 for n in nouls) / len(nouls), 3) if nouls else None,
+        "noul_spread": round(max(nouls) - min(nouls), 3) if len(nouls) > 1 else None,
+        "served_model": out.get("model"),
+    }
+    perf = out["_perf"]
+    print(
+        f"  jev: {perf['questions']} question(s) in {perf['seconds']}s, "
+        f"{perf['input_tokens']}->{perf['output_tokens']} tokens, "
+        f"noul decisiveness {perf['noul_decisiveness_mean']}, spread {perf['noul_spread']}"
+    )
+    return out
 
 
 INTEREST_FRONTIER = (
@@ -2959,6 +3000,7 @@ def main() -> None:
             # WANTED and not taken, which a summary throws away.
             "interest": scores,
             "interest_unasked": interest_over,
+            "jev_perf": (jev_response or {}).get("_perf"),
             "total_firings": state.total_firings,
         }
         audit.write(json.dumps(record) + "\n")
