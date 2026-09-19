@@ -88,9 +88,10 @@ disagreement; `conflict-pruning-selftest.py` on all four.
 
 ## Still open
 
-- `render-prose` and `list-candidates` are still one subprocess per round each, and both
-  look up their binary the same way `scan_binary` used to. Worth checking whether they are
-  being silently skipped too.
+- Checked the neighbours, since the same bug twice would be worse than once: `render-prose`,
+  `list-candidates` and `cannon` all default to the plain name on `$PATH` already.
+  `scan_binary` was the only asymmetric one. They are still one subprocess per round each,
+  which is a separate and much smaller problem.
 - The pruner still learns what a firing *writes* by regex over the commit output
   (`touches`). That is a different parser problem from the one just fixed, and
   `scan-candidates` could equally report the resolved effects.
