@@ -94,6 +94,17 @@ jobs:
           CANNON="$(cabal list-bin cannon)" \
             python3 examples/jev-driver-demo/minting-params-selftest.py
 
+      # ReadIndex against may_conflict, which is its specification.
+      # The driver groups a round's candidates into generations that
+      # fire together, and a pair the index wrongly calls independent
+      # is two firings applied in one round that can invalidate each
+      # other -- a corrupted world, silently, with nothing else in this
+      # job able to see it. Needs no Haskell binary: it imports
+      # driver.py and compares the two answers directly, at sizes no
+      # real run has reached yet.
+      - name: Run index-scaling-bench (ReadIndex vs its specification)
+        run: python3 examples/jev-driver-demo/index-scaling-bench.py
+
       # Prose coverage against the shipped catalog. Pinned to the
       # cannon-fanout world because that one is CLOSED -- its whole
       # vocabulary is covered, so any regression (a template broken, a

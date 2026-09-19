@@ -790,11 +790,70 @@ def depends_on(cand: Candidate, output: str) -> set[tuple[str | None, str]]:
 def may_conflict(a_touch: set[tuple[str, str]], b_read: set[tuple[str | None, str]]) -> bool:
     """Could firing A change how B evaluates? Conservative by
     construction -- a wildcard read matches any subject, and anything
-    unparsed reads everything."""
+    unparsed reads everything.
+
+    This is the SPECIFICATION. `ReadIndex` below answers the same
+    question without visiting every pair, and must agree with this
+    function exactly; `DMML_INDEX_SELFCHECK=1` asserts that it does on
+    every real round.
+    """
     if (None, "") in b_read:
         return True
     preds_any = {p for s, p in b_read if s is None}
     return any(p in preds_any or (s, p) in b_read for s, p in a_touch)
+
+
+class ReadIndex:
+    """The read sets, inverted: slot -> who reads it.
+
+    Pruning removed the simulations. It did not remove the PAIRS -- the
+    loop still asked `may_conflict` about every one of them, which is
+    quadratic in candidates however cheap each answer is. So invert the
+    question. Instead of asking each B in turn whether it reads what A
+    touches, ask the slots A touches who reads them, and get the whole
+    conflicting set back in one pass over A's own (small) touch set.
+
+    Three buckets, mirroring the three cases `may_conflict` handles:
+
+    * `exact`  -- a guard on a named subject: `(subject, predicate)`.
+    * `any_subject` -- a guard over a `?binder` or `$param`, which
+      matches whatever subject a write happens to carry, so it is keyed
+      by predicate alone.
+    * `everything` -- a candidate whose guard this reader could not
+      parse. It conflicts with every write, and so it is simply carried
+      into every answer.
+
+    Cost goes from O(candidates^2) intersections to O(candidates x
+    touches) lookups plus the conflicts actually found -- which is the
+    thing a triple store's pattern index would have given for free, and
+    the reason it was worth writing the thirty lines instead of
+    adopting one.
+    """
+
+    def __init__(self, reads: dict[str, set[tuple[str | None, str]]]) -> None:
+        self.exact: dict[tuple[str, str], set[str]] = {}
+        self.any_subject: dict[str, set[str]] = {}
+        self.everything: set[str] = set()
+        for cid, slots in reads.items():
+            for subj, pred in slots:
+                if subj is None and pred == "":
+                    self.everything.add(cid)
+                elif subj is None:
+                    self.any_subject.setdefault(pred, set()).add(cid)
+                else:
+                    self.exact.setdefault((subj, pred), set()).add(cid)
+
+    def readers_of(self, a_touch: set[tuple[str, str]]) -> set[str]:
+        """Every candidate that `may_conflict` would say A can reach."""
+        out = set(self.everything)
+        for slot in a_touch:
+            hit = self.any_subject.get(slot[1])
+            if hit:
+                out |= hit
+            hit = self.exact.get(slot)
+            if hit:
+                out |= hit
+        return out
 
 
 def probe_results(state: RunState, probes: list[dict]):
@@ -990,21 +1049,51 @@ def group_into_generations(
     # a missed pruning only costs time.
     touched = {cid: touches(out) for cid, (_c, out) in by_id.items()}
     reads = {cid: depends_on(c, out) for cid, (c, out) in by_id.items()}
+    index = ReadIndex(reads)
     pruned = 0
+
+    # Rank in `ids` order, so the index can reproduce the pairwise
+    # loop's exact pair set and ORDER: each pair is emitted once, for
+    # the earlier of the two.
+    rank = {cid: i for i, cid in enumerate(ids)}
+    # How many same-machine siblings come AFTER each candidate. Those
+    # pairs are unioned by the hard rule and never counted as pruned;
+    # knowing the count up front keeps the bookkeeping O(1) per
+    # candidate instead of reintroducing the scan the index removed.
+    siblings_after = {
+        cid: len(group) - k - 1
+        for group in by_machine.values()
+        for k, cid in enumerate(group)
+    }
 
     probes: list[dict] = []
     pairs: list[tuple[str, str]] = []
     for i, a_id in enumerate(ids):
         a_cand, a_out = by_id[a_id]
+        partners = [
+            b_id
+            for b_id in sorted(index.readers_of(touched[a_id]), key=rank.__getitem__)
+            if rank[b_id] > i and by_id[b_id][0].machine != a_cand.machine
+        ]
+        if os.environ.get("DMML_INDEX_SELFCHECK"):
+            # The index against its own specification, on real data.
+            spelled_out = [
+                b_id
+                for b_id in ids[i + 1 :]
+                if by_id[b_id][0].machine != a_cand.machine
+                and may_conflict(touched[a_id], reads[b_id])
+            ]
+            assert partners == spelled_out, (
+                f"ReadIndex disagrees with may_conflict for {a_id}: "
+                f"{partners} vs {spelled_out}"
+            )
+        pruned += (len(ids) - i - 1) - siblings_after[a_id] - len(partners)
+        if not partners:
+            continue  # nothing can hear A; its probe file is never needed
         probe_file = conflict_dir / f"probe-{sanitize_node(a_id)}.dmml"
         probe_file.write_text(a_out)
-        for b_id in ids[i + 1 :]:
-            b_cand, _b_out = by_id[b_id]
-            if b_cand.machine == a_cand.machine:
-                continue  # already unioned by the hard rule above
-            if not may_conflict(touched[a_id], reads[b_id]):
-                pruned += 1
-                continue
+        for b_id in partners:
+            b_cand = by_id[b_id][0]
             probes.append({
                 "id": f"{len(pairs)}",
                 "machine": b_cand.machine,
