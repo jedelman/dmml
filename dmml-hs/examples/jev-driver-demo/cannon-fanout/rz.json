@@ -24,10 +24,10 @@
     }
   ],
   "budget": {
-    "max_rounds": 8,
-    "max_total_firings": 20,
+    "max_rounds": 20,
+    "max_total_firings": 80,
     "max_firings_per_candidate": 3,
-    "max_minted_nodes": 400
+    "max_minted_nodes": 600
   },
   "jev": {
     "model": "jev-latest",
@@ -35,9 +35,9 @@
   },
   "extend": {
     "enabled": true,
-    "max_minted_machines": 14,
+    "max_minted_machines": 30,
     "breed_after": 2,
-    "unbidden_every": 0,
+    "unbidden_every": 5,
     "variants": [
       "hall",
       "forge",

@@ -2665,6 +2665,15 @@ def main() -> None:
         # anything. Buying that back costs real tokens, so it is a line
         # item, deliberately spent and reported, never free.
         minted_machines = []
+        # Every anchor this round's growth has already spent on. The
+        # unbidden allocation below must avoid all of them, not just one:
+        # it read a single `anchor` variable that only the pre-fan-out
+        # path ever assigned, so with interest driving growth the name
+        # was simply never bound. It crashed at the first round where
+        # `unbidden_every` came due -- in the first run that ever had
+        # both switched on at once, which is exactly the kind of bug a
+        # full run finds and a feature-at-a-time run cannot.
+        anchors_used: list[str] = []
         state.interest_seen.extend(scores.values())
         # Record what the chooser WANTED, separately from what it picked.
         for c, _out in legal:
@@ -2712,6 +2721,7 @@ def main() -> None:
                     if m:
                         m["interest"] = v
                         minted_machines.append(m)
+                        anchors_used.append(n)
             else:
                 # No interest signal: the original single-anchor path,
                 # kept intact so a config without `interest` behaves
@@ -2721,6 +2731,7 @@ def main() -> None:
                     m = extend_world(state, extend, world_dir, round_no, anchor, bidden=bool(pressed))
                     if m:
                         minted_machines.append(m)
+                        anchors_used.append(anchor)
 
             # Relations, same shape: all of them that are wanted, not the
             # one that won a popularity contest among them.
@@ -2814,7 +2825,7 @@ def main() -> None:
                 # place; otherwise any standing edge. Deterministic, so a
                 # --dry-run rehearsal spends the allocation exactly where
                 # a live run will.
-                remaining = [n for n in growable_leaves(state) if n != anchor]
+                remaining = [n for n in growable_leaves(state) if n not in anchors_used]
                 elsewhere = remaining[0] if remaining else None
                 if elsewhere:
                     m = extend_world(state, extend, world_dir, round_no, elsewhere, bidden=False)
