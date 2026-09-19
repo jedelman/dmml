@@ -54,6 +54,7 @@ module DMML.Fire
   , renderFiredCommit
   , renderFiredCommits
   , renderFiredMachine
+  , predText
   ) where
 
 import Data.List (nub)

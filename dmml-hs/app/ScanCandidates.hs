@@ -29,7 +29,7 @@
 --
 -- Input is a JSON array of
 -- @{id, machine, transition, verb, params}@; output a JSON array of
--- @{id, status, output?, var?, candidates?, reads?}@ where status is one of
+-- @{id, status, output?, var?, candidates?, reads?, writes?}@ where status is one of
 -- @legal@, @blocked@, @ambiguous@, @error@. An @ambiguous@ entry
 -- carries the binder name and every witness, exactly as
 -- 'DMML.Guard.GuardAmbiguousBinding' reports them -- that refusal is a
@@ -62,7 +62,15 @@ import DMML.Ast
   , machineNode
   , nodeRefSegments
   )
-import DMML.Fire (FireError (..), ResolvedEffect (..), fireTransition, renderFiredCommits, renderFiredMachine)
+import DMML.Fire
+  ( FireError (..)
+  , ResolvedEffect (..)
+  , ResolvedFact (..)
+  , fireTransition
+  , predText
+  , renderFiredCommits
+  , renderFiredMachine
+  )
 import DMML.Guard (EvalContext (..), GuardError (..), lookupTransition, resolveTransition)
 import DMML.LocalIdentity (localFileRef)
 import DMML.Materialize (IdentifiedCommit (..), WorldSnapshot, applyIdentifiedCommit, applyIdentifiedCommits)
@@ -220,6 +228,37 @@ guardReads selfNode params machine tname =
     staticSubject (TermBind v) = Map.lookup v params
     staticSubject (TermVar _) = Nothing
 
+-- | Every @(subject, predicate)@ slot a firing CHANGES, from its
+-- resolved effects.
+--
+-- The counterpart of 'guardReads', and reported for the same reason:
+-- firing A can only change B's verdict if something A writes is
+-- something B reads. Both halves of a commit count. An assert adds a
+-- fact; a RETRACT takes one away, and a caller watching only the
+-- asserted lines would miss it entirely -- which is why this reads
+-- 'ResolvedEffect' rather than the rendered text, where a retraction
+-- appears only as a @consumes@ citation several lines below the thing
+-- it spent.
+--
+-- 'ResolvedSpawn' contributes nothing: a spawned machine asserts and
+-- retracts no facts (see 'DMML.Fire.ResolvedEffect'\'s own note), so it
+-- changes no slot. It becomes a machine FILE, and a machine file is not
+-- part of the fact world any other candidate's guards walk.
+--
+-- Every subject here is concrete. Unlike a guard, an effect cannot
+-- resolve to "any subject" -- it either resolved at fire time or the
+-- firing failed -- so there is no wildcard case to handle.
+effectWrites :: [ResolvedEffect] -> [(Text, Text)]
+effectWrites effects =
+  nub $
+    [(rfSubject f, predText (rfPredicate f)) | ResolvedAssert f <- effects]
+      ++ [(subj, predText p) | ResolvedRetract subj p _ _ <- effects]
+
+writesJson :: [(Text, Text)] -> A.Value
+writesJson = A.toJSON . map one
+  where
+    one (subj, pred') = obj [("subject", A.toJSON subj), ("predicate", A.toJSON pred')]
+
 readsJson :: [(Maybe Text, Text)] -> A.Value
 readsJson = A.toJSON . map one
   where
@@ -248,6 +287,7 @@ scan snap machines byPath c =
                 , ("status", "legal")
                 , ("output", A.toJSON (render effects))
                 , reads'
+                , ("writes", writesJson (effectWrites effects))
                 ]
             -- An ambiguous binder is NOT a failure. It is a decision the
             -- engine refuses to make, carried out whole so the driver can

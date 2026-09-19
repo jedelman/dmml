@@ -193,6 +193,14 @@ class Candidate:
     # nothing". It is a fact about (machine, transition, params), not
     # about the world, so it does not go stale between rounds.
     reads: list | None = None
+    # Every (subject, predicate) this candidate's firing CHANGES, as
+    # `scan-candidates` reports it from the resolved effects. Unlike
+    # `reads`, this DOES depend on the world -- which fact a retract
+    # spends, which witness a binder found -- so it is refreshed on
+    # every scan and cleared when a scan does not report it. None means
+    # UNKNOWN, which is the opposite conservatism from `reads`: an
+    # unknown write conflicts with everything.
+    writes: list | None = None
     # Optional: when this candidate's firing spawns a machine (a real
     # DMML.Ast.EffectSpawn), this describes the follow-up candidate to
     # register dynamically once the spawn actually happens -- id,
@@ -726,51 +734,61 @@ def scan_candidates(state: RunState) -> tuple[list[tuple[Candidate, str]], list[
     return legal, pending
 
 
-ASSERTED_RE = re.compile(r"^  ([A-Za-z0-9_.\-/]+)\s+`([A-Za-z0-9_]+)`")
-CONSUMED_RE = re.compile(r"^      ([A-Za-z0-9_.\-/]+)\s+\.\s+([A-Za-z0-9_]+)")
+def touches(cand: Candidate) -> set[tuple[str | None, str]]:
+    """Every (subject, predicate) a firing CHANGES, as
+    `scan-candidates` reports it from the resolved effects.
 
+    Both halves of a commit count, and that is the whole reason this
+    does not read the rendered text. An assert appears as a fact line; a
+    RETRACT appears only as a `consumes` citation several lines below,
+    in a different block, in a different shape. A reader watching the
+    asserted lines misses it entirely -- and a firing that only spends
+    can invalidate somebody just as thoroughly as one that only adds.
+    `DMML.Fire.ResolvedEffect` has both, already resolved, and the
+    scanner has the effects in hand.
 
-def touches(output: str) -> set[tuple[str, str]]:
-    """Every (subject, predicate) a firing CHANGES.
+    This used to be two regexes over that rendered commit. They agreed
+    with the parser on every one of the 684 firings across the four
+    demo scenarios, checked before they were deleted -- so this is not
+    a bug fix. It is the same answer, from the thing that is allowed to
+    know it.
 
-    Both halves of a commit count. Asserted facts are what it adds; the
-    `consumes` block is what it took away, because a retract lowers the
-    fact it spent into provenance rather than printing it as an
-    assertion. A pair that only asserts and a pair that only consumes
-    are equally capable of invalidating somebody else.
+    A spawn contributes nothing: a spawned machine asserts and retracts
+    no facts, so it changes no slot. It becomes a machine FILE, and a
+    machine file is not part of the fact world anyone's guards walk.
+
+    `cand.writes` of None means the scanner never got to say -- the
+    per-candidate fallback path. That is UNKNOWN, and its conservatism
+    runs the OPPOSITE way from an unknown read: a firing whose writes
+    are unknown might change anything, so it must be probed against
+    everyone.
     """
-    out: set[tuple[str, str]] = set()
-    for line in output.splitlines():
-        m = ASSERTED_RE.match(line)
-        if m and not line.strip().startswith("declare "):
-            out.add((m.group(1), m.group(2)))
-            continue
-        m = CONSUMED_RE.match(line)
-        if m:
-            out.add((m.group(1), m.group(2)))
-    return out
+    if cand.writes is None:
+        return {(None, "")}
+    return {(s, p) for s, p in cand.writes}
 
 
-def depends_on(cand: Candidate, output: str) -> set[tuple[str | None, str]]:
+def depends_on(cand: Candidate) -> set[tuple[str | None, str]]:
     """Every (subject, predicate) a firing READS, with None meaning "any
     subject".
 
     Three sources, and missing any one of them would make the pruning
     unsound rather than merely weak:
 
-    * its GUARDS, which decide legality and do not appear in the output
-      at all. These come from `scan-candidates`, which has the real
-      parsed transition in hand.
+    * its GUARDS, which decide legality and appear nowhere in the
+      commit it produces.
     * what it CONSUMES, since its provenance citation names those facts
       exactly and a change there changes its output even when it stays
       legal.
     * what it ASSERTS, because two firings writing the same
       (subject, predicate) interact whatever their guards say.
 
-    The guard half used to be a regex over the machine file -- a second,
-    weaker parser for a language that already has one, on the far side
-    of a process boundary from the real one. Two things it could not get
-    right, and now does not have to:
+    Every part of it now comes from `scan-candidates`, which has the
+    parsed transition and the resolved effects in hand. The guard half
+    used to be a regex over the machine file -- a second, weaker parser
+    for a language that already has one, on the far side of a process
+    boundary from the real one. Two things it could not get right, and
+    now does not have to:
 
     * the IMPLICIT `(self, state, from)` guard that DMML.Guard's
       `resolveTransition` prepends for a `from -> to` transition. It is
@@ -789,7 +807,7 @@ def depends_on(cand: Candidate, output: str) -> set[tuple[str | None, str]]:
     """
     if cand.reads is None:
         return {(None, "")}
-    return {(s, p) for s, p in cand.reads} | {(s, p) for s, p in touches(output)}
+    return {(s, p) for s, p in cand.reads} | touches(cand)
 
 
 def may_conflict(a_touch: set[tuple[str, str]], b_read: set[tuple[str | None, str]]) -> bool:
@@ -802,8 +820,8 @@ def may_conflict(a_touch: set[tuple[str, str]], b_read: set[tuple[str | None, st
     function exactly; `DMML_INDEX_SELFCHECK=1` asserts that it does on
     every real round.
     """
-    if (None, "") in b_read:
-        return True
+    if (None, "") in a_touch or (None, "") in b_read:
+        return True  # one side's slots are unknown; assume they meet
     preds_any = {p for s, p in b_read if s is None}
     return any(p in preds_any or (s, p) in b_read for s, p in a_touch)
 
@@ -824,9 +842,11 @@ class ReadIndex:
     * `any_subject` -- a guard over a `?binder` or `$param`, which
       matches whatever subject a write happens to carry, so it is keyed
       by predicate alone.
-    * `everything` -- a candidate whose guard this reader could not
-      parse. It conflicts with every write, and so it is simply carried
-      into every answer.
+    * `everything` -- a candidate whose read set never arrived (the
+      fallback scan path). It conflicts with every write, and so it is
+      simply carried into every answer. Its mirror image on the write
+      side is a candidate whose WRITE set never arrived, which reaches
+      every candidate; `readers_of` short-circuits that case.
 
     Cost goes from O(candidates^2) intersections to O(candidates x
     touches) lookups plus the conflicts actually found -- which is the
@@ -836,6 +856,7 @@ class ReadIndex:
     """
 
     def __init__(self, reads: dict[str, set[tuple[str | None, str]]]) -> None:
+        self.everyone: set[str] = set(reads)
         self.exact: dict[tuple[str, str], set[str]] = {}
         self.any_subject: dict[str, set[str]] = {}
         self.everything: set[str] = set()
@@ -848,8 +869,10 @@ class ReadIndex:
                 else:
                     self.exact.setdefault((subj, pred), set()).add(cid)
 
-    def readers_of(self, a_touch: set[tuple[str, str]]) -> set[str]:
+    def readers_of(self, a_touch: set[tuple[str | None, str]]) -> set[str]:
         """Every candidate that `may_conflict` would say A can reach."""
+        if (None, "") in a_touch:
+            return self.everyone  # A's writes are unknown; it reaches all
         out = set(self.everything)
         for slot in a_touch:
             hit = self.any_subject.get(slot[1])
@@ -974,6 +997,11 @@ def scan_results(state: RunState):
         st = row["status"]
         if "reads" in row:
             c.reads = [(r["subject"], r["predicate"]) for r in row["reads"]]
+        c.writes = (
+            [(w["subject"], w["predicate"]) for w in row["writes"]]
+            if "writes" in row
+            else None
+        )
         yield (c, st, row.get("output", ""), row.get("var"), row.get("candidates"))
 
 
@@ -1069,8 +1097,8 @@ def group_into_generations(
     # ANY subject with that predicate, and a guard this reader cannot
     # parse reads everything. A missed conflict would corrupt a round;
     # a missed pruning only costs time.
-    touched = {cid: touches(out) for cid, (_c, out) in by_id.items()}
-    reads = {cid: depends_on(c, out) for cid, (c, out) in by_id.items()}
+    touched = {cid: touches(c) for cid, (c, _out) in by_id.items()}
+    reads = {cid: depends_on(c) for cid, (c, _out) in by_id.items()}
     index = ReadIndex(reads)
     pruned = 0
 
