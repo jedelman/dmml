@@ -217,6 +217,11 @@ class Candidate:
     # (see refresh_minting_params) because a source that brought the
     # SAME rock every time would not be a source.
     minting_params: dict[str, str] = field(default_factory=dict)
+    # Last round's interest score, 0-1, or None if never asked. Recorded
+    # rather than acted on for actions -- the group's `choice` decides
+    # what happens; this says what the chooser actually WANTED, which is
+    # a different and more legible thing in an audit log.
+    interest: float | None = None
 
 
 @dataclass
@@ -253,6 +258,73 @@ class ExtendPolicy:
 
 
 @dataclass
+class InterestPolicy:
+    """How much the world grows per round, and on whose say-so.
+
+    Jev's own docs are explicit that "all questions are evaluated in
+    parallel, so adding more questions to a call typically doesn't add
+    any latency" -- and this loop had been spending that parallelism on
+    ACTIONS while keeping GROWTH strictly serial: one frontier edge, one
+    relation, one machine per round, however many stood open.
+
+    That serialization was not a scarcity decision, it was a consequence
+    of the PRIMITIVE. A `choice` question is a softmax over alternatives:
+    its probabilities sum to 1, so it measures relative preference and
+    structurally cannot say "all of these are worth building" or "none of
+    these are". Asking "which one edge?" forces exactly one answer even
+    when six are interesting and even when none are.
+
+    An INTEREST score is a different question, and `noul` is its
+    primitive -- an independent 0-to-1 per option, no competition between
+    them. Six edges can all come back 0.8. Six edges can all come back
+    0.1. So the loop can now build everywhere worth building in ONE pass,
+    and -- the half that matters as much -- build NOTHING when nothing is
+    interesting, which a choice could never say.
+
+    This is still selection by attention rather than a fitness function.
+    Nothing here scores a machine's structure; it asks whether a reader
+    wants to go and look. That keeps the scarcity immanent (the token
+    budget, the reader) rather than transcendent, which is the line this
+    project has held since the fitness question was first deferred.
+    """
+
+    enabled: bool = False
+    # TWO numbers, not one, and the reason is a measured failure.
+    #
+    # A single absolute threshold assumes the 0-1 scale means the same
+    # thing to the chooser as to this file. It does not. Asked "is this a
+    # way you actually want to go?" about four unbuilt ways, Jev returned
+    # 0.48 / 0.47 / 0.27 / 0.25 -- a clear, sensible ranking (running
+    # water and daylight over a cold draft and fallen rubble) whose TOP
+    # is still under 0.6. Nobody is desperate to see an unbuilt corridor.
+    # A 0.6 bar reads that as "nothing is interesting" and builds
+    # nothing, which is not what the answer says.
+    #
+    # So: FLOOR is the absolute gate, and it answers "is anything here
+    # worth it at all" -- this is what preserves the capability a
+    # `choice` never had, the ability to build NOTHING. BAND is relative
+    # and answers "which of them", by taking everything within reach of
+    # the best. Ranking is what the signal is actually good for; an
+    # absolute reading of it is what it is not.
+    floor: float = 0.35
+    band: float = 0.15
+    # Hard cap on machines minted in one round however many edges clear
+    # the bar. The fan-out is the point, but an unbounded fan-out spends
+    # the whole budget in round one and calls it emergence.
+    max_growth_per_round: int = 4
+    # Hard cap on interest questions per round. Latency is free; tokens
+    # are not, and a 100-candidate round would otherwise put 100 extra
+    # questions on the wire. Options past the cap simply are not asked
+    # about, and that is reported rather than silently truncated.
+    max_questions: int = 40
+    # Ask an interest score for every ACTION candidate too, not just for
+    # growth. Off by default: a group's `choice` already resolves which
+    # action happens, so per-candidate interest is observability rather
+    # than control -- real, and worth paying for deliberately.
+    score_actions: bool = True
+
+
+@dataclass
 class Budget:
     max_rounds: int
     max_total_firings: int
@@ -276,7 +348,7 @@ class RunState:
     minted_machine_files: list[str] = field(default_factory=list)
 
 
-def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, dict]:
+def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, InterestPolicy, dict]:
     cfg = json.loads(path.read_text())
     base = path.parent
     world_files = [str((base / w).resolve()) for w in cfg["world_seed"]]
@@ -309,10 +381,19 @@ def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, dict]:
         modes=list(ex.get("modes", ["chimera", "union", "splice1"])),
         breed_after=int(ex.get("breed_after", 2)),
     )
+    it = cfg.get("interest") or {}
+    interest = InterestPolicy(
+        enabled=bool(it.get("enabled", False)),
+        floor=float(it.get("floor", 0.35)),
+        band=float(it.get("band", 0.15)),
+        max_growth_per_round=int(it.get("max_growth_per_round", 4)),
+        max_questions=int(it.get("max_questions", 40)),
+        score_actions=bool(it.get("score_actions", True)),
+    )
     state = RunState(world_files=world_files, machine_files=machine_files, candidates=candidates)
     for wf in world_files:
         state.known_nodes |= set(NODE_TOKEN_RE.findall(Path(wf).read_text()))
-    return state, budget, extend, cfg["jev"]
+    return state, budget, extend, interest, cfg["jev"]
 
 
 # The dry-run chooser -------------------------------------------------------
@@ -709,6 +790,7 @@ def call_jev_batch(
     frontier: list[tuple[str, str]] = (),
     bindings: list[tuple[str, str, str, list[str]]] = (),
     connect: list[tuple[str, str, list[str]]] = (),
+    interest: list[tuple[str, str]] = (),
 ) -> dict:
     questions = {}
     for i, group in enumerate(groups):
@@ -739,6 +821,28 @@ def call_jev_batch(
             "instructions": FRONTIER_INSTRUCTIONS,
             "criteria": dict(frontier),
         }
+    # INTEREST. One `noul` per option -- independent, so several can all
+    # come back high and several can all come back low, which is the
+    # thing a `choice` cannot express (its probabilities sum to 1, so it
+    # can only ever say which of these, never how many of these or
+    # whether any). Free in latency by Jev's own account: "all questions
+    # are evaluated in parallel."
+    for key, statement in interest:
+        questions[key] = {
+            "type": "noul",
+            # The run's own framing rides on EVERY interest question, not
+            # just the action choices. The first live run of this asked
+            # bare "is this a way you want to go?" with no delver, no
+            # dungeon and no stakes attached, and got 0.43-0.48 across
+            # the board -- the correct answer to a question nobody could
+            # answer. `state` is shared across questions; `instructions`
+            # is not, and interest was the one place it went missing.
+            "instructions": instructions + "\n\n" + statement,
+            "criteria": {
+                "true": "Yes -- there is something here you actually want.",
+                "false": "No -- this is not where your attention goes.",
+            },
+        }
     body = {"state": state_summary, "model": model, "questions": questions}
     req = urllib.request.Request(
         JEV_ENDPOINT,
@@ -754,12 +858,153 @@ def call_jev_batch(
         sys.exit(3)
 
 
+INTEREST_FRONTIER = (
+    "Beyond {node} nothing has been built yet. {why} "
+    "Is this a way you actually want to go -- somewhere you would spend a turn to see?"
+)
+INTEREST_CONNECT = (
+    "{desc} Is this a relation you actually want in the world -- one that would make it "
+    "feel more alive rather than merely larger?"
+)
+INTEREST_ACTION = (
+    "{desc} Setting aside whether it is the best move available, is this something you "
+    "actually want to do?"
+)
+
+
+def interest_questions(
+    policy: InterestPolicy,
+    legal: list[tuple],
+    frontier: list[str],
+    connect: list[tuple[str, str, list[str]]],
+    state: RunState,
+) -> tuple[list[tuple[str, str]], int]:
+    """Every option this round, each as its own independent yes/no.
+
+    Growth first, actions second, because growth is what interest
+    actually DECIDES -- for actions it is observability, and if the cap
+    bites it should bite the thing that is merely being watched.
+    Returns the questions and how many options went unasked, so a
+    truncated round says so instead of quietly shrinking.
+    """
+    asked: list[tuple[str, str]] = []
+    for n in frontier:
+        asked.append(
+            (f"interest_frontier|{n}", INTEREST_FRONTIER.format(node=n, why=describe_frontier_node(n, state)))
+        )
+    for cid, desc, _args in connect:
+        asked.append((f"interest_connect|{cid}", INTEREST_CONNECT.format(desc=desc)))
+    if policy.score_actions:
+        for c, _out in legal:
+            asked.append((f"interest_action|{c.id}", INTEREST_ACTION.format(desc=c.description)))
+    over = max(0, len(asked) - policy.max_questions)
+    return asked[: policy.max_questions], over
+
+
+def pick_wanted(rated, policy: InterestPolicy):
+    """Split scored options into (wanted, passed over).
+
+    The floor is absolute and asks whether anything here is worth it at
+    all; the band is relative and asks which of them, by reach from the
+    best. Empty `wanted` is a real and useful answer -- it is the thing
+    a `choice` over the same options could never say.
+    """
+    if not policy.enabled or not rated:
+        return [], list(rated)
+    top = rated[0][0]
+    if top < policy.floor:
+        return [], list(rated)
+    cut = top - policy.band
+    return [r for r in rated if r[0] >= cut], [r for r in rated if r[0] < cut]
+
+
+def read_interest(answers: dict, key: str) -> float | None:
+    """Pull one `noul` back out. A `noul` answer carries no separate
+    confidence field -- the single probability IS the answer and its
+    certainty at once (0.5 means genuinely undecided), which is why
+    nothing here looks for one."""
+    a = answers.get(key)
+    if not isinstance(a, dict):
+        return None
+    v = a.get("noul")
+    return float(v) if isinstance(v, (int, float)) else None
+
+
+# Measured over 8000 samples of the drift field: median 0.000, sd 0.306,
+# symmetric, and close enough to Gaussian that its own normal CDF maps it
+# to a near-uniform [0, 1] (p5 -0.504 -> 0.05, p95 +0.501 -> 0.95).
+DRIFT_INTEREST_SD = 0.306
+
+
+def drift_interest(key: str, round_no: int, salt: str) -> float:
+    """Dry-run stand-in for an interest score, in [0, 1].
+
+    The naive squash -- (d + 1) / 2 -- is wrong, and wrong in a way that
+    silently disables the feature being rehearsed: the drift field is
+    zero-mean with sd 0.306, so that maps almost everything into a narrow
+    band around 0.5, nothing ever clears a 0.6 bar, and a dry run reports
+    a world that never grows. Caught on the first dry run of the fan-out.
+
+    So: push it through its own measured CDF, which spreads it to roughly
+    uniform. This is a stand-in for the SHAPE of an interest distribution
+    -- a spread of wants, some strong, some cold -- and explicitly not a
+    prediction of what Jev will say. Same field as the chooser, so a
+    rehearsal stays coherent; its own salt, because wanting a thing and
+    picking it are different measurements.
+    """
+    z = drift(key, round_no, salt) / DRIFT_INTEREST_SD
+    return 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
+
+
 def build_state_summary(round_no: int, state: RunState, legal: list[tuple]) -> str:
-    return (
-        f"Round {round_no}. World has {len(state.world_files)} committed fact files, "
-        f"{state.total_firings} prior firings, {len(state.known_nodes)} known nodes. "
-        f"{len(legal)} actions are legal this round."
-    )
+    """What is TRUE right now, not how the run is going.
+
+    This used to be pure bookkeeping -- "1 committed fact files, 0 prior
+    firings, 7 known nodes" -- and that was survivable as long as every
+    question was a `choice`, because a choice carries its alternatives in
+    its own criteria and can be answered by comparing them to each other.
+    An independent yes/no cannot. Asked "do you want to go north?" with
+    nothing but a file count for context, Jev returned 0.43-0.50 on every
+    option over two live runs: the correct answer to a question with no
+    situation in it.
+
+    Confirmed by probing the primitive directly with a real situation --
+    "you are extremely thirsty, there is a well to the east, to the north
+    is solid rock" -- which returned 0.95 / 0.02 / 0.15. The primitive
+    discriminates sharply. It was never given anything to discriminate on.
+
+    So the summary now describes the WORLD: what has been done, what
+    stands open and what the world says about it. Still read off
+    committed facts, still no invention. Deliberately bounded -- the last
+    few firings and the standing edges, not a dump of every fact, since
+    the budget is tokens.
+    """
+    done = [f"{c.id} x{c.firings}" for c in state.candidates.values() if c.firings]
+    lines = [f"Round {round_no}."]
+    if done:
+        lines.append("So far you have: " + ", ".join(sorted(done)[:8]) + ".")
+    else:
+        lines.append("You have done nothing yet.")
+
+    open_ways = unmapped_frontier(state)
+    if open_ways:
+        described = []
+        for n in open_ways[:8]:
+            said = [f"{p} {v}" for p, v in facts_about(n, state) if p != "cleared"]
+            described.append(f"{n} ({'; '.join(said)})" if said else n)
+        lines.append(
+            f"{len(open_ways)} way(s) stand open with nothing built beyond them: "
+            + ", ".join(described)
+            + "."
+        )
+    else:
+        lines.append("No opened way stands unbuilt.")
+
+    built = [Path(f).stem.replace("minted-", "") for f in state.minted_machine_files]
+    if built:
+        lines.append(f"The world has grown {len(built)} new piece(s) so far: " + ", ".join(built[-8:]) + ".")
+    lines.append(f"{len(legal)} action(s) are legal right now.")
+    return " ".join(lines)
 
 
 def split_output_blocks(output: str) -> list[tuple[str, str]]:
@@ -1133,6 +1378,25 @@ def unmapped_frontier(state: RunState) -> list[str]:
     return [n for n in frontier_nodes(state) if n not in built_on]
 
 
+FACT_RE = re.compile(r"^\s+([A-Za-z0-9_.\-/]+)\s+`([A-Za-z0-9_]+)`\s+(.+?)\s*$")
+
+
+def facts_about(node: str, state: RunState) -> list[tuple[str, str]]:
+    """Every committed fact whose SUBJECT is this node, in commit order,
+    later values winning. Read back, never invented."""
+    seen: dict[str, str] = {}
+    for wf in state.world_files:
+        try:
+            text = Path(wf).read_text()
+        except OSError:
+            continue
+        for line in text.splitlines():
+            m = FACT_RE.match(line)
+            if m and m.group(1) == node:
+                seen[m.group(2)] = m.group(3)
+    return sorted(seen.items())
+
+
 def describe_frontier_node(node: str, state: RunState) -> str:
     """What can be said about an edge of the map WITHOUT inventing it.
 
@@ -1151,7 +1415,17 @@ def describe_frontier_node(node: str, state: RunState) -> str:
             opener = Path(wf).stem
             break
     how = f" (opened by {opener})" if opener else ""
-    return f"Press on past {node}{how}. Nothing has been built beyond it yet."
+    # Everything the world already SAYS about this node, `cleared` aside
+    # (which is why it is on the list in the first place, so repeating it
+    # tells a chooser nothing). Still no invention -- these are committed
+    # facts, read back. Without them every unbuilt way reads identically
+    # and a chooser asked to rank them is being asked to guess: the first
+    # live interest run returned 0.43/0.44/0.46/0.44 over four ways whose
+    # descriptions differed only in the name, which is the right answer
+    # to a question carrying no information.
+    said = [f"{pred} {val}" for pred, val in facts_about(node, state) if pred != "cleared"]
+    known = f" The world says of it: {'; '.join(said)}." if said else ""
+    return f"Press on past {node}{how}.{known} Nothing has been built beyond it yet."
 
 
 def parse_machine_text(text: str) -> dict:
@@ -1633,7 +1907,7 @@ def main() -> None:
     ap.add_argument("--api-key", default=os.environ.get("TYPESAFE_API_KEY"))
     args = ap.parse_args()
 
-    state, budget, extend, jev_cfg = load_config(args.config)
+    state, budget, extend, interest, jev_cfg = load_config(args.config)
 
     world_dir = args.world_dir or Path(subprocess_mkdtemp())
     world_dir.mkdir(parents=True, exist_ok=True)
@@ -1733,7 +2007,25 @@ def main() -> None:
                 " the dungeon takes shape next."
             )
 
-        if not groups and not frontier_q and not binding_q and len(connect_q) < 2:
+        # INTEREST: one independent yes/no per option, growth first.
+        # Asked over the whole unmapped frontier, not just when there is
+        # more than one -- "is this worth building at all" is a real
+        # question even with a single edge, and it is the question the
+        # old `choice` could not ask (a choice over one option has
+        # probability 1 by construction, so it always says yes).
+        interest_q, interest_over = (
+            interest_questions(interest, legal, unmapped, connect_q, state)
+            if interest.enabled
+            else ([], 0)
+        )
+        if interest_q:
+            state_summary += (
+                f" {len(interest_q)} option(s) carry an independent interest score this round;"
+                " several may be worth acting on at once, or none may be."
+            )
+        scores: dict[str, float] = {}
+
+        if not groups and not frontier_q and not binding_q and len(connect_q) < 2 and not interest_q:
             # Nothing to decide: no legal action, and at most one opened
             # way, which is not a choice but the only way on. Calling Jev
             # here would spend the one genuinely scarce resource to ask
@@ -1765,6 +2057,8 @@ def main() -> None:
                 c.params[var] = pick
                 c.bound_params.add(var)
                 print(f"round {round_no}: bound {c.id}'s ?{var} = {pick} (dry-run: drift)")
+            for key, _statement in interest_q:
+                scores[key] = drift_interest(key, round_no, "interest")
             jev_response = {"dry_run": True, "chooser": "perlin-drift"}
         else:
             jev_response = call_jev_batch(
@@ -1776,6 +2070,7 @@ def main() -> None:
                 frontier_q,
                 binding_q,
                 connect_q,
+                interest_q,
             )
             answers = jev_response.get("answers") if isinstance(jev_response, dict) else None
             if not isinstance(answers, dict):
@@ -1785,6 +2080,20 @@ def main() -> None:
                     file=sys.stderr,
                 )
                 sys.exit(4)
+            # Interest is read BEFORE anything else is validated: a
+            # missing score is not fatal the way a missing choice is.
+            # A choice not answered means the round cannot proceed; an
+            # interest not answered means one option goes unscored, and
+            # falling over for that would make the observability more
+            # brittle than the thing it observes.
+            for key, _statement in interest_q:
+                v = read_interest(answers, key)
+                if v is not None:
+                    scores[key] = v
+            missing = len(interest_q) - len(scores)
+            if missing:
+                print(f"  interest: {missing} of {len(interest_q)} question(s) came back unscored")
+
             winners = []
             for i, group in enumerate(groups):
                 key = f"gen_{i}"
@@ -1917,20 +2226,101 @@ def main() -> None:
         # anything. Buying that back costs real tokens, so it is a line
         # item, deliberately spent and reported, never free.
         minted_machines = []
+        # Record what the chooser WANTED, separately from what it picked.
+        for c, _out in legal:
+            v = scores.get(f"interest_action|{c.id}")
+            if v is not None:
+                c.interest = v
+
         if not stop_reason and extend.enabled:
-            # Prefer where the delve pressed. Failing that, ANY leaf --
-            # the world does not stop taking shape just because this
-            # particular path dead-ended, and the alternative is making
-            # the chooser responsible for fertility.
-            anchor = pressed or (leaves[0] if leaves else None)
-            if anchor:
-                m = extend_world(state, extend, world_dir, round_no, anchor, bidden=bool(pressed))
-                if m:
-                    minted_machines.append(m)
-            # The relation, if one was chosen. Deliberately AFTER the
-            # arborescent shot: extending and thickening are different
-            # moves and a round may legitimately do both.
-            if connected:
+            # THE FAN-OUT. Everything above the bar, in one pass.
+            #
+            # This is the change interest exists for. The loop used to
+            # build at exactly one anchor per round, because it asked a
+            # `choice` and a choice returns one answer. Interest is
+            # independent per option, so six open edges can all be worth
+            # pressing into and all six get built now -- and, just as
+            # importantly, six edges can all come back cold and NOTHING
+            # gets built, which no `choice` over those same six could
+            # ever have said.
+            rated = sorted(
+                ((v, n) for n in unmapped for v in [scores.get(f"interest_frontier|{n}")] if v is not None),
+                reverse=True,
+            )
+            wanted, cold = pick_wanted(rated, interest)
+
+            if interest.enabled and rated:
+                if wanted:
+                    print(
+                        f"  interest: {len(wanted)} of {len(rated)} open way(s) within {interest.band:g} "
+                        f"of the best -- "
+                        + ", ".join(f"{n} {v:.2f}" for v, n in wanted[: interest.max_growth_per_round])
+                        + (f" (passed over: {', '.join(f'{n} {v:.2f}' for v, n in cold[:3])})" if cold else "")
+                    )
+                else:
+                    print(
+                        f"  interest: nothing reaches the floor {interest.floor:g} "
+                        f"(best {rated[0][1]} at {rated[0][0]:.2f}) -- the world does not grow this round"
+                    )
+                for v, n in wanted[: interest.max_growth_per_round]:
+                    m = extend_world(state, extend, world_dir, round_no, n, bidden=True)
+                    if m:
+                        m["interest"] = v
+                        minted_machines.append(m)
+            else:
+                # No interest signal: the original single-anchor path,
+                # kept intact so a config without `interest` behaves
+                # exactly as it did before any of this.
+                anchor = pressed or (leaves[0] if leaves else None)
+                if anchor:
+                    m = extend_world(state, extend, world_dir, round_no, anchor, bidden=bool(pressed))
+                    if m:
+                        minted_machines.append(m)
+
+            # Relations, same shape: all of them that are wanted, not the
+            # one that won a popularity contest among them.
+            if interest.enabled and connect_q:
+                room = max(0, interest.max_growth_per_round - len(minted_machines))
+                by_id = {cid: (desc, cargs) for cid, desc, cargs in connect_q}
+                rel_rated = sorted(
+                    (
+                        (v, cid)
+                        for cid in by_id
+                        for v in [scores.get(f"interest_connect|{cid}")]
+                        if v is not None
+                    ),
+                    reverse=True,
+                )
+                rel_wanted, _rel_cold = pick_wanted(rel_rated, interest)
+                made = [(v, cid, *by_id[cid]) for v, cid in rel_wanted][:room]
+                if not made and rel_rated:
+                    # Two different reasons for building no relation, and
+                    # conflating them made the log lie: the first live
+                    # fan-out printed "no relation reaches the floor 0.35
+                    # (best 0.48)" when 0.48 clears 0.35 easily and the
+                    # real reason was that growth had already spent the
+                    # round's whole allowance on frontier edges.
+                    if rel_wanted:
+                        print(
+                            f"  interest: {len(rel_wanted)} relation(s) wanted but this round's growth "
+                            f"allowance ({interest.max_growth_per_round}) is already spent"
+                        )
+                    else:
+                        print(
+                            f"  interest: no relation reaches the floor {interest.floor:g} "
+                            f"(best {rel_rated[0][1]} at {rel_rated[0][0]:.2f})"
+                        )
+                for v, cid, desc, cargs in made:
+                    m = mint(state, world_dir, round_no, cargs[0], cargs, desc, cargs[2], bidden=True)
+                    if m:
+                        m["relation"] = cid
+                        m["interest"] = v
+                        minted_machines.append(m)
+                        print(f"  connect: {cid} (interest {v:.2f})")
+            elif connected:
+                # The relation, if one was chosen. Deliberately AFTER the
+                # arborescent shot: extending and thickening are different
+                # moves and a round may legitimately do both.
                 cid, desc, cargs = connected
                 m = mint(state, world_dir, round_no, cargs[0], cargs, desc, cargs[2], bidden=True)
                 if m:
@@ -1968,6 +2358,13 @@ def main() -> None:
             "relation_made": connected[0] if connected else None,
             "bindings_resolved": {c.id: dict(c.params) for c, _, _ in pending},
             "minted_machines_this_round": minted_machines,
+            # Every option's interest this round, keyed exactly as asked
+            # (interest_frontier|node, interest_connect|id,
+            # interest_action|id). Logged whole rather than summarized:
+            # the interesting reading afterwards is usually what was
+            # WANTED and not taken, which a summary throws away.
+            "interest": scores,
+            "interest_unasked": interest_over,
             "total_firings": state.total_firings,
         }
         audit.write(json.dumps(record) + "\n")

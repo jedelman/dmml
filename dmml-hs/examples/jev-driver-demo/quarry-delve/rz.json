@@ -51,5 +51,13 @@
       "chimera",
       "splice1"
     ]
+  },
+  "interest": {
+    "enabled": true,
+    "floor": 0.35,
+    "band": 0.15,
+    "max_growth_per_round": 3,
+    "max_questions": 40,
+    "score_actions": true
   }
 }

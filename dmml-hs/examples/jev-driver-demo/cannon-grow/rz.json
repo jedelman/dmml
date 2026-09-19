@@ -48,5 +48,13 @@
   "jev": {
     "model": "jev-latest",
     "instructions": "You are delving a dungeon that does not exist yet. Beyond the mouth there is nothing -- no rooms, no corridors, nothing built. The dungeon takes shape only where you press into it, and only as you press. Some of what appears is stamped from known room types; most is BRED by crossing rooms that already exist, so the deeper you go the stranger it gets -- a room may demand what a vault demands and open what a fork opens, a shape no room type here originally had. Rooms are described flatly and mechanically, by their real requirements and yields, because nobody has seen them before and there is no lore to tell you. Read what they DO."
+  },
+  "interest": {
+    "enabled": true,
+    "floor": 0.35,
+    "band": 0.15,
+    "max_growth_per_round": 4,
+    "max_questions": 40,
+    "score_actions": true
   }
 }

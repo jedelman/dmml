@@ -1,0 +1,24 @@
+commit setup
+  declare relation state
+  declare relation cleared
+  declare relation has
+  declare relation yields
+
+  hall/great `cleared` mark/yes
+  watch/keeper `state` waiting
+
+  way/north `cleared` mark/yes
+  way/north `has` draft/cold
+  way/north `yields` sound/none
+
+  way/east `cleared` mark/yes
+  way/east `has` water/running
+  way/east `yields` sound/echo
+
+  way/south `cleared` mark/yes
+  way/south `has` rubble/fallen
+  way/south `yields` sound/none
+
+  way/west `cleared` mark/yes
+  way/west `has` light/daylight
+  way/west `yields` sound/wind

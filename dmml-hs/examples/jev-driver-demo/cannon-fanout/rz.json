@@ -1,0 +1,60 @@
+{
+  "world_seed": [
+    "world.dmml"
+  ],
+  "machines": [
+    "keeper.dmml"
+  ],
+  "candidates": [
+    {
+      "id": "rouse",
+      "machine": "keeper.dmml",
+      "transition": "rouse",
+      "verb": "stirs",
+      "params": {},
+      "description": "Wake the keeper of the great hall, so that something in here is paying attention."
+    },
+    {
+      "id": "settle",
+      "machine": "keeper.dmml",
+      "transition": "settle",
+      "verb": "settles",
+      "params": {},
+      "description": "Let the keeper go quiet again."
+    }
+  ],
+  "budget": {
+    "max_rounds": 8,
+    "max_total_firings": 20,
+    "max_firings_per_candidate": 3,
+    "max_minted_nodes": 400
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "You stand in a great hall with four ways out -- north, east, south and west -- and nothing has been built beyond any of them. The dungeon takes shape only where you press into it. You are not choosing ONE way: you are saying, of each way separately, whether it is somewhere you actually want to go. Several may be. None may be. Rooms are described flatly by their real requirements and yields, because nobody has seen them before and there is no lore to tell you. Read what they DO."
+  },
+  "extend": {
+    "enabled": true,
+    "max_minted_machines": 14,
+    "breed_after": 2,
+    "unbidden_every": 0,
+    "variants": [
+      "hall",
+      "forge",
+      "vault"
+    ],
+    "modes": [
+      "union",
+      "chimera",
+      "splice1"
+    ]
+  },
+  "interest": {
+    "enabled": true,
+    "floor": 0.35,
+    "band": 0.15,
+    "max_growth_per_round": 4,
+    "max_questions": 40,
+    "score_actions": true
+  }
+}

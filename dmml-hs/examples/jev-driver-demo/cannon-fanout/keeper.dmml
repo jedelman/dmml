@@ -1,0 +1,16 @@
+machine watch/keeper
+  states
+    waiting
+    roused
+
+  transition rouse()
+    waiting -> roused
+    guard hall/great `cleared` mark/yes
+    assert self `cleared` mark/yes
+    assert self `state` roused
+    retract self `state`
+
+  transition settle()
+    roused -> waiting
+    assert self `state` waiting
+    retract self `state`
