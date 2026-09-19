@@ -42,7 +42,7 @@ import qualified Data.Aeson.Key as AK
 import qualified Data.Aeson.KeyMap as AKM
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
-import Data.List (nub)
+import Data.List (foldl', nub)
 import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -56,7 +56,7 @@ import DMML.Ast (MachineStmt, machineNode, nodeRefSegments)
 import DMML.Fire (FireError (..), ResolvedEffect (..), fireTransition, renderFiredCommits, renderFiredMachine)
 import DMML.Guard (EvalContext (..), GuardError (..))
 import DMML.LocalIdentity (localFileRef)
-import DMML.Materialize (IdentifiedCommit (..), WorldSnapshot, applyIdentifiedCommits)
+import DMML.Materialize (IdentifiedCommit (..), WorldSnapshot, applyIdentifiedCommit, applyIdentifiedCommits)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
 
 data Cand = Cand
@@ -65,6 +65,29 @@ data Cand = Cand
   , cTransition :: Text
   , cVerb :: Text
   , cParams :: [(Text, Text)]
+  , -- | Extra commit files applied ON TOP of the shared snapshot, for
+    -- this candidate only.
+    --
+    -- Added 2026-09-19 for the conflict probe in the Jev driver's
+    -- `group_into_generations`, which asks "if A fires, is B still
+    -- legal and unchanged?" -- one probe per PAIR, each needing A's
+    -- output layered over the same base world. It was doing that with a
+    -- `fire-transition` subprocess per pair, each re-materializing
+    -- everything: measured at 6.21s to group twelve candidates, against
+    -- 0.15s to scan all 144. Forty times the cost of the entire round's
+    -- scan, in the step that merely checks the scan's results for
+    -- conflicts, and quadratic in candidates.
+    --
+    -- That cost was disclosed in the driver's own docstring when it was
+    -- written ("a real, disclosed cost to revisit if the cannon ever
+    -- produces enough candidates in one round to make that quadratic
+    -- cost matter"). It now does.
+    --
+    -- The base world is still materialized ONCE for the whole call; an
+    -- extra file is parsed once per distinct path and applied
+    -- incrementally per candidate, so N-squared probes cost one process
+    -- and N-squared cheap snapshot extensions.
+    cExtra :: [FilePath]
   }
 
 instance A.FromJSON Cand where
@@ -75,6 +98,7 @@ instance A.FromJSON Cand where
       <*> o A..: "transition"
       <*> o A..:? "verb" A..!= "acts"
       <*> (AKM.toList <$> o A..:? "params" A..!= mempty >>= traverse pair)
+      <*> o A..:? "extra_world" A..!= []
     where
       pair (k, v) = (,) (AK.toText k) <$> A.parseJSON v
 
@@ -99,9 +123,17 @@ main = do
       -- Materialize ONCE. This is the whole point of the binary.
       let snap = applyIdentifiedCommits "world" identified
       loaded <- mapM loadMachine (nub (machineFiles ++ map cMachine cands))
+      -- Each distinct extra file is parsed once, however many candidates
+      -- layer it. The driver's conflict probe reuses one probe file
+      -- across every pair sharing the same A, so this matters.
+      let extraPaths = nub (concatMap cExtra cands)
+      extras <- Map.fromList . zip extraPaths <$> mapM parseWorldFile extraPaths
       let machines = Map.fromList [(nodeRefText m, m) | m <- loaded]
           byPath = Map.fromList (zip (nub (machineFiles ++ map cMachine cands)) loaded)
-      BL.putStrLn (A.encode [scan snap machines byPath c | c <- cands])
+          snapFor c = case [e | path <- cExtra c, Just e <- [Map.lookup path extras]] of
+            [] -> snap
+            es -> foldl' (flip (applyIdentifiedCommit "probe")) snap es
+      BL.putStrLn (A.encode [scan (snapFor c) machines byPath c | c <- cands])
     _ -> putStrLn "usage: scan-candidates <candidates.json> [--world f]... [--machine f]..." >> exitFailure
   where
     flagged flag = go

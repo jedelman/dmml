@@ -719,6 +719,45 @@ def scan_candidates(state: RunState) -> tuple[list[tuple[Candidate, str]], list[
     return legal, pending
 
 
+def probe_results(state: RunState, probes: list[dict]):
+    """Run every conflict probe, batched if the batch binary is there.
+
+    Falls back to one `fire-transition` per probe -- correct, and the
+    thing that was measured too slow -- so a checkout without
+    scan-candidates still groups correctly, just slowly.
+    """
+    if not probes:
+        return
+    binary = scan_binary()
+    if not binary:
+        for pr in probes:
+            cand = Candidate(id=pr["id"], machine=pr["machine"], transition=pr["transition"],
+                             verb=pr["verb"], params=pr["params"], description="")
+            ok, out = dry_fire(cand, state, extra_world_files=pr["extra_world"])
+            yield (cand, "legal" if ok else "blocked", out if ok else "", None, None)
+        return
+
+    import tempfile
+
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+        json.dump(probes, fh)
+        path = fh.name
+    cmd = list(binary) + [path]
+    for w in state.world_files:
+        cmd += ["--world", w]
+    for m in state.machine_files:
+        cmd += ["--machine", m]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    finally:
+        os.unlink(path)
+    if proc.returncode != 0:
+        print(f"fatal: conflict probe failed: {proc.stderr.strip() or proc.stdout.strip()}", file=sys.stderr)
+        sys.exit(2)
+    for row in json.loads(proc.stdout):
+        yield (None, row.get("status"), row.get("output", ""), row.get("var"), row.get("candidates"))
+
+
 def scan_binary() -> list[str] | None:
     import shlex
 
@@ -833,23 +872,53 @@ def group_into_generations(
     # actually change the other's legality/output?
     conflict_dir = world_dir / "_conflict_probe"
     conflict_dir.mkdir(exist_ok=True)
-    checked: set[tuple[str, str]] = set()
     ids = [c.id for c, _ in legal]
+
+    # Every probe is written first, then ALL of them go in one call.
+    #
+    # This used to be a `fire-transition` subprocess per pair, each
+    # re-materializing the entire world. Measured 2026-09-19 at the
+    # scale the maximal run reached: grouping TWELVE candidates cost
+    # 6.21s, against 0.15s to batch-scan all 144 against 278 world
+    # files. Forty times the cost of the whole round's scan, spent in
+    # the step that merely checks the scan's results for conflicts --
+    # and quadratic, so it got worse exactly as the world got
+    # interesting. It was disclosed as a cost to revisit when the
+    # cannon produced enough candidates to matter; it did.
+    #
+    # Worth being precise about what was slow, because the obvious
+    # diagnosis was wrong. Reading world files is NOT the bottleneck:
+    # 278 of them scan in 0.08s and the curve is flat. Neither is
+    # candidate count: 144 candidates cost the same as 10. What cost is
+    # PROCESS SPAWNS, each paying full materialization for one
+    # question. So the fix is the same one that worked before -- batch
+    # them behind a single materialization -- and not, for instance, a
+    # database.
+    probes: list[dict] = []
+    pairs: list[tuple[str, str]] = []
     for i, a_id in enumerate(ids):
+        a_cand, a_out = by_id[a_id]
+        probe_file = conflict_dir / f"probe-{sanitize_node(a_id)}.dmml"
+        probe_file.write_text(a_out)
         for b_id in ids[i + 1 :]:
-            if find(a_id) == find(b_id):
-                continue  # already grouped (e.g. via a same-machine chain)
-            key = (a_id, b_id)
-            if key in checked:
-                continue
-            checked.add(key)
-            a_cand, a_out = by_id[a_id]
-            b_cand, b_out = by_id[b_id]
-            probe_file = conflict_dir / f"probe-{sanitize_node(a_id)}.dmml"
-            probe_file.write_text(a_out)
-            ok, out2 = dry_fire(b_cand, state, extra_world_files=[str(probe_file)])
-            if (not ok) or out2 != b_out:
-                union(a_id, b_id)
+            b_cand, _b_out = by_id[b_id]
+            if b_cand.machine == a_cand.machine:
+                continue  # already unioned by the hard rule above
+            probes.append({
+                "id": f"{len(pairs)}",
+                "machine": b_cand.machine,
+                "transition": b_cand.transition,
+                "verb": b_cand.verb,
+                "params": dict(b_cand.params),
+                "extra_world": [str(probe_file)],
+            })
+            pairs.append((a_id, b_id))
+
+    for (a_id, b_id), (_c, status, out2, _v, _o) in zip(pairs, probe_results(state, probes)):
+        if find(a_id) == find(b_id):
+            continue  # already grouped, e.g. via a same-machine chain
+        if status != "legal" or out2 != by_id[b_id][1]:
+            union(a_id, b_id)
 
     groups: dict[str, list[tuple[Candidate, str]]] = {}
     for c, out in legal:
