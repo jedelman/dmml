@@ -444,6 +444,61 @@ pruneOrphans t =
         concatMap termParam (concatMap effectTerms kept)
           ++ concatMap termParam (concatMap (patternTerms . guardPattern) (transitionGuards t))
 
+-- Anchorability -------------------------------------------------------------
+
+-- | @assert self \`cleared\` ...@ -- the cannon's attachment convention,
+-- and the one effect whose loss is structural rather than semantic.
+--
+-- Every room @app\/Cannon.hs@ fires guards on its parent being cleared,
+-- so a machine that never clears itself is a leaf nothing can ever be
+-- built beyond. @check-fertility@ calls that STERILE and warns that a
+-- lineage ending there keeps MINTING machines that can never fire --
+-- measured once already as 60 rooms and 2 firings.
+--
+-- Measured 2026-09-19, and the reason this is now preserved: of 81
+-- machines in @examples\/@, only 22 (27%) assert it. So any pool diverse
+-- enough to lengthen the structural walk inevitably contains machines
+-- that do not, and crossing one sterilises the lineage from that
+-- generation on. Sampling 400 random pools, only 4% came out FERTILE,
+-- and the longest-horizon pools were all sterile -- DIVERSITY AND
+-- ANCHORABILITY WERE IN DIRECT TENSION, which is a property of this
+-- repair being absent rather than of recombination.
+--
+-- Caught in the act at @g1 chimera x crew\/digger@: chimera takes A's
+-- guards with B's WORLD effects, and @assert self \`cleared\`@ is one of
+-- A's world effects, so it was simply dropped. Splice can lose it the
+-- same way by taking a tail of B that happens to contain no clearing
+-- transition.
+isAnchorEffect :: Effect -> Bool
+isAnchorEffect (EffectAssert TermSelf (PredIdent "cleared") _) = True
+isAnchorEffect _ = False
+
+selfClears :: MachineStmt -> Bool
+selfClears m = any (any isAnchorEffect . transitionEffects) (machineTransitions m)
+
+-- | If either parent could be built on and the offspring cannot, give it
+-- back the ability.
+--
+-- Deliberately a machine-level repair rather than a per-mode one: union,
+-- splice and chimera can each lose the anchor by different routes, and a
+-- single check on the finished offspring covers all three the way
+-- 'pruneOrphans' does. Restored onto the FIRST transition, which is A's
+-- own lifecycle entry point under the state alignment -- the same
+-- transition a stamped room would have carried it on.
+--
+-- Not an invention: the offspring is only given back something a parent
+-- already had. An offspring of two machines that neither clear stays
+-- unclearable, and should.
+preserveAnchor :: MachineStmt -> MachineStmt -> MachineStmt -> MachineStmt
+preserveAnchor a b off
+  | selfClears off = off
+  | not (selfClears a || selfClears b) = off
+  | (t : ts) <- machineTransitions off =
+      off {machineTransitions = t {transitionEffects = anchor : transitionEffects t} : ts}
+  | otherwise = off
+  where
+    anchor = EffectAssert TermSelf (PredIdent "cleared") (EffectValueTerm (TermNode "mark/yes"))
+
 -- Lifecycle effects --------------------------------------------------------
 
 -- | An effect that moves the machine through its own state machine,
@@ -475,7 +530,7 @@ breed sp mode child a b
   | Splice k <- mode
   , k < 0 || k > length (machineTransitions a) =
       Left (SpliceOutOfRange k (length (machineTransitions a)))
-  | otherwise = validate offspring
+  | otherwise = validate (preserveAnchor a b offspring)
   where
     childLast = lastSeg child
     (states, stateMap) = alignStates a b

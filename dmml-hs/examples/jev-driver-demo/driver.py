@@ -269,6 +269,22 @@ class ExtendPolicy:
     # better economics. So it becomes an allocation: not a question, a
     # standing decision to spend, reported every time it is spent.
     shape_every: int = 0
+    # How many proposals of each connective kind a round may OFFER.
+    #
+    # Was hard-coded at 2 (1 for wellspring), and that is the real
+    # ceiling on densification rather than anything about the chooser: a
+    # world of 30 cleared nodes has 435 possible bridges and could be
+    # shown two of them. N-squared opportunity, constant-sized menu.
+    # Worth raising deliberately and not silently, because every extra
+    # proposal is an extra interest question and the budget is tokens.
+    proposals_per_kind: int = 2
+    # Growth spends its per-round allowance on frontier EDGES before
+    # RELATIONS, which is right for reaching new ground and exactly
+    # backwards for density -- relations lose ties to edges
+    # systematically, and the log said so ("4 relation(s) wanted but
+    # this round's growth allowance is already spent"). Flip it when
+    # thickening the web matters more than extending it.
+    relations_first: bool = False
     # Variants cycled through when STAMPING a fresh room, and crossover
     # modes cycled through when BREEDING. Cycled by index rather than
     # chosen, for the determinism above.
@@ -441,6 +457,8 @@ def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, InterestPol
         max_minted_machines=int(ex.get("max_minted_machines", 0)),
         unbidden_every=int(ex.get("unbidden_every", 0)),
         shape_every=int(ex.get("shape_every", 0)),
+        proposals_per_kind=int(ex.get("proposals_per_kind", 2)),
+        relations_first=bool(ex.get("relations_first", False)),
         variants=list(ex.get("variants", ["hall", "forge", "vault", "spur"])),
         modes=list(ex.get("modes", ["chimera", "union", "splice1"])),
         breed_after=int(ex.get("breed_after", 2)),
@@ -1944,7 +1962,7 @@ def bridged_pairs(state: RunState) -> set[frozenset[str]]:
     return pairs
 
 
-def connective_proposals(state: RunState, seq: int) -> list[tuple[str, str, list[str]]]:
+def connective_proposals(state: RunState, seq: int, cap: int = 2) -> list[tuple[str, str, list[str]]]:
     """What relations could exist that do not yet, as (id, description,
     cannon args).
 
@@ -1974,7 +1992,7 @@ def connective_proposals(state: RunState, seq: int) -> list[tuple[str, str, list
         for b in cleared[i + 1 :]
         if frozenset((a, b)) not in already
     ]
-    for a, b in unrelated[:2]:
+    for a, b in unrelated[:cap]:
         node = f"corridor/c{seq}_{len(out)}"
         out.append(
             (
@@ -2017,7 +2035,7 @@ def connective_proposals(state: RunState, seq: int) -> list[tuple[str, str, list
             feeds.append((rank_delta(fnodes, fedges, (a, b)), ap, ao, bo, b))
     feeds.sort(key=lambda f: (-f[0], f[2], f[3]))
     have_rank = cycle_rank(fnodes, fedges)
-    for i, (delta, pred, frm, to, _b) in enumerate(feeds[:2]):
+    for i, (delta, pred, frm, to, _b) in enumerate(feeds[:cap]):
         node = f"decay/d{seq}_{i}"
         if delta > 0:
             why = (
@@ -2103,7 +2121,7 @@ def connective_proposals(state: RunState, seq: int) -> list[tuple[str, str, list
         # rank to sort by yet, and a fixed order would mean this world
         # only ever gets asked one question.
         pairs.sort(key=lambda t: (drift(f"{t[0]}|{t[1]}|{t[3]}", seq, "transmute"), t[1], t[3]), reverse=True)
-        for i, (pred, a, asaid, b, bsaid) in enumerate(pairs[:2]):
+        for i, (pred, a, asaid, b, bsaid) in enumerate(pairs[:cap]):
             node = f"works/t{seq}_{i}"
             out.append(
                 (
@@ -2172,7 +2190,7 @@ def connective_proposals(state: RunState, seq: int) -> list[tuple[str, str, list
             if fp != tp
         ]
         couplings.sort(key=lambda c: (drift(f"{c[0]}|{c[1]}|{c[2]}|{c[3]}", seq, "imply"), c[1], c[3]), reverse=True)
-        for i, (fp, fo, tp, to, said) in enumerate(couplings[:2]):
+        for i, (fp, fo, tp, to, said) in enumerate(couplings[:cap]):
             node = f"works/i{seq}_{i}"
             out.append(
                 (
@@ -2503,7 +2521,11 @@ def main() -> None:
         # when growth is on and there is more than one answer -- a lone
         # proposal is not a choice, and spending a question on it would
         # burn the scarce thing to be told what we already know.
-        connect_q = connective_proposals(state, state.minted_machines) if extend.enabled else []
+        connect_q = (
+            connective_proposals(state, state.minted_machines, extend.proposals_per_kind)
+            if extend.enabled
+            else []
+        )
         if len(connect_q) > 1:
             state_summary += f" {len(connect_q)} relation(s) could be made between things that already exist."
         elif connect_q:
@@ -2763,6 +2785,15 @@ def main() -> None:
             # importantly, six edges can all come back cold and NOTHING
             # gets built, which no `choice` over those same six could
             # ever have said.
+            # Relations before edges when density is the goal. The
+            # allowance is the same either way; what changes is which
+            # kind of growth gets starved when it runs out, and until now
+            # that was always relations.
+            edge_room = (
+                max(0, interest.max_growth_per_round - len(connect_q))
+                if extend.relations_first
+                else interest.max_growth_per_round
+            )
             rated = sorted(
                 ((v, n) for n in unmapped for v in [scores.get(f"interest_frontier|{n}")] if v is not None),
                 reverse=True,
@@ -2787,7 +2818,7 @@ def main() -> None:
                         f"own baseline {mu:.2f}+-{sd:.2f} (best {rated[0][1]} at {rated[0][0]:.2f}); "
                         "the world does not grow this round"
                     )
-                for v, n in wanted[: interest.max_growth_per_round]:
+                for v, n in wanted[:edge_room]:
                     m = extend_world(state, extend, world_dir, round_no, n, bidden=True)
                     if m:
                         m["interest"] = v

@@ -392,11 +392,45 @@ main = do
           transitionIdent t == "breach" && transitionTo t == Just "open"
         ok "it keeps A's guards -- what the vault REQUIRED" $
           transitionGuards t == transitionGuards (head (machineTransitions vault))
+        -- B's world effects, PLUS A's anchorability if B's do not carry
+        -- one. Was `== worldEffects fork` until 2026-09-19: chimera used
+        -- to drop `assert self `cleared`` along with the rest of A's
+        -- world effects, which sterilised the lineage at the first cross
+        -- with a non-clearing machine. Measured across 400 random pools,
+        -- that put only 4% of diverse pools in a FERTILE state; with the
+        -- anchor preserved it is 48%.
         ok "and takes B's world effects -- what the fork YIELDED" $
-          worldEffects t == worldEffects (head (machineTransitions fork))
+          all (`elem` worldEffects t) (worldEffects (head (machineTransitions fork)))
+        ok "while keeping the ability to be built on, which B's effects did not carry" $
+          EffectAssert TermSelf (PredIdent "cleared") (EffectValueTerm (TermNode "mark/yes"))
+            `elem` worldEffects t
         ok "so it is a shape neither parent had" $
           worldEffects t /= worldEffects (head (machineTransitions vault))
       [] -> ok "chimera produced a transition" False
+
+  putStrLn "anchorability survives every mode"
+  -- The measured failure: `g1 chimera x crew/digger -> STERILE`, because
+  -- digger's world effects carry no `assert self `cleared`` and chimera
+  -- took them wholesale. Only 22 of 81 machines in examples/ assert it,
+  -- so any pool diverse enough to lengthen the structural walk contains
+  -- machines that do not.
+  forM_ [(Union, "union" :: Text), (Chimera, "chimera"), (Splice 1, "splice1")] $ \(mode, label) ->
+    case breed sp mode (nr "room/x") vault digger of
+      Left e -> ok (label <> " x digger breeds: " <> T.pack (show e)) False
+      Right m ->
+        ok (label <> " offspring of a clearing parent can still be built on") $
+          or
+            [ True
+            | t <- machineTransitions m
+            , EffectAssert TermSelf (PredIdent "cleared") _ <- transitionEffects t
+            ]
+  ok "but an offspring of two UNCLEARING parents is left unclearable, not given one" $
+    case breed sp Union (nr "room/x") digger digger of
+      Right m ->
+        null
+          [ () | t <- machineTransitions m, EffectAssert TermSelf (PredIdent "cleared") _ <- transitionEffects t
+          ]
+      Left _ -> False
 
   putStrLn "orientation is not symmetric"
   case (breed sp Chimera (nr "room/x") vault fork, breed sp Chimera (nr "room/x") fork vault) of
