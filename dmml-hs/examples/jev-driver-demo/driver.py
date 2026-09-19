@@ -246,6 +246,29 @@ class ExtendPolicy:
     # resource (tokens, attention), so it is spent deliberately and
     # reported, never sprinkled in for free.
     unbidden_every: int = 0
+    # Every Nth round, spend on a VOCABULARY-OPENING move whatever the
+    # chooser thinks of it. 0 to never.
+    #
+    # A third line item, for the same reason as the second and a sharper
+    # version of it. `unbidden_every` exists because a purely pull-based
+    # world is summoned rather than inhabited. This exists because
+    # INTEREST IS A LOCAL SIGNAL AND SHAPE-OPENING HAS NON-LOCAL VALUE,
+    # and no amount of better phrasing fixes that.
+    #
+    # A new shape makes no round better. Asked "do you want this?", a
+    # reader is answering about THIS round, and the honest answer is no:
+    # an `imply` consumes nothing, moves nothing, and produces no event.
+    # Its whole value is that it enlarges the option space for every
+    # round after -- and a chooser cannot price the future size of its
+    # own option space, because pricing it would require already having
+    # the options.
+    #
+    # Measured: the first live run scored implies 0.19-0.36 and built
+    # none. Rewriting the description to name the consequence lifted that
+    # to 0.47 and got two built, which is better salesmanship and not a
+    # better economics. So it becomes an allocation: not a question, a
+    # standing decision to spend, reported every time it is spent.
+    shape_every: int = 0
     # Variants cycled through when STAMPING a fresh room, and crossover
     # modes cycled through when BREEDING. Cycled by index rather than
     # chosen, for the determinism above.
@@ -410,6 +433,7 @@ def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, InterestPol
         enabled=bool(ex.get("enabled", False)),
         max_minted_machines=int(ex.get("max_minted_machines", 0)),
         unbidden_every=int(ex.get("unbidden_every", 0)),
+        shape_every=int(ex.get("shape_every", 0)),
         variants=list(ex.get("variants", ["hall", "forge", "vault", "spur"])),
         modes=list(ex.get("modes", ["chimera", "union", "splice1"])),
         breed_after=int(ex.get("breed_after", 2)),
@@ -2748,6 +2772,42 @@ def main() -> None:
                     m["relation"] = cid
                     minted_machines.append(m)
                     print(f"  connect: {cid}")
+
+            # THE SHAPE ALLOCATION. Spent, not chosen.
+            if extend.shape_every and round_no % extend.shape_every == 0:
+                already = {m.get("relation") for m in minted_machines}
+                openers = [q for q in connect_q if q[0] not in already]
+                # `imply` first -- it is the one that opens the
+                # TRANSITION-SHAPE vocabulary, and the one interest most
+                # reliably refuses. The substance-vocabulary openers are
+                # the fallback: still outside what recombination can
+                # reach, still unpriceable locally.
+                ranked = [q for q in openers if q[0].startswith("imply")] or [
+                    q for q in openers if q[0].startswith(("transmute", "wellspring"))
+                ]
+                if ranked:
+                    # Interest breaks the tie and nothing more. Which
+                    # opener is spent on is worth asking; WHETHER to
+                    # spend is not, because that is the question the
+                    # signal cannot answer.
+                    cid, desc, cargs = max(
+                        ranked, key=lambda q: (scores.get(f"interest_connect|{q[0]}", 0.0), q[0])
+                    )
+                    v = scores.get(f"interest_connect|{cid}")
+                    m = mint(state, world_dir, round_no, cargs[0], cargs, desc, cargs[2], bidden=False)
+                    if m:
+                        m["relation"] = cid
+                        m["allocation"] = "shape"
+                        if v is not None:
+                            m["interest"] = v
+                        minted_machines.append(m)
+                        said = f"interest {v:.2f}" if v is not None else "unscored"
+                        print(
+                            f"  shape allocation: built {cid} ({said}) -- spent, not chosen. "
+                            "A new shape makes no round better; it makes every later round wider."
+                        )
+                else:
+                    print("  shape allocation: due, but nothing left to open this round")
 
             if extend.unbidden_every and round_no % extend.unbidden_every == 0:
                 # Somewhere the delve did NOT choose, if there is such a

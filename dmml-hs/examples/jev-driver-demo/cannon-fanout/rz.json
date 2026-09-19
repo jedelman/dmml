@@ -47,7 +47,8 @@
       "union",
       "chimera",
       "splice1"
-    ]
+    ],
+    "shape_every": 3
   },
   "interest": {
     "enabled": true,
