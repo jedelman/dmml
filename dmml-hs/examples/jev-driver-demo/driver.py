@@ -1492,6 +1492,73 @@ def latent_objects(state: RunState) -> list[tuple[str, str, str]]:
     return sorted((pred, obj, subj) for (pred, obj), subj in out.items())
 
 
+def guarded_substances(state: RunState) -> set[tuple[str, str]]:
+    """Every (predicate, object) any machine currently GUARDS on, over a
+    unit or a literal. What the machine layer can currently read."""
+    out: set[tuple[str, str]] = set()
+    for mf in state.machine_files:
+        try:
+            machine = parse_machine_text(Path(mf).read_text())
+        except OSError:
+            continue
+        for t in machine["transitions"]:
+            for g in t["guards"]:
+                m = re.match(r"^(?:not\s+)?\S+\s+`([A-Za-z0-9_]+)`\s+(\S+)", g)
+                if m:
+                    out.add((m.group(1), m.group(2)))
+    return out
+
+
+def machine_nodes(state: RunState) -> set[str]:
+    """Nodes that ARE machines -- anything the world gives a `state`.
+    A machine is not a property of anything, so it has no business on
+    the right-hand side of an implication; a `vista`'s `overlooks
+    watch/keeper` fact would otherwise offer "anything cold is thereby
+    also the keeper", which is not a proposition about the world."""
+    out: set[str] = set()
+    for wf in state.world_files:
+        try:
+            text = Path(wf).read_text()
+        except OSError:
+            continue
+        for line in text.splitlines():
+            m = FACT_RE.match(line)
+            if m and m.group(2) == "state":
+                out.add(m.group(1))
+    return out
+
+
+def unread_facts(state: RunState) -> list[tuple[str, str, str]]:
+    """Facts the world states that NOTHING can currently read: their
+    predicate appears in no guard anywhere in the machine layer.
+
+    One level down from `latent_objects`, and the same kind of gap.
+    That one found things the world names but never MOVES; this finds
+    things the world says that nothing ever ASKS about. A `yields
+    sound/echo` fact nobody guards on is inert -- committed, true, and
+    causally invisible.
+    """
+    read_preds = {p for p, _o in guarded_substances(state)}
+    machines = machine_nodes(state)
+    out: dict[tuple[str, str], str] = {}
+    for wf in state.world_files:
+        try:
+            text = Path(wf).read_text()
+        except OSError:
+            continue
+        for line in text.splitlines():
+            m = FACT_RE.match(line)
+            if not m:
+                continue
+            subj, pred, obj = m.group(1), m.group(2), m.group(3)
+            if pred in NOT_MATTER_PREDS or pred in read_preds or "/" not in obj:
+                continue
+            if obj in machines:
+                continue
+            out.setdefault((pred, obj), subj)
+    return sorted((pred, obj, subj) for (pred, obj), subj in out.items())
+
+
 def anchorable_nodes(state: RunState) -> set[str]:
     """Nodes something in the world can ever assert `cleared` on.
 
@@ -1968,6 +2035,64 @@ def connective_proposals(state: RunState, seq: int) -> list[tuple[str, str, list
                     f"it, from outside, unconditioned. A world with a source has somewhere for "
                     f"matter to come from.",
                     ["replenish", node, pred, obj],
+                )
+            )
+
+    # OPEN THE TRANSITION-SHAPE VOCABULARY. One level below the
+    # substance generator above, and aimed at a different fixpoint.
+    #
+    # That one opens what the world is MADE of. This opens what a machine
+    # can BE. DMML.Recombine's crossover recombines the guards and
+    # effects its parents already carry and never invents one, which is
+    # exactly why check-fertility's lineage walk is provably eventually
+    # periodic -- 11 bred rooms, 3 distinct shapes, fixpoint at
+    # generation 1 in a real run. A new shape cannot come from
+    # recombining old shapes, so it has to be introduced.
+    #
+    # `cannon imply` is that new shape: guard one predicate, assert a
+    # DIFFERENT one about the same unit, consume nothing. No operator
+    # here could previously express it -- feed crosses objects within one
+    # predicate, vista relates places and touches no unit.
+    #
+    # Measured, on kiln + mason as the base pool (walk length before a
+    # shape repeats, which is what periodicity means here):
+    #
+    #     2 seeds, baseline                    2 generations
+    #     4 seeds, two DUPLICATE shapes        2 generations   <- no gain
+    #     4 seeds, rain + imply               14 generations
+    #
+    # The duplicate control matters: adding seeds does not lengthen the
+    # walk, adding SHAPES does. Seven times the reachable structure
+    # space, from one new atom in the pool.
+    unread = unread_facts(state)
+    # Excluding the plumbing from the GUARD side too. `cleared mark/yes`
+    # is guarded by every room the cannon ever fired, so it would
+    # dominate this list -- and "anything that is cleared is thereby also
+    # X" is a statement about reachability bookkeeping, not about matter.
+    readable = sorted(
+        {(p_, o_) for p_, o_ in guarded_substances(state) if p_ not in NOT_MATTER_PREDS}
+        | {(p_, o_) for p_, o_, _s in latent_objects(state)}
+    )
+    if unread and readable:
+        couplings = [
+            (fp, fo, tp, to, said)
+            for (fp, fo) in readable
+            for (tp, to, said) in unread
+            if fp != tp
+        ]
+        couplings.sort(key=lambda c: (drift(f"{c[0]}|{c[1]}|{c[2]}|{c[3]}", seq, "imply"), c[1], c[3]), reverse=True)
+        for i, (fp, fo, tp, to, said) in enumerate(couplings[:2]):
+            node = f"works/i{seq}_{i}"
+            out.append(
+                (
+                    f"imply-{fo}-{to}",
+                    f"Right now `{tp}` is a dead word here: {said} {tp} {to} is true and nothing "
+                    f"in this world can act on it, because no machine asks about `{tp}` at all. "
+                    f"This would make being {fp} {fo} enough to also count as {tp} {to} -- which "
+                    f"brings `{tp}` alive, so that everything the world has ever said with that "
+                    f"word starts to matter and can be built on. Nothing is consumed or moved; "
+                    f"what changes is what the world is able to notice about itself.",
+                    ["imply", node, fp, fo, tp, to],
                 )
             )
 

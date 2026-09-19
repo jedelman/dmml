@@ -186,12 +186,34 @@ isRetract :: Effect -> Bool
 isRetract EffectRetract {} = True
 isRetract _ = False
 
--- | (consumed, produced) for one transition.
-flowOf :: TransitionDecl -> ([Text], [Text])
+-- | An effect that brings a BRAND NEW unit into being: its subject is a
+-- minting @$param@, not a @?binder@ over something already there. The
+-- distinction is the one 'DMML.Recombine' and the Jev driver already
+-- draw (2026-09-18) and it decides what counts as a source.
+isMinting :: Effect -> Bool
+isMinting (EffectAssert (TermParam _) _ _) = True
+isMinting _ = False
+
+-- | (consumed, minted, articulated) for one transition.
+--
+-- The last two are both productions and they are not the same thing,
+-- which @cannon imply@ made visible: a transition that guards on
+-- @?unit@ and asserts a second predicate about that SAME unit produces
+-- a substance while consuming none, and the old two-way split read that
+-- as a SOURCE. It is not one. Rain is a source because it mints a unit
+-- that did not exist; an articulation adds a property to a unit already
+-- present, so nothing arrives from outside and the world is no more
+-- open than it was. Reported as a source it would have made every world
+-- containing one trivially "sustained", which is the verdict this
+-- module exists to make mean something.
+flowOf :: TransitionDecl -> ([Text], [Text], [Text])
 flowOf t =
-  ( [x | e <- transitionEffects t, isRetract e, Just x <- [substanceOf e]]
-  , [x | e <- transitionEffects t, not (isRetract e), Just x <- [substanceOf e]]
+  ( [x | e <- es, isRetract e, Just x <- [substanceOf e]]
+  , [x | e <- es, not (isRetract e), isMinting e, Just x <- [substanceOf e]]
+  , [x | e <- es, not (isRetract e), not (isMinting e), Just x <- [substanceOf e]]
   )
+  where
+    es = transitionEffects t
 
 -- | Every substance edge the machine set induces, plus the substances
 -- produced with nothing consumed (the sources -- rain).
@@ -199,9 +221,10 @@ flowGraph :: [MachineStmt] -> ([(Text, Text)], [Text], [Text])
 flowGraph ms = (nub edges, nub sources, nub allSubs)
   where
     flows = [flowOf t | m <- ms, t <- machineTransitions m]
-    edges = [(c, p) | (cs, ps) <- flows, c <- cs, p <- ps]
-    sources = concat [ps | (cs, ps) <- flows, null cs]
-    allSubs = concat [cs ++ ps | (cs, ps) <- flows]
+    edges = [(c, p) | (cs, mi, ar) <- flows, c <- cs, p <- mi ++ ar]
+    -- Only a MINTED production with nothing consumed is a source.
+    sources = concat [mi | (cs, mi, _) <- flows, null cs]
+    allSubs = concat [cs ++ mi ++ ar | (cs, mi, ar) <- flows]
 
 -- | Any cycle in the substance graph, as a reachable-from-itself list.
 cyclic :: [(Text, Text)] -> [Text]
@@ -303,7 +326,10 @@ main = do
         else do
           mapM_ (\(a, b) -> putStrLn ("  " <> T.unpack a <> "  ->  " <> T.unpack b)) edges
           putStrLn ("  sources (produced consuming nothing): " <> showList' sources)
-          putStrLn ("  sinks (consumed, never produced):     " <> showList' sinks)
+          -- Was labelled "consumed, never produced", which is the
+          -- opposite of what it computes and of what 'flowGraph''s own
+          -- haddock says a terminal is. Matter PILES UP at a sink.
+          putStrLn ("  sinks (produced, never consumed):     " <> showList' sinks)
           let comps = circulating edges
               ranks = [cycleRank edges c | c <- comps]
           putStrLn $

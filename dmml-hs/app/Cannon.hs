@@ -352,6 +352,72 @@ mkReplenish node substPred substObj _unused =
         , transitionSpan = sp
         }
 
+-- | An IMPLY: a unit that is one thing is thereby also another.
+--
+-- The operator that opens the TRANSITION-SHAPE vocabulary, and the only
+-- one here whose point is the shape rather than the flow.
+--
+-- Everything else in this file draws its transitions from a fixed
+-- repertoire, and so does 'DMML.Recombine' -- crossover recombines the
+-- guards and effects its parents already have and never invents one.
+-- That is exactly why @check-fertility@'s lineage walk is provably
+-- eventually periodic, and a real run bore it out: 11 bred rooms, 3
+-- distinct shapes, fixpoint at generation 1. A new SHAPE cannot come
+-- from recombining old shapes.
+--
+-- This is a new shape. It guards on one predicate and asserts a
+-- DIFFERENT one about the same unit, which no operator here could
+-- previously express -- @feed@ crosses objects within one predicate,
+-- @vista@ relates two places and touches no unit at all. Once a machine
+-- of this shape is in the pool, crossover has an atom it never had, and
+-- the reachable structure space is strictly larger.
+--
+-- It CONSUMES NOTHING, deliberately, and that is the difference from
+-- @feed@. A feed is a transformation: the unit's kind changes and the
+-- old kind is spent. An imply is an articulation: the unit keeps what it
+-- was and is now also something else. Water that runs is thereby water
+-- that sounds. Nothing is used up, so it moves no matter and adds no
+-- edge to the flow graph -- it is not a rhizome move, it is a second
+-- articulation over the first.
+mkImply :: Text -> Text -> Text -> Text -> Text -> MachineStmt
+mkImply node fromPred fromObj toPred toObj =
+  MachineStmt
+    { machineNode = nr node
+    , machineStates = [StateDecl "idle" sp, StateDecl "working" sp]
+    , machineTransitions = [implies, reset]
+    , machineSpan = sp
+    }
+  where
+    implies =
+      TransitionDecl
+        { transitionIdent = "implies"
+        , transitionParams = []
+        , transitionFrom = Just "idle"
+        , transitionTo = Just "working"
+        , transitionGuards =
+            [GuardClause False (ExistsExpr (Pattern (TermBind "unit") [PatternHop fromPred (TermNode fromObj)]) sp) sp]
+        , transitionEffects =
+            [ EffectAssert (TermBind "unit") (PredIdent toPred) (EffectValueTerm (TermNode toObj))
+            , assertSelf "cleared" "mark/yes"
+            , EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "working"))
+            , EffectRetract TermSelf [] (PredIdent "state") Nothing
+            ]
+        , transitionSpan = sp
+        }
+    reset =
+      TransitionDecl
+        { transitionIdent = "reset"
+        , transitionParams = []
+        , transitionFrom = Just "working"
+        , transitionTo = Just "idle"
+        , transitionGuards = []
+        , transitionEffects =
+            [ EffectAssert TermSelf (PredIdent "state") (EffectValueTerm (TermNode "idle"))
+            , EffectRetract TermSelf [] (PredIdent "state") Nothing
+            ]
+        , transitionSpan = sp
+        }
+
 -- | A VISTA: the tower that rises to a view of the quarry.
 --
 -- Relates two existing places and moves nothing between them. Requires
@@ -478,6 +544,8 @@ main = do
       TIO.putStr (renderFiredMachine (mkFeed (T.pack node) (T.pack pred_) (T.pack fromKind) (T.pack toKind)))
     ["replenish", node, pred_, obj] ->
       TIO.putStr (renderFiredMachine (mkReplenish (T.pack node) (T.pack pred_) (T.pack obj) ""))
+    ["imply", node, fp, fo, tp, to] ->
+      TIO.putStr (renderFiredMachine (mkImply (T.pack node) (T.pack fp) (T.pack fo) (T.pack tp) (T.pack to)))
     ["vista", node, anchor, target] ->
       TIO.putStr (renderFiredMachine (mkVista (T.pack node) (T.pack anchor) (T.pack target)))
     ["fork", forkNode, parent, left, right] ->
@@ -496,4 +564,7 @@ main = do
         >> putStrLn "       cannon feed <node> <pred> <from> <to>      -- a mill; clay becomes brick, in place"
         >> putStrLn "       cannon replenish <node> <pred> <obj>       -- rain; produces, guarding on nothing"
         >> putStrLn "       cannon vista <node> <anchor> <target>     -- a tower; relates without flowing"
+        >> putStrLn "       cannon imply <node> <fromPred> <fromObj> <toPred> <toObj>"
+        >> putStrLn "                                                  -- a unit that is one thing is also another;"
+        >> putStrLn "                                                     a NEW SHAPE, which no crossover can invent"
         >> exitFailure
