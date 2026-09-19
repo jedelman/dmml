@@ -29,7 +29,7 @@
 --
 -- Input is a JSON array of
 -- @{id, machine, transition, verb, params}@; output a JSON array of
--- @{id, status, output?, var?, candidates?}@ where status is one of
+-- @{id, status, output?, var?, candidates?, reads?}@ where status is one of
 -- @legal@, @blocked@, @ambiguous@, @error@. An @ambiguous@ entry
 -- carries the binder name and every witness, exactly as
 -- 'DMML.Guard.GuardAmbiguousBinding' reports them -- that refusal is a
@@ -52,9 +52,18 @@ import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
-import DMML.Ast (MachineStmt, machineNode, nodeRefSegments)
+import DMML.Ast
+  ( ExistsExpr (..)
+  , GuardClause (..)
+  , MachineStmt
+  , Pattern (..)
+  , PatternHop (..)
+  , PatternTerm (..)
+  , machineNode
+  , nodeRefSegments
+  )
 import DMML.Fire (FireError (..), ResolvedEffect (..), fireTransition, renderFiredCommits, renderFiredMachine)
-import DMML.Guard (EvalContext (..), GuardError (..))
+import DMML.Guard (EvalContext (..), GuardError (..), lookupTransition, resolveTransition)
 import DMML.LocalIdentity (localFileRef)
 import DMML.Materialize (IdentifiedCommit (..), WorldSnapshot, applyIdentifiedCommit, applyIdentifiedCommits)
 import DMML.Surface (parseCommitSurface, parseMachineSurface)
@@ -154,6 +163,68 @@ main = do
         Right m -> pure m
         Left err -> putStrLn (path <> ":\n" <> errorBundlePretty err) >> exitFailure
 
+-- | Every @(subject, predicate)@ slot this candidate's GUARDS read,
+-- with 'Nothing' for "any subject".
+--
+-- Reported so a caller can decide whether two firings can interact
+-- WITHOUT simulating the pair. The Jev driver's
+-- @group_into_generations@ needs exactly this: firing A can only change
+-- B's verdict if something A writes or spends is something B reads, and
+-- what B reads is its guards, which appear nowhere in its output.
+--
+-- It was deriving that with a regex over the machine file -- a second,
+-- weaker parser for a language that already has one, right here. Two
+-- things the real AST gets that the regex could not:
+--
+-- * the IMPLICIT @(self, state, from)@ guard that 'resolveTransition'
+--   prepends for a @from -> to@ transition. It is not in the file's
+--   guard lines at all, so a text reader cannot see it.
+-- * a @$param@ or a pre-bound @?binder@ resolved to its ACTUAL subject
+--   rather than widened to a wildcard, since the candidate carries its
+--   own params. Narrower, and narrower for the right reason: this
+--   mirrors 'DMML.Guard.resolveTerm' case for case rather than guessing
+--   at its behaviour.
+--
+-- Conservative wherever the subject genuinely is not knowable before
+-- the guard runs: an unbound anchor makes 'DMML.Guard.evalExists' start
+-- from every subject in the world, and a binder's witness is by
+-- definition not known until the walk finds it. Both report 'Nothing',
+-- which a caller must read as "any subject with this predicate".
+--
+-- Only the SUBJECT of each hop is a read. A hop's object term
+-- constrains which walks survive ('DMML.Guard.stepHop' filters on it);
+-- it is not itself a separate slot the guard looks up.
+guardReads :: Text -> Map.Map Text Text -> MachineStmt -> Text -> [(Maybe Text, Text)]
+guardReads selfNode params machine tname =
+  case lookupTransition machine tname of
+    Nothing -> []
+    Just decl ->
+      nub
+        [ slot
+        | g <- fst (resolveTransition decl)
+        , slot <- patternReads (existsPattern (guardExists g))
+        ]
+  where
+    patternReads pat = walk (staticSubject (patternAnchor pat)) (patternHops pat)
+    walk _ [] = []
+    walk subj (hop : more) = (subj, hopPredicate hop) : walk (staticSubject (hopTerm hop)) more
+
+    -- The static counterpart of 'DMML.Guard.resolveTerm', case for
+    -- case. 'ctxBindings' is necessarily empty here -- a binder's
+    -- witness is what the walk is looking for -- so 'TermBind' falls
+    -- through to the param lookup exactly as resolveTerm's own fallback
+    -- does, and is a wildcard only when nothing pre-bound it.
+    staticSubject TermSelf = Just selfNode
+    staticSubject (TermNode n) = Just n
+    staticSubject (TermParam name) = Map.lookup name params
+    staticSubject (TermBind v) = Map.lookup v params
+    staticSubject (TermVar _) = Nothing
+
+readsJson :: [(Maybe Text, Text)] -> A.Value
+readsJson = A.toJSON . map one
+  where
+    one (subj, pred') = obj [("subject", maybe A.Null A.toJSON subj), ("predicate", A.toJSON pred')]
+
 -- | One candidate against the shared snapshot. Identical evaluation to
 -- what @fire-transition@ does for a single call -- same 'fireTransition',
 -- same context shape -- only the snapshot is reused.
@@ -162,18 +233,21 @@ scan snap machines byPath c =
   case Map.lookup (cMachine c) byPath of
     Nothing -> obj [("id", A.toJSON (cId c)), ("status", "error"), ("error", "machine file not loaded")]
     Just machine ->
-      let ctx =
+      let params = Map.fromList (cParams c)
+          ctx =
             EvalContext
               { ctxSelfNode = nodeRefText machine
-              , ctxParams = Map.fromList (cParams c)
+              , ctxParams = params
               , ctxBindings = Map.empty
               }
+          reads' = ("reads", readsJson (guardReads (nodeRefText machine) params machine (cTransition c)))
        in case fireTransition machines machine (cTransition c) ctx snap of
             Right effects ->
               obj
                 [ ("id", A.toJSON (cId c))
                 , ("status", "legal")
                 , ("output", A.toJSON (render effects))
+                , reads'
                 ]
             -- An ambiguous binder is NOT a failure. It is a decision the
             -- engine refuses to make, carried out whole so the driver can
@@ -184,8 +258,9 @@ scan snap machines byPath c =
                 , ("status", "ambiguous")
                 , ("var", A.toJSON v)
                 , ("candidates", A.toJSON cands)
+                , reads'
                 ]
-            Left FireBlocked -> obj [("id", A.toJSON (cId c)), ("status", "blocked")]
+            Left FireBlocked -> obj [("id", A.toJSON (cId c)), ("status", "blocked"), reads']
             Left err ->
               obj
                 [ ("id", A.toJSON (cId c))

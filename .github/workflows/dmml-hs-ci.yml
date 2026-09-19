@@ -94,6 +94,25 @@ jobs:
           CANNON="$(cabal list-bin cannon)" \
             python3 examples/jev-driver-demo/minting-params-selftest.py
 
+      # The conflict pruning against the exhaustive probe it replaced.
+      # group_into_generations decides which candidates may fire
+      # together in one round; a pair wrongly called independent is two
+      # firings applied together that can invalidate each other -- a
+      # corrupted world, silently. So run a real scenario twice, once as
+      # it ships and once with the index forced to return every
+      # candidate, and require the transcripts to match. Also requires
+      # the unpruned run to have probed MORE, because a harness that
+      # quietly stops disabling the thing under test is how a check goes
+      # vacuous, and this one did exactly that once already.
+      - name: Run conflict-pruning-selftest (pruning vs probing everything)
+        run: |
+          SCAN_CANDIDATES="$(cabal list-bin scan-candidates)" \
+          FIRE_TRANSITION="$(cabal list-bin fire-transition)" \
+          LIST_CANDIDATES="$(cabal list-bin list-candidates)" \
+          RENDER_PROSE="$(cabal list-bin render-prose)" \
+          CANNON="$(cabal list-bin cannon)" \
+            python3 examples/jev-driver-demo/conflict-pruning-selftest.py
+
       # ReadIndex against may_conflict, which is its specification.
       # The driver groups a round's candidates into generations that
       # fire together, and a pair the index wrongly calls independent

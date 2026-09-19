@@ -186,6 +186,13 @@ class Candidate:
     description: str
     firings: int = 0
     last_hash: str | None = None
+    # Every (subject, predicate) this candidate's GUARDS read, as
+    # `scan-candidates` reports it -- a `None` subject meaning "any".
+    # Stays None until a scan fills it in, and None means UNKNOWN, which
+    # `depends_on` must read as "reads everything" rather than "reads
+    # nothing". It is a fact about (machine, transition, params), not
+    # about the world, so it does not go stale between rounds.
+    reads: list | None = None
     # Optional: when this candidate's firing spawns a machine (a real
     # DMML.Ast.EffectSpawn), this describes the follow-up candidate to
     # register dynamically once the spawn actually happens -- id,
@@ -745,46 +752,44 @@ def touches(output: str) -> set[tuple[str, str]]:
 
 
 def depends_on(cand: Candidate, output: str) -> set[tuple[str | None, str]]:
-    """Every (subject, predicate) a firing READS, with None for "any
+    """Every (subject, predicate) a firing READS, with None meaning "any
     subject".
 
     Three sources, and missing any one of them would make the pruning
     unsound rather than merely weak:
 
     * its GUARDS, which decide legality and do not appear in the output
-      at all -- read back off the machine file. A guard over a `?binder`
-      or `$param` subject matches anything, so it is recorded as a
-      wildcard: a write to ANY subject with that predicate could change
-      which witness it finds.
+      at all. These come from `scan-candidates`, which has the real
+      parsed transition in hand.
     * what it CONSUMES, since its provenance citation names those facts
       exactly and a change there changes its output even when it stays
       legal.
     * what it ASSERTS, because two firings writing the same
       (subject, predicate) interact whatever their guards say.
+
+    The guard half used to be a regex over the machine file -- a second,
+    weaker parser for a language that already has one, on the far side
+    of a process boundary from the real one. Two things it could not get
+    right, and now does not have to:
+
+    * the IMPLICIT `(self, state, from)` guard that DMML.Guard's
+      `resolveTransition` prepends for a `from -> to` transition. It is
+      in no guard line, so no text reader can see it. It happened to be
+      covered incidentally whenever the transition also wrote its own
+      state -- which is a convention, not a guarantee.
+    * a `$param`, or a `?binder` the caller pre-bound, resolved to its
+      ACTUAL subject instead of widened to a wildcard. Narrower, and
+      narrower for the right reason: the scanner mirrors
+      `DMML.Guard.resolveTerm` case for case rather than guessing at it.
+
+    `cand.reads` of None means the scanner never got to say -- the
+    per-candidate `fire-transition` fallback path, or a row that errored
+    before its machine was loaded. That is UNKNOWN, not empty, so it
+    reads everything and nothing involving it is ever pruned.
     """
-    reads: set[tuple[str | None, str]] = set()
-    try:
-        machine = parse_machine_text(Path(cand.machine).read_text())
-    except OSError:
-        return {(None, p) for _s, p in touches(output)} | {(None, "")}
-    node = machine["node"]
-    for t in machine["transitions"]:
-        if t["ident"] != cand.transition:
-            continue
-        for g in t["guards"]:
-            m = re.match(r"^(?:not\s+)?(\S+)\s+`([A-Za-z0-9_]+)`", g)
-            if not m:
-                # An unparsed guard is an unknown read. Assume it reads
-                # everything rather than silently pruning a real conflict.
-                return {(None, "")}
-            subj, pred = m.group(1), m.group(2)
-            if subj == "self":
-                reads.add((node, pred))
-            elif subj.startswith(("?", "$")):
-                reads.add((None, pred))
-            else:
-                reads.add((subj, pred))
-    return reads | {(s, p) for s, p in touches(output)}
+    if cand.reads is None:
+        return {(None, "")}
+    return {(s, p) for s, p in cand.reads} | {(s, p) for s, p in touches(output)}
 
 
 def may_conflict(a_touch: set[tuple[str, str]], b_read: set[tuple[str | None, str]]) -> bool:
@@ -896,10 +901,25 @@ def probe_results(state: RunState, probes: list[dict]):
 
 
 def scan_binary() -> list[str] | None:
+    """`scan-candidates`, from $SCAN_CANDIDATES or off $PATH.
+
+    Falling back to the plain name on $PATH matches what `fire_binary`
+    has always done, and the asymmetry mattered more than it looked:
+    without it, every run that did not explicitly set $SCAN_CANDIDATES
+    silently took the per-candidate path -- no batching, and since
+    2026-09-19 no conflict pruning either, because the read sets pruning
+    needs are something only the real parser can report. Returns None
+    only when the binary genuinely is not there, which is the one case
+    the documented fallback is for.
+    """
     import shlex
+    import shutil
 
     raw = os.environ.get("SCAN_CANDIDATES")
-    return shlex.split(raw) if raw else None
+    if raw:
+        return shlex.split(raw)
+    found = shutil.which("scan-candidates")
+    return [found] if found else None
 
 
 def scan_results(state: RunState):
@@ -952,6 +972,8 @@ def scan_results(state: RunState):
     for row in json.loads(proc.stdout):
         c = by_id[row["id"]]
         st = row["status"]
+        if "reads" in row:
+            c.reads = [(r["subject"], r["predicate"]) for r in row["reads"]]
         yield (c, st, row.get("output", ""), row.get("var"), row.get("candidates"))
 
 
