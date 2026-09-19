@@ -719,6 +719,84 @@ def scan_candidates(state: RunState) -> tuple[list[tuple[Candidate, str]], list[
     return legal, pending
 
 
+ASSERTED_RE = re.compile(r"^  ([A-Za-z0-9_.\-/]+)\s+`([A-Za-z0-9_]+)`")
+CONSUMED_RE = re.compile(r"^      ([A-Za-z0-9_.\-/]+)\s+\.\s+([A-Za-z0-9_]+)")
+
+
+def touches(output: str) -> set[tuple[str, str]]:
+    """Every (subject, predicate) a firing CHANGES.
+
+    Both halves of a commit count. Asserted facts are what it adds; the
+    `consumes` block is what it took away, because a retract lowers the
+    fact it spent into provenance rather than printing it as an
+    assertion. A pair that only asserts and a pair that only consumes
+    are equally capable of invalidating somebody else.
+    """
+    out: set[tuple[str, str]] = set()
+    for line in output.splitlines():
+        m = ASSERTED_RE.match(line)
+        if m and not line.strip().startswith("declare "):
+            out.add((m.group(1), m.group(2)))
+            continue
+        m = CONSUMED_RE.match(line)
+        if m:
+            out.add((m.group(1), m.group(2)))
+    return out
+
+
+def depends_on(cand: Candidate, output: str) -> set[tuple[str | None, str]]:
+    """Every (subject, predicate) a firing READS, with None for "any
+    subject".
+
+    Three sources, and missing any one of them would make the pruning
+    unsound rather than merely weak:
+
+    * its GUARDS, which decide legality and do not appear in the output
+      at all -- read back off the machine file. A guard over a `?binder`
+      or `$param` subject matches anything, so it is recorded as a
+      wildcard: a write to ANY subject with that predicate could change
+      which witness it finds.
+    * what it CONSUMES, since its provenance citation names those facts
+      exactly and a change there changes its output even when it stays
+      legal.
+    * what it ASSERTS, because two firings writing the same
+      (subject, predicate) interact whatever their guards say.
+    """
+    reads: set[tuple[str | None, str]] = set()
+    try:
+        machine = parse_machine_text(Path(cand.machine).read_text())
+    except OSError:
+        return {(None, p) for _s, p in touches(output)} | {(None, "")}
+    node = machine["node"]
+    for t in machine["transitions"]:
+        if t["ident"] != cand.transition:
+            continue
+        for g in t["guards"]:
+            m = re.match(r"^(?:not\s+)?(\S+)\s+`([A-Za-z0-9_]+)`", g)
+            if not m:
+                # An unparsed guard is an unknown read. Assume it reads
+                # everything rather than silently pruning a real conflict.
+                return {(None, "")}
+            subj, pred = m.group(1), m.group(2)
+            if subj == "self":
+                reads.add((node, pred))
+            elif subj.startswith(("?", "$")):
+                reads.add((None, pred))
+            else:
+                reads.add((subj, pred))
+    return reads | {(s, p) for s, p in touches(output)}
+
+
+def may_conflict(a_touch: set[tuple[str, str]], b_read: set[tuple[str | None, str]]) -> bool:
+    """Could firing A change how B evaluates? Conservative by
+    construction -- a wildcard read matches any subject, and anything
+    unparsed reads everything."""
+    if (None, "") in b_read:
+        return True
+    preds_any = {p for s, p in b_read if s is None}
+    return any(p in preds_any or (s, p) in b_read for s, p in a_touch)
+
+
 def probe_results(state: RunState, probes: list[dict]):
     """Run every conflict probe, batched if the batch binary is there.
 
@@ -894,6 +972,26 @@ def group_into_generations(
     # question. So the fix is the same one that worked before -- batch
     # them behind a single materialization -- and not, for instance, a
     # database.
+    # PRUNE BEFORE PROBING. Most pairs cannot possibly interact, and
+    # proving that is a set intersection rather than a simulation:
+    # firing A can only change B's verdict if something A writes or
+    # spends is something B reads, cites or writes. Both sides are
+    # already in hand -- A's dry-fire output says what it changes, B's
+    # machine says what it guards on, B's output says what it cites.
+    #
+    # Batching made each probe cheap; this makes most of them not
+    # happen. The two are complements, and this is the one that
+    # survives another order of magnitude, since the probe set was
+    # still quadratic in candidates even at 0.3s.
+    #
+    # Conservative in every doubtful case: a guard over a binder reads
+    # ANY subject with that predicate, and a guard this reader cannot
+    # parse reads everything. A missed conflict would corrupt a round;
+    # a missed pruning only costs time.
+    touched = {cid: touches(out) for cid, (_c, out) in by_id.items()}
+    reads = {cid: depends_on(c, out) for cid, (c, out) in by_id.items()}
+    pruned = 0
+
     probes: list[dict] = []
     pairs: list[tuple[str, str]] = []
     for i, a_id in enumerate(ids):
@@ -904,6 +1002,9 @@ def group_into_generations(
             b_cand, _b_out = by_id[b_id]
             if b_cand.machine == a_cand.machine:
                 continue  # already unioned by the hard rule above
+            if not may_conflict(touched[a_id], reads[b_id]):
+                pruned += 1
+                continue
             probes.append({
                 "id": f"{len(pairs)}",
                 "machine": b_cand.machine,
@@ -914,6 +1015,10 @@ def group_into_generations(
             })
             pairs.append((a_id, b_id))
 
+    if pruned or probes:
+        print(
+            f"  grouping: {len(probes)} probe(s) run, {pruned} pair(s) pruned as unable to interact"
+        )
     for (a_id, b_id), (_c, status, out2, _v, _o) in zip(pairs, probe_results(state, probes)):
         if find(a_id) == find(b_id):
             continue  # already grouped, e.g. via a same-machine chain

@@ -7,8 +7,23 @@ Two corrections, and then the actual fix.
 ## There was never a db
 
 `dmml` has never used one — no sqlite, no postgres, nothing, in any commit. The memory is
-probably `written-world`, which does keep state in Cloudflare KV. Worth saying rather than
-playing along with "go back to".
+probably `written-world`. Worth saying rather than playing along with "go back to".
+
+> **Correction, same day.** Jason: *"the db I was referring to was oxigraph, in v0 of
+> written-world."* Right about the db; my guess at which one was wrong. `written-world`
+> holds the committed world in an in-memory `oxigraph::store::Store` — a real RDF quad
+> store with real SPARQL — and that is not v0 history, it is load-bearing today
+> (`engine/src/graph.rs`: `quads_for_pattern` is the traversal primitive under nearly
+> everything, with `oxigraph::sparql` reserved for the one query that is a genuine join).
+> Persistence is a single `dump_nquads()` blob in a Durable Object's SQLite. KV there is
+> telemetry, not world state.
+>
+> Which makes the question sharper than the answer below gives it credit for. He was not
+> asking for a faster file reader. He was asking why the fact graph is not in something
+> you can *query* — and what follows is, precisely, a hand-rolled query planner: a
+> read/write dependency analysis whose whole job is to keep most pairs from being
+> evaluated at all. An index is what you build when you get tired of writing that
+> yourself.
 
 ## And reads were not choking us — I said they were without measuring
 
