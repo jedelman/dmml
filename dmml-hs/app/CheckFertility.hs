@@ -93,7 +93,7 @@ import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import Text.Megaparsec (errorBundlePretty)
 
-import Data.List (nub)
+import Data.List (nub, sort)
 import DMML.Ast
 import DMML.Recombine (Crossover (..), breed, crossoverLabel)
 import DMML.Surface (parseMachineSurface)
@@ -205,13 +205,74 @@ flowGraph ms = (nub edges, nub sources, nub allSubs)
 
 -- | Any cycle in the substance graph, as a reachable-from-itself list.
 cyclic :: [(Text, Text)] -> [Text]
-cyclic edges = [s | s <- nub (map fst edges ++ map snd edges), s `elem` reach s]
+cyclic edges = [s | s <- flowNodes edges, s `elem` reachFrom edges s]
+
+flowNodes :: [(Text, Text)] -> [Text]
+flowNodes edges = nub (map fst edges ++ map snd edges)
+
+reachFrom :: [(Text, Text)] -> Text -> [Text]
+reachFrom edges s = go [s] []
   where
-    reach s = go [s] []
     go [] seen = seen
     go (x : xs) seen =
       let nexts = [b | (a, b) <- edges, a == x, b `notElem` seen]
        in go (xs ++ nexts) (seen ++ nexts)
+
+-- Topology ------------------------------------------------------------------
+--
+-- Jason, 2026-09-19: "fertility is a topological property isn't it."
+-- Substantially yes, and more literally than it first sounds -- with one
+-- correction that turns out to carry the whole distinction this module
+-- draws.
+--
+-- The correction: it is NOT a property of the underlying undirected
+-- space. Take @clay -> brick@, @clay -> tile@, @brick -> wall@,
+-- @tile -> wall@. That diamond has a loop in every undirected sense --
+-- first Betti number 1, a genuinely non-contractible circle -- and it
+-- still runs down, because matter only ever goes one way round it.
+-- Direction is not topological data, and direction is exactly what
+-- decides whether a world sustains. Which is the same point 'flowOf'
+-- already rests on: a break in a flow (a coupure) has an input side and
+-- an output side, and they are not interchangeable.
+--
+-- So the invariant is topological, on the right object: a NON-TRIVIAL
+-- STRONGLY CONNECTED COMPONENT of the flow digraph. Within such a
+-- component every substance reaches every other and comes back, so the
+-- cycle rank @E - V + 1@ of that component counts its INDEPENDENT
+-- circuits -- how many different ways matter can go round, and therefore
+-- how many edges you would have to cut before it stops circulating.
+-- Rank 1 is a single loop that one broken machine ends. Rank 3 is a
+-- world with somewhere else for matter to go.
+--
+-- The third verdict is the one that is NOT topological at all, and
+-- saying so sharpens it: a SOURCE sustains a world without any circuit.
+-- Rain is not a loop, it is an opening -- the flow graph coupled to
+-- something outside itself. Topologically a source is just a leaf. What
+-- makes it sustain is that the system is open, which is a boundary
+-- condition, not a shape.
+--
+-- Read back onto the connective operators, they are exactly the moves
+-- available on a digraph: @feed@ closes a circuit (raises the rank),
+-- @bridge@ does the same for reachability, @replenish@ opens the
+-- boundary instead, and @vista@ adds an edge carrying no flow at all --
+-- a circuit in the reference graph and none in this one.
+
+-- | Strongly connected components with more than one member (or a
+-- self-loop): the parts of the flow graph where matter can actually go
+-- round. Mutual reachability, computed directly -- these graphs have a
+-- handful of nodes and clarity is worth more here than Tarjan.
+circulating :: [(Text, Text)] -> [[Text]]
+circulating edges =
+  nub
+    [ sort [b | b <- flowNodes edges, b `elem` reachFrom edges a, a `elem` reachFrom edges b]
+    | a <- flowNodes edges
+    , a `elem` reachFrom edges a
+    ]
+
+-- | Independent circuits in one component: @E - V + 1@.
+cycleRank :: [(Text, Text)] -> [Text] -> Int
+cycleRank edges comp =
+  length [() | (a, b) <- edges, a `elem` comp, b `elem` comp] - length comp + 1
 
 main :: IO ()
 main = do
@@ -243,13 +304,31 @@ main = do
           mapM_ (\(a, b) -> putStrLn ("  " <> T.unpack a <> "  ->  " <> T.unpack b)) edges
           putStrLn ("  sources (produced consuming nothing): " <> showList' sources)
           putStrLn ("  sinks (consumed, never produced):     " <> showList' sinks)
+          let comps = circulating edges
+              ranks = [cycleRank edges c | c <- comps]
           putStrLn $
             if not (null loops)
-              then "  CYCLE: " <> showList' loops <> " -- this world SUSTAINS."
+              then
+                "  CIRCULATES: "
+                  <> show (length comps)
+                  <> " strongly connected component(s), independent circuits "
+                  <> show (sum ranks)
+                  <> " -- cut that many flow edges and it stops.\n"
+                  <> concat ["    {" <> T.unpack (T.intercalate ", " c) <> "}  rank " <> show r <> "\n" | (c, r) <- zip comps ranks]
+                  <> "  This world SUSTAINS, and sustains ITSELF -- the circuit is closed, so nothing\n"
+                  <> "  outside it is needed."
               else
                 if null sources
-                  then "  no cycle and no source -- every substance is a finite stock. This world RUNS DOWN."
-                  else "  no cycle, but " <> showList' sources <> " is produced from nothing -- sustained by a source."
+                  then
+                    "  every strongly connected component is trivial and there is no source: the flow\n"
+                      <> "  graph is a partial order and every substance is a finite stock. This world RUNS DOWN."
+                  else
+                    "  no circuit, but "
+                      <> showList' sources
+                      <> " is produced from nothing -- sustained by a SOURCE.\n"
+                      <> "  Not the same property as a cycle and worth not conflating: a source is not a\n"
+                      <> "  shape in this graph at all, it is an opening. The world is sustained because it\n"
+                      <> "  is OPEN, not because it circulates, and it stops the moment the outside does."
       putStrLn ""
       case firstSterile of
         [] ->

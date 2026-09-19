@@ -1,0 +1,35 @@
+machine works/diamond
+  states
+    open
+
+  transition fire()
+    open -> open
+    guard ?u `is` clay/raw
+    retract ?u `is` clay/raw
+    assert ?u `is` brick/fired
+    assert self `state` open
+    retract self `state`
+
+  transition cut()
+    open -> open
+    guard ?u `is` clay/raw
+    retract ?u `is` clay/raw
+    assert ?u `is` tile/flat
+    assert self `state` open
+    retract self `state`
+
+  transition layBrick()
+    open -> open
+    guard ?u `is` brick/fired
+    retract ?u `is` brick/fired
+    assert ?u `is` wall/section
+    assert self `state` open
+    retract self `state`
+
+  transition layTile()
+    open -> open
+    guard ?u `is` tile/flat
+    retract ?u `is` tile/flat
+    assert ?u `is` wall/section
+    assert self `state` open
+    retract self `state`

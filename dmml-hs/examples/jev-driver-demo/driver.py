@@ -289,25 +289,43 @@ class InterestPolicy:
     """
 
     enabled: bool = False
-    # TWO numbers, not one, and the reason is a measured failure.
+    # Selection is RANKED, not thresholded, and the ranking is against
+    # the run's own history rather than any fixed number.
     #
-    # A single absolute threshold assumes the 0-1 scale means the same
-    # thing to the chooser as to this file. It does not. Asked "is this a
-    # way you actually want to go?" about four unbuilt ways, Jev returned
-    # 0.48 / 0.47 / 0.27 / 0.25 -- a clear, sensible ranking (running
-    # water and daylight over a cold draft and fallen rubble) whose TOP
-    # is still under 0.6. Nobody is desperate to see an unbuilt corridor.
-    # A 0.6 bar reads that as "nothing is interesting" and builds
-    # nothing, which is not what the answer says.
+    # Measured over 122 live scores in two real runs: mean 0.412, sd
+    # 0.086, range 0.21-0.59. Jev never once exceeded 0.6. So every
+    # absolute cut this file tried was measuring the calibration of the
+    # scale rather than the content of the answer -- a 0.6 bar builds
+    # nothing ever, a 0.35 bar admits nearly everything, and neither
+    # number says anything about the world. The first version of this
+    # used a hard floor; the second a floor plus a relative band, which
+    # was better and still a cliff.
     #
-    # So: FLOOR is the absolute gate, and it answers "is anything here
-    # worth it at all" -- this is what preserves the capability a
-    # `choice` never had, the ability to build NOTHING. BAND is relative
-    # and answers "which of them", by taking everything within reach of
-    # the best. Ranking is what the signal is actually good for; an
-    # absolute reading of it is what it is not.
-    floor: float = 0.35
-    band: float = 0.15
+    # What the signal is actually good for is ORDER. So: standardize each
+    # score against the run's running mean and sd, push it through a
+    # sigmoid, and take that as the probability this option gets built.
+    # Scale-free by construction -- it cannot be broken by Jev living in
+    # 0.2-0.6 rather than 0-1, because it never reads the raw number.
+    #
+    # Crucially this keeps BOTH capabilities a `choice` lacks: a round
+    # where everything sits below the run's own baseline builds nothing,
+    # and a round where everything sits above it builds everything.
+    #
+    # temperature: sds per unit of logit. 1.0 means an option one sd
+    # above the run's mean is built ~73% of the time.
+    temperature: float = 1.0
+    # Prior for the first rounds, before the run has enough history to
+    # standardize against -- the measured live figures above, stated as
+    # what they are and washed out by real data within a few rounds.
+    prior_mean: float = 0.412
+    prior_sd: float = 0.086
+    prior_weight: int = 12
+    # An absolute BACKSTOP, not a knob: it exists to catch a chooser
+    # actively saying no to everything, not to decide what is
+    # interesting. Deliberately set below the entire observed range
+    # (min 0.21), so on any run resembling the measured ones it never
+    # fires -- which is the correct behaviour for a guard.
+    refuse_below: float = 0.15
     # Hard cap on machines minted in one round however many edges clear
     # the bar. The fan-out is the point, but an unbounded fan-out spends
     # the whole budget in round one and calls it emergence.
@@ -346,6 +364,21 @@ class RunState:
     # config's seed machines) so breeding can reach for the most recent
     # OFFSPRING and actually deepen a lineage.
     minted_machine_files: list[str] = field(default_factory=list)
+    # Every interest score this run has seen, so selection can rank
+    # against what this world's chooser actually does rather than
+    # against a number picked in advance.
+    interest_seen: list[float] = field(default_factory=list)
+
+    def interest_baseline(self, policy) -> tuple[int, float, float]:
+        """(n, mean, sd) over this run's scores, blended with the stated
+        prior so early rounds are not standardized against two samples."""
+        n = len(self.interest_seen)
+        w = policy.prior_weight
+        if n == 0:
+            return 0, policy.prior_mean, policy.prior_sd
+        mean = (sum(self.interest_seen) + w * policy.prior_mean) / (n + w)
+        var = sum((x - mean) ** 2 for x in self.interest_seen) + w * policy.prior_sd**2
+        return n, mean, math.sqrt(var / (n + w))
 
 
 def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, InterestPolicy, dict]:
@@ -384,8 +417,11 @@ def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, InterestPol
     it = cfg.get("interest") or {}
     interest = InterestPolicy(
         enabled=bool(it.get("enabled", False)),
-        floor=float(it.get("floor", 0.35)),
-        band=float(it.get("band", 0.15)),
+        temperature=float(it.get("temperature", 1.0)),
+        prior_mean=float(it.get("prior_mean", 0.412)),
+        prior_sd=float(it.get("prior_sd", 0.086)),
+        prior_weight=int(it.get("prior_weight", 12)),
+        refuse_below=float(it.get("refuse_below", 0.15)),
         max_growth_per_round=int(it.get("max_growth_per_round", 4)),
         max_questions=int(it.get("max_questions", 40)),
         score_actions=bool(it.get("score_actions", True)),
@@ -901,21 +937,40 @@ def interest_questions(
     return asked[: policy.max_questions], over
 
 
-def pick_wanted(rated, policy: InterestPolicy):
-    """Split scored options into (wanted, passed over).
+def interest_probability(score: float, state: RunState, policy: InterestPolicy) -> float:
+    """This option's chance of being built, from its rank against the
+    run's own history. Scale-free: the raw number is never read, only
+    its standing.
+    """
+    n, mean, sd = state.interest_baseline(policy)
+    if score < policy.refuse_below:
+        return 0.0
+    z = (score - mean) / max(sd, 1e-6)
+    return 1.0 / (1.0 + math.exp(-z / max(policy.temperature, 1e-6)))
 
-    The floor is absolute and asks whether anything here is worth it at
-    all; the band is relative and asks which of them, by reach from the
-    best. Empty `wanted` is a real and useful answer -- it is the thing
-    a `choice` over the same options could never say.
+
+def pick_wanted(rated, state: RunState, policy: InterestPolicy, round_no: int, salt: str):
+    """Split scored options into (wanted, passed over), by a sigmoid on
+    each one's standing in this run.
+
+    Not a cliff. An option a little above the run's typical interest is
+    usually taken and sometimes not; one a little below is usually left
+    and sometimes taken. The draw comes from the drift field, so this is
+    probabilistic AND fully reproducible -- the same scores in the same
+    run always select the same options.
+
+    Both edge cases survive, which is the whole reason interest exists:
+    a round entirely below the run's baseline builds nothing, and a round
+    entirely above it builds everything (up to the budget).
     """
     if not policy.enabled or not rated:
         return [], list(rated)
-    top = rated[0][0]
-    if top < policy.floor:
-        return [], list(rated)
-    cut = top - policy.band
-    return [r for r in rated if r[0] >= cut], [r for r in rated if r[0] < cut]
+    wanted, passed = [], []
+    for score, key in rated:
+        p = interest_probability(score, state, policy)
+        u = drift_interest(str(key), round_no, f"take|{salt}")
+        (wanted if u < p else passed).append((score, key))
+    return wanted, passed
 
 
 def read_interest(answers: dict, key: str) -> float | None:
@@ -2226,6 +2281,7 @@ def main() -> None:
         # anything. Buying that back costs real tokens, so it is a line
         # item, deliberately spent and reported, never free.
         minted_machines = []
+        state.interest_seen.extend(scores.values())
         # Record what the chooser WANTED, separately from what it picked.
         for c, _out in legal:
             v = scores.get(f"interest_action|{c.id}")
@@ -2247,20 +2303,25 @@ def main() -> None:
                 ((v, n) for n in unmapped for v in [scores.get(f"interest_frontier|{n}")] if v is not None),
                 reverse=True,
             )
-            wanted, cold = pick_wanted(rated, interest)
+            wanted, cold = pick_wanted(rated, state, interest, round_no, "frontier")
 
             if interest.enabled and rated:
+                _n, mu, sd = state.interest_baseline(interest)
                 if wanted:
                     print(
-                        f"  interest: {len(wanted)} of {len(rated)} open way(s) within {interest.band:g} "
-                        f"of the best -- "
-                        + ", ".join(f"{n} {v:.2f}" for v, n in wanted[: interest.max_growth_per_round])
-                        + (f" (passed over: {', '.join(f'{n} {v:.2f}' for v, n in cold[:3])})" if cold else "")
+                        f"  interest: {len(wanted)} of {len(rated)} open way(s) taken "
+                        f"(run baseline {mu:.2f}+-{sd:.2f}) -- "
+                        + ", ".join(
+                            f"{n} {v:.2f} p={interest_probability(v, state, interest):.2f}"
+                            for v, n in wanted[: interest.max_growth_per_round]
+                        )
+                        + (f" | left: {', '.join(f'{n} {v:.2f}' for v, n in cold[:3])}" if cold else "")
                     )
                 else:
                     print(
-                        f"  interest: nothing reaches the floor {interest.floor:g} "
-                        f"(best {rated[0][1]} at {rated[0][0]:.2f}) -- the world does not grow this round"
+                        f"  interest: nothing taken -- every open way sits at or below this run's "
+                        f"own baseline {mu:.2f}+-{sd:.2f} (best {rated[0][1]} at {rated[0][0]:.2f}); "
+                        "the world does not grow this round"
                     )
                 for v, n in wanted[: interest.max_growth_per_round]:
                     m = extend_world(state, extend, world_dir, round_no, n, bidden=True)
@@ -2291,7 +2352,7 @@ def main() -> None:
                     ),
                     reverse=True,
                 )
-                rel_wanted, _rel_cold = pick_wanted(rel_rated, interest)
+                rel_wanted, _rel_cold = pick_wanted(rel_rated, state, interest, round_no, "connect")
                 made = [(v, cid, *by_id[cid]) for v, cid in rel_wanted][:room]
                 if not made and rel_rated:
                     # Two different reasons for building no relation, and
@@ -2307,8 +2368,8 @@ def main() -> None:
                         )
                     else:
                         print(
-                            f"  interest: no relation reaches the floor {interest.floor:g} "
-                            f"(best {rel_rated[0][1]} at {rel_rated[0][0]:.2f})"
+                            f"  interest: no relation taken (best {rel_rated[0][1]} at "
+                            f"{rel_rated[0][0]:.2f}, below this run's baseline)"
                         )
                 for v, cid, desc, cargs in made:
                     m = mint(state, world_dir, round_no, cargs[0], cargs, desc, cargs[2], bidden=True)
