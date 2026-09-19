@@ -1443,6 +1443,55 @@ def rank_delta(nodes: set[str], edges: set[tuple[str, str]], new: tuple[str, str
     return cycle_rank(nodes | {new[0], new[1]}, edges | {new}) - cycle_rank(nodes, edges)
 
 
+# Objects that are bookkeeping rather than things: the reachability
+# convention's value, and anything standing as a machine's lifecycle
+# state. Reading either as matter would be reading the plumbing.
+NOT_MATTER_PREDS = {"state", "cleared"}
+
+
+def latent_objects(state: RunState) -> list[tuple[str, str, str]]:
+    """Things the world NAMES but never moves: (predicate, object, who says so).
+
+    This is the gap every connective operator is blind to. `bridge`,
+    `feed`, `replenish` and `vista` all read the flow graph, so in a
+    world whose flow graph is EMPTY they have nothing to work on and
+    nothing they can do about it. Measured: cannon-grow ran 40 rounds and
+    49 machines with zero substance flows, and check-fertility's whole
+    rhizome half was structurally silent -- not because the world was
+    poor but because no operator could reach across into it.
+
+    And the world was not poor. cannon-fanout's seed names draft/cold,
+    water/running, rubble/fallen, light/daylight, three kinds of sound --
+    seven things, all of them sitting in the FACT graph as static
+    attributes of places, none of them matter. Nothing in the operator
+    set can promote one. That is the boundary of the territory, and it is
+    in the proposer's field of view rather than in the operators
+    themselves: `cannon feed` builds the machine fine once someone thinks
+    to ask for it.
+
+    So this reads objects back out of committed facts. Nothing invented
+    -- every one is a fact somebody wrote down. What is new is treating
+    it as something that can move.
+    """
+    substances, _edges = flow_digraph(state)
+    known = {x.split(" ", 1)[1] for x in substances}
+    out: dict[tuple[str, str], str] = {}
+    for wf in state.world_files:
+        try:
+            text = Path(wf).read_text()
+        except OSError:
+            continue
+        for line in text.splitlines():
+            m = FACT_RE.match(line)
+            if not m:
+                continue
+            subj, pred, obj = m.group(1), m.group(2), m.group(3)
+            if pred in NOT_MATTER_PREDS or "/" not in obj or obj in known:
+                continue
+            out.setdefault((pred, obj), subj)
+    return sorted((pred, obj, subj) for (pred, obj), subj in out.items())
+
+
 def anchorable_nodes(state: RunState) -> set[str]:
     """Nodes something in the world can ever assert `cleared` on.
 
@@ -1843,6 +1892,84 @@ def connective_proposals(state: RunState, seq: int) -> list[tuple[str, str, list
                 ["replenish", node, rp, ro],
             )
         )
+
+    # DETERRITORIALIZE. The one move that is not closed over what
+    # already exists.
+    #
+    # Everything above redistributes: bridge, feed, replenish and vista
+    # all read the flow graph and act on substances already in it. That
+    # is territorializing by construction, and it has a measured
+    # consequence -- DMML.Recombine's crossover never invents a
+    # transition either, so the structure space is finite and
+    # check-fertility's lineage walk is provably eventually periodic. A
+    # real run bore that out: 11 bred rooms, 3 distinct shapes, fixpoint
+    # at generation 1. No sequence of these operators leaves the space
+    # they generate.
+    #
+    # The exit has to come from outside the operator set, and here it is
+    # bounded but real: read matter out of the FACT graph, which no
+    # operator looks at. The world already names draft/cold and
+    # water/running and rubble/fallen; nothing treats any of them as
+    # something that moves. Promoting one is a move no combination of the
+    # four could ever make.
+    #
+    # And it is caught immediately on the way back down. Whatever this
+    # opens gets measured by the same machinery as everything else: the
+    # proposal is scored by interest like any other, and the moment the
+    # flow graph is non-empty the rank-scored feeds above take over and
+    # close circuits through it. Deterritorialize, then reterritorialize
+    # -- neither half works alone, since pure enumeration is provably
+    # periodic and pure generation is unverifiable.
+    #
+    # BOUNDED, and worth saying exactly how: this escapes the flow
+    # graph's territory by reading the fact graph, not the world's
+    # vocabulary as a whole. It can promote a thing the world already
+    # names; it cannot name a new one. Unbounded would need a GENERATIVE
+    # model, and this stack has a discriminator -- Jev's three primitives
+    # (choice, score, noul) all select, none produce text. That is a real
+    # limit of the architecture, not an oversight.
+    if len(fnodes) < 2:
+        latent = latent_objects(state)
+        by_pred: dict[str, list[tuple[str, str]]] = {}
+        for pred, obj, subj in latent:
+            by_pred.setdefault(pred, []).append((obj, subj))
+        pairs = [
+            (pred, a, asaid, b, bsaid)
+            for pred, objs in sorted(by_pred.items())
+            for (a, asaid) in objs
+            for (b, bsaid) in objs
+            if a != b
+        ]
+        # Rotate which pairs get offered across rounds rather than always
+        # showing the alphabetical first: with no flow graph there is no
+        # rank to sort by yet, and a fixed order would mean this world
+        # only ever gets asked one question.
+        pairs.sort(key=lambda t: (drift(f"{t[0]}|{t[1]}|{t[3]}", seq, "transmute"), t[1], t[3]), reverse=True)
+        for i, (pred, a, asaid, b, bsaid) in enumerate(pairs[:2]):
+            node = f"works/t{seq}_{i}"
+            out.append(
+                (
+                    f"transmute-{a}-to-{b}",
+                    f"Nothing in this world is made of anything yet -- it is all places and ways, "
+                    f"and no matter moves through it at all. But the world does already say that "
+                    f"{asaid} {pred} {a}, and that {bsaid} {pred} {b}. This would make {a} a thing "
+                    f"that can BECOME {b}: the first matter here, and the first transformation. "
+                    f"Nothing that exists can be rearranged into this -- it has to be introduced.",
+                    ["feed", node, pred, a, b],
+                )
+            )
+        for pred, obj, subj in latent[:1]:
+            node = f"spring/s{seq}"
+            out.append(
+                (
+                    f"wellspring-{obj}",
+                    f"The world says {subj} {pred} {obj}, and treats it as a fixed attribute of a "
+                    f"place. This would make {obj} something that ARRIVES instead -- new ones of "
+                    f"it, from outside, unconditioned. A world with a source has somewhere for "
+                    f"matter to come from.",
+                    ["replenish", node, pred, obj],
+                )
+            )
 
     # A vista: relates without moving anything.
     if len(cleared) >= 2:
