@@ -169,15 +169,44 @@ renderTemplateWith snap subject tpl =
   substituteAll (("{subject}", displayNameOf snap subject) : attrSubs ++ viaSubs) (templateText tpl)
   where
     attrSubs =
-      [ ("{attr:" <> path <> "}", renderValue v)
-      | path <- markersFor "{attr:" (templateText tpl)
-      , Just v <- [resolvePath snap subject (T.splitOn "." path)]
+      [ ("{attr:" <> spec <> "}", renderValue v)
+      | spec <- markersFor "{attr:" (templateText tpl)
+      , Just v <- [firstResolved (resolvePath snap subject) spec]
       ]
     viaSubs =
-      [ ("{via:" <> path <> "}", renderValue v)
-      | path <- markersFor "{via:" (templateText tpl)
-      , Just v <- [resolveViaGoverningMachine snap subject (T.splitOn "." path)]
+      [ ("{via:" <> spec <> "}", renderValue v)
+      | spec <- markersFor "{via:" (templateText tpl)
+      , Just v <- [firstResolved (resolveViaGoverningMachine snap subject) spec]
       ]
+
+-- | A marker may offer ALTERNATIVE paths, @|@-separated, tried left to
+-- right: @{attr:at.name|at}@ means "the name of what I am at, or failing
+-- that the bare node."
+--
+-- Added 2026-09-19 for a defect visible the first time real prose was
+-- rendered side by side across two corpora. @{attr:at}@ gives
+-- "Orrin Fell stands at station\/stillwater" in a world whose places
+-- all carry names; @{attr:at.name}@ gives a literal @{attr:at.name}@ in
+-- a world whose places carry none. Neither marker is right for both,
+-- and a catalog that has to be forked per corpus is not canonical.
+--
+-- Deliberately a RENDERING feature and not a guard one. The obvious
+-- alternative -- two templates, one guarded on the object having a
+-- name -- is not expressible: @guard self \`at\` ?p \`name\` ?n@ parses
+-- fine and never matches, because @name@ is literal-valued and
+-- 'DMML.Guard' excludes literal-valued facts from a guard walk. That is
+-- the same constraint that makes literal-valued predicates uncoverable
+-- by their own guard, met a third time. Guards see the node-valued
+-- skeleton of a graph; everything a reader actually wants to say is in
+-- the literals hanging off it. Fallback in the marker is the honest way
+-- round it, because it changes what is SAID and never what is TRUE.
+--
+-- A single-path marker behaves exactly as before.
+firstResolved :: ([Text] -> Maybe Value) -> Text -> Maybe Value
+firstResolved resolve spec =
+  case [v | alt <- T.splitOn "|" spec, Just v <- [resolve (T.splitOn "." alt)]] of
+    (v : _) -> Just v
+    [] -> Nothing
 
 -- | Describes a RELATION or PROCESS through whatever machine actually
 -- governs it, rather than through a name fact on the related node

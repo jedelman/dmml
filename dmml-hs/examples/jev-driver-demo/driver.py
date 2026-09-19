@@ -391,6 +391,13 @@ class RunState:
     # against what this world's chooser actually does rather than
     # against a number picked in advance.
     interest_seen: list[float] = field(default_factory=list)
+    # Prose catalogs, and this round's rendered sentences per node.
+    # Refreshed once per round rather than per lookup: rendering shells
+    # out to `render-prose`, which re-parses every world file, and the
+    # measured lesson from scan-candidates is that a per-subject
+    # subprocess over an unchanged world is what makes a loop slow.
+    prose_catalogs: list[str] = field(default_factory=list)
+    prose: dict[str, list[str]] = field(default_factory=dict)
 
     def interest_baseline(self, policy) -> tuple[int, float, float]:
         """(n, mean, sd) over this run's scores, blended with the stated
@@ -438,6 +445,8 @@ def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, InterestPol
         modes=list(ex.get("modes", ["chimera", "union", "splice1"])),
         breed_after=int(ex.get("breed_after", 2)),
     )
+    pr = cfg.get("prose") or {}
+    prose_catalogs = [str((base / c).resolve()) for c in pr.get("catalogs", [])]
     it = cfg.get("interest") or {}
     interest = InterestPolicy(
         enabled=bool(it.get("enabled", False)),
@@ -450,7 +459,10 @@ def load_config(path: Path) -> tuple[RunState, Budget, ExtendPolicy, InterestPol
         max_questions=int(it.get("max_questions", 40)),
         score_actions=bool(it.get("score_actions", True)),
     )
-    state = RunState(world_files=world_files, machine_files=machine_files, candidates=candidates)
+    state = RunState(
+        world_files=world_files, machine_files=machine_files, candidates=candidates,
+        prose_catalogs=prose_catalogs,
+    )
     for wf in world_files:
         state.known_nodes |= set(NODE_TOKEN_RE.findall(Path(wf).read_text()))
     return state, budget, extend, interest, cfg["jev"]
@@ -1069,12 +1081,17 @@ def build_state_summary(round_no: int, state: RunState, legal: list[tuple]) -> s
     if open_ways:
         described = []
         for n in open_ways[:8]:
+            sentences = state.prose.get(n)
+            if sentences:
+                # Sentences already end in a period; the list separator
+                # must not add a second one.
+                described.append(f"{n} -- {' '.join(sentences)}".rstrip("."))
+                continue
             said = [f"{p} {v}" for p, v in facts_about(n, state) if p != "cleared"]
             described.append(f"{n} ({'; '.join(said)})" if said else n)
         lines.append(
-            f"{len(open_ways)} way(s) stand open with nothing built beyond them: "
-            + ", ".join(described)
-            + "."
+            f"{len(open_ways)} way(s) stand open with nothing built beyond them. "
+            + " ".join(d + "." for d in described)
         )
     else:
         lines.append("No opened way stands unbuilt.")
@@ -1697,9 +1714,59 @@ def describe_frontier_node(node: str, state: RunState) -> str:
     # live interest run returned 0.43/0.44/0.46/0.44 over four ways whose
     # descriptions differed only in the name, which is the right answer
     # to a question carrying no information.
-    said = [f"{pred} {val}" for pred, val in facts_about(node, state) if pred != "cleared"]
-    known = f" The world says of it: {'; '.join(said)}." if said else ""
+    # Prose first, raw facts only as a fallback -- see refresh_prose.
+    sentences = state.prose.get(node)
+    if sentences:
+        known = " " + " ".join(sentences)
+    else:
+        said = [f"{pred} {val}" for pred, val in facts_about(node, state) if pred != "cleared"]
+        known = f" The world says of it: {'; '.join(said)}." if said else ""
     return f"Press on past {node}{how}.{known} Nothing has been built beyond it yet."
+
+
+def prose_binary() -> list[str]:
+    import shlex
+
+    return shlex.split(os.environ.get("RENDER_PROSE", "render-prose"))
+
+
+def refresh_prose(state: RunState) -> int:
+    """Render the whole world to sentences, once, for this round.
+
+    Jev has been reading raw triples all along -- `describe_frontier_node`
+    concatenated `pred obj` pairs and they happened to read as English
+    because the demo vocabulary happened to be English verbs in the right
+    form. `upstreamOf weir/low` is where that stops. This replaces the
+    concatenation with the real closed-set selection path: same catalog,
+    same `eligibleTemplates`, same `renderTemplateWith` that
+    `check-prose-coverage` measures, so what Jev reads is exactly what
+    that tool certifies.
+
+    Fails SOFT and says so. A missing binary or an unparseable catalog
+    leaves `state.prose` empty and every describer falls back to the
+    triple -- a run that loses its prose should read worse, not stop.
+    """
+    state.prose = {}
+    if not state.prose_catalogs:
+        return 0
+    cmd = prose_binary() + ["--json"]
+    for c in state.prose_catalogs:
+        cmd += ["--catalog", c]
+    cmd += list(state.world_files)
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
+        print(f"  prose: renderer unavailable ({e.__class__.__name__}); descriptions fall back to raw facts")
+        return 0
+    if proc.returncode != 0:
+        print(f"  prose: renderer failed: {proc.stderr.strip()[:200]}; falling back to raw facts")
+        return 0
+    try:
+        state.prose = {k: list(v) for k, v in json.loads(proc.stdout).items()}
+    except json.JSONDecodeError:
+        print("  prose: renderer output was not JSON; falling back to raw facts")
+        return 0
+    return len(state.prose)
 
 
 def parse_machine_text(text: str) -> dict:
@@ -2372,6 +2439,10 @@ def main() -> None:
         # Every source names what it brings BEFORE anything is dry-fired,
         # because a minting param is an argument to the firing, not a
         # result of it -- the scan has to see the name the fire would use.
+        n_prose = refresh_prose(state)
+        if n_prose:
+            print(f"  prose: {n_prose} node(s) have sentences this round")
+
         minted_names = refresh_minting_params(state)
         if minted_names:
             print(f"  arriving this round: {minted_names}")

@@ -2,108 +2,306 @@
 #
 # Written against `check-prose-coverage`'s ranked gap report rather than
 # against a predicate list, so the catalog grows where worlds actually
-# are rather than where someone guessed they would be. Commonest first.
+# are rather than where someone guessed they would be.
 #
-# THREE THINGS TO KNOW BEFORE ADDING TO THIS FILE.
+# FOUR THINGS TO KNOW BEFORE ADDING TO THIS FILE.
 #
-# 1. A guard whose object is a `?binder` (or a slash-free bareword)
-#    matches any value. "X has something" is the condition; the specific
-#    value is rendered, not tested. Elsewhere in this project a
-#    slash-free bareword is a BUG and `check-guard-literals` exists to
-#    catch it -- here it is the idiom, so prefer the explicit `?binder`.
+# 1. A guard whose object is a `?binder` matches any value. "X has
+#    something" is the condition; the specific value is rendered, not
+#    tested. (A slash-free bareword does the same and is a BUG
+#    everywhere else in this project -- `check-guard-literals` exists to
+#    catch it -- so prefer the explicit `?binder` here.)
 #
-# 2. Prefer `{attr:<pred>}` to `{attr:<pred>.name}` unless the object
-#    really carries a `name` fact. An unresolved marker is not an error
-#    at render time: `renderTemplateWith` substitutes what it can and
-#    leaves the rest verbatim, so the brace ships inside the sentence.
-#    `check-prose-coverage` fails on that, which is how it was caught.
+# 2. Always write `{attr:<pred>.name|<pred>}`. The fallback is the
+#    difference between a canonical catalog and a per-corpus one:
+#    `{attr:at}` gives "stands at station/stillwater" in a world whose
+#    places are named, and `{attr:at.name}` leaves a literal brace in the
+#    sentence in a world whose places are not. Tried both; neither is
+#    right for both corpora.
 #
-# 3. LITERAL-VALUED predicates (`year 1740`, `count 40`, `weight 1400`)
-#    have NO template here, and that is a finding rather than an
-#    omission. `DMML.Guard` structurally excludes literal-valued facts
-#    from a guard walk, so no guard on the predicate itself can ever
-#    match. Covering one needs a guard on some NODE-valued fact that
-#    reliably CO-OCCURS with it, which is a per-world authoring fact:
-#    guarding on something loose like `self `a` ?type` makes the
-#    template eligible for every typed subject and produces "There are
-#    {attr:count} of Wren Aldy, Apprentice." Tried, caught, removed.
+# 3. You cannot guard on whether a name EXISTS.
+#    `guard self `at` ?p `name` ?n` parses and never matches, because
+#    `name` is literal-valued and DMML.Guard excludes literal-valued
+#    facts from a guard walk. Guards see the node-valued skeleton of a
+#    graph; nearly everything a reader wants to say hangs off it as
+#    literals. Hence rule 2.
+#
+# 4. LITERAL-VALUED predicates (`year 1740`, `count 40`, `weight 1400`)
+#    have no template here, for the same reason as rule 3 -- no guard on
+#    the predicate itself can ever match. Covering one needs a guard on a
+#    node-valued fact that reliably CO-OCCURS with it, which is per-world
+#    authoring: guarding on something loose like `self `a` ?type` made
+#    the template eligible for every typed subject and produced "There
+#    are {attr:count} of Wren Aldy, Apprentice." Tried, caught, removed.
+
+# --- identity and place ----------------------------------------------
 
 template is-a
   guard self `a` ?type
-  text "{subject} is {attr:a}."
+  text "{subject} is {attr:a.name|a}."
 
 template at-place
   guard self `at` ?place
-  text "{subject} stands at {attr:at}."
+  text "{subject} stands at {attr:at.name|at}."
 
 template located-in
   guard self `locatedIn` ?place
-  text "{subject} lies within {attr:locatedIn}."
+  text "{subject} lies within {attr:locatedIn.name|locatedIn}."
 
 template location-of
   guard self `location` ?place
-  text "{subject} is to be found at {attr:location}."
+  text "{subject} is to be found at {attr:location.name|location}."
 
 template in-container
   guard self `in` ?holder
-  text "{subject} lies in {attr:in}."
-
-template has-feature
-  guard self `has` ?feature
-  text "{subject} has {attr:has} about it."
-
-template yields-sign
-  guard self `yields` ?sign
-  text "What comes off {subject} is {attr:yields}."
-
-template role-of
-  guard self `role` ?r
-  text "{subject} serves as {attr:role}."
-
-template tends-charge
-  guard self `tends` ?charge
-  text "{subject} keeps {attr:tends}, and it is theirs to keep."
-
-template condition-of
-  guard self `condition` ?c
-  text "{subject} is {attr:condition}."
-
-template stocked-with
-  guard self `stocked` ?stock
-  text "{subject} is stocked with {attr:stocked}."
-
-template works-at
-  guard self `worksAt` ?place
-  text "{subject} works at {attr:worksAt}."
-
-template witnessed-by
-  guard self `witnessedBy` ?witness
-  text "{attr:witnessedBy} stood witness to {subject}."
-
-template warded-by
-  guard self `wardedBy` ?warden
-  text "{subject} is warded by {attr:wardedBy}."
-
-template overlooks-target
-  guard self `overlooks` ?target
-  text "From {subject} you can see {attr:overlooks}, and nothing passes between them."
-
-template material-of
-  guard self `material` ?m
-  text "{subject} is built of {attr:material}."
-
-template holds-thing
-  guard self `holds` ?held
-  text "{subject} holds {attr:holds}."
+  text "{subject} lies in {attr:in.name|in}."
 
 template quarters-at
   guard self `quarters` ?place
-  text "{subject} quarters at {attr:quarters}."
+  text "{subject} quarters at {attr:quarters.name|quarters}."
 
-template equips-thing
-  guard self `equips` ?gear
-  text "{subject} carries {attr:equips}."
+template posted-at
+  guard self `postedAt` ?place
+  text "{subject} is posted at {attr:postedAt.name|postedAt}."
+
+template stands-in
+  guard self `standsIn` ?place
+  text "{subject} stands in {attr:standsIn.name|standsIn}."
+
+template berthed
+  guard self `berth` ?place
+  text "{subject} is berthed at {attr:berth.name|berth}."
+
+template grazes-in
+  guard self `grazesIn` ?range
+  text "{subject} grazes in {attr:grazesIn.name|grazesIn}."
+
+# --- shape of the world ----------------------------------------------
+
+template adjacent-to
+  guard self `adjacent` ?other
+  text "{subject} is next to {attr:adjacent.name|adjacent}."
+
+template bounds-thing
+  guard self `bounds` ?b
+  text "{subject} bounds {attr:bounds.name|bounds}."
+
+template spans-thing
+  guard self `spans` ?s
+  text "{subject} spans {attr:spans.name|spans}."
+
+template upstream-of
+  guard self `upstreamOf` ?other
+  text "{subject} lies above {attr:upstreamOf.name|upstreamOf} on the water."
+
+template downstream-of
+  guard self `downstreamOf` ?other
+  text "{subject} lies below {attr:downstreamOf.name|downstreamOf} on the water."
+
+template overlooks-target
+  guard self `overlooks` ?target
+  text "From {subject} you can see {attr:overlooks.name|overlooks}, and nothing passes between them."
+
+template watches-target
+  guard self `watches` ?target
+  text "{subject} watches {attr:watches.name|watches}."
+
+# --- what moves ------------------------------------------------------
+
+template feeds-into
+  guard self `feeds` ?other
+  text "{subject} feeds {attr:feeds.name|feeds}."
+
+template drains-into
+  guard self `drains` ?other
+  text "{subject} drains into {attr:drains.name|drains}."
+
+template carries-load
+  guard self `carries` ?load
+  text "{subject} is carrying {attr:carries.name|carries}."
+
+template yields-sign
+  guard self `yields` ?sign
+  text "What comes off {subject} is {attr:yields.name|yields}."
+
+template grinds-with
+  guard self `grinds` ?stone
+  text "{subject} grinds with {attr:grinds.name|grinds}."
+
+template refined-into
+  guard self `refinedInto` ?product
+  text "{subject} is worked into {attr:refinedInto.name|refinedInto}."
 
 template is-substance
   guard self `is` ?kind
-  text "{subject} is {attr:is}."
+  text "{subject} is {attr:is.name|is}."
+
+template stocked-with
+  guard self `stocked` ?stock
+  text "{subject} is stocked with {attr:stocked.name|stocked}."
+
+template stock-of
+  guard self `stock` ?s
+  text "{subject} holds a stock of {attr:stock.name|stock}."
+
+template accepts-offering
+  guard self `accepts` ?offering
+  text "{subject} takes {attr:accepts.name|accepts}."
+
+# --- condition and setting -------------------------------------------
+
+template has-feature
+  guard self `has` ?feature
+  text "{subject} has {attr:has.name|has} about it."
+
+template condition-of
+  guard self `condition` ?c
+  text "{subject} is {attr:condition.name|condition}."
+
+template material-of
+  guard self `material` ?m
+  text "{subject} is built of {attr:material.name|material}."
+
+template grade-of
+  guard self `grade` ?g
+  text "{subject} runs {attr:grade.name|grade}."
+
+template barrier-state
+  guard self `barrier` ?b
+  text "The way through {subject} is {attr:barrier.name|barrier}."
+
+template access-state
+  guard self `access` ?a
+  text "{subject} stands {attr:access.name|access} to those who come."
+
+template leaf-state
+  guard self `leaf` ?l
+  text "The leaf of {subject} is {attr:leaf.name|leaf}."
+
+template level-state
+  guard self `level` ?l
+  text "The water in {subject} is {attr:level.name|level}."
+
+template flow-state
+  guard self `flow` ?f
+  text "The flow through {subject} is {attr:flow.name|flow}."
+
+template sill-of
+  guard self `sill` ?s
+  text "{subject} sits on {attr:sill.name|sill}."
+
+template hull-state
+  guard self `hull` ?h
+  text "The hull of {subject} is {attr:hull.name|hull}."
+
+template motion-state
+  guard self `motion` ?m
+  text "{subject} is {attr:motion.name|motion}."
+
+template signal-state
+  guard self `signal` ?s
+  text "{subject} shows {attr:signal.name|signal}."
+
+template avail-state
+  guard self `avail` ?a
+  text "{subject} is {attr:avail.name|avail}."
+
+template paddle-state
+  guard self `paddle` ?p
+  text "The paddle of {subject} is {attr:paddle.name|paddle}."
+
+# --- people and what they are to each other --------------------------
+
+template role-of
+  guard self `role` ?r
+  text "{subject} serves as {attr:role.name|role}."
+
+template works-at
+  guard self `worksAt` ?place
+  text "{subject} works at {attr:worksAt.name|worksAt}."
+
+template serves-whom
+  guard self `serves` ?whom
+  text "{subject} serves {attr:serves.name|serves}."
+
+template tends-charge
+  guard self `tends` ?charge
+  text "{subject} keeps {attr:tends.name|tends}, and it is theirs to keep."
+
+template holds-thing
+  guard self `holds` ?held
+  text "{subject} holds {attr:holds.name|holds}."
+
+template owns-thing
+  guard self `owns` ?owned
+  text "{attr:owns.name|owns} belongs to {subject}."
+
+template equips-thing
+  guard self `equips` ?gear
+  text "{subject} carries {attr:equips.name|equips}."
+
+template mentors-whom
+  guard self `mentors` ?student
+  text "{subject} is teaching {attr:mentors.name|mentors}."
+
+template apprentices-under
+  guard self `apprenticesUnder` ?master
+  text "{subject} is learning the work under {attr:apprenticesUnder.name|apprenticesUnder}."
+
+template masters-what
+  guard self `masters` ?craft
+  text "{subject} has the mastery of {attr:masters.name|masters}."
+
+template needs-what
+  guard self `need` ?n
+  text "What {subject} wants is {attr:need.name|need}."
+
+# --- the record ------------------------------------------------------
+
+template witnessed-by
+  guard self `witnessedBy` ?witness
+  text "{attr:witnessedBy.name|witnessedBy} stood witness to {subject}."
+
+template warded-by
+  guard self `wardedBy` ?warden
+  text "{subject} is warded by {attr:wardedBy.name|wardedBy}."
+
+template built-by
+  guard self `builtBy` ?wright
+  text "{subject} was built by {attr:builtBy.name|builtBy}."
+
+template raised-by
+  guard self `raisedBy` ?wright
+  text "{subject} was raised by {attr:raisedBy.name|raisedBy}."
+
+template crafted-by
+  guard self `craftedBy` ?maker
+  text "{subject} was made by {attr:craftedBy.name|craftedBy}."
+
+template felled-by
+  guard self `felledBy` ?agent
+  text "{subject} was brought down by {attr:felledBy.name|felledBy}."
+
+template sealed-by
+  guard self `sealedBy` ?agent
+  text "{subject} was sealed by {attr:sealedBy.name|sealedBy}."
+
+template approved-by
+  guard self `approvedBy` ?body
+  text "{subject} carries the approval of {attr:approvedBy.name|approvedBy}."
+
+template confirmed-by
+  guard self `confirmedBy` ?body
+  text "{subject} was confirmed by {attr:confirmedBy.name|confirmedBy}."
+
+template assessed-by
+  guard self `assessedBy` ?body
+  text "{subject} was assessed by {attr:assessedBy.name|assessedBy}."
+
+template records-what
+  guard self `records` ?what
+  text "{subject} is the record of {attr:records.name|records}."
+
+template belongs-to
+  guard self `belongsTo` ?owner
+  text "{subject} belongs to {attr:belongsTo.name|belongsTo}."

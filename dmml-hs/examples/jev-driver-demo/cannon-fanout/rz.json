@@ -56,5 +56,10 @@
     "max_growth_per_round": 4,
     "max_questions": 40,
     "score_actions": true
+  },
+  "prose": {
+    "catalogs": [
+      "../../prose-catalog/core.catalog"
+    ]
   }
 }
