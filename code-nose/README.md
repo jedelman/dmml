@@ -111,17 +111,62 @@ python3 baseline.py --scores stage2_scores.ndjson --mint
 `--scores` accepts either one float per line or ndjson objects with a
 `"score"` field (Stage 2's expected output shape), from a file or stdin.
 
+## Stage 2 (`stage2_score.py`)
+
+One batched Jev call, one `noul` per Stage 1 candidate — independent,
+parallel, never a `choice` between them. The request shape (endpoint,
+auth, the `noul` question's `criteria: {"true": ..., "false": ...}`
+shape) and the ranking math (z-score against a blended baseline+prior,
+then a sigmoid) are carried over **verified**, not reconstructed from
+memory, from this repo's own real Jev integration: `driver.py` on
+branch `claude/recombinant-cannon-opr929` (`call_jev_batch`'s `noul`
+type, `interest_probability`). That code has actually been run live
+against Jev; this one follows its request/response handling line for
+line rather than guessing at a schema for an external API.
+
+**Deliberately not carried over:** that branch's prior (mean 0.412, sd
+0.086, weight 12) is a measured fact about *its* domain — 122 live
+scores on a fantasy-narrative interest question. It says nothing about
+a code-review `noul` distribution. This script's prior defaults to
+`--prior-weight 0` (none at all); with no baseline and no prior it
+ranks by raw `noul` score and says so on stderr, rather than silently
+standardizing against borrowed numbers. Once `code-nose` has minted its
+own real baseline the same way that project measured its own, a real
+prior can be set from what's actually observed here.
+
+```sh
+# rehearse the whole pipeline with no API key (deterministic stand-in scores):
+python3 stage1_cluster.py --root .. --changed-since origin/main \
+  | python3 stage2_score.py --dry-run --repo-label "jedelman/dmml"
+
+# live, and feed the scores straight into a baseline mint on main:
+python3 stage1_cluster.py --root .. --changed-since origin/main \
+  | python3 stage2_score.py --api-key "$TYPESAFE_API_KEY" --scores-only \
+  | python3 baseline.py --mint
+```
+
+Every full-pipeline path above (cold-start ranking, truncation
+reporting past `--max-questions`, the scores-only hand-off into
+`baseline.py --mint`, a second batch merging into an existing baseline)
+was run for real against this repo's own Stage 1 output in `--dry-run`
+before this shipped — see the commit that added `stage2_score.py`.
+
 ## What's deliberately not here yet
 
-- **Stage 2 itself** (the batched Jev call, one `noul` per candidate,
-  z-scored against `nose-baseline.json`, ranked output, non-blocking PR
-  annotation). Both scripts above were tested against synthetic scores
-  in place of a real Stage 2 call — see the test transcript in the
-  commit that added `baseline.py` for exactly what was exercised.
+- **A real live Jev call.** Everything above was exercised in
+  `--dry-run`; nobody has spent a real `TYPESAFE_API_KEY` call through
+  this yet, so the *code path* is verified but the *quality of the
+  actual noul scores on real code* is not — same distinction this
+  project always draws between "runs" and "measured."
 - Cluster A currently only compares `.py` and `.hs` files, and only
   within a single naming family per basename — it doesn't (yet) cluster
   files with *different* names that turn out to implement the same
   logic (e.g. a Python and a Haskell version of the same check).
-- No CI workflow file wires any of this up yet — there's no point
-  writing `.github/workflows/code-nose.yml` before Stage 2 exists to
-  call from it; it would just be an unrun stub.
+- No CI workflow file wires any of this up yet. Worth writing now that
+  both stages exist end-to-end — `.github/workflows/code-nose.yml`
+  running Stage 1 scoped to the PR diff, Stage 2 against it, and a
+  non-blocking PR annotation, with the baseline mint step gated to
+  pushes on `main` as `baseline.py` already enforces.
+- Truncation past `--max-questions` currently drops candidates in
+  Stage 1's emission order, not by any priority — a 100-candidate PR
+  loses the same way regardless of which findings matter more.
