@@ -151,22 +151,61 @@ reporting past `--max-questions`, the scores-only hand-off into
 was run for real against this repo's own Stage 1 output in `--dry-run`
 before this shipped — see the commit that added `stage2_score.py`.
 
+Two real live batches have now been spent against Jev (49 real `noul`
+scores; see `dev-journal/2026-09-20-code-nose-first-live-run.md`) —
+the request/response code path and the ranking math are no longer just
+tested, they've been run for real.
+
+## CI (`.github/workflows/code-nose.yml`)
+
+Two jobs, deliberately independent:
+
+- **`baseline-gate` (required).** Runs `check_baseline.py` — cheap, no
+  API call, no LLM. Fails the PR if `code-nose/nose-baseline.json` is
+  missing, malformed, or older than `--max-age-days` (default 30).
+  **Minting stays manual on purpose** — nothing in CI ever mints or
+  auto-commits the baseline; a person runs `baseline.py --mint` from a
+  `main` checkout whenever they want to refresh it, and commits the
+  result like any other file change, reviewed like any other PR. This
+  job is the other half: it enforces that someone actually did that
+  recently, the same way a lockfile-in-sync check does — without
+  spending a live Jev call on every PR just to verify one already ran.
+- **`review` (advisory, never fails the build).** Stage 1 scoped to
+  the PR's diff (`--changed-since origin/<base>`) → Stage 2 against
+  the result → a ranked markdown table posted to the job summary.
+  Falls back to `--dry-run` with a `::warning::` if `TYPESAFE_API_KEY`
+  isn't available — expected for a fork PR, since GitHub Actions
+  withholds repo secrets from `pull_request`-triggered workflows on
+  forks. Every branch of this logic (empty candidates, no-key fallback,
+  real live key) was run for real, outside the workflow, before this
+  shipped — see the commit that added the workflow file.
+
+**Current real state, disclosed rather than hidden:** `check_baseline.py`
+fails right now, honestly, because `code-nose/nose-baseline.json`
+doesn't exist yet — the two live batches so far were run from a
+non-`main` branch, so `baseline.py`'s own gate correctly refused to
+write it (see the first-live-run journal entry). The very first real
+mint, from `main`, is the one manual step this repo needs before
+`baseline-gate` goes green.
+
 ## What's deliberately not here yet
 
-- **A real live Jev call.** Everything above was exercised in
-  `--dry-run`; nobody has spent a real `TYPESAFE_API_KEY` call through
-  this yet, so the *code path* is verified but the *quality of the
-  actual noul scores on real code* is not — same distinction this
-  project always draws between "runs" and "measured."
+- **The first real mint on `main`.** Everything is wired and tested;
+  nobody has yet run `baseline.py --mint` from an actual `main`
+  checkout, so `nose-baseline.json` doesn't exist in the repo and the
+  `baseline-gate` job will fail until someone does.
 - Cluster A currently only compares `.py` and `.hs` files, and only
   within a single naming family per basename — it doesn't (yet) cluster
   files with *different* names that turn out to implement the same
   logic (e.g. a Python and a Haskell version of the same check).
-- No CI workflow file wires any of this up yet. Worth writing now that
-  both stages exist end-to-end — `.github/workflows/code-nose.yml`
-  running Stage 1 scoped to the PR diff, Stage 2 against it, and a
-  non-blocking PR annotation, with the baseline mint step gated to
-  pushes on `main` as `baseline.py` already enforces.
 - Truncation past `--max-questions` currently drops candidates in
   Stage 1's emission order, not by any priority — a 100-candidate PR
   loses the same way regardless of which findings matter more.
+- The `review` job's YAML was validated for structure (`yaml.safe_load`)
+  and every embedded shell step was both `bash -n` checked and actually
+  *executed* against real repo state outside the workflow (see that
+  commit) — but the workflow file itself has never been run by GitHub
+  Actions, which per this repo's own stated practice elsewhere
+  (`dmml-hs-ci.yml`'s CI-fix history) is the only way to fully verify a
+  workflow change. Worth confirming on its first real PR run rather
+  than assuming.

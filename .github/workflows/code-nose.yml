@@ -1,0 +1,80 @@
+name: code-nose
+
+# Two independent jobs, deliberately not one:
+#
+#   baseline-gate  -- REQUIRED. Cheap, no API call, no LLM involved.
+#                     Fails the PR if code-nose/nose-baseline.json is
+#                     missing, malformed, or stale. Minting itself stays
+#                     a manual, deliberate action (see code-nose/README.md)
+#                     -- this job only checks that someone did it recently,
+#                     the same way a lockfile-in-sync check would.
+#
+#   review         -- ADVISORY. Runs Stage 1 (mechanical, scoped to this
+#                     PR's diff) and Stage 2 (one batched Jev noul call,
+#                     falling back to --dry-run if no API key is
+#                     available -- e.g. a fork PR, which GitHub Actions
+#                     withholds repo secrets from on `pull_request`).
+#                     Posts a ranked report to the job summary. Never
+#                     fails the build: the nose sniffs, it doesn't decide.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  baseline-gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check nose-baseline.json is present and current
+        run: python3 code-nose/check_baseline.py --baseline-path code-nose/nose-baseline.json --max-age-days 30
+
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # need real history for --changed-since's merge-base
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Stage 1 -- mechanical candidates scoped to this PR's diff
+        run: |
+          python3 code-nose/stage1_cluster.py --root . \
+            --changed-since "origin/${{ github.base_ref }}" \
+            > /tmp/candidates.ndjson
+          echo "candidate count: $(wc -l < /tmp/candidates.ndjson)"
+
+      - name: Stage 2 -- score candidates (never fails the job)
+        env:
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+        run: |
+          set +e
+          if [ ! -s /tmp/candidates.ndjson ]; then
+            : > /tmp/scored.ndjson
+          elif [ -n "$TYPESAFE_API_KEY" ]; then
+            python3 code-nose/stage2_score.py \
+              --candidates /tmp/candidates.ndjson \
+              --repo-label "${{ github.repository }}" \
+              --baseline-path code-nose/nose-baseline.json \
+              --api-key "$TYPESAFE_API_KEY" \
+              > /tmp/scored.ndjson
+          else
+            echo "::warning::TYPESAFE_API_KEY not available (expected for a fork PR -- GitHub withholds repo secrets from pull_request workflows triggered by forks). Running --dry-run so the pipeline still exercises end to end; scores below are NOT real."
+            python3 code-nose/stage2_score.py \
+              --candidates /tmp/candidates.ndjson --dry-run \
+              > /tmp/scored.ndjson
+          fi
+          exit 0
+
+      - name: Post findings to the job summary
+        run: python3 code-nose/report_summary.py /tmp/scored.ndjson >> "$GITHUB_STEP_SUMMARY"

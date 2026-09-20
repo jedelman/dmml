@@ -69,6 +69,32 @@ output saved to `dev-journal/artifacts/2026-09-20-code-nose-first-live-run.ndjso
 (49 rows) so the real mint, whenever it happens, isn't the only record
 of this measurement.
 
+## Update — CI wiring, and a third real batch
+
+Same day, after "AUTOMATE": built `.github/workflows/code-nose.yml`.
+Split into two independent jobs on purpose — `baseline-gate` (required,
+cheap, no API call: fails if `nose-baseline.json` is missing, malformed,
+or stale) and `review` (advisory, Stage 1 scoped to the PR diff → Stage
+2 → job-summary report, never fails the build). Minting stays a manual
+action per Jason's correction to the original bot-commit/PR-bot design —
+CI only *checks* the baseline is current, it never mints or commits one
+itself.
+
+Every branch of the `review` job's shell logic (empty candidates,
+no-key `--dry-run` fallback, real live key) was run for real outside
+the workflow before shipping it, including one more genuine live batch
+(cluster B again, 9 questions, decisiveness 0.164 — consistent with the
+first cluster-B run's 0.127, both well below cluster A's 0.325). Now
+58 real live scores on record total. Appended to the same artifact file
+above.
+
+**Disclosed, not hidden:** `check_baseline.py` fails right now, for
+real, because nobody has minted from an actual `main` checkout yet —
+both live sessions ran from this feature branch, so `baseline.py`'s own
+gate correctly refused to write `nose-baseline.json`. That first real
+mint on `main` is the one manual step left before `baseline-gate` goes
+green.
+
 ## Open
 
 - Only 49 of 63 total Stage 1 candidates on this repo have ever been
