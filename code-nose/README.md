@@ -62,19 +62,66 @@ Output is newline-delimited JSON, one candidate per line:
 `claim` is written already as the comparison Stage 2 hands to a `noul`
 call — never a raw diff, never file-level bookkeeping.
 
+## Diff scoping
+
+```sh
+python3 stage1_cluster.py --root .. --changed-since origin/main > candidates.ndjson
+```
+
+Emits only candidates whose `files` intersect the merge-base diff
+against `REF`. A pre-existing sibling-family disagreement nobody's PR
+touched is noise, not signal — and it also keeps each PR's candidate
+count well under whatever a single Jev batch can hold (see the star-
+topology note above: unscoped, this repo alone produces 63; a typical
+PR touches far fewer files than the whole `compliance*` family). If
+git or `REF` can't be resolved, it falls back to an unscoped run with a
+stderr warning rather than silently reporting zero — going quiet on a
+tooling failure is worse than an occasional noisy run.
+
+## Baseline (`baseline.py`)
+
+Persisted running mean/sd for Stage 2's nose scores (Welford/Chan
+online variance — merges a new batch into the checked-in file without
+re-reading historical raw scores). Ranking a candidate's score against
+this, not a fixed threshold, is the same fix the DMML project's own
+`noul` interest scores needed: they lived in 0.21-0.59 for 122 live
+calls, and every absolute cutoff either built nothing or built
+everything.
+
+**The mint gate:** the script always computes and prints what the
+baseline *would* become — a PR can preview this freely. It only
+*writes* the checked-in `nose-baseline.json` when `--mint` is passed
+**and** the current ref is `main` (checked via `GITHUB_REF_NAME` under
+GitHub Actions — Actions checks out a detached HEAD even on `push`
+events, so a plain `git rev-parse --abbrev-ref HEAD` would misreport
+"HEAD" there — falling back to a real git call otherwise). A PR branch
+that calls `--mint` by accident gets a clear stderr refusal and exit 0,
+never a write and never a broken build. This is deliberate: one noisy
+PR's scores must never be able to skew what every other PR is ranked
+against, so only a merge to `main` moves the shared baseline.
+
+```sh
+# preview only, from anywhere -- never writes:
+python3 baseline.py --scores stage2_scores.ndjson
+
+# real mint -- only takes effect when run from CI on main:
+python3 baseline.py --scores stage2_scores.ndjson --mint
+```
+
+`--scores` accepts either one float per line or ndjson objects with a
+`"score"` field (Stage 2's expected output shape), from a file or stdin.
+
 ## What's deliberately not here yet
 
-- **Batching/scan-scope.** This runs over the whole repo. Real CI usage
-  should scope to files touched by the current PR/diff (intersect
-  candidate `files` against `git diff --name-only`), both to keep each
-  Jev batch under its question ceiling and because a nose that flags
-  pre-existing, unrelated drift on every PR is noise, not signal.
-- **The persisted baseline / running mean-sd** for Stage 2's z-score
-  ranking — checked-in JSON, updated as a CI step, per the "baseline as
-  a CI step and check-in gate" design call.
 - **Stage 2 itself** (the batched Jev call, one `noul` per candidate,
-  ranked output, non-blocking PR annotation).
+  z-scored against `nose-baseline.json`, ranked output, non-blocking PR
+  annotation). Both scripts above were tested against synthetic scores
+  in place of a real Stage 2 call — see the test transcript in the
+  commit that added `baseline.py` for exactly what was exercised.
 - Cluster A currently only compares `.py` and `.hs` files, and only
   within a single naming family per basename — it doesn't (yet) cluster
   files with *different* names that turn out to implement the same
   logic (e.g. a Python and a Haskell version of the same check).
+- No CI workflow file wires any of this up yet — there's no point
+  writing `.github/workflows/code-nose.yml` before Stage 2 exists to
+  call from it; it would just be an unrun stub.

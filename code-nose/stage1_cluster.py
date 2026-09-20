@@ -36,6 +36,8 @@ import difflib
 import json
 import re
 import statistics
+import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -56,6 +58,48 @@ def iter_source_files(root: Path):
         if any(part in SKIP_DIRS for part in path.parts):
             continue
         yield path
+
+
+def git_changed_files(root: Path, since_ref: str) -> set[str] | None:
+    """Files touched between the merge-base of `since_ref` and HEAD,
+    as paths relative to `root` (matching what candidates put in
+    "files"). Returns None if git or the ref isn't available, so the
+    caller can fall back to an unscoped run rather than silently
+    reporting zero candidates -- a nose that goes quiet because its
+    git call failed is worse than one that's briefly unscoped.
+    """
+    def run(args: list[str]) -> str | None:
+        try:
+            return subprocess.run(
+                args, cwd=root, capture_output=True, text=True, check=True
+            ).stdout
+        except (subprocess.CalledProcessError, FileNotFoundError, OSError):
+            return None
+
+    toplevel = run(["git", "rev-parse", "--show-toplevel"])
+    merge_base = run(["git", "merge-base", since_ref, "HEAD"])
+    if toplevel is None or merge_base is None:
+        return None
+    diff_out = run(["git", "diff", "--name-only", merge_base.strip(), "HEAD"])
+    if diff_out is None:
+        return None
+    git_root = Path(toplevel.strip())
+    changed: set[str] = set()
+    for line in diff_out.splitlines():
+        if not line.strip():
+            continue
+        abs_path = git_root / line
+        try:
+            changed.add(str(abs_path.relative_to(root)))
+        except ValueError:
+            continue  # touched a file outside --root; not this scan's business
+    return changed
+
+
+def scope_to_changed(candidates, changed_files: set[str]):
+    for candidate in candidates:
+        if any(f in changed_files for f in candidate["files"]):
+            yield candidate
 
 
 # ---------------------------------------------------------------------
@@ -321,6 +365,17 @@ def main() -> None:
         action="append",
         help="restrict to one or more cluster types (default: all)",
     )
+    ap.add_argument(
+        "--changed-since",
+        metavar="REF",
+        help=(
+            "only emit candidates touching a file changed since REF "
+            "(merge-base REF..HEAD) -- e.g. --changed-since origin/main "
+            "for a PR run. A pre-existing sibling-family disagreement "
+            "nobody's PR touched is noise, not signal; without this "
+            "flag every run is unscoped (whole-repo, as before)."
+        ),
+    )
     args = ap.parse_args()
     root = args.root.resolve()
     wanted = set(args.cluster) if args.cluster else {"A", "B", "C"}
@@ -333,12 +388,29 @@ def main() -> None:
     if "C" in wanted:
         generators.append(cluster_c_candidates(root))
 
+    all_candidates = (c for gen in generators for c in gen)
+
+    if args.changed_since:
+        changed = git_changed_files(root, args.changed_since)
+        if changed is None:
+            print(
+                f"# stage1_cluster: could not resolve --changed-since "
+                f"{args.changed_since!r} (git or ref unavailable) -- "
+                f"falling back to an UNSCOPED run",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                f"# stage1_cluster: scoped to {len(changed)} changed file(s) "
+                f"since {args.changed_since}",
+                file=sys.stderr,
+            )
+            all_candidates = scope_to_changed(all_candidates, changed)
+
     count = 0
-    for gen in generators:
-        for candidate in gen:
-            print(json.dumps(candidate))
-            count += 1
-    import sys
+    for candidate in all_candidates:
+        print(json.dumps(candidate))
+        count += 1
     print(f"# stage1_cluster: {count} candidates", file=sys.stderr)
 
 
