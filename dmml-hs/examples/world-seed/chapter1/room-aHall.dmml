@@ -1,0 +1,12 @@
+machine room/aHall
+  states
+    sealed
+    open
+
+  transition breach()
+    sealed -> open
+    guard room/entry `cleared` mark/yes
+    assert self `cleared` mark/yes
+    assert self `state` open
+    retract self `state`
+

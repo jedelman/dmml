@@ -1,0 +1,178 @@
+{
+  "world_seed": [
+    "mega-world.dmml"
+  ],
+  "machines": [
+    "fork-a.dmml",
+    "fork-b.dmml",
+    "fork-c.dmml",
+    "room-aHall.dmml",
+    "room-anForge.dmml",
+    "room-anVault.dmml",
+    "room-asSpur.dmml",
+    "room-bForge.dmml",
+    "room-bnVault.dmml",
+    "room-bsHall.dmml",
+    "room-bsVault.dmml",
+    "room-cHall.dmml",
+    "room-cHall2.dmml",
+    "room-cnSpur.dmml",
+    "room-csSpur.dmml"
+  ],
+  "candidates": [
+    {
+      "id": "breach-aHall",
+      "machine": "room-aHall.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/aHall: a hall \u2014 clears itself, opening the rooms beyond it. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-anForge",
+      "machine": "room-anForge.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/anForge: a forge \u2014 yields a key that vaults require, clears the way on. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-anVault",
+      "machine": "room-anVault.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/anVault: a vault \u2014 needs a cleared path AND a key; yields a sigil, the richer prize. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-asSpur",
+      "machine": "room-asSpur.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/asSpur: a spur \u2014 yields a relic but is a dead end, clears nothing onward. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-bForge",
+      "machine": "room-bForge.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/bForge: a forge \u2014 yields a key that vaults require, clears the way on. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-bnVault",
+      "machine": "room-bnVault.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/bnVault: a vault \u2014 needs a cleared path AND a key; yields a sigil, the richer prize. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-bsHall",
+      "machine": "room-bsHall.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/bsHall: a hall \u2014 clears itself, opening the rooms beyond it. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-bsVault",
+      "machine": "room-bsVault.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/bsVault: a vault \u2014 needs a cleared path AND a key; yields a sigil, the richer prize. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-cHall",
+      "machine": "room-cHall.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/cHall: a hall \u2014 clears itself, opening the rooms beyond it. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-cHall2",
+      "machine": "room-cHall2.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/cHall2: a hall \u2014 clears itself, opening the rooms beyond it. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-cnSpur",
+      "machine": "room-cnSpur.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/cnSpur: a spur \u2014 yields a relic but is a dead end, clears nothing onward. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-csSpur",
+      "machine": "room-csSpur.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/csSpur: a spur \u2014 yields a relic but is a dead end, clears nothing onward. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "fork-a-left",
+      "machine": "fork-a.dmml",
+      "transition": "goLeft",
+      "verb": "forks",
+      "params": {},
+      "description": "At fork/a, commit to the LEFT branch (path/an) and seal the right (path/as) forever."
+    },
+    {
+      "id": "fork-a-right",
+      "machine": "fork-a.dmml",
+      "transition": "goRight",
+      "verb": "forks",
+      "params": {},
+      "description": "At fork/a, commit to the RIGHT branch (path/as) and seal the left (path/an) forever."
+    },
+    {
+      "id": "fork-b-left",
+      "machine": "fork-b.dmml",
+      "transition": "goLeft",
+      "verb": "forks",
+      "params": {},
+      "description": "At fork/b, commit to the LEFT branch (path/bn) and seal the right (path/bs) forever."
+    },
+    {
+      "id": "fork-b-right",
+      "machine": "fork-b.dmml",
+      "transition": "goRight",
+      "verb": "forks",
+      "params": {},
+      "description": "At fork/b, commit to the RIGHT branch (path/bs) and seal the left (path/bn) forever."
+    },
+    {
+      "id": "fork-c-left",
+      "machine": "fork-c.dmml",
+      "transition": "goLeft",
+      "verb": "forks",
+      "params": {},
+      "description": "At fork/c, commit to the LEFT branch (path/cn) and seal the right (path/cs) forever."
+    },
+    {
+      "id": "fork-c-right",
+      "machine": "fork-c.dmml",
+      "transition": "goRight",
+      "verb": "forks",
+      "params": {},
+      "description": "At fork/c, commit to the RIGHT branch (path/cs) and seal the left (path/cn) forever."
+    }
+  ],
+  "budget": {
+    "max_rounds": 20,
+    "max_total_firings": 60,
+    "max_firings_per_candidate": 1,
+    "max_minted_nodes": 300
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "You are delving and shaping a large branching dungeon the cannon laid out \u2014 three independent wings off the entry, each with its own irreversible fork. Rooms in different wings are independent and can be breached the same turn. At each fork you must choose one branch and seal the other forever. Halls open the way on, forges make keys, vaults (needing a cleared path and a key) hold sigils, spurs are relic dead-ends. There is no single correct dungeon \u2014 build the shape you want, weigh the richer vault sigils against the easier spur relics, and decide each fork with care since it cannot be undone."
+  }
+}

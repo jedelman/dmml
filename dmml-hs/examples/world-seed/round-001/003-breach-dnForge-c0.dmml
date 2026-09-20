@@ -1,0 +1,10 @@
+commit breaches
+  declare relation cleared
+  declare relation has
+  declare relation state
+  room/dnForge `cleared` mark/yes
+  vault/keyring `has` key/gold
+  room/dnForge `state` open
+  consumes
+    fact local:/home/user/dmml/dmml-hs/examples/world-seed/wingD/wingD-seed.dmml#fnv1a64:791f0e2d3b21f876
+      room/dnForge . state

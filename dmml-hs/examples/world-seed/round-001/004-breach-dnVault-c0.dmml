@@ -1,0 +1,10 @@
+commit breaches
+  declare relation cleared
+  declare relation yields
+  declare relation state
+  room/dnVault `cleared` mark/yes
+  room/dnVault `yields` sigil/dnVault
+  room/dnVault `state` open
+  consumes
+    fact local:/home/user/dmml/dmml-hs/examples/world-seed/wingD/wingD-seed.dmml#fnv1a64:791f0e2d3b21f876
+      room/dnVault . state

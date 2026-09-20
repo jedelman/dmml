@@ -1,0 +1,13 @@
+machine room/anForge
+  states
+    sealed
+    open
+
+  transition breach()
+    sealed -> open
+    guard path/an `cleared` mark/yes
+    assert self `cleared` mark/yes
+    assert vault/keyring `has` key/gold
+    assert self `state` open
+    retract self `state`
+

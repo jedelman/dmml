@@ -1,0 +1,99 @@
+{
+  "world_seed": [
+    "../chapter1/mega-world.dmml",
+    "../wingD/wingD-seed.dmml",
+    "../state/001-breach-aHall-c0.dmml",
+    "../state/001-breach-bForge-c0.dmml",
+    "../state/001-breach-cHall-c0.dmml",
+    "../state/002-breach-cHall2-c0.dmml",
+    "../state/002-fork-a-left-c0.dmml",
+    "../state/002-fork-b-left-c0.dmml",
+    "../state/003-breach-anForge-c0.dmml",
+    "../state/003-breach-bnVault-c0.dmml",
+    "../state/003-fork-c-left-c0.dmml",
+    "../state/004-breach-anVault-c0.dmml",
+    "../state/004-breach-cnSpur-c0.dmml"
+  ],
+  "machines": [
+    "../chapter1/fork-a.dmml",
+    "../chapter1/fork-b.dmml",
+    "../chapter1/fork-c.dmml",
+    "../chapter1/room-aHall.dmml",
+    "../chapter1/room-anForge.dmml",
+    "../chapter1/room-anVault.dmml",
+    "../chapter1/room-asSpur.dmml",
+    "../chapter1/room-bForge.dmml",
+    "../chapter1/room-bnVault.dmml",
+    "../chapter1/room-bsHall.dmml",
+    "../chapter1/room-bsVault.dmml",
+    "../chapter1/room-cHall.dmml",
+    "../chapter1/room-cHall2.dmml",
+    "../chapter1/room-cnSpur.dmml",
+    "../chapter1/room-csSpur.dmml",
+    "../wingD/fork-d.dmml",
+    "../wingD/room-dHall.dmml",
+    "../wingD/room-dnForge.dmml",
+    "../wingD/room-dnVault.dmml",
+    "../wingD/room-dsSpur.dmml"
+  ],
+  "candidates": [
+    {
+      "id": "breach-dHall",
+      "machine": "../wingD/room-dHall.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/dHall: a hall — clears itself, opening the rooms beyond it. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-dnForge",
+      "machine": "../wingD/room-dnForge.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/dnForge: a forge — yields a key that vaults require, clears the way on. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-dnVault",
+      "machine": "../wingD/room-dnVault.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/dnVault: a vault — needs a cleared path AND a key; yields a sigil, the richer prize. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "breach-dsSpur",
+      "machine": "../wingD/room-dsSpur.dmml",
+      "transition": "breach",
+      "verb": "breaches",
+      "params": {},
+      "description": "Breach room/dsSpur: a spur — yields a relic but is a dead end, clears nothing onward. Reachable only once its parent is cleared."
+    },
+    {
+      "id": "fork-d-left",
+      "machine": "../wingD/fork-d.dmml",
+      "transition": "goLeft",
+      "verb": "forks",
+      "params": {},
+      "description": "At fork/d, commit to the LEFT branch (path/dn) and seal the right (path/ds) forever."
+    },
+    {
+      "id": "fork-d-right",
+      "machine": "../wingD/fork-d.dmml",
+      "transition": "goRight",
+      "verb": "forks",
+      "params": {},
+      "description": "At fork/d, commit to the RIGHT branch (path/ds) and seal the left (path/dn) forever."
+    }
+  ],
+  "budget": {
+    "max_rounds": 20,
+    "max_total_firings": 20,
+    "max_firings_per_candidate": 1,
+    "max_minted_nodes": 100
+  },
+  "jev": {
+    "model": "jev-latest",
+    "instructions": "You are shaping round 2 of an ongoing dungeon delve. Chapter 1 (three wings, fully resolved) already happened: at forks a, b, and c you went left every time, favoring the richer vault sigils (anVault, bnVault) over the easier spur relics, and took cnSpur's relic where the right branch offered nothing better. A new, independent fourth wing (wing D) has just opened off the entry: a hall leading to a fork, whose left branch (path/dn) holds a forge and a vault (a sigil, the richer prize) and whose right branch (path/ds) is a dead-end spur (a relic, easier but forecloses the vault forever). Decide fresh for this wing -- you are not obligated to repeat the same left/left/left pattern, but you may if it genuinely reflects what this delver would do. Note honestly: the key this vault needs already exists in the world from chapter 1, so the forge here is not gating anything new -- it still fits the wing's shape, but it will not unlock the vault by itself this time."
+  }
+}

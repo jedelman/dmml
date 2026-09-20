@@ -1,0 +1,12 @@
+machine room/asSpur
+  states
+    sealed
+    open
+
+  transition breach()
+    sealed -> open
+    guard path/as `cleared` mark/yes
+    assert self `yields` relic/asSpur
+    assert self `state` open
+    retract self `state`
+

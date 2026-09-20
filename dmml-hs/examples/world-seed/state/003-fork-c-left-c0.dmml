@@ -1,0 +1,8 @@
+commit forks
+  declare relation cleared
+  declare relation state
+  path/cn `cleared` mark/yes
+  fork/c `state` chosen
+  consumes
+    fact local:/home/user/dmml/dmml-hs/examples/world-seed/chapter1/mega-world.dmml#fnv1a64:ecfbfe467d4d4174
+      fork/c . state

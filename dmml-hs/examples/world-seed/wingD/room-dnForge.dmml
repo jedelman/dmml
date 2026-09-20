@@ -1,0 +1,13 @@
+machine room/dnForge
+  states
+    sealed
+    open
+
+  transition breach()
+    sealed -> open
+    guard path/dn `cleared` mark/yes
+    assert self `cleared` mark/yes
+    assert vault/keyring `has` key/gold
+    assert self `state` open
+    retract self `state`
+

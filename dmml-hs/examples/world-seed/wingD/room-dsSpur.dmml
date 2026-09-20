@@ -1,0 +1,12 @@
+machine room/dsSpur
+  states
+    sealed
+    open
+
+  transition breach()
+    sealed -> open
+    guard path/ds `cleared` mark/yes
+    assert self `yields` relic/dsSpur
+    assert self `state` open
+    retract self `state`
+

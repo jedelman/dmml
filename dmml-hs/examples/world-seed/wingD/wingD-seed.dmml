@@ -1,0 +1,11 @@
+commit setup
+  declare relation state
+  declare relation cleared
+  declare relation has
+  declare relation yields
+
+  room/dHall `state` sealed
+  room/dnForge `state` sealed
+  room/dnVault `state` sealed
+  room/dsSpur `state` sealed
+  fork/d `state` unchosen
